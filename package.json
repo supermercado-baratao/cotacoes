@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "eslint:check": "eslint .",
+    "eslint:fix": "eslint . --fix",
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
     "preview": "vite preview",
     "prepare": "husky"
   },
@@ -27,10 +30,12 @@
     "babel-plugin-react-compiler": "1.0.0",
     "commitlint-config-emoji-convention": "1.0.3",
     "eslint": "10.2.1",
+    "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.2",
     "globals": "17.5.0",
     "husky": "9.1.7",
+    "prettier": "3.8.3",
     "typescript": "6.0.2",
     "typescript-eslint": "8.58.2",
     "vite": "8.0.10"
