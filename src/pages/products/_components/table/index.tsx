@@ -6,7 +6,6 @@ import { ptBR } from '@mui/x-data-grid/locales'
 import type { TProduct } from '@/models'
 
 import { columns } from './columns'
-import * as S from './style'
 
 type TTableProps = {
   products: TProduct[]
@@ -37,7 +36,7 @@ export const Table = ({ products, onEdit, onDelete }: TTableProps) => {
   }
 
   return (
-    <Box sx={S.Wrapper}>
+    <Box>
       <DataGrid
         columns={[...columns, actionColumn]}
         rows={products}
@@ -45,7 +44,6 @@ export const Table = ({ products, onEdit, onDelete }: TTableProps) => {
         initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
         localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
         sx={{ textAlign: 'center' }}
-        autosizeOnMount
         disableRowSelectionOnClick
       />
     </Box>

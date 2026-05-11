@@ -21,9 +21,9 @@ export const Header = ({
   handleOpenCreate
 }: THeaderProps) => {
   return (
-    <Box sx={S.Wrapper}>
+    <Box component="header" sx={S.Wrapper}>
       <Typography component="h1" variant="h5">
-        Lista de Faltas
+        Produtos
       </Typography>
       <Button
         variant="contained"

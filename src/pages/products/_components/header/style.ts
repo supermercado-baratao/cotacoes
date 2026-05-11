@@ -5,9 +5,11 @@ export const Wrapper: SxProps<Theme> = {
   alignItems: 'flex-start',
   justifyContent: 'space-between',
   gap: 2,
-  flexWrap: 'wrap'
+  flexWrap: 'wrap',
+  mb: 2
 }
 
 export const SearchField: SxProps<Theme> = {
-  width: { xs: '100%', sm: 320 }
+  flex: 1,
+  maxWidth: 320
 }

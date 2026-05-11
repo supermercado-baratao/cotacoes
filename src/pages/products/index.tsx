@@ -1,9 +1,6 @@
-import { Box } from '@mui/material'
-
 import { DeleteDialog } from '@/components'
 
 import { Form, Header, Table } from './_components'
-import * as S from './style'
 import { useProductsHandler } from './use-products-handler'
 
 export const Products = () => {
@@ -24,7 +21,7 @@ export const Products = () => {
   } = useProductsHandler()
 
   return (
-    <Box sx={S.Wrapper}>
+    <>
       <Header
         search={search}
         setSearch={setSearch}
@@ -35,7 +32,6 @@ export const Products = () => {
         onEdit={handleOpenEdit}
         onDelete={handleOpenDelete}
       />
-
       <Form
         isOpened={isFormOpen}
         product={formProduct}
@@ -49,6 +45,6 @@ export const Products = () => {
         handleConfirm={handleConfirmDelete}
         handleClose={handleCloseDelete}
       />
-    </Box>
+    </>
   )
 }

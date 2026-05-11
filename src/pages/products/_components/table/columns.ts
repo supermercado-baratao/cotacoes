@@ -11,7 +11,7 @@ export const columns: GridColDef<TProduct>[] = [
     headerName: 'Descrição',
     minWidth: 280,
     flex: 1,
-    valueFormatter: (value: string) => value.toUpperCase() || '-'
+    valueFormatter: (value: string) => value.toUpperCase()
   },
   {
     field: 'price',
@@ -26,12 +26,12 @@ export const columns: GridColDef<TProduct>[] = [
   {
     field: 'quantity',
     headerName: 'Qtd.',
-    valueFormatter: (value: number) => value || '-'
+    valueFormatter: (value: number) => value
   },
   {
     field: 'packaging',
     headerName: 'Emb.',
-    valueFormatter: (value: string) => value.toUpperCase() || '-'
+    valueFormatter: (value: string) => value.toUpperCase()
   },
   {
     field: 'suggestedPrice',
@@ -44,6 +44,6 @@ export const columns: GridColDef<TProduct>[] = [
     headerName: 'Observações',
     minWidth: 180,
     flex: 1,
-    valueFormatter: (value: string) => value.toUpperCase() || '-'
+    valueFormatter: (value: string) => value.toUpperCase()
   }
 ]
