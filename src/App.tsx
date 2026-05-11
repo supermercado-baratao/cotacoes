@@ -1,7 +1,7 @@
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-import { AppProvider } from './providers/app-provider'
+import { AppProvider } from './providers'
 import { Router } from './Router'
 import { dark } from './themes'
 
