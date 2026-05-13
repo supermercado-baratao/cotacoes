@@ -1,6 +1,6 @@
-import { DeleteDialog, Loader } from '@/components'
+import { DeleteDialog, FamilyForm, Loader } from '@/components'
 
-import { Form, Header, Table } from './_components'
+import { Header, Table } from './_components'
 import { useFamiliesHandler } from './use-families-handler'
 
 export const Families = () => {
@@ -36,7 +36,7 @@ export const Families = () => {
       ) : (
         <Loader />
       )}
-      <Form
+      <FamilyForm
         isOpened={isFormOpen}
         family={formFamily}
         setFormFamily={setFormFamily}

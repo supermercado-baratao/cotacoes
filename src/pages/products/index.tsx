@@ -1,4 +1,10 @@
-import { DeleteDialog, Loader } from '@/components'
+import {
+  DeleteDialog,
+  FamilyForm,
+  Loader,
+  SellerForm,
+  SupplierForm
+} from '@/components'
 
 import { Form, Header, Table } from './_components'
 import { useProductsHandler } from './use-products-handler'
@@ -17,7 +23,9 @@ export const Products = () => {
     isFormOpen,
     setFormProduct,
     formProduct,
-    productToDelete
+    productToDelete,
+    quickCreate,
+    setQuickCreate
   } = useProductsHandler()
 
   return (
@@ -41,6 +49,25 @@ export const Products = () => {
         product={formProduct}
         setFormProduct={setFormProduct}
         handleClose={handleCloseForm}
+        setQuickCreate={setQuickCreate}
+      />
+      <SupplierForm
+        isOpened={quickCreate === 'supplier'}
+        supplier={null}
+        setFormSupplier={() => {}}
+        handleClose={() => setQuickCreate(null)}
+      />
+      <SellerForm
+        isOpened={quickCreate === 'seller'}
+        seller={null}
+        setFormSeller={() => {}}
+        handleClose={() => setQuickCreate(null)}
+      />
+      <FamilyForm
+        isOpened={quickCreate === 'family'}
+        family={null}
+        setFormFamily={() => {}}
+        handleClose={() => setQuickCreate(null)}
       />
       <DeleteDialog
         open={!!productToDelete}

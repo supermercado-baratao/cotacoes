@@ -13,7 +13,7 @@ export const schema = z.object({
     .min(PHONE_MIN_LENGTH, 'Telefone inválido')
     .max(PHONE_MAX_LENGTH, 'Telefone inválido')
     .nullable(),
-  supplierIds: z.array(z.string())
+  supplierIds: z.array(z.string()).min(1, 'Selecione ao menos um fornecedor')
 }) satisfies z.ZodType<TCreateData<TSeller>>
 
 export type TSchema = z.infer<typeof schema>

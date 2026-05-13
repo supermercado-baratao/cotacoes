@@ -14,7 +14,7 @@ type TFormProps = {
   setFormFamily: (family: TFamily | null) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
-export const Form = ({
+export const FamilyForm = ({
   isOpened,
   family,
   handleClose,

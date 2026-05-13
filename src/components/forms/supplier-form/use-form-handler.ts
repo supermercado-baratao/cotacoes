@@ -2,33 +2,36 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
-import type { TSeller } from '@/models'
+import type { TSupplier } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
 import { schema, type TSchema } from './schema'
 
 export const useFormHandler = (
-  seller: TSeller | null,
-  setFormSeller: (seller: TSeller | null) => void,
+  supplier: TSupplier | null,
+  setFormSupplier: (supplier: TSupplier | null) => void,
   handleClose: () => void
 ) => {
-  const { createSeller, updateSeller, suppliers } = useAppStore()
+  const { createSupplier, updateSupplier, sellers } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
     () => ({
-      name: seller?.name ?? '',
-      phone: seller?.phone ?? null,
-      supplierIds: seller?.supplierIds ?? []
+      legalName: supplier?.legalName ?? '',
+      tradeName: supplier?.tradeName ?? '',
+      cnpj: supplier?.cnpj ?? '',
+      email: supplier?.email ?? null,
+      phone: supplier?.phone ?? null,
+      sellerIds: supplier?.sellerIds ?? []
     }),
-    [seller]
+    [supplier]
   )
 
   const {
-    control,
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors }
   } = useForm({
     resolver: zodResolver(schema),
@@ -40,14 +43,19 @@ export const useFormHandler = (
   }, [defaultValues, reset])
 
   const onSubmit = handleSubmit((data) => {
-    if (seller) {
-      setSuccessCallbacks([handleClose, () => setFormSeller(null)])
-      updateSeller({ ...seller, ...data })
+    setSuccessCallbacks([handleClose, () => setFormSupplier(null)])
+    if (supplier) {
+      updateSupplier({ ...supplier, ...data })
       return
     }
-    setSuccessCallbacks([handleClose, () => reset(defaultValues)])
-    createSeller(data)
+    createSupplier(data)
   })
 
-  return { control, register, onSubmit, errors, suppliers: suppliers ?? [] }
+  return {
+    register,
+    onSubmit,
+    errors,
+    control,
+    sellers: sellers ?? []
+  }
 }

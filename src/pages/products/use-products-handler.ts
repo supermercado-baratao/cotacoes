@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import type { TProduct } from '@/models'
 import { useAppStore } from '@/stores'
 
+import type { TQuickCreate } from './types'
 import { filterProducts } from './utils'
 
 export const useProductsHandler = () => {
@@ -12,6 +13,7 @@ export const useProductsHandler = () => {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<TProduct | null>(null)
   const [search, setSearch] = useState('')
+  const [quickCreate, setQuickCreate] = useState<TQuickCreate>(null)
 
   const filteredProducts = useMemo(
     () => (products ? filterProducts(search, products, suppliers ?? []) : null),
@@ -60,6 +62,8 @@ export const useProductsHandler = () => {
     isFormOpen,
     formProduct,
     setFormProduct,
-    productToDelete
+    productToDelete,
+    quickCreate,
+    setQuickCreate
   }
 }

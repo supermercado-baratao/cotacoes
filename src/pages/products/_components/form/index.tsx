@@ -1,14 +1,18 @@
+import { Add } from '@mui/icons-material'
 import {
   Autocomplete,
   Box,
   Button,
+  IconButton,
   InputAdornment,
-  TextField
+  TextField,
+  Tooltip
 } from '@mui/material'
 import { Controller } from 'react-hook-form'
 
 import { CurrencyInput, Modal, type TModalProps } from '@/components'
 import type { TProduct } from '@/models'
+import type { TQuickCreate } from '@/pages/products/types'
 import { formatCurrencyInput, selectOnFocus } from '@/utils'
 
 import {
@@ -24,6 +28,7 @@ import { useFormHandler } from './use-form-handler'
 type TFormProps = {
   product: TProduct | null
   setFormProduct: (product: TProduct | null) => void
+  setQuickCreate: (quickCreate: TQuickCreate) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
@@ -32,7 +37,8 @@ export const Form = ({
   isOpened,
   product,
   handleClose,
-  setFormProduct
+  setFormProduct,
+  setQuickCreate
 }: TFormProps) => {
   const {
     register,
@@ -68,30 +74,39 @@ export const Form = ({
           onFocus={selectOnFocus}
           slotProps={{ htmlInput: { maxLength: MAX_PACKAGING_LENGTH } }}
         />
-        <Controller
-          name="familyId"
-          control={control}
-          render={({ field }) => (
-            <Autocomplete
-              options={families.map((f) => f.id)}
-              getOptionLabel={(id) =>
-                families.find((f) => f.id === id)?.description ?? id
-              }
-              isOptionEqualToValue={(option, value) => option === value}
-              value={field.value ?? null}
-              onChange={(_, newValue) => field.onChange(newValue ?? undefined)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Família"
-                  error={!!errors.familyId}
-                  helperText={errors.familyId?.message}
-                />
-              )}
-              sx={S.FourCol}
-            />
-          )}
-        />
+        <Box sx={S.AutocompleteRowFourCol}>
+          <Controller
+            name="familyId"
+            control={control}
+            render={({ field }) => (
+              <Autocomplete
+                sx={{ flex: 1 }}
+                options={families.map((f) => f.id)}
+                getOptionLabel={(id) =>
+                  families.find((f) => f.id === id)?.description ?? id
+                }
+                isOptionEqualToValue={(option, value) => option === value}
+                value={field.value ?? null}
+                onChange={(_, newValue) =>
+                  field.onChange(newValue ?? undefined)
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Família"
+                    error={!!errors.familyId}
+                    helperText={errors.familyId?.message}
+                  />
+                )}
+              />
+            )}
+          />
+          <Tooltip title="Nova Família">
+            <IconButton onClick={() => setQuickCreate('family')} sx={{ mt: 1 }}>
+              <Add />
+            </IconButton>
+          </Tooltip>
+        </Box>
         <CurrencyInput
           name="price"
           control={control}
@@ -181,58 +196,75 @@ export const Form = ({
           onFocus={selectOnFocus}
           slotProps={{ inputLabel: { shrink: true } }}
         />
-        <Controller
-          name="supplierIds"
-          control={control}
-          render={({ field }) => (
-            <Autocomplete
-              multiple
-              disableCloseOnSelect
-              options={suppliers.map((s) => s.id)}
-              getOptionLabel={(id) =>
-                suppliers.find((s) => s.id === id)?.tradeName ?? id
-              }
-              isOptionEqualToValue={(option, value) => option === value}
-              value={field.value}
-              onChange={(_, newValue) => field.onChange(newValue)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Fornecedores"
-                  error={!!errors.supplierIds}
-                  helperText={errors.supplierIds?.message}
-                />
-              )}
-              sx={S.FullWidth}
-            />
-          )}
-        />
-        <Controller
-          name="sellerIds"
-          control={control}
-          render={({ field }) => (
-            <Autocomplete
-              multiple
-              disableCloseOnSelect
-              options={sellers.map((s) => s.id)}
-              getOptionLabel={(id) =>
-                sellers.find((s) => s.id === id)?.name ?? id
-              }
-              isOptionEqualToValue={(option, value) => option === value}
-              value={field.value}
-              onChange={(_, newValue) => field.onChange(newValue)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Vendedores"
-                  error={!!errors.sellerIds}
-                  helperText={errors.sellerIds?.message}
-                />
-              )}
-              sx={S.FullWidth}
-            />
-          )}
-        />
+        <Box sx={S.AutocompleteRowFull}>
+          <Controller
+            name="supplierIds"
+            control={control}
+            render={({ field }) => (
+              <Autocomplete
+                sx={{ flex: 1 }}
+                multiple
+                disableCloseOnSelect
+                options={suppliers.map((s) => s.id)}
+                getOptionLabel={(id) =>
+                  suppliers.find((s) => s.id === id)?.tradeName ?? id
+                }
+                isOptionEqualToValue={(option, value) => option === value}
+                value={field.value}
+                onChange={(_, newValue) => field.onChange(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Fornecedores"
+                    error={!!errors.supplierIds}
+                    helperText={errors.supplierIds?.message}
+                  />
+                )}
+              />
+            )}
+          />
+          <Tooltip title="Novo Fornecedor">
+            <IconButton
+              onClick={() => setQuickCreate('supplier')}
+              sx={{ mt: 1 }}
+            >
+              <Add />
+            </IconButton>
+          </Tooltip>
+        </Box>
+        <Box sx={S.AutocompleteRowFull}>
+          <Controller
+            name="sellerIds"
+            control={control}
+            render={({ field }) => (
+              <Autocomplete
+                sx={{ flex: 1 }}
+                multiple
+                disableCloseOnSelect
+                options={sellers.map((s) => s.id)}
+                getOptionLabel={(id) =>
+                  sellers.find((s) => s.id === id)?.name ?? id
+                }
+                isOptionEqualToValue={(option, value) => option === value}
+                value={field.value}
+                onChange={(_, newValue) => field.onChange(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Vendedores"
+                    error={!!errors.sellerIds}
+                    helperText={errors.sellerIds?.message}
+                  />
+                )}
+              />
+            )}
+          />
+          <Tooltip title="Novo Vendedor">
+            <IconButton onClick={() => setQuickCreate('seller')} sx={{ mt: 1 }}>
+              <Add />
+            </IconButton>
+          </Tooltip>
+        </Box>
         <TextField
           {...register('observation')}
           label="Observações"

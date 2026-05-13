@@ -1,6 +1,7 @@
-import { DeleteDialog, Loader } from '@/components'
+import { DeleteDialog, Loader, SellerForm } from '@/components'
+import { SupplierForm } from '@/components/forms/supplier-form'
 
-import { Form, Header, Table } from './_components'
+import { Header, Table } from './_components'
 import { useSuppliersHandler } from './use-suppliers-handler'
 
 export const Suppliers = () => {
@@ -17,7 +18,9 @@ export const Suppliers = () => {
     isFormOpen,
     setFormSupplier,
     formSupplier,
-    supplierToDelete
+    supplierToDelete,
+    quickCreateSeller,
+    setQuickCreateSeller
   } = useSuppliersHandler()
 
   return (
@@ -36,11 +39,18 @@ export const Suppliers = () => {
       ) : (
         <Loader />
       )}
-      <Form
+      <SupplierForm
         isOpened={isFormOpen}
         supplier={formSupplier}
         setFormSupplier={setFormSupplier}
         handleClose={handleCloseForm}
+        setQuickCreateSeller={setQuickCreateSeller}
+      />
+      <SellerForm
+        isOpened={quickCreateSeller}
+        seller={null}
+        setFormSeller={() => {}}
+        handleClose={() => setQuickCreateSeller(false)}
       />
       <DeleteDialog
         open={!!supplierToDelete}
