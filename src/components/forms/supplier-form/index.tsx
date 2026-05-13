@@ -1,15 +1,12 @@
-import { Add } from '@mui/icons-material'
+import { Box, Button, TextField } from '@mui/material'
+
 import {
   Autocomplete,
-  Box,
-  Button,
-  IconButton,
-  TextField,
-  Tooltip
-} from '@mui/material'
-import { Controller } from 'react-hook-form'
-
-import { CnpjInput, Modal, PhoneInput, type TModalProps } from '@/components'
+  CnpjInput,
+  Modal,
+  PhoneInput,
+  type TModalProps
+} from '@/components'
 import type { TSupplier } from '@/models'
 import { selectOnFocus } from '@/utils'
 
@@ -87,51 +84,25 @@ export const SupplierForm = ({
             sx={S.EmailField}
             onFocus={selectOnFocus}
           />
-          <Box
-            sx={{
-              ...S.FullWidth,
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 1
-            }}
-          >
-            <Controller
-              name="sellerIds"
-              control={control}
-              render={({ field }) => (
-                <Autocomplete
-                  sx={{ flex: 1 }}
-                  multiple
-                  disableCloseOnSelect
-                  options={sellers.map((s) => s.id)}
-                  getOptionLabel={(id) =>
-                    sellers.find((s) => s.id === id)?.name ?? id
-                  }
-                  isOptionEqualToValue={(option, value) => option === value}
-                  value={field.value}
-                  onChange={(_, newValue) => field.onChange(newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Vendedores"
-                      error={!!errors.sellerIds}
-                      helperText={errors.sellerIds?.message}
-                    />
-                  )}
-                />
-              )}
-            />
-            {setQuickCreateSeller && (
-              <Tooltip title="Novo Vendedor">
-                <IconButton
-                  onClick={() => setQuickCreateSeller(true)}
-                  sx={{ mt: 1 }}
-                >
-                  <Add />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
+          <Autocomplete
+            name="sellerIds"
+            control={control}
+            options={sellers}
+            getOptionLabel={(s) => s.name}
+            getOptionValue={(s) => s.id}
+            label="Vendedores"
+            error={!!errors.sellerIds}
+            helperText={errors.sellerIds?.message}
+            multiple
+            disableCloseOnSelect
+            onClickAdd={
+              setQuickCreateSeller
+                ? () => setQuickCreateSeller(true)
+                : undefined
+            }
+            addLabel="Novo Vendedor"
+            sx={S.FullWidth}
+          />
           <Box sx={S.Actions}>
             <Button onClick={handleClose}>Cancelar</Button>
             <Button type="submit" variant="contained">

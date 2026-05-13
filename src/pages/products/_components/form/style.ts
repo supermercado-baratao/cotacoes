@@ -23,16 +23,10 @@ export const FourCol: SxProps<Theme> = {
 }
 
 export const AutocompleteRowFull: SxProps<Theme> = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: 1,
   gridColumn: { sm: '1 / -1' }
 }
 
 export const AutocompleteRowFourCol: SxProps<Theme> = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: 1,
   gridColumn: { sm: 'span 4' }
 }
 

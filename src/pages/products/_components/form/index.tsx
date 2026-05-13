@@ -1,16 +1,11 @@
-import { Add } from '@mui/icons-material'
+import { Box, Button, InputAdornment, TextField } from '@mui/material'
+
 import {
   Autocomplete,
-  Box,
-  Button,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Tooltip
-} from '@mui/material'
-import { Controller } from 'react-hook-form'
-
-import { CurrencyInput, Modal, type TModalProps } from '@/components'
+  CurrencyInput,
+  Modal,
+  type TModalProps
+} from '@/components'
 import type { TProduct } from '@/models'
 import type { TQuickCreate } from '@/pages/products/types'
 import { formatCurrencyInput, selectOnFocus } from '@/utils'
@@ -74,39 +69,19 @@ export const Form = ({
           onFocus={selectOnFocus}
           slotProps={{ htmlInput: { maxLength: MAX_PACKAGING_LENGTH } }}
         />
-        <Box sx={S.AutocompleteRowFourCol}>
-          <Controller
-            name="familyId"
-            control={control}
-            render={({ field }) => (
-              <Autocomplete
-                sx={{ flex: 1 }}
-                options={families.map((f) => f.id)}
-                getOptionLabel={(id) =>
-                  families.find((f) => f.id === id)?.description ?? id
-                }
-                isOptionEqualToValue={(option, value) => option === value}
-                value={field.value ?? null}
-                onChange={(_, newValue) =>
-                  field.onChange(newValue ?? undefined)
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Família"
-                    error={!!errors.familyId}
-                    helperText={errors.familyId?.message}
-                  />
-                )}
-              />
-            )}
-          />
-          <Tooltip title="Nova Família">
-            <IconButton onClick={() => setQuickCreate('family')} sx={{ mt: 1 }}>
-              <Add />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        <Autocomplete
+          name="familyId"
+          control={control}
+          options={families}
+          getOptionLabel={(f) => f.description}
+          getOptionValue={(f) => f.id}
+          label="Família"
+          error={!!errors.familyId}
+          helperText={errors.familyId?.message}
+          onClickAdd={() => setQuickCreate('family')}
+          addLabel="Nova Família"
+          sx={S.AutocompleteRowFourCol}
+        />
         <CurrencyInput
           name="price"
           control={control}
@@ -196,75 +171,36 @@ export const Form = ({
           onFocus={selectOnFocus}
           slotProps={{ inputLabel: { shrink: true } }}
         />
-        <Box sx={S.AutocompleteRowFull}>
-          <Controller
-            name="supplierIds"
-            control={control}
-            render={({ field }) => (
-              <Autocomplete
-                sx={{ flex: 1 }}
-                multiple
-                disableCloseOnSelect
-                options={suppliers.map((s) => s.id)}
-                getOptionLabel={(id) =>
-                  suppliers.find((s) => s.id === id)?.tradeName ?? id
-                }
-                isOptionEqualToValue={(option, value) => option === value}
-                value={field.value}
-                onChange={(_, newValue) => field.onChange(newValue)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Fornecedores"
-                    error={!!errors.supplierIds}
-                    helperText={errors.supplierIds?.message}
-                  />
-                )}
-              />
-            )}
-          />
-          <Tooltip title="Novo Fornecedor">
-            <IconButton
-              onClick={() => setQuickCreate('supplier')}
-              sx={{ mt: 1 }}
-            >
-              <Add />
-            </IconButton>
-          </Tooltip>
-        </Box>
-        <Box sx={S.AutocompleteRowFull}>
-          <Controller
-            name="sellerIds"
-            control={control}
-            render={({ field }) => (
-              <Autocomplete
-                sx={{ flex: 1 }}
-                multiple
-                disableCloseOnSelect
-                options={sellers.map((s) => s.id)}
-                getOptionLabel={(id) =>
-                  sellers.find((s) => s.id === id)?.name ?? id
-                }
-                isOptionEqualToValue={(option, value) => option === value}
-                value={field.value}
-                onChange={(_, newValue) => field.onChange(newValue)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Vendedores"
-                    error={!!errors.sellerIds}
-                    helperText={errors.sellerIds?.message}
-                  />
-                )}
-              />
-            )}
-          />
-          <Tooltip title="Novo Vendedor">
-            <IconButton onClick={() => setQuickCreate('seller')} sx={{ mt: 1 }}>
-              <Add />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        <Autocomplete
+          name="supplierIds"
+          control={control}
+          options={suppliers}
+          getOptionLabel={(s) => s.tradeName}
+          getOptionValue={(s) => s.id}
+          label="Fornecedores"
+          error={!!errors.supplierIds}
+          helperText={errors.supplierIds?.message}
+          multiple
+          disableCloseOnSelect
+          onClickAdd={() => setQuickCreate('supplier')}
+          addLabel="Novo Fornecedor"
+          sx={S.AutocompleteRowFull}
+        />
+        <Autocomplete
+          name="sellerIds"
+          control={control}
+          options={sellers}
+          getOptionLabel={(s) => s.name}
+          getOptionValue={(s) => s.id}
+          label="Vendedores"
+          error={!!errors.sellerIds}
+          helperText={errors.sellerIds?.message}
+          multiple
+          disableCloseOnSelect
+          onClickAdd={() => setQuickCreate('seller')}
+          addLabel="Novo Vendedor"
+          sx={S.AutocompleteRowFull}
+        />
         <TextField
           {...register('observation')}
           label="Observações"

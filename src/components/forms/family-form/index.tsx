@@ -1,7 +1,6 @@
-import { Autocomplete, Box, Button, TextField } from '@mui/material'
-import { Controller } from 'react-hook-form'
+import { Box, Button, TextField } from '@mui/material'
 
-import { Modal, type TModalProps } from '@/components'
+import { Autocomplete, Modal, type TModalProps } from '@/components'
 import type { TFamily } from '@/models'
 import { selectOnFocus } from '@/utils'
 
@@ -39,29 +38,17 @@ export const FamilyForm = ({
           onFocus={selectOnFocus}
           slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
         />
-        <Controller
+        <Autocomplete
           name="productIds"
           control={control}
-          render={({ field }) => (
-            <Autocomplete
-              multiple
-              options={products || []}
-              getOptionLabel={(option) => option.description}
-              value={(products || []).filter((p) => field.value.includes(p.id))}
-              onChange={(_, selected) =>
-                field.onChange(selected.map((p) => p.id))
-              }
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Produtos"
-                  error={!!errors.productIds}
-                  helperText={errors.productIds?.message}
-                />
-              )}
-            />
-          )}
+          options={products ?? []}
+          getOptionLabel={(p) => p.description}
+          getOptionValue={(p) => p.id}
+          label="Produtos"
+          error={!!errors.productIds}
+          helperText={errors.productIds?.message}
+          multiple
+          disableCloseOnSelect
         />
         <Box sx={S.Actions}>
           <Button onClick={handleClose}>Cancelar</Button>

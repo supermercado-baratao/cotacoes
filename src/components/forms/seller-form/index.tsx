@@ -1,15 +1,6 @@
-import { Add } from '@mui/icons-material'
-import {
-  Autocomplete,
-  Box,
-  Button,
-  IconButton,
-  TextField,
-  Tooltip
-} from '@mui/material'
-import { Controller } from 'react-hook-form'
+import { Box, Button, TextField } from '@mui/material'
 
-import { Modal, PhoneInput, type TModalProps } from '@/components'
+import { Autocomplete, Modal, PhoneInput, type TModalProps } from '@/components'
 import type { TSeller } from '@/models'
 import { selectOnFocus } from '@/utils'
 
@@ -57,45 +48,24 @@ export const SellerForm = ({
             error={!!errors.phone}
             helperText={errors.phone?.message}
           />
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-            <Controller
-              name="supplierIds"
-              control={control}
-              render={({ field }) => (
-                <Autocomplete
-                  sx={{ flex: 1 }}
-                  multiple
-                  options={suppliers}
-                  getOptionLabel={(option) => option.tradeName}
-                  value={suppliers.filter((s) => field.value.includes(s.id))}
-                  onChange={(_, selected) =>
-                    field.onChange(selected.map((s) => s.id))
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    option.id === value.id
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Fornecedores"
-                      error={!!errors.supplierIds}
-                      helperText={errors.supplierIds?.message}
-                    />
-                  )}
-                />
-              )}
-            />
-            {setQuickCreateSupplier && (
-              <Tooltip title="Novo Fornecedor">
-                <IconButton
-                  onClick={() => setQuickCreateSupplier(true)}
-                  sx={{ mt: 1 }}
-                >
-                  <Add />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
+          <Autocomplete
+            name="supplierIds"
+            control={control}
+            options={suppliers}
+            getOptionLabel={(s) => s.tradeName}
+            getOptionValue={(s) => s.id}
+            label="Fornecedores"
+            error={!!errors.supplierIds}
+            helperText={errors.supplierIds?.message}
+            multiple
+            disableCloseOnSelect
+            onClickAdd={
+              setQuickCreateSupplier
+                ? () => setQuickCreateSupplier(true)
+                : undefined
+            }
+            addLabel="Novo Fornecedor"
+          />
           <Box sx={S.Actions}>
             <Button onClick={handleClose}>Cancelar</Button>
             <Button type="submit" variant="contained">
