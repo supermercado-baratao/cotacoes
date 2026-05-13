@@ -12,6 +12,7 @@ export type TProduct = {
   expirationDate: string | null
   familyId: string | null
   supplierIds: string[]
+  sellerIds: string[]
   createdAt: number
   updatedAt: number
 }

@@ -17,6 +17,7 @@ export const schema = z.object({
   quantity: z.number().nonnegative().max(MAX_NUMERIC_VALUE),
   packaging: z.string().max(MAX_PACKAGING_LENGTH).nullable(),
   supplierIds: z.array(z.string()),
+  sellerIds: z.array(z.string()),
   barcode: z.string().max(MAX_BARCODE_LENGTH).nullable(),
   tax: z.number().min(0).max(MAX_NUMERIC_VALUE).nullable(),
   margin: z.number().min(0).max(MAX_NUMERIC_VALUE).nullable(),

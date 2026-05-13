@@ -41,6 +41,7 @@ export const Form = ({
     control,
     suggestedPrice,
     suppliers,
+    sellers,
     families
   } = useFormHandler(product, setFormProduct, handleClose)
 
@@ -200,6 +201,32 @@ export const Form = ({
                   label="Fornecedores"
                   error={!!errors.supplierIds}
                   helperText={errors.supplierIds?.message}
+                />
+              )}
+              sx={S.FullWidth}
+            />
+          )}
+        />
+        <Controller
+          name="sellerIds"
+          control={control}
+          render={({ field }) => (
+            <Autocomplete
+              multiple
+              disableCloseOnSelect
+              options={sellers.map((s) => s.id)}
+              getOptionLabel={(id) =>
+                sellers.find((s) => s.id === id)?.name ?? id
+              }
+              isOptionEqualToValue={(option, value) => option === value}
+              value={field.value}
+              onChange={(_, newValue) => field.onChange(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Vendedores"
+                  error={!!errors.sellerIds}
+                  helperText={errors.sellerIds?.message}
                 />
               )}
               sx={S.FullWidth}

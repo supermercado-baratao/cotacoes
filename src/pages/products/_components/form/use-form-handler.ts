@@ -13,7 +13,8 @@ export const useFormHandler = (
   setFormProduct: (product: TProduct | null) => void,
   handleClose: () => void
 ) => {
-  const { createProduct, updateProduct, suppliers, families } = useAppStore()
+  const { createProduct, updateProduct, suppliers, sellers, families } =
+    useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
@@ -24,6 +25,7 @@ export const useFormHandler = (
       quantity: product?.quantity ?? 0,
       packaging: product?.packaging ?? null,
       supplierIds: product?.supplierIds ?? [],
+      sellerIds: product?.sellerIds ?? [],
       barcode: product?.barcode ?? null,
       tax: product?.tax ?? 0,
       margin: product?.margin ?? 0,
@@ -49,12 +51,28 @@ export const useFormHandler = (
     reset(defaultValues)
   }, [defaultValues, reset])
 
-  const [purchasePrice, tax, margin] = useWatch({
+  const [purchasePrice, tax, margin, supplierIds, sellerIds] = useWatch({
     control,
-    name: ['purchasePrice', 'tax', 'margin']
+    name: ['purchasePrice', 'tax', 'margin', 'supplierIds', 'sellerIds']
   })
 
   const suggestedPrice = calcSuggestedPrice({ purchasePrice, tax, margin })
+
+  const filteredSuppliers = useMemo(() => {
+    const allSuppliers = suppliers ?? []
+    if (!sellerIds?.length) return allSuppliers
+    return allSuppliers.filter((s) =>
+      s.sellerIds.some((id) => sellerIds.includes(id))
+    )
+  }, [suppliers, sellerIds])
+
+  const filteredSellers = useMemo(() => {
+    const allSellers = sellers ?? []
+    if (!supplierIds?.length) return allSellers
+    return allSellers.filter((s) =>
+      s.supplierIds.some((id) => supplierIds.includes(id))
+    )
+  }, [sellers, supplierIds])
 
   const onSubmit = handleSubmit((data) => {
     if (product) {
@@ -72,7 +90,8 @@ export const useFormHandler = (
     errors,
     control,
     suggestedPrice,
-    suppliers: suppliers ?? [],
+    suppliers: filteredSuppliers,
+    sellers: filteredSellers,
     families: families ?? []
   }
 }
