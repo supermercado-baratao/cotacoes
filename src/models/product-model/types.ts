@@ -4,14 +4,14 @@ export type TProduct = {
   price: number
   purchasePrice: number
   quantity: number
-  packaging?: string
-  supplier?: string
-  barcode?: string
-  tax?: number
-  margin?: number
-  observation?: string
-  expirationDate?: string
-  family?: string
-  updatedAt: number
+  packaging: string | null
+  barcode: string | null
+  tax: number | null
+  margin: number | null
+  observation: string | null
+  expirationDate: string | null
+  familyId: string | null
+  supplierIds: string[]
   createdAt: number
+  updatedAt: number
 }
