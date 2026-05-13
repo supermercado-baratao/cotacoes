@@ -2,6 +2,7 @@ import {
   Business,
   Category,
   Inventory2,
+  People,
   type SvgIconComponent
 } from '@mui/icons-material'
 
@@ -14,5 +15,6 @@ type TNavItem = {
 export const navItems: TNavItem[] = [
   { label: 'Produtos', path: '/products', icon: Inventory2 },
   { label: 'Fornecedores', path: '/suppliers', icon: Business },
+  { label: 'Vendedores', path: '/sellers', icon: People },
   { label: 'Famílias', path: '/families', icon: Category }
 ]
