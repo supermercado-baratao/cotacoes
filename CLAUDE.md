@@ -1,0 +1,270 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Sobre o projeto
+
+Aplicação web para gerenciamento de cotações e controle de pedidos para supermercados. Stack: React 19 + TypeScript + Vite + MUI + Firebase Firestore.
+
+## Commands
+
+```bash
+pnpm dev              # start development server
+pnpm build            # production build (tsc + vite build)
+pnpm test             # run tests once
+pnpm test:watch       # run tests in watch mode
+pnpm eslint:check     # lint check
+pnpm eslint:fix       # auto-fix lint issues
+pnpm prettier:fix     # format code
+pnpm generate         # generate new component via plop
+```
+
+To run a single test file:
+
+```bash
+pnpm vitest run src/tests/app.test.tsx
+```
+
+## Environment Setup
+
+Copy `.env.example` to `.env` and fill in Firebase credentials:
+
+```text
+VITE_API_KEY
+VITE_AUTH_DOMAIN
+VITE_PROJECT_ID
+VITE_STORAGE_BUCKET
+VITE_MESSAGING_SENDER_ID
+VITE_APP_ID
+VITE_APP_MEASUREMENT_ID
+```
+
+## Architecture
+
+### Directory Structure
+
+```text
+src/
+├── components/          # Reusable UI components
+│   ├── app-layout/      # Layout wrapper with navigation
+│   └── ui/              # Generic UI primitives (modal, dialog, loader)
+├── infra/               # Infrastructure layer (Firestore access)
+├── models/              # Domain models (entity-specific operations)
+│   └── product-model/   # Example: product CRUD operations
+├── pages/               # Route-level pages
+│   └── products/        # Products page with private components
+│       └── _components/ # Page-private components (not shared)
+├── providers/           # React context providers
+│   └── app-provider/    # Main app orchestrator (React Query + Zustand)
+├── stores/              # Zustand global state stores
+├── themes/              # MUI theme configuration (dark/light)
+├── types/               # TypeScript type definitions
+└── utils/               # Utility functions
+```
+
+### Layers
+
+**`src/infra/`** — database access layer. `database.ts` exposes a generic `database` object with methods (`findMany`, `create`, `update`, `deleteUniqueById`, etc.) over Firestore. All documents automatically receive `id`, `createdAt`, and `updatedAt`.
+
+**`src/models/`** — domain models. Each model (e.g., `productModel`) defines business operations by calling `database` with the Firestore collection path. This is where new entity types are added.
+
+**Example model structure:**
+
+```typescript
+// models/product-model/model.ts
+import { database } from '@/infra'
+import type { TCreateData, TUpdateData } from '@/types'
+
+import { type TProduct } from './types'
+
+const path = 'products'
+
+const create = async (data: TCreateData<TProduct>): Promise<TProduct> => {
+  return database.create({ path, data })
+}
+
+const findMany = async (): Promise<TProduct[]> => {
+  return database.findMany<TProduct>({ path })
+}
+
+const update = async (data: TUpdateData<TProduct>): Promise<TProduct> => {
+  return database.update<TProduct>({ path, data })
+}
+
+const deleteUniqueById = async (id: string): Promise<string> => {
+  return database.deleteUniqueById({ path, id })
+}
+
+export const productModel = {
+  create,
+  findMany,
+  update,
+  deleteUniqueById
+}
+```
+
+**`src/providers/app-provider/`** — central application orchestrator. Uses React Query for data fetching and mutations. Injects mutation functions directly into Zustand store (`useAppStore`) via `useEffect`. This allows any component to trigger mutations through the store without needing React Query hooks.
+
+**`src/stores/`** — global state with Zustand:
+
+- `useAppStore` — application data (products, etc.); mutation functions (`createProduct`, `updateProduct`, `deleteProduct`) are populated by `AppProvider`
+- `useAlertStore` — global snackbar/alert notifications
+- `useCallbackStore` — success/error callbacks registered by components before triggering mutations
+
+### Data Flow
+
+```text
+Component → useAppStore.createProduct() → useMutation (React Query)
+                                         → onSuccess: invalidate query + alert + callbacks
+                                         → onError: alert + callbacks
+```
+
+**Callback pattern** (`useCallbackStore`): Allows a component to register what should happen after a mutation succeeds or fails (e.g., close modal) without coupling the component to the provider.
+
+### Page Pattern Example
+
+**`pages/products/use-products-handler.ts`** — custom hook that encapsulates page logic:
+
+- Manages local UI state (form open/close, item to delete, search)
+- Uses `useAppStore` to access global products and mutations
+- Exposes handlers for user interactions
+
+**`pages/products/_components/form/use-form-handler.ts`** — form-specific logic:
+
+- Uses `react-hook-form` with Zod validation
+- Watches fields to calculate derived values (e.g., suggested price from purchase price + tax + margin)
+- Registers callbacks via `useCallbackStore` for post-mutation actions
+
+### Form Pattern
+
+Forms follow a consistent pattern:
+
+1. **`schema.ts`** — Zod schema with validation rules and exported MAX\_\* constants
+2. **`use-form-handler.ts`** — custom hook for form logic (defaults, validation, submission)
+3. **`style.ts`** — MUI sx properties for styling
+4. **`index.tsx`** — component rendering with MUI components
+
+**Example `use-form-handler.ts` and `useCallbackStore.ts`:**
+
+```typescript
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useMemo } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
+
+import type { TProduct } from '@/models'
+import { useAppStore, useCallbackStore } from '@/stores'
+
+import { calcSuggestedPrice } from '../../utils'
+import { schema, type TSchema } from './schema'
+
+export const useFormHandler = (
+  product: TProduct | null,
+  setFormProduct: (product: TProduct | null) => void,
+  handleClose: () => void
+) => {
+  const { createProduct, updateProduct } = useAppStore()
+  const { setSuccessCallbacks } = useCallbackStore()
+
+  const defaultValues: TSchema = useMemo(
+    () => ({
+      description: product?.description ?? '',
+      price: product?.price ?? 0,
+      purchasePrice: product?.purchasePrice ?? 0,
+      quantity: product?.quantity ?? 0,
+      packaging: product?.packaging ?? '',
+      barcode: product?.barcode ?? '',
+      supplier: product?.supplier ?? '',
+      tax: product?.tax ?? 0,
+      margin: product?.margin ?? 0,
+      observation: product?.observation ?? '',
+      expirationDate: product?.expirationDate ?? '',
+      family: product?.family ?? ''
+    }),
+    [product]
+  )
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors }
+  } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues
+  })
+
+  useEffect(() => {
+    reset(defaultValues)
+  }, [defaultValues, reset])
+
+  const [purchasePrice, tax, margin] = useWatch({
+    control,
+    name: ['purchasePrice', 'tax', 'margin']
+  })
+
+  const suggestedPrice = calcSuggestedPrice({ purchasePrice, tax, margin })
+
+  const onSubmit = handleSubmit((data) => {
+    setSuccessCallbacks([handleClose, () => setFormProduct(null)])
+    if (product) {
+      updateProduct({ ...product, ...data })
+      return
+    }
+    createProduct(data)
+  })
+
+  return { register, onSubmit, errors, control, suggestedPrice }
+}
+```
+
+### Component Generator
+
+```bash
+pnpm generate
+```
+
+Creates `src/components/<name>/index.tsx` and `style.ts`, and automatically updates `src/components/index.ts`.
+
+## Key Utilities
+
+- `formatCurrencyInput` — formats numbers as BRL currency (R$)
+- `selectOnFocus` — selects all text when input receives focus
+
+## Type System
+
+**`src/types/generics.ts`** provides helper types:
+
+- `TCreateData<T>` — omits `id`, `createdAt`, `updatedAt` for create operations
+- `TUpdateData<T>` — requires `id` and partial data for updates
+
+## Conventions
+
+- Path alias `@/` points to `src/`
+- Each module exports via `index.ts` in its folder
+- Component styles go in separate `style.ts` file using `MUI SxProps<Theme>`
+- Text inputs use `textTransform: 'uppercase'` (see `style.ts`)
+- Number inputs have defined `min`/`max` from schema constants
+- Text inputs have defined `maxLength` from schema constants
+- Always use arrow functions
+
+## Commit Convention
+
+Commit messages must be in English and follow this format:
+
+- Use the following semantic prefixes: '🎉 init, ✨ feat, 🐛 fix, 📚 docs, 💎 style, 📦 refactor, 🚀 perf, 🚨 test, 🛠 build, ⚙️ ci, ♻️ chore, 🗑 revert'
+- The message must be imperative and in lowercase.
+- Write the commit body as a list
+- Reference the associated issue by number if exists using `Issue: #<number>` format.
+
+Example:
+
+```text
+✨ feat: add products page
+
+- Create products page
+- Add products table
+- Add products form
+
+Issue: #1
+```
