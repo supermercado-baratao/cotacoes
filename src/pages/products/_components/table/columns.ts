@@ -31,7 +31,15 @@ export const columns: GridColDef<TProduct>[] = [
   {
     field: 'packaging',
     headerName: 'Emb.',
-    valueFormatter: (value: string) => value.toUpperCase()
+    valueFormatter: (value: string | null) => value?.toUpperCase()
+  },
+  {
+    field: 'supplierIds',
+    headerName: 'Fornecedores',
+    width: 130,
+    valueGetter: (_: never, row: TProduct) => row.supplierIds?.length ?? 0,
+    valueFormatter: (value: number) =>
+      value === 1 ? '1 fornecedor' : `${value} fornecedores`
   },
   {
     field: 'suggestedPrice',
@@ -44,6 +52,6 @@ export const columns: GridColDef<TProduct>[] = [
     headerName: 'Observações',
     minWidth: 180,
     flex: 1,
-    valueFormatter: (value: string) => value.toUpperCase()
+    valueFormatter: (value: string | null) => value?.toUpperCase()
   }
 ]

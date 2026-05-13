@@ -1,4 +1,4 @@
-import { DeleteDialog } from '@/components'
+import { DeleteDialog, Loader } from '@/components'
 
 import { Form, Header, Table } from './_components'
 import { useProductsHandler } from './use-products-handler'
@@ -27,11 +27,15 @@ export const Products = () => {
         setSearch={setSearch}
         handleOpenCreate={handleOpenCreate}
       />
-      <Table
-        products={filteredProducts}
-        onEdit={handleOpenEdit}
-        onDelete={handleOpenDelete}
-      />
+      {filteredProducts ? (
+        <Table
+          products={filteredProducts}
+          onEdit={handleOpenEdit}
+          onDelete={handleOpenDelete}
+        />
+      ) : (
+        <Loader />
+      )}
       <Form
         isOpened={isFormOpen}
         product={formProduct}
@@ -41,7 +45,7 @@ export const Products = () => {
       <DeleteDialog
         open={!!productToDelete}
         title="Excluir Produto"
-        item={productToDelete?.description || ''}
+        item={productToDelete?.description ?? ''}
         handleConfirm={handleConfirmDelete}
         handleClose={handleCloseDelete}
       />

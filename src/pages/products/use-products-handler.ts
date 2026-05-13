@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import type { TProduct } from '@/models'
 import { useAppStore } from '@/stores'
@@ -6,14 +6,17 @@ import { useAppStore } from '@/stores'
 import { filterProducts } from './utils'
 
 export const useProductsHandler = () => {
-  const { products, deleteProduct } = useAppStore()
+  const { products, deleteProduct, suppliers } = useAppStore()
 
   const [formProduct, setFormProduct] = useState<TProduct | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<TProduct | null>(null)
   const [search, setSearch] = useState('')
 
-  const filteredProducts = filterProducts(search, products)
+  const filteredProducts = useMemo(
+    () => (products ? filterProducts(search, products, suppliers ?? []) : null),
+    [search, products, suppliers]
+  )
 
   const handleOpenCreate = () => {
     setFormProduct(null)

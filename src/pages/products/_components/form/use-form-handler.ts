@@ -13,7 +13,7 @@ export const useFormHandler = (
   setFormProduct: (product: TProduct | null) => void,
   handleClose: () => void
 ) => {
-  const { createProduct, updateProduct } = useAppStore()
+  const { createProduct, updateProduct, suppliers, families } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
@@ -22,14 +22,14 @@ export const useFormHandler = (
       price: product?.price ?? 0,
       purchasePrice: product?.purchasePrice ?? 0,
       quantity: product?.quantity ?? 0,
-      packaging: product?.packaging ?? '',
-      barcode: product?.barcode ?? '',
-      supplier: product?.supplier ?? '',
+      packaging: product?.packaging ?? null,
+      supplierIds: product?.supplierIds ?? [],
+      barcode: product?.barcode ?? null,
       tax: product?.tax ?? 0,
       margin: product?.margin ?? 0,
-      observation: product?.observation ?? '',
-      expirationDate: product?.expirationDate ?? '',
-      family: product?.family ?? ''
+      observation: product?.observation ?? null,
+      expirationDate: product?.expirationDate ?? null,
+      familyId: product?.familyId ?? null
     }),
     [product]
   )
@@ -57,13 +57,22 @@ export const useFormHandler = (
   const suggestedPrice = calcSuggestedPrice({ purchasePrice, tax, margin })
 
   const onSubmit = handleSubmit((data) => {
-    setSuccessCallbacks([handleClose, () => setFormProduct(null)])
     if (product) {
+      setSuccessCallbacks([handleClose, () => setFormProduct(null)])
       updateProduct({ ...product, ...data })
       return
     }
+    setSuccessCallbacks([handleClose, () => reset(defaultValues)])
     createProduct(data)
   })
 
-  return { register, onSubmit, errors, control, suggestedPrice }
+  return {
+    register,
+    onSubmit,
+    errors,
+    control,
+    suggestedPrice,
+    suppliers: suppliers ?? [],
+    families: families ?? []
+  }
 }

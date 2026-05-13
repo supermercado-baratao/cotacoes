@@ -14,10 +14,6 @@ export const FullWidth: SxProps<Theme> = {
   gridColumn: { sm: '1 / -1' }
 }
 
-export const OneCol: SxProps<Theme> = {
-  gridColumn: { sm: 'span 1' }
-}
-
 export const TwoCol: SxProps<Theme> = {
   gridColumn: { sm: 'span 2' }
 }

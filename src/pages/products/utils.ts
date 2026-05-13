@@ -1,12 +1,22 @@
-import { type TProduct } from '@/models'
+import { type TProduct, type TSupplier } from '@/models'
 
-export const filterProducts = (search: string, products: TProduct[]) => {
+export const filterProducts = (
+  search: string,
+  products: TProduct[],
+  suppliers: TSupplier[]
+) => {
   const lower = search.toLowerCase()
   return products.filter(
     (p) =>
       p.description.toLowerCase().includes(lower) ||
       p.barcode?.toLowerCase().includes(lower) ||
-      p.supplier?.toLowerCase().includes(lower)
+      p.supplierIds?.some((id) => {
+        const supplier = suppliers.find((s) => s.id === id)
+        return (
+          supplier?.tradeName.toLowerCase().includes(lower) ||
+          supplier?.legalName.toLowerCase().includes(lower)
+        )
+      })
   )
 }
 

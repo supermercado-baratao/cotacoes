@@ -1,4 +1,11 @@
-import { Box, Button, InputAdornment, TextField } from '@mui/material'
+import {
+  Autocomplete,
+  Box,
+  Button,
+  InputAdornment,
+  TextField
+} from '@mui/material'
+import { Controller } from 'react-hook-form'
 
 import { CurrencyInput, Modal, type TModalProps } from '@/components'
 import type { TProduct } from '@/models'
@@ -7,11 +14,9 @@ import { formatCurrencyInput, selectOnFocus } from '@/utils'
 import {
   MAX_BARCODE_LENGTH,
   MAX_DESCRIPTION_LENGTH,
-  MAX_FAMILY_LENGTH,
   MAX_NUMERIC_VALUE,
   MAX_OBSERVATION_LENGTH,
-  MAX_PACKAGING_LENGTH,
-  MAX_SUPPLIER_LENGTH
+  MAX_PACKAGING_LENGTH
 } from './schema'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
@@ -29,8 +34,15 @@ export const Form = ({
   handleClose,
   setFormProduct
 }: TFormProps) => {
-  const { register, onSubmit, errors, control, suggestedPrice } =
-    useFormHandler(product, setFormProduct, handleClose)
+  const {
+    register,
+    onSubmit,
+    errors,
+    control,
+    suggestedPrice,
+    suppliers,
+    families
+  } = useFormHandler(product, setFormProduct, handleClose)
 
   const title = product ? 'Editar Produto' : 'Novo Produto'
 
@@ -44,11 +56,7 @@ export const Form = ({
           helperText={errors.description?.message}
           sx={S.FullWidth}
           onFocus={selectOnFocus}
-          slotProps={{
-            htmlInput: {
-              maxLength: MAX_DESCRIPTION_LENGTH
-            }
-          }}
+          slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
         />
         <TextField
           {...register('packaging')}
@@ -57,24 +65,31 @@ export const Form = ({
           helperText={errors.packaging?.message}
           sx={S.TwoCol}
           onFocus={selectOnFocus}
-          slotProps={{
-            htmlInput: {
-              maxLength: MAX_PACKAGING_LENGTH
-            }
-          }}
+          slotProps={{ htmlInput: { maxLength: MAX_PACKAGING_LENGTH } }}
         />
-        <TextField
-          {...register('family')}
-          label="Família"
-          error={!!errors.family}
-          helperText={errors.family?.message}
-          sx={S.FourCol}
-          onFocus={selectOnFocus}
-          slotProps={{
-            htmlInput: {
-              maxLength: MAX_FAMILY_LENGTH
-            }
-          }}
+        <Controller
+          name="familyId"
+          control={control}
+          render={({ field }) => (
+            <Autocomplete
+              options={families.map((f) => f.id)}
+              getOptionLabel={(id) =>
+                families.find((f) => f.id === id)?.description ?? id
+              }
+              isOptionEqualToValue={(option, value) => option === value}
+              value={field.value ?? null}
+              onChange={(_, newValue) => field.onChange(newValue ?? undefined)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Família"
+                  error={!!errors.familyId}
+                  helperText={errors.familyId?.message}
+                />
+              )}
+              sx={S.FourCol}
+            />
+          )}
         />
         <CurrencyInput
           name="price"
@@ -102,12 +117,7 @@ export const Form = ({
           helperText={errors.quantity?.message}
           sx={S.TwoCol}
           onFocus={selectOnFocus}
-          slotProps={{
-            htmlInput: {
-              min: 0,
-              max: MAX_NUMERIC_VALUE
-            }
-          }}
+          slotProps={{ htmlInput: { min: 0, max: MAX_NUMERIC_VALUE } }}
         />
         <TextField
           {...register('tax', { valueAsNumber: true })}
@@ -119,10 +129,7 @@ export const Form = ({
           onFocus={selectOnFocus}
           slotProps={{
             input: { endAdornment: percentageAdornment },
-            htmlInput: {
-              min: 0,
-              max: MAX_NUMERIC_VALUE
-            }
+            htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
           }}
         />
         <TextField
@@ -135,10 +142,7 @@ export const Form = ({
           onFocus={selectOnFocus}
           slotProps={{
             input: { endAdornment: percentageAdornment },
-            htmlInput: {
-              min: 0,
-              max: MAX_NUMERIC_VALUE
-            }
+            htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
           }}
         />
         <TextField
@@ -162,14 +166,12 @@ export const Form = ({
           helperText={errors.barcode?.message}
           sx={S.FourCol}
           onFocus={selectOnFocus}
-          slotProps={{
-            htmlInput: {
-              maxLength: MAX_BARCODE_LENGTH
-            }
-          }}
+          slotProps={{ htmlInput: { maxLength: MAX_BARCODE_LENGTH } }}
         />
         <TextField
-          {...register('expirationDate')}
+          {...register('expirationDate', {
+            setValueAs: (v: string) => (v === '' ? null : v)
+          })}
           label="Data de Validade"
           type="date"
           error={!!errors.expirationDate}
@@ -178,18 +180,31 @@ export const Form = ({
           onFocus={selectOnFocus}
           slotProps={{ inputLabel: { shrink: true } }}
         />
-        <TextField
-          {...register('supplier')}
-          label="Fornecedor"
-          error={!!errors.supplier}
-          helperText={errors.supplier?.message}
-          sx={S.FullWidth}
-          onFocus={selectOnFocus}
-          slotProps={{
-            htmlInput: {
-              maxLength: MAX_SUPPLIER_LENGTH
-            }
-          }}
+        <Controller
+          name="supplierIds"
+          control={control}
+          render={({ field }) => (
+            <Autocomplete
+              multiple
+              disableCloseOnSelect
+              options={suppliers.map((s) => s.id)}
+              getOptionLabel={(id) =>
+                suppliers.find((s) => s.id === id)?.tradeName ?? id
+              }
+              isOptionEqualToValue={(option, value) => option === value}
+              value={field.value}
+              onChange={(_, newValue) => field.onChange(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Fornecedores"
+                  error={!!errors.supplierIds}
+                  helperText={errors.supplierIds?.message}
+                />
+              )}
+              sx={S.FullWidth}
+            />
+          )}
         />
         <TextField
           {...register('observation')}
@@ -200,11 +215,7 @@ export const Form = ({
           helperText={errors.observation?.message}
           sx={S.FullWidth}
           onFocus={selectOnFocus}
-          slotProps={{
-            htmlInput: {
-              maxLength: MAX_OBSERVATION_LENGTH
-            }
-          }}
+          slotProps={{ htmlInput: { maxLength: MAX_OBSERVATION_LENGTH } }}
         />
         <Box sx={S.Actions}>
           <Button onClick={handleClose}>Cancelar</Button>
