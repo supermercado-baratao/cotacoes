@@ -1,7 +1,7 @@
 import { useQueries } from '@tanstack/react-query'
 import { useEffect } from 'react'
 
-import { productModel } from '@/models'
+import { familyModel, productModel, sellerModel, supplierModel } from '@/models'
 import { useAlertStore } from '@/stores'
 
 export const useDataFetch = () => {
@@ -9,30 +9,31 @@ export const useDataFetch = () => {
 
   const queries = useQueries({
     queries: [
-      {
-        queryKey: ['products'],
-        queryFn: productModel.findMany
-      }
+      { queryKey: ['products'], queryFn: productModel.findMany },
+      { queryKey: ['suppliers'], queryFn: supplierModel.findMany },
+      { queryKey: ['sellers'], queryFn: sellerModel.findMany },
+      { queryKey: ['families'], queryFn: familyModel.findMany }
     ]
   })
 
-  const [{ data: products }] = queries
+  const [
+    { data: products },
+    { data: suppliers },
+    { data: sellers },
+    { data: families }
+  ] = queries
 
   const isError = queries.some((query) => query.isError)
-  const errors = queries.filter((query) => query.error)
 
   useEffect(() => {
     if (isError) {
-      console.error(errors)
       alert({
         severity: 'error',
         title: 'Erro ao buscar dados',
         description: 'Atualize a página ou tente novamente mais tarde'
       })
     }
-  }, [isError, errors, alert])
+  }, [isError, alert])
 
-  return {
-    products
-  }
+  return { products, suppliers, sellers, families }
 }

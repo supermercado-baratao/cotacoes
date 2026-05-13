@@ -19,8 +19,7 @@ export const useProductMutation = () => {
       alert({ severity: 'success', title: 'Produto criado com sucesso!' })
       handleSuccessCallbacks()
     },
-    onError: (error) => {
-      console.error(error)
+    onError: () => {
       alert({ severity: 'error', title: 'Erro ao criar produto' })
       handleErrorCallbacks()
     }
@@ -33,8 +32,7 @@ export const useProductMutation = () => {
       alert({ severity: 'success', title: 'Produto atualizado com sucesso!' })
       handleSuccessCallbacks()
     },
-    onError: (error) => {
-      console.error(error)
+    onError: () => {
       alert({ severity: 'error', title: 'Erro ao atualizar produto' })
       handleErrorCallbacks()
     }
@@ -47,8 +45,7 @@ export const useProductMutation = () => {
       alert({ severity: 'success', title: 'Produto excluído com sucesso!' })
       handleSuccessCallbacks()
     },
-    onError: (error) => {
-      console.error(error)
+    onError: () => {
       alert({ severity: 'error', title: 'Erro ao excluir produto' })
       handleErrorCallbacks()
     }
