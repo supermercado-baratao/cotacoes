@@ -2,7 +2,7 @@ import { Add } from '@mui/icons-material'
 import {
   Autocomplete as MuiAutocomplete,
   Box,
-  IconButton,
+  Button,
   type SxProps,
   TextField,
   type Theme,
@@ -47,10 +47,10 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
   sx
 }: TProps<TOption, TFieldValues>) => (
   <Box
-    sx={[
-      { display: 'flex', alignItems: 'flex-start', gap: 1 },
-      ...(Array.isArray(sx) ? sx : sx ? [sx] : [])
-    ]}
+    sx={{
+      ...{ display: 'flex', alignItems: 'stretch', gap: 0.5 },
+      ...sx
+    }}
   >
     <Controller
       name={name}
@@ -95,9 +95,15 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
     />
     {onClickAdd && (
       <Tooltip title={addLabel}>
-        <IconButton onClick={onClickAdd} sx={{ mt: 1 }}>
+        <Button
+          variant="contained"
+          color="inherit"
+          onClick={onClickAdd}
+          size="small"
+          sx={{ minWidth: 'auto' }}
+        >
           <Add />
-        </IconButton>
+        </Button>
       </Tooltip>
     )}
   </Box>
