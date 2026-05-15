@@ -2,11 +2,12 @@ import {
   DeleteDialog,
   FamilyForm,
   Loader,
+  PageHeader,
   SellerForm,
   SupplierForm
 } from '@/components'
 
-import { Form, Header, Table } from './_components'
+import { Form, Table } from './_components'
 import { useProductsHandler } from './use-products-handler'
 
 export const Products = () => {
@@ -30,7 +31,10 @@ export const Products = () => {
 
   return (
     <>
-      <Header
+      <PageHeader
+        title="Produtos"
+        buttonLabel="Novo Produto"
+        searchPlaceholder="Buscar produto..."
         search={search}
         setSearch={setSearch}
         handleOpenCreate={handleOpenCreate}

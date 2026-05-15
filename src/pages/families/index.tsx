@@ -1,6 +1,6 @@
-import { DeleteDialog, FamilyForm, Loader } from '@/components'
+import { DeleteDialog, FamilyForm, Loader, PageHeader } from '@/components'
 
-import { Header, Table } from './_components'
+import { Table } from './_components'
 import { useFamiliesHandler } from './use-families-handler'
 
 export const Families = () => {
@@ -22,7 +22,10 @@ export const Families = () => {
 
   return (
     <>
-      <Header
+      <PageHeader
+        title="Famílias"
+        buttonLabel="Nova Família"
+        searchPlaceholder="Buscar família..."
         search={search}
         setSearch={setSearch}
         handleOpenCreate={handleOpenCreate}

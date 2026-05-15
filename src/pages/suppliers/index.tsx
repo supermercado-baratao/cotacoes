@@ -1,7 +1,12 @@
-import { DeleteDialog, Loader, SellerForm } from '@/components'
-import { SupplierForm } from '@/components/forms/supplier-form'
+import {
+  DeleteDialog,
+  Loader,
+  PageHeader,
+  SellerForm,
+  SupplierForm
+} from '@/components'
 
-import { Header, Table } from './_components'
+import { Table } from './_components'
 import { useSuppliersHandler } from './use-suppliers-handler'
 
 export const Suppliers = () => {
@@ -25,7 +30,10 @@ export const Suppliers = () => {
 
   return (
     <>
-      <Header
+      <PageHeader
+        title="Fornecedores"
+        buttonLabel="Novo Fornecedor"
+        searchPlaceholder="Buscar fornecedor..."
         search={search}
         setSearch={setSearch}
         handleOpenCreate={handleOpenCreate}

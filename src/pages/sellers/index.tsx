@@ -1,6 +1,12 @@
-import { DeleteDialog, Loader, SellerForm, SupplierForm } from '@/components'
+import {
+  DeleteDialog,
+  Loader,
+  PageHeader,
+  SellerForm,
+  SupplierForm
+} from '@/components'
 
-import { Header, Table } from './_components'
+import { Table } from './_components'
 import { useSellersHandler } from './use-sellers-handler'
 
 export const Sellers = () => {
@@ -24,7 +30,10 @@ export const Sellers = () => {
 
   return (
     <>
-      <Header
+      <PageHeader
+        title="Vendedores"
+        buttonLabel="Novo Vendedor"
+        searchPlaceholder="Buscar vendedor..."
         search={search}
         setSearch={setSearch}
         handleOpenCreate={handleOpenCreate}

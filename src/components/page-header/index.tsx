@@ -9,32 +9,38 @@ import {
 
 import * as S from './style'
 
-type THeaderProps = {
+type TPageHeaderProps = {
+  title: string
+  buttonLabel: string
+  searchPlaceholder: string
   search: string
   setSearch: (search: string) => void
   handleOpenCreate: () => void
 }
 
-export const Header = ({
+export const PageHeader = ({
+  title,
+  buttonLabel,
+  searchPlaceholder,
   search,
   setSearch,
   handleOpenCreate
-}: THeaderProps) => {
+}: TPageHeaderProps) => {
   return (
     <Box component="header" sx={S.Wrapper}>
       <Typography component="h1" variant="h5">
-        Produtos
+        {title}
       </Typography>
       <Button
         variant="contained"
         startIcon={<Add />}
         onClick={handleOpenCreate}
       >
-        Novo Produto
+        {buttonLabel}
       </Button>
       <TextField
         size="small"
-        placeholder="Buscar produto..."
+        placeholder={searchPlaceholder}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         slotProps={{
