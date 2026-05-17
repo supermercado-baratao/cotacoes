@@ -42,8 +42,8 @@ export const Products = () => {
       {filteredProducts ? (
         <Table
           products={filteredProducts}
-          onEdit={handleOpenEdit}
-          onDelete={handleOpenDelete}
+          handleEdit={handleOpenEdit}
+          handleDelete={handleOpenDelete}
         />
       ) : (
         <Loader />

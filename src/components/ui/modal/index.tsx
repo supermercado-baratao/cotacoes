@@ -12,7 +12,8 @@ import * as S from './style'
 
 export type TModalProps = {
   isOpened: boolean
-  title: string
+  title: string | { component: ReactNode }
+
   children: ReactNode
   handleClose(): void
 }
@@ -27,9 +28,13 @@ export const Modal = ({
     <MuiModal sx={S.Wrapper} open={isOpened} onClose={handleClose}>
       <Paper sx={S.Paper}>
         <Box sx={S.Header}>
-          <Typography component="h2" variant="h5">
-            {title}
-          </Typography>
+          {typeof title === 'string' ? (
+            <Typography component="h2" variant="h5">
+              {title}
+            </Typography>
+          ) : (
+            title.component
+          )}
           <IconButton onClick={handleClose}>
             <Close />
           </IconButton>

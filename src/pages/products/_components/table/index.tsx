@@ -5,15 +5,18 @@ import { useMemo } from 'react'
 
 import type { TProduct } from '@/models'
 
-import { columns } from './columns'
+import { HistoryModal } from './history-modal'
+import { useTableHandler } from './use-table-handler'
 
 type TTableProps = {
   products: TProduct[]
-  onEdit: (product: TProduct) => void
-  onDelete: (product: TProduct) => void
+  handleEdit: (product: TProduct) => void
+  handleDelete: (product: TProduct) => void
 }
 
-export const Table = ({ products, onEdit, onDelete }: TTableProps) => {
+export const Table = ({ products, handleEdit, handleDelete }: TTableProps) => {
+  const { columns, historySelection, handleHistoryClose } = useTableHandler()
+
   const actionColumn = useMemo(
     () => ({
       field: 'actions',
@@ -25,30 +28,37 @@ export const Table = ({ products, onEdit, onDelete }: TTableProps) => {
           key="edit"
           icon={<Edit />}
           label="Editar"
-          onClick={() => onEdit(row)}
+          onClick={() => handleEdit(row)}
         />,
         <GridActionsCellItem
           key="delete"
           icon={<Delete />}
           label="Excluir"
-          onClick={() => onDelete(row)}
+          onClick={() => handleDelete(row)}
         />
       ]
     }),
-    [onEdit, onDelete]
+    [handleEdit, handleDelete]
   )
 
   return (
-    <div>
-      <DataGrid
-        columns={[...columns, actionColumn]}
-        rows={products}
-        pageSizeOptions={[25, 50, 100]}
-        initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
-        localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
-        sx={{ textAlign: 'center' }}
-        disableRowSelectionOnClick
+    <>
+      <div>
+        <DataGrid
+          columns={[...columns, actionColumn]}
+          rows={products}
+          pageSizeOptions={[25, 50, 100]}
+          initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
+          localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
+          sx={{ textAlign: 'center' }}
+          disableRowSelectionOnClick
+        />
+      </div>
+      <HistoryModal
+        product={historySelection?.product ?? null}
+        field={historySelection?.field ?? null}
+        handleClose={handleHistoryClose}
       />
-    </div>
+    </>
   )
 }

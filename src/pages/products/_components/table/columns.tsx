@@ -1,11 +1,14 @@
 import type { GridColDef } from '@mui/x-data-grid'
 
-import type { TProduct } from '@/models'
-import { formatCurrency } from '@/utils'
+import type { TProduct, TProductHistoryType } from '@/models'
+import { formatCurrency, formatNumericValue } from '@/utils'
 
 import { calcSuggestedPrice } from '../../utils'
+import { HistoryCell } from './history-cell'
 
-export const columns: GridColDef<TProduct>[] = [
+export const getColumns = (
+  handleHistoryClick: (product: TProduct, field: TProductHistoryType) => void
+): GridColDef<TProduct>[] => [
   {
     field: 'description',
     headerName: 'Descrição',
@@ -16,17 +19,41 @@ export const columns: GridColDef<TProduct>[] = [
   {
     field: 'price',
     headerName: 'Preço',
-    valueFormatter: (value: number) => formatCurrency(value)
+    minWidth: 160,
+    renderCell: ({ row }) => (
+      <HistoryCell
+        currentValue={row.price}
+        lastValue={row.lastPrice}
+        formatValue={formatCurrency}
+        handleClick={() => handleHistoryClick(row, 'price')}
+      />
+    )
   },
   {
     field: 'purchasePrice',
     headerName: 'Custo',
-    valueFormatter: (value: number) => formatCurrency(value)
+    minWidth: 160,
+    renderCell: ({ row }) => (
+      <HistoryCell
+        currentValue={row.purchasePrice}
+        lastValue={row.lastPurchasePrice}
+        formatValue={formatCurrency}
+        handleClick={() => handleHistoryClick(row, 'purchasePrice')}
+      />
+    )
   },
   {
     field: 'quantity',
     headerName: 'Qtd.',
-    valueFormatter: (value: number) => value
+    minWidth: 120,
+    renderCell: ({ row }) => (
+      <HistoryCell
+        currentValue={row.quantity}
+        lastValue={row.lastQuantity}
+        formatValue={formatNumericValue}
+        handleClick={() => handleHistoryClick(row, 'quantity')}
+      />
+    )
   },
   {
     field: 'packaging',
