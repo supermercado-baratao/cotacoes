@@ -228,7 +228,6 @@ Creates `src/components/<name>/index.tsx` and `style.ts`, and automatically upda
 
 ## Key Utilities
 
-- `formatCurrencyInput` — formats numbers as BRL currency (R$)
 - `selectOnFocus` — selects all text when input receives focus
 
 ## Type System

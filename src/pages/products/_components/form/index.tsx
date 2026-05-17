@@ -8,7 +8,7 @@ import {
 } from '@/components'
 import type { TProduct } from '@/models'
 import type { TQuickCreate } from '@/pages/products/types'
-import { formatCurrencyInput, selectOnFocus } from '@/utils'
+import { formatNumericValue, selectOnFocus } from '@/utils'
 
 import {
   MAX_BARCODE_LENGTH,
@@ -138,7 +138,7 @@ export const Form = ({
         />
         <TextField
           label="Preço Sugerido"
-          value={formatCurrencyInput(suggestedPrice ?? 0)}
+          value={formatNumericValue(suggestedPrice ?? 0)}
           disabled
           sx={S.TwoCol}
           onFocus={selectOnFocus}

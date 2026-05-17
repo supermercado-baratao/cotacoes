@@ -1,6 +1,6 @@
 import IMask from 'imask'
 
-const currencyMaskOpts = {
+const numericMaskOpts = {
   mask: Number,
   scale: 2,
   thousandsSeparator: '.',
@@ -10,16 +10,10 @@ const currencyMaskOpts = {
   padFractionalZeros: true
 }
 
-const currencyInputPipe = IMask.createPipe(
-  currencyMaskOpts,
+const numericInputPipe = IMask.createPipe(
+  numericMaskOpts,
   IMask.PIPE_TYPE.TYPED,
   IMask.PIPE_TYPE.MASKED
-)
-
-const currencyParsePipe = IMask.createPipe(
-  currencyMaskOpts,
-  IMask.PIPE_TYPE.MASKED,
-  IMask.PIPE_TYPE.TYPED
 )
 
 const cnpjPipe = IMask.createPipe(
@@ -42,10 +36,7 @@ export const formatPhone = (phone: string): string => {
 }
 
 export const formatCurrency = (value: number): string =>
-  `R$ ${currencyInputPipe(value ?? 0)}`
+  `R$ ${numericInputPipe(value ?? 0)}`
 
-export const parseCurrencyInput = (value: string): number =>
-  (currencyParsePipe(value) as number) ?? 0
-
-export const formatCurrencyInput = (value: number): string =>
-  currencyInputPipe(value ?? 0)
+export const formatNumericValue = (value: number): string =>
+  numericInputPipe(value ?? 0)
