@@ -1,5 +1,6 @@
 import { useIsFetching, useIsMutating } from '@tanstack/react-query'
 import { useEffect } from 'react'
+import { useShallow } from 'zustand/shallow'
 
 import { useAppStore } from '@/stores'
 
@@ -10,12 +11,24 @@ import { useSellerMutation } from './use-seller-mutation'
 import { useSupplierMutation } from './use-supplier-mutation'
 
 export const useAppHandler = () => {
-  const setProducts = useAppStore((state) => state.setProducts)
-  const setSuppliers = useAppStore((state) => state.setSuppliers)
-  const setSellers = useAppStore((state) => state.setSellers)
-  const setFamilies = useAppStore((state) => state.setFamilies)
+  const {
+    setProducts,
+    setSuppliers,
+    setSellers,
+    setFamilies,
+    setProductHistory
+  } = useAppStore(
+    useShallow((state) => ({
+      setProducts: state.setProducts,
+      setSuppliers: state.setSuppliers,
+      setSellers: state.setSellers,
+      setFamilies: state.setFamilies,
+      setProductHistory: state.setProductHistory
+    }))
+  )
 
-  const { products, suppliers, sellers, families } = useDataFetch()
+  const { products, productHistory, suppliers, sellers, families } =
+    useDataFetch()
   const { createProduct, updateProduct, deleteProduct } = useProductMutation()
   const { createSupplier, updateSupplier, deleteSupplier } =
     useSupplierMutation()
@@ -29,6 +42,10 @@ export const useAppHandler = () => {
   useEffect(() => {
     if (products) setProducts(products)
   }, [products, setProducts])
+
+  useEffect(() => {
+    if (productHistory) setProductHistory(productHistory)
+  }, [productHistory, setProductHistory])
 
   useEffect(() => {
     if (suppliers) setSuppliers(suppliers)
