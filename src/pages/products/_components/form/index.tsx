@@ -7,15 +7,13 @@ import {
   type TModalProps
 } from '@/components'
 import type { TProduct } from '@/models'
-import type { TQuickCreate } from '@/pages/products/types'
-import { formatNumericValue, selectOnFocus } from '@/utils'
+import { selectOnFocus } from '@/utils'
 
 import {
   MAX_BARCODE_LENGTH,
   MAX_DESCRIPTION_LENGTH,
   MAX_NUMERIC_VALUE,
-  MAX_OBSERVATION_LENGTH,
-  MAX_PACKAGING_LENGTH
+  MAX_OBSERVATION_LENGTH
 } from './schema'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
@@ -23,7 +21,7 @@ import { useFormHandler } from './use-form-handler'
 type TFormProps = {
   product: TProduct | null
   setFormProduct: (product: TProduct | null) => void
-  setQuickCreate: (quickCreate: TQuickCreate) => void
+  setQuickCreateFamily: (quickCreateFamily: boolean) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
@@ -33,18 +31,13 @@ export const Form = ({
   product,
   handleClose,
   setFormProduct,
-  setQuickCreate
+  setQuickCreateFamily
 }: TFormProps) => {
-  const {
-    register,
-    onSubmit,
-    errors,
-    control,
-    suggestedPrice,
-    suppliers,
-    sellers,
-    families
-  } = useFormHandler(product, setFormProduct, handleClose)
+  const { register, onSubmit, errors, control, families } = useFormHandler(
+    product,
+    setFormProduct,
+    handleClose
+  )
 
   const title = product ? 'Editar Produto' : 'Novo Produto'
 
@@ -61,13 +54,13 @@ export const Form = ({
           slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
         />
         <TextField
-          {...register('packaging')}
-          label="Embalagem"
-          error={!!errors.packaging}
-          helperText={errors.packaging?.message}
+          {...register('barcode')}
+          label="Código de Barras"
+          error={!!errors.barcode}
+          helperText={errors.barcode?.message}
           sx={S.TwoCol}
           onFocus={selectOnFocus}
-          slotProps={{ htmlInput: { maxLength: MAX_PACKAGING_LENGTH } }}
+          slotProps={{ htmlInput: { maxLength: MAX_BARCODE_LENGTH } }}
         />
         <Autocomplete
           name="familyId"
@@ -78,9 +71,9 @@ export const Form = ({
           label="Família"
           error={!!errors.familyId}
           helperText={errors.familyId?.message}
-          onClickAdd={() => setQuickCreate('family')}
+          onClickAdd={() => setQuickCreateFamily(true)}
           addLabel="Nova Família"
-          sx={S.AutocompleteRowFourCol}
+          sx={S.FourCol}
         />
         <CurrencyInput
           name="price"
@@ -90,25 +83,6 @@ export const Form = ({
           helperText={errors.price?.message}
           sx={S.TwoCol}
           onFocus={selectOnFocus}
-        />
-        <CurrencyInput
-          name="purchasePrice"
-          control={control}
-          label="Preço de Compra"
-          error={!!errors.purchasePrice}
-          helperText={errors.purchasePrice?.message}
-          sx={S.TwoCol}
-          onFocus={selectOnFocus}
-        />
-        <TextField
-          {...register('quantity', { valueAsNumber: true })}
-          label="Quantidade"
-          type="number"
-          error={!!errors.quantity}
-          helperText={errors.quantity?.message}
-          sx={S.TwoCol}
-          onFocus={selectOnFocus}
-          slotProps={{ htmlInput: { min: 0, max: MAX_NUMERIC_VALUE } }}
         />
         <TextField
           {...register('tax', { valueAsNumber: true })}
@@ -137,77 +111,12 @@ export const Form = ({
           }}
         />
         <TextField
-          label="Preço Sugerido"
-          value={formatNumericValue(suggestedPrice ?? 0)}
-          disabled
-          sx={S.TwoCol}
-          onFocus={selectOnFocus}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">R$</InputAdornment>
-              )
-            }
-          }}
-        />
-        <TextField
-          {...register('barcode')}
-          label="Código de Barras"
-          error={!!errors.barcode}
-          helperText={errors.barcode?.message}
-          sx={S.FourCol}
-          onFocus={selectOnFocus}
-          slotProps={{ htmlInput: { maxLength: MAX_BARCODE_LENGTH } }}
-        />
-        <TextField
-          {...register('expirationDate', {
-            setValueAs: (v: string) => (v === '' ? null : v)
-          })}
-          label="Data de Validade"
-          type="date"
-          error={!!errors.expirationDate}
-          helperText={errors.expirationDate?.message}
-          sx={S.TwoCol}
-          onFocus={selectOnFocus}
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-        <Autocomplete
-          name="supplierIds"
-          control={control}
-          options={suppliers}
-          getOptionLabel={(s) => s.tradeName}
-          getOptionValue={(s) => s.id}
-          label="Fornecedores"
-          error={!!errors.supplierIds}
-          helperText={errors.supplierIds?.message}
-          multiple
-          disableCloseOnSelect
-          onClickAdd={() => setQuickCreate('supplier')}
-          addLabel="Novo Fornecedor"
-          sx={S.AutocompleteRowFull}
-        />
-        <Autocomplete
-          name="sellerIds"
-          control={control}
-          options={sellers}
-          getOptionLabel={(s) => s.name}
-          getOptionValue={(s) => s.id}
-          label="Vendedores"
-          error={!!errors.sellerIds}
-          helperText={errors.sellerIds?.message}
-          multiple
-          disableCloseOnSelect
-          onClickAdd={() => setQuickCreate('seller')}
-          addLabel="Novo Vendedor"
-          sx={S.AutocompleteRowFull}
-        />
-        <TextField
-          {...register('observation')}
+          {...register('observations')}
           label="Observações"
           multiline
           minRows={3}
-          error={!!errors.observation}
-          helperText={errors.observation?.message}
+          error={!!errors.observations}
+          helperText={errors.observations?.message}
           sx={S.FullWidth}
           onFocus={selectOnFocus}
           slotProps={{ htmlInput: { maxLength: MAX_OBSERVATION_LENGTH } }}
