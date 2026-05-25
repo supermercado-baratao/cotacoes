@@ -11,24 +11,16 @@ import { useSellerMutation } from './use-seller-mutation'
 import { useSupplierMutation } from './use-supplier-mutation'
 
 export const useAppHandler = () => {
-  const {
-    setProducts,
-    setSuppliers,
-    setSellers,
-    setFamilies,
-    setProductHistory
-  } = useAppStore(
+  const { setProducts, setSuppliers, setSellers, setFamilies } = useAppStore(
     useShallow((state) => ({
       setProducts: state.setProducts,
       setSuppliers: state.setSuppliers,
       setSellers: state.setSellers,
-      setFamilies: state.setFamilies,
-      setProductHistory: state.setProductHistory
+      setFamilies: state.setFamilies
     }))
   )
 
-  const { products, productHistory, suppliers, sellers, families } =
-    useDataFetch()
+  const { products, suppliers, sellers, families } = useDataFetch()
   const { createProduct, updateProduct, deleteProduct } = useProductMutation()
   const { createSupplier, updateSupplier, deleteSupplier } =
     useSupplierMutation()
@@ -42,10 +34,6 @@ export const useAppHandler = () => {
   useEffect(() => {
     if (products) setProducts(products)
   }, [products, setProducts])
-
-  useEffect(() => {
-    if (productHistory) setProductHistory(productHistory)
-  }, [productHistory, setProductHistory])
 
   useEffect(() => {
     if (suppliers) setSuppliers(suppliers)

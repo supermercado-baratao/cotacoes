@@ -1,19 +1,7 @@
 import { create } from 'zustand'
 
-import type {
-  TFamily,
-  TProduct,
-  TProductHistory,
-  TProductHistoryType,
-  TSeller,
-  TSupplier
-} from '@/models'
+import type { TFamily, TProduct, TSeller, TSupplier } from '@/models'
 import type { TCreateData, TUpdateData } from '@/types'
-
-type THistorySelection = {
-  productId: string
-  field: TProductHistoryType
-}
 
 type TAppStore = {
   products: TProduct[] | null
@@ -21,11 +9,6 @@ type TAppStore = {
   createProduct: (product: TCreateData<TProduct>) => void
   updateProduct: (product: TUpdateData<TProduct>) => void
   deleteProduct: (id: string) => void
-
-  historySelection: THistorySelection | null
-  setHistorySelection: (selection: THistorySelection | null) => void
-  productHistory: TProductHistory[] | null
-  setProductHistory: (history: TProductHistory[] | null) => void
 
   suppliers: TSupplier[] | null
   setSuppliers: (suppliers: TSupplier[]) => void
@@ -52,11 +35,6 @@ export const useAppStore = create<TAppStore>((set) => ({
   createProduct: () => {},
   updateProduct: () => {},
   deleteProduct: () => {},
-
-  historySelection: null,
-  setHistorySelection: (historySelection) => set({ historySelection }),
-  productHistory: null,
-  setProductHistory: (productHistory) => set({ productHistory }),
 
   suppliers: null,
   setSuppliers: (suppliers) => set({ suppliers }),
