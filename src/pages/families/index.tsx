@@ -11,13 +11,13 @@ export const Families = () => {
     hasFamilies,
     search,
     setSearch,
-    handleOpenCreate,
+    handleFormOpen,
     filteredFamilies,
-    handleOpenEdit,
-    handleOpenDelete,
-    handleCloseForm,
-    handleCloseDelete,
-    handleConfirmDelete,
+    handleFormEdit,
+    handleDeleteDialogOpen,
+    handleFormClose,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm,
     isFormOpen,
     setFormFamily,
     formFamily,
@@ -32,15 +32,15 @@ export const Families = () => {
         searchPlaceholder="Buscar família..."
         search={search}
         setSearch={setSearch}
-        handleOpenCreate={handleOpenCreate}
+        handleFormOpen={handleFormOpen}
       />
       {isFetching ? (
         <Loader />
       ) : hasFamilies ? (
         <Table
           families={filteredFamilies!}
-          onEdit={handleOpenEdit}
-          onDelete={handleOpenDelete}
+          handleEdit={handleFormEdit}
+          handleDelete={handleDeleteDialogOpen}
         />
       ) : (
         <Typography sx={{ mt: 2 }}>
@@ -51,14 +51,14 @@ export const Families = () => {
         isOpened={isFormOpen}
         family={formFamily}
         setFormFamily={setFormFamily}
-        handleClose={handleCloseForm}
+        handleClose={handleFormClose}
       />
       <DeleteDialog
         open={!!familyToDelete}
         title="Excluir Família"
         item={familyToDelete?.description ?? ''}
-        handleConfirm={handleConfirmDelete}
-        handleClose={handleCloseDelete}
+        handleConfirm={handleDeleteDialogConfirm}
+        handleClose={handleDeleteDialogClose}
       />
     </>
   )

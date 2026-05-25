@@ -19,32 +19,32 @@ export const useSellersHandler = () => {
     [search, sellers]
   )
 
-  const handleOpenCreate = () => {
+  const handleFormOpen = () => {
     setFormSeller(null)
     setIsFormOpen(true)
   }
 
-  const handleOpenEdit = (seller: TSeller) => {
+  const handleFormEdit = (seller: TSeller) => {
     setFormSeller(seller)
     setIsFormOpen(true)
   }
 
-  const handleCloseForm = () => {
+  const handleFormClose = () => {
     setIsFormOpen(false)
   }
 
-  const handleOpenDelete = (seller: TSeller) => {
+  const handleDeleteDialogOpen = (seller: TSeller) => {
     setSellerToDelete(seller)
   }
 
-  const handleCloseDelete = () => {
+  const handleDeleteDialogClose = () => {
     setSellerToDelete(null)
   }
 
-  const handleConfirmDelete = () => {
+  const handleDeleteDialogConfirm = () => {
     if (sellerToDelete) {
       deleteSeller(sellerToDelete.id)
-      handleCloseDelete()
+      handleDeleteDialogClose()
     }
   }
 
@@ -56,13 +56,13 @@ export const useSellersHandler = () => {
     hasSellers,
     search,
     setSearch,
-    handleOpenCreate,
+    handleFormOpen,
     filteredSellers,
-    handleOpenEdit,
-    handleOpenDelete,
-    handleCloseForm,
-    handleCloseDelete,
-    handleConfirmDelete,
+    handleFormEdit,
+    handleDeleteDialogOpen,
+    handleFormClose,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm,
     isFormOpen,
     formSeller,
     setFormSeller,

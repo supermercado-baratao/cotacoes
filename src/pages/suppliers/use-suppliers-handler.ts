@@ -21,32 +21,32 @@ export const useSuppliersHandler = () => {
     [search, suppliers]
   )
 
-  const handleOpenCreate = () => {
+  const handleFormOpen = () => {
     setFormSupplier(null)
     setIsFormOpen(true)
   }
 
-  const handleOpenEdit = (supplier: TSupplier) => {
+  const handleFormEdit = (supplier: TSupplier) => {
     setFormSupplier(supplier)
     setIsFormOpen(true)
   }
 
-  const handleCloseForm = () => {
+  const handleFormClose = () => {
     setIsFormOpen(false)
   }
 
-  const handleOpenDelete = (supplier: TSupplier) => {
+  const handleDeleteDialogOpen = (supplier: TSupplier) => {
     setSupplierToDelete(supplier)
   }
 
-  const handleCloseDelete = () => {
+  const handleDeleteDialogClose = () => {
     setSupplierToDelete(null)
   }
 
-  const handleConfirmDelete = () => {
+  const handleDeleteDialogConfirm = () => {
     if (supplierToDelete) {
       deleteSupplier(supplierToDelete.id)
-      handleCloseDelete()
+      handleDeleteDialogClose()
     }
   }
 
@@ -58,13 +58,13 @@ export const useSuppliersHandler = () => {
     hasSuppliers,
     search,
     setSearch,
-    handleOpenCreate,
+    handleFormOpen,
     filteredSuppliers,
-    handleOpenEdit,
-    handleOpenDelete,
-    handleCloseForm,
-    handleCloseDelete,
-    handleConfirmDelete,
+    handleFormEdit,
+    handleDeleteDialogOpen,
+    handleFormClose,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm,
     isFormOpen,
     formSupplier,
     setFormSupplier,

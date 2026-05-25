@@ -71,7 +71,7 @@ export const Form = ({
           label="Família"
           error={!!errors.familyId}
           helperText={errors.familyId?.message}
-          onClickAdd={() => setQuickCreateFamily(true)}
+          handleAddClick={() => setQuickCreateFamily(true)}
           addLabel="Nova Família"
           sx={S.FourCol}
         />

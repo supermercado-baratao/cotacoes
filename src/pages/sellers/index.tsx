@@ -17,13 +17,13 @@ export const Sellers = () => {
     hasSellers,
     search,
     setSearch,
-    handleOpenCreate,
+    handleFormOpen,
     filteredSellers,
-    handleOpenEdit,
-    handleOpenDelete,
-    handleCloseForm,
-    handleCloseDelete,
-    handleConfirmDelete,
+    handleFormEdit,
+    handleDeleteDialogOpen,
+    handleFormClose,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm,
     isFormOpen,
     setFormSeller,
     formSeller,
@@ -40,15 +40,15 @@ export const Sellers = () => {
         searchPlaceholder="Buscar vendedor..."
         search={search}
         setSearch={setSearch}
-        handleOpenCreate={handleOpenCreate}
+        handleFormOpen={handleFormOpen}
       />
       {isFetching ? (
         <Loader />
       ) : hasSellers ? (
         <Table
           sellers={filteredSellers!}
-          onEdit={handleOpenEdit}
-          onDelete={handleOpenDelete}
+          handleEdit={handleFormEdit}
+          handleDelete={handleDeleteDialogOpen}
         />
       ) : (
         <Typography sx={{ mt: 2 }}>
@@ -59,7 +59,7 @@ export const Sellers = () => {
         isOpened={isFormOpen}
         seller={formSeller}
         setFormSeller={setFormSeller}
-        handleClose={handleCloseForm}
+        handleClose={handleFormClose}
         setQuickCreateSupplier={() => setQuickCreateSupplier(true)}
       />
       <SupplierForm
@@ -72,8 +72,8 @@ export const Sellers = () => {
         open={!!sellerToDelete}
         title="Excluir Vendedor"
         item={sellerToDelete?.name ?? ''}
-        handleConfirm={handleConfirmDelete}
-        handleClose={handleCloseDelete}
+        handleConfirm={handleDeleteDialogConfirm}
+        handleClose={handleDeleteDialogClose}
       />
     </>
   )

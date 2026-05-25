@@ -95,7 +95,7 @@ export const SupplierForm = ({
             helperText={errors.sellerIds?.message}
             multiple
             disableCloseOnSelect
-            onClickAdd={
+            handleAddClick={
               setQuickCreateSeller
                 ? () => setQuickCreateSeller(true)
                 : undefined

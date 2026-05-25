@@ -11,13 +11,13 @@ export const Products = () => {
     hasProducts,
     search,
     setSearch,
-    handleOpenCreate,
+    handleFormOpen,
     filteredProducts,
-    handleOpenEdit,
-    handleOpenDelete,
-    handleCloseForm,
-    handleCloseDelete,
-    handleConfirmDelete,
+    handleFormEdit,
+    handleDeleteDialogOpen,
+    handleFormClose,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm,
     isFormOpen,
     formProduct,
     setFormProduct,
@@ -34,15 +34,15 @@ export const Products = () => {
         searchPlaceholder="Buscar produto..."
         search={search}
         setSearch={setSearch}
-        handleOpenCreate={handleOpenCreate}
+        handleFormOpen={handleFormOpen}
       />
       {isFetching ? (
         <Loader />
       ) : hasProducts ? (
         <Table
           products={filteredProducts!}
-          handleEdit={handleOpenEdit}
-          handleDelete={handleOpenDelete}
+          handleEdit={handleFormEdit}
+          handleDelete={handleDeleteDialogOpen}
         />
       ) : (
         <Typography sx={{ mt: 2 }}>
@@ -53,7 +53,7 @@ export const Products = () => {
         isOpened={isFormOpen}
         product={formProduct}
         setFormProduct={setFormProduct}
-        handleClose={handleCloseForm}
+        handleClose={handleFormClose}
         setQuickCreateFamily={setQuickCreateFamily}
       />
       <FamilyForm
@@ -66,8 +66,8 @@ export const Products = () => {
         open={!!productToDelete}
         title="Excluir Produto"
         item={productToDelete?.description ?? ''}
-        handleConfirm={handleConfirmDelete}
-        handleClose={handleCloseDelete}
+        handleConfirm={handleDeleteDialogConfirm}
+        handleClose={handleDeleteDialogClose}
       />
     </>
   )

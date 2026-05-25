@@ -18,32 +18,32 @@ export const useFamiliesHandler = () => {
     [search, families]
   )
 
-  const handleOpenCreate = () => {
+  const handleFormOpen = () => {
     setFormFamily(null)
     setIsFormOpen(true)
   }
 
-  const handleOpenEdit = (family: TFamily) => {
+  const handleFormEdit = (family: TFamily) => {
     setFormFamily(family)
     setIsFormOpen(true)
   }
 
-  const handleCloseForm = () => {
+  const handleFormClose = () => {
     setIsFormOpen(false)
   }
 
-  const handleOpenDelete = (family: TFamily) => {
+  const handleDeleteDialogOpen = (family: TFamily) => {
     setFamilyToDelete(family)
   }
 
-  const handleCloseDelete = () => {
+  const handleDeleteDialogClose = () => {
     setFamilyToDelete(null)
   }
 
-  const handleConfirmDelete = () => {
+  const handleDeleteDialogConfirm = () => {
     if (familyToDelete) {
       deleteFamily(familyToDelete.id)
-      handleCloseDelete()
+      handleDeleteDialogClose()
     }
   }
 
@@ -55,13 +55,13 @@ export const useFamiliesHandler = () => {
     hasFamilies,
     search,
     setSearch,
-    handleOpenCreate,
+    handleFormOpen,
     filteredFamilies,
-    handleOpenEdit,
-    handleOpenDelete,
-    handleCloseForm,
-    handleCloseDelete,
-    handleConfirmDelete,
+    handleFormEdit,
+    handleDeleteDialogOpen,
+    handleFormClose,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm,
     isFormOpen,
     formFamily,
     setFormFamily,

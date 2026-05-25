@@ -26,7 +26,7 @@ type TProps<TOption, TFieldValues extends FieldValues> = {
   helperText?: string
   multiple?: boolean
   disableCloseOnSelect?: boolean
-  onClickAdd?: () => void
+  handleAddClick?: () => void
   addLabel?: string
   sx?: SxProps<Theme>
 }
@@ -42,7 +42,7 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
   helperText,
   multiple = false,
   disableCloseOnSelect,
-  onClickAdd,
+  handleAddClick,
   addLabel,
   sx
 }: TProps<TOption, TFieldValues>) => (
@@ -93,12 +93,12 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
         />
       )}
     />
-    {onClickAdd && (
+    {handleAddClick && (
       <Tooltip title={addLabel}>
         <Button
           variant="contained"
           color="inherit"
-          onClick={onClickAdd}
+          onClick={handleAddClick}
           size="small"
           sx={{ minWidth: 'auto' }}
         >

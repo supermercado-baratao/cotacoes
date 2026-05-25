@@ -19,32 +19,32 @@ export const useProductsHandler = () => {
     [search, products]
   )
 
-  const handleOpenCreate = () => {
+  const handleFormOpen = () => {
     setFormProduct(null)
     setIsFormOpen(true)
   }
 
-  const handleOpenEdit = (product: TProduct) => {
+  const handleFormEdit = (product: TProduct) => {
     setFormProduct(product)
     setIsFormOpen(true)
   }
 
-  const handleCloseForm = () => {
+  const handleFormClose = () => {
     setIsFormOpen(false)
   }
 
-  const handleOpenDelete = (product: TProduct) => {
+  const handleDeleteDialogOpen = (product: TProduct) => {
     setProductToDelete(product)
   }
 
-  const handleCloseDelete = () => {
+  const handleDeleteDialogClose = () => {
     setProductToDelete(null)
   }
 
-  const handleConfirmDelete = () => {
+  const handleDeleteDialogConfirm = () => {
     if (productToDelete) {
       deleteProduct(productToDelete.id)
-      handleCloseDelete()
+      handleDeleteDialogClose()
     }
   }
 
@@ -56,13 +56,13 @@ export const useProductsHandler = () => {
     hasProducts,
     search,
     setSearch,
-    handleOpenCreate,
+    handleFormOpen,
     filteredProducts,
-    handleOpenEdit,
-    handleOpenDelete,
-    handleCloseForm,
-    handleCloseDelete,
-    handleConfirmDelete,
+    handleFormEdit,
+    handleDeleteDialogOpen,
+    handleFormClose,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm,
     isFormOpen,
     formProduct,
     setFormProduct,

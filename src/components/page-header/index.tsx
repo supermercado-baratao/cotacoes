@@ -15,7 +15,7 @@ type TPageHeaderProps = {
   searchPlaceholder: string
   search: string
   setSearch: (search: string) => void
-  handleOpenCreate: () => void
+  handleFormOpen: () => void
 }
 
 export const PageHeader = ({
@@ -24,18 +24,14 @@ export const PageHeader = ({
   searchPlaceholder,
   search,
   setSearch,
-  handleOpenCreate
+  handleFormOpen
 }: TPageHeaderProps) => {
   return (
     <Box component="header" sx={S.Wrapper}>
       <Typography component="h1" variant="h5">
         {title}
       </Typography>
-      <Button
-        variant="contained"
-        startIcon={<Add />}
-        onClick={handleOpenCreate}
-      >
+      <Button variant="contained" startIcon={<Add />} onClick={handleFormOpen}>
         {buttonLabel}
       </Button>
       <TextField
