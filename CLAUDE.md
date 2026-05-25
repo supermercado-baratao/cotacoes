@@ -47,7 +47,9 @@ VITE_APP_MEASUREMENT_ID
 src/
 ├── components/          # Reusable UI components
 │   ├── app-layout/      # Layout wrapper with navigation
-│   └── ui/              # Generic UI primitives (modal, dialog, loader)
+│   ├── forms/           # Shared entity forms (FamilyForm, SellerForm, SupplierForm)
+│   ├── page-header/     # Page title + search + create button
+│   └── ui/              # Generic UI primitives (Modal, Dialog, Loader, Table, Autocomplete)
 ├── infra/               # Infrastructure layer (Firestore access)
 ├── models/              # Domain models (entity-specific operations)
 │   └── product-model/   # Example: product CRUD operations
@@ -77,22 +79,22 @@ import type { TCreateData, TUpdateData } from '@/types'
 
 import { type TProduct } from './types'
 
-const path = 'products'
+const PATH = 'products'
 
 const create = async (data: TCreateData<TProduct>): Promise<TProduct> => {
-  return database.create({ path, data })
+  return database.create({ path: PATH, data })
 }
 
 const findMany = async (): Promise<TProduct[]> => {
-  return database.findMany<TProduct>({ path })
+  return database.findMany<TProduct>({ path: PATH })
 }
 
 const update = async (data: TUpdateData<TProduct>): Promise<TProduct> => {
-  return database.update<TProduct>({ path, data })
+  return database.update<TProduct>({ path: PATH, data })
 }
 
 const deleteUniqueById = async (id: string): Promise<string> => {
-  return database.deleteUniqueById({ path, id })
+  return database.deleteUniqueById({ path: PATH, id })
 }
 
 export const productModel = {
@@ -127,12 +129,11 @@ Component → useAppStore.createProduct() → useMutation (React Query)
 
 - Manages local UI state (form open/close, item to delete, search)
 - Uses `useAppStore` to access global products and mutations
-- Exposes handlers for user interactions
+- Exposes handlers for user interactions following the naming conventions below
 
 **`pages/products/_components/form/use-form-handler.ts`** — form-specific logic:
 
 - Uses `react-hook-form` with Zod validation
-- Watches fields to calculate derived values (e.g., suggested price from purchase price + tax + margin)
 - Registers callbacks via `useCallbackStore` for post-mutation actions
 
 ### Form Pattern
@@ -144,17 +145,16 @@ Forms follow a consistent pattern:
 3. **`style.ts`** — MUI sx properties for styling
 4. **`index.tsx`** — component rendering with MUI components
 
-**Example `use-form-handler.ts` and `useCallbackStore.ts`:**
+**Example `use-form-handler.ts`:**
 
 ```typescript
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 
 import type { TProduct } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
-import { calcSuggestedPrice } from '../../utils'
 import { schema, type TSchema } from './schema'
 
 export const useFormHandler = (
@@ -162,23 +162,18 @@ export const useFormHandler = (
   setFormProduct: (product: TProduct | null) => void,
   handleClose: () => void
 ) => {
-  const { createProduct, updateProduct } = useAppStore()
+  const { createProduct, updateProduct, families } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
     () => ({
       description: product?.description ?? '',
-      price: product?.price ?? 0,
-      purchasePrice: product?.purchasePrice ?? 0,
-      quantity: product?.quantity ?? 0,
-      packaging: product?.packaging ?? '',
-      barcode: product?.barcode ?? '',
-      supplier: product?.supplier ?? '',
-      tax: product?.tax ?? 0,
-      margin: product?.margin ?? 0,
-      observation: product?.observation ?? '',
-      expirationDate: product?.expirationDate ?? '',
-      family: product?.family ?? ''
+      price: product?.price ?? null,
+      barcode: product?.barcode ?? null,
+      tax: product?.tax ?? null,
+      margin: product?.margin ?? null,
+      observations: product?.observations ?? null,
+      familyId: product?.familyId ?? null
     }),
     [product]
   )
@@ -198,24 +193,51 @@ export const useFormHandler = (
     reset(defaultValues)
   }, [defaultValues, reset])
 
-  const [purchasePrice, tax, margin] = useWatch({
-    control,
-    name: ['purchasePrice', 'tax', 'margin']
-  })
-
-  const suggestedPrice = calcSuggestedPrice({ purchasePrice, tax, margin })
-
   const onSubmit = handleSubmit((data) => {
-    setSuccessCallbacks([handleClose, () => setFormProduct(null)])
     if (product) {
+      setSuccessCallbacks([handleClose, () => setFormProduct(null)])
       updateProduct({ ...product, ...data })
       return
     }
+    setSuccessCallbacks([handleClose, () => reset(defaultValues)])
     createProduct(data)
   })
 
-  return { register, onSubmit, errors, control, suggestedPrice }
+  return { register, onSubmit, errors, control, families: families ?? [] }
 }
+```
+
+### Loading and Empty State Pattern
+
+Every page uses `null` as the initial state for data (before first fetch) and `[]` for an empty list after fetch. Use `isFetching` and `hasX` flags derived from these:
+
+```typescript
+const isFetching = products === null   // true only during initial load
+const hasProducts = !!products?.length // false when empty array
+
+// In JSX:
+{isFetching ? (
+  <Loader />
+) : hasProducts ? (
+  <Table products={filteredProducts!} ... />
+) : (
+  <Typography>Você ainda não tem nenhum produto...</Typography>
+)}
+```
+
+### Shared Table Component
+
+`src/components/ui/table.tsx` provides a generic `<Table>` that wraps MUI DataGrid with Edit/Delete action columns. Each page's private `_components/table/index.tsx` wraps this generic component with entity-specific typing and column definitions:
+
+```typescript
+// pages/products/_components/table/index.tsx
+import { Table as _Table } from '@/components'
+import type { TProduct } from '@/models'
+import { columns } from './columns'
+
+export const Table = ({ products, handleEdit, handleDelete }: TTableProps) => (
+  <_Table columns={columns} items={products} handleEdit={handleEdit} handleDelete={handleDelete} />
+)
 ```
 
 ### Component Generator
@@ -246,6 +268,38 @@ Creates `src/components/<name>/index.tsx` and `style.ts`, and automatically upda
 - Number inputs have defined `min`/`max` from schema constants
 - Text inputs have defined `maxLength` from schema constants
 - Always use arrow functions
+- Collection path constants in models use `SCREAMING_SNAKE_CASE` (e.g., `const PATH = 'products'`)
+- Firestore IDs are validated with `z.string()`, not `z.uuid()`, since Firestore generates non-UUID IDs
+- Nullable fields default to `null` in form `defaultValues` (not `0` or `''`) to preserve database semantics
+
+## Naming Conventions
+
+Handler and variable names follow the **`[Subject][Action]`** order — subject (the component or element) comes before the action (the event or verb).
+
+### Handler functions — `handle[Subject][Action]`
+
+| Pattern                 | Example                                                                          | Rule                             |
+| ----------------------- | -------------------------------------------------------------------------------- | -------------------------------- |
+| UI element + DOM event  | `handleAddClick`                                                                 | Add = element, Click = event     |
+| Form modal + action     | `handleFormOpen`, `handleFormEdit`, `handleFormClose`                            | Form = the modal component       |
+| DeleteDialog + action   | `handleDeleteDialogOpen`, `handleDeleteDialogClose`, `handleDeleteDialogConfirm` | Use component name               |
+| Table action props      | `handleEdit`, `handleDelete`                                                     | Short; action is self-describing |
+| Autocomplete add button | `handleAddClick`                                                                 |                                  |
+
+**Exception:** `onSubmit` — kept as-is because it matches the native `<form onSubmit>` prop and would conflict with react-hook-form's `handleSubmit`.
+
+### State variables
+
+| Pattern              | Example                                    | Rule                                   |
+| -------------------- | ------------------------------------------ | -------------------------------------- |
+| Entity in form       | `formProduct`, `formSeller`                | `form[Entity]` — context before entity |
+| Entity being deleted | `productToDelete`, `sellerToDelete`        | `[entity]ToDelete`                     |
+| Boolean state        | `isFormOpen`, `isFetching`, `hasProducts`  | `is[Subject][State]`, `has[Subject]`   |
+| Quick-create flag    | `quickCreateFamily`, `quickCreateSupplier` | `quickCreate[Entity]`                  |
+
+### Component props
+
+Props on shared components follow the same `handle[Subject][Action]` rule. Use `on*` only for native DOM event props (e.g., `onFocus`, `onChange`) passed through to underlying HTML elements.
 
 ## Commit Convention
 
