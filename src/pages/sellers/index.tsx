@@ -60,7 +60,7 @@ export const Sellers = () => {
         seller={formSeller}
         setFormSeller={setFormSeller}
         handleClose={handleFormClose}
-        setQuickCreateSupplier={() => setQuickCreateSupplier(true)}
+        setQuickCreateSupplier={setQuickCreateSupplier}
       />
       <SupplierForm
         isOpened={quickCreateSupplier}

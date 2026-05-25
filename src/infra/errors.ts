@@ -2,7 +2,7 @@ type TErrorReturn = {
   name: string
   message: string
   action: string
-  status_code: number
+  statusCode: number
 }
 
 export class InternalServerError extends Error {
@@ -23,7 +23,7 @@ export class InternalServerError extends Error {
       name: this.name,
       message: this.message,
       action: this.action,
-      status_code: this.statusCode
+      statusCode: this.statusCode
     }
   }
 }
@@ -51,7 +51,7 @@ export class NotFoundError extends Error {
       name: this.name,
       message: this.message,
       action: this.action,
-      status_code: this.statusCode
+      statusCode: this.statusCode
     }
   }
 }

@@ -15,7 +15,9 @@ import {
   type Path
 } from 'react-hook-form'
 
-type TProps<TOption, TFieldValues extends FieldValues> = {
+import * as S from './style'
+
+type TAutocompleteProps<TOption, TFieldValues extends FieldValues> = {
   name: Path<TFieldValues>
   control: Control<TFieldValues>
   options: TOption[]
@@ -45,19 +47,14 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
   handleAddClick,
   addLabel,
   sx
-}: TProps<TOption, TFieldValues>) => (
-  <Box
-    sx={{
-      ...{ display: 'flex', alignItems: 'stretch', gap: 0.5 },
-      ...sx
-    }}
-  >
+}: TAutocompleteProps<TOption, TFieldValues>) => (
+  <Box sx={[S.Wrapper, sx] as SxProps<Theme>}>
     <Controller
       name={name}
       control={control}
       render={({ field }) => (
         <MuiAutocomplete
-          sx={{ flex: 1 }}
+          sx={S.Inner}
           multiple={multiple as true}
           disableCloseOnSelect={disableCloseOnSelect}
           options={options}
@@ -100,7 +97,7 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
           color="inherit"
           onClick={handleAddClick}
           size="small"
-          sx={{ minWidth: 'auto' }}
+          sx={S.AddButton}
         >
           <Add />
         </Button>

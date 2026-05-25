@@ -9,6 +9,8 @@ import {
 import { ptBR } from '@mui/x-data-grid/locales'
 import { useMemo } from 'react'
 
+import * as S from './style'
+
 type TTableProps<T extends GridValidRowModel> = {
   items: T[]
   columns: GridColDef<T>[]
@@ -55,7 +57,7 @@ export const Table = <T extends GridValidRowModel>({
         pageSizeOptions={[25, 50, 100]}
         initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
         localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
-        sx={{ textAlign: 'center' }}
+        sx={S.Grid}
         disableRowSelectionOnClick
         {...props}
       />

@@ -8,7 +8,7 @@ import { MAX_DESCRIPTION_LENGTH } from './schema'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 
-type TFormProps = {
+type TFamilyFormProps = {
   family: TFamily | null
   setFormFamily: (family: TFamily | null) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
@@ -18,7 +18,7 @@ export const FamilyForm = ({
   family,
   handleClose,
   setFormFamily
-}: TFormProps) => {
+}: TFamilyFormProps) => {
   const { register, onSubmit, errors, control, products } = useFormHandler(
     family,
     setFormFamily,

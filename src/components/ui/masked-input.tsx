@@ -1,5 +1,9 @@
-import { TextField, type TextFieldProps } from '@mui/material'
-import { forwardRef } from 'react'
+import {
+  type InputBaseComponentProps,
+  TextField,
+  type TextFieldProps
+} from '@mui/material'
+import { type ElementType, forwardRef } from 'react'
 import {
   type Control,
   Controller,
@@ -39,7 +43,7 @@ const PhoneMask = forwardRef<HTMLInputElement, TMaskBaseProps>(
   )
 )
 
-type TProps<T extends FieldValues> = {
+type TMaskedInputProps<T extends FieldValues> = {
   name: Path<T>
   control: Control<T>
 } & Omit<TextFieldProps, 'name'>
@@ -48,7 +52,7 @@ export const CnpjInput = <T extends FieldValues>({
   name,
   control,
   ...textFieldProps
-}: TProps<T>) => (
+}: TMaskedInputProps<T>) => (
   <Controller
     name={name}
     control={control}
@@ -57,7 +61,10 @@ export const CnpjInput = <T extends FieldValues>({
         {...field}
         {...textFieldProps}
         slotProps={{
-          input: { inputComponent: CnpjMask as any }
+          input: {
+            inputComponent:
+              CnpjMask as unknown as ElementType<InputBaseComponentProps>
+          }
         }}
       />
     )}
@@ -68,7 +75,7 @@ export const PhoneInput = <T extends FieldValues>({
   name,
   control,
   ...textFieldProps
-}: TProps<T>) => (
+}: TMaskedInputProps<T>) => (
   <Controller
     name={name}
     control={control}
@@ -77,7 +84,10 @@ export const PhoneInput = <T extends FieldValues>({
         {...field}
         {...textFieldProps}
         slotProps={{
-          input: { inputComponent: PhoneMask as any }
+          input: {
+            inputComponent:
+              PhoneMask as unknown as ElementType<InputBaseComponentProps>
+          }
         }}
       />
     )}

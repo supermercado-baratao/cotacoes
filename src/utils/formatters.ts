@@ -30,10 +30,8 @@ const phonePipe = IMask.createPipe(
 
 export const formatCNPJ = (cnpj: string): string => cnpjPipe(cnpj)
 
-export const formatPhone = (phone: string): string => {
-  if (!phone) return ''
-  return phonePipe(phone)
-}
+export const formatPhone = (phone: string): string =>
+  phone ? phonePipe(phone) : ''
 
 export const formatCurrency = (value: number): string =>
   `R$ ${numericInputPipe(value)}`

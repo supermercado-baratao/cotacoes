@@ -9,13 +9,11 @@ type TTableProps = {
   handleDelete: (product: TProduct) => void
 }
 
-export const Table = ({ products, handleEdit, handleDelete }: TTableProps) => {
-  return (
-    <_Table
-      columns={columns}
-      items={products}
-      handleEdit={handleEdit}
-      handleDelete={handleDelete}
-    />
-  )
-}
+export const Table = ({ products, handleEdit, handleDelete }: TTableProps) => (
+  <_Table
+    columns={columns}
+    items={products}
+    handleEdit={handleEdit}
+    handleDelete={handleDelete}
+  />
+)

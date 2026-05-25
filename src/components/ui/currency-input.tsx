@@ -1,5 +1,10 @@
-import { InputAdornment, TextField, type TextFieldProps } from '@mui/material'
-import { forwardRef } from 'react'
+import {
+  InputAdornment,
+  type InputBaseComponentProps,
+  TextField,
+  type TextFieldProps
+} from '@mui/material'
+import { type ElementType, forwardRef } from 'react'
 import {
   type Control,
   Controller,
@@ -60,7 +65,8 @@ export const CurrencyInput = <T extends FieldValues>({
           {...textFieldProps}
           slotProps={{
             input: {
-              inputComponent: CurrencyMask as any,
+              inputComponent:
+                CurrencyMask as unknown as ElementType<InputBaseComponentProps>,
               startAdornment: (
                 <InputAdornment position="start">R$</InputAdornment>
               )

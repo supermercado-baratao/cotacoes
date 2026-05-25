@@ -8,7 +8,7 @@ import { MAX_NAME_LENGTH } from './schema'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 
-type TFormProps = {
+type TSellerFormProps = {
   seller: TSeller | null
   setFormSeller: (seller: TSeller | null) => void
   setQuickCreateSupplier?: (value: boolean) => void
@@ -20,7 +20,7 @@ export const SellerForm = ({
   handleClose,
   setFormSeller,
   setQuickCreateSupplier
-}: TFormProps) => {
+}: TSellerFormProps) => {
   const { control, register, onSubmit, errors, suppliers } = useFormHandler(
     seller,
     setFormSeller,

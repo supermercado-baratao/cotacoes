@@ -14,7 +14,7 @@ const findMany = async (): Promise<TProduct[]> => {
 }
 
 const update = async (data: TUpdateData<TProduct>): Promise<TProduct> => {
-  return database.update({ path: PATH, data })
+  return database.update<TProduct>({ path: PATH, data })
 }
 
 const deleteUniqueById = async (id: string): Promise<string> => {
