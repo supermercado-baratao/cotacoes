@@ -47,7 +47,12 @@ export const useFamiliesHandler = () => {
     }
   }
 
+  const isFetching = families === null
+  const hasFamilies = !!families?.length
+
   return {
+    isFetching,
+    hasFamilies,
     search,
     setSearch,
     handleOpenCreate,

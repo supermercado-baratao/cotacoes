@@ -1,3 +1,5 @@
+import { Typography } from '@mui/material'
+
 import {
   DeleteDialog,
   Loader,
@@ -11,6 +13,8 @@ import { useSuppliersHandler } from './use-suppliers-handler'
 
 export const Suppliers = () => {
   const {
+    isFetching,
+    hasSuppliers,
     search,
     setSearch,
     handleOpenCreate,
@@ -38,14 +42,18 @@ export const Suppliers = () => {
         setSearch={setSearch}
         handleOpenCreate={handleOpenCreate}
       />
-      {filteredSuppliers ? (
+      {isFetching ? (
+        <Loader />
+      ) : hasSuppliers ? (
         <Table
-          suppliers={filteredSuppliers}
+          suppliers={filteredSuppliers!}
           onEdit={handleOpenEdit}
           onDelete={handleOpenDelete}
         />
       ) : (
-        <Loader />
+        <Typography sx={{ mt: 2 }}>
+          Você ainda não tem nenhum fornecedor. Cadastre um para começar!
+        </Typography>
       )}
       <SupplierForm
         isOpened={isFormOpen}

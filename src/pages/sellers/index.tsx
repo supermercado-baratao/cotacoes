@@ -1,3 +1,5 @@
+import { Typography } from '@mui/material'
+
 import {
   DeleteDialog,
   Loader,
@@ -11,6 +13,8 @@ import { useSellersHandler } from './use-sellers-handler'
 
 export const Sellers = () => {
   const {
+    isFetching,
+    hasSellers,
     search,
     setSearch,
     handleOpenCreate,
@@ -38,14 +42,18 @@ export const Sellers = () => {
         setSearch={setSearch}
         handleOpenCreate={handleOpenCreate}
       />
-      {filteredSellers ? (
+      {isFetching ? (
+        <Loader />
+      ) : hasSellers ? (
         <Table
-          sellers={filteredSellers}
+          sellers={filteredSellers!}
           onEdit={handleOpenEdit}
           onDelete={handleOpenDelete}
         />
       ) : (
-        <Loader />
+        <Typography sx={{ mt: 2 }}>
+          Você ainda não tem nenhum vendedor. Cadastre um para começar!
+        </Typography>
       )}
       <SellerForm
         isOpened={isFormOpen}

@@ -50,7 +50,12 @@ export const useSuppliersHandler = () => {
     }
   }
 
+  const isFetching = suppliers === null
+  const hasSuppliers = !!suppliers?.length
+
   return {
+    isFetching,
+    hasSuppliers,
     search,
     setSearch,
     handleOpenCreate,

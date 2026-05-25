@@ -1,17 +1,14 @@
-import {
-  DeleteDialog,
-  FamilyForm,
-  Loader,
-  PageHeader,
-  SellerForm,
-  SupplierForm
-} from '@/components'
+import { Typography } from '@mui/material'
+
+import { DeleteDialog, FamilyForm, Loader, PageHeader } from '@/components'
 
 import { Form, Table } from './_components'
 import { useProductsHandler } from './use-products-handler'
 
 export const Products = () => {
   const {
+    isFetching,
+    hasProducts,
     search,
     setSearch,
     handleOpenCreate,
@@ -22,11 +19,11 @@ export const Products = () => {
     handleCloseDelete,
     handleConfirmDelete,
     isFormOpen,
-    setFormProduct,
     formProduct,
+    setFormProduct,
     productToDelete,
-    quickCreate,
-    setQuickCreate
+    quickCreateFamily,
+    setQuickCreateFamily
   } = useProductsHandler()
 
   return (
@@ -39,39 +36,31 @@ export const Products = () => {
         setSearch={setSearch}
         handleOpenCreate={handleOpenCreate}
       />
-      {filteredProducts ? (
+      {isFetching ? (
+        <Loader />
+      ) : hasProducts ? (
         <Table
-          products={filteredProducts}
+          products={filteredProducts!}
           handleEdit={handleOpenEdit}
           handleDelete={handleOpenDelete}
         />
       ) : (
-        <Loader />
+        <Typography sx={{ mt: 2 }}>
+          Você ainda não tem nenhum produto. Cadastre um para começar!
+        </Typography>
       )}
       <Form
         isOpened={isFormOpen}
         product={formProduct}
         setFormProduct={setFormProduct}
         handleClose={handleCloseForm}
-        setQuickCreate={setQuickCreate}
-      />
-      <SupplierForm
-        isOpened={quickCreate === 'supplier'}
-        supplier={null}
-        setFormSupplier={() => {}}
-        handleClose={() => setQuickCreate(null)}
-      />
-      <SellerForm
-        isOpened={quickCreate === 'seller'}
-        seller={null}
-        setFormSeller={() => {}}
-        handleClose={() => setQuickCreate(null)}
+        setQuickCreateFamily={setQuickCreateFamily}
       />
       <FamilyForm
-        isOpened={quickCreate === 'family'}
+        isOpened={quickCreateFamily}
         family={null}
         setFormFamily={() => {}}
-        handleClose={() => setQuickCreate(null)}
+        handleClose={() => setQuickCreateFamily(false)}
       />
       <DeleteDialog
         open={!!productToDelete}

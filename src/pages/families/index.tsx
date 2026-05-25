@@ -1,3 +1,5 @@
+import { Typography } from '@mui/material'
+
 import { DeleteDialog, FamilyForm, Loader, PageHeader } from '@/components'
 
 import { Table } from './_components'
@@ -5,6 +7,8 @@ import { useFamiliesHandler } from './use-families-handler'
 
 export const Families = () => {
   const {
+    isFetching,
+    hasFamilies,
     search,
     setSearch,
     handleOpenCreate,
@@ -30,14 +34,18 @@ export const Families = () => {
         setSearch={setSearch}
         handleOpenCreate={handleOpenCreate}
       />
-      {filteredFamilies ? (
+      {isFetching ? (
+        <Loader />
+      ) : hasFamilies ? (
         <Table
-          families={filteredFamilies}
+          families={filteredFamilies!}
           onEdit={handleOpenEdit}
           onDelete={handleOpenDelete}
         />
       ) : (
-        <Loader />
+        <Typography sx={{ mt: 2 }}>
+          Você ainda não tem nenhuma família. Crie uma para começar!
+        </Typography>
       )}
       <FamilyForm
         isOpened={isFormOpen}

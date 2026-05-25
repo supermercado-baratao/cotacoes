@@ -48,7 +48,12 @@ export const useSellersHandler = () => {
     }
   }
 
+  const isFetching = sellers === null
+  const hasSellers = !!sellers?.length
+
   return {
+    isFetching,
+    hasSellers,
     search,
     setSearch,
     handleOpenCreate,
