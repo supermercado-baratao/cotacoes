@@ -5,8 +5,7 @@ import { useMemo } from 'react'
 
 import type { TProduct } from '@/models'
 
-import { HistoryModal } from './history-modal'
-import { useTableHandler } from './use-table-handler'
+import { columns } from './columns'
 
 type TTableProps = {
   products: TProduct[]
@@ -15,8 +14,6 @@ type TTableProps = {
 }
 
 export const Table = ({ products, handleEdit, handleDelete }: TTableProps) => {
-  const { columns, historySelection, handleHistoryClose } = useTableHandler()
-
   const actionColumn = useMemo(
     () => ({
       field: 'actions',
@@ -42,23 +39,16 @@ export const Table = ({ products, handleEdit, handleDelete }: TTableProps) => {
   )
 
   return (
-    <>
-      <div>
-        <DataGrid
-          columns={[...columns, actionColumn]}
-          rows={products}
-          pageSizeOptions={[25, 50, 100]}
-          initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
-          localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
-          sx={{ textAlign: 'center' }}
-          disableRowSelectionOnClick
-        />
-      </div>
-      <HistoryModal
-        product={historySelection?.product ?? null}
-        field={historySelection?.field ?? null}
-        handleClose={handleHistoryClose}
+    <div>
+      <DataGrid
+        columns={[...columns, actionColumn]}
+        rows={products}
+        pageSizeOptions={[25, 50, 100]}
+        initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
+        localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
+        sx={{ textAlign: 'center' }}
+        disableRowSelectionOnClick
       />
-    </>
+    </div>
   )
 }

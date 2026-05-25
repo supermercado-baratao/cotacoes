@@ -1,9 +1,0 @@
-import { type SxProps, type Theme } from '@mui/material'
-
-export const Wrapper: SxProps<Theme> = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 0.75,
-  width: '100%',
-  height: '100%'
-}

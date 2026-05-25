@@ -36,7 +36,7 @@ export const formatPhone = (phone: string): string => {
 }
 
 export const formatCurrency = (value: number): string =>
-  `R$ ${numericInputPipe(value ?? 0)}`
+  `R$ ${numericInputPipe(value)}`
 
 export const formatNumericValue = (value: number): string =>
-  numericInputPipe(value ?? 0)
+  numericInputPipe(value)
