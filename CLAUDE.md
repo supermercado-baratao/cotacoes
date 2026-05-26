@@ -67,7 +67,10 @@ src/
 │   ├── use-delete-handler.ts  # Delete dialog state (itemToDelete + handlers)
 │   └── use-form-state.ts      # Form open/edit/close state (formItem + handlers)
 ├── infra/               # Infrastructure layer (Firestore access)
-├── layout/              # App shell and navigation (AppLayout)
+├── layout/              # App shell (AppLayout + sidebar navigation)
+│   ├── index.tsx        # AppLayout: sidebar + Outlet
+│   ├── nav-items.ts     # Navigation route definitions
+│   └── style.ts
 ├── models/              # Domain models (entity-specific operations)
 │   └── product-model/   # Example: product CRUD operations
 ├── pages/               # Route-level pages
@@ -82,6 +85,8 @@ src/
 ```
 
 ### Layers
+
+**`src/layout/`** — app shell. `AppLayout` renders the sidebar and the `<Outlet>` for nested routes. Imported directly by `Router.tsx` via `@/layout`, not exported through `@/components`. Adding a new route requires updating `nav-items.ts`.
 
 **`src/hooks/`** — shared React hooks used across multiple pages. `useFormState<T>` centralizes form open/edit/close state; `useDeleteHandler<T>` centralizes delete dialog state and calls the mutation. Both follow the naming conventions defined in this file.
 
