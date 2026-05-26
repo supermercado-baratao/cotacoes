@@ -63,6 +63,9 @@ src/
 │       └── modal/
 ├── constants/           # Application-wide shared constants
 │   └── length.ts        # Field length and numeric limits
+├── hooks/               # Shared React hooks
+│   ├── use-delete-handler.ts  # Delete dialog state (itemToDelete + handlers)
+│   └── use-form-state.ts      # Form open/edit/close state (formItem + handlers)
 ├── infra/               # Infrastructure layer (Firestore access)
 ├── layout/              # App shell and navigation (AppLayout)
 ├── models/              # Domain models (entity-specific operations)
@@ -79,6 +82,8 @@ src/
 ```
 
 ### Layers
+
+**`src/hooks/`** — shared React hooks used across multiple pages. `useFormState<T>` centralizes form open/edit/close state; `useDeleteHandler<T>` centralizes delete dialog state and calls the mutation. Both follow the naming conventions defined in this file.
 
 **`src/constants/`** — application-wide constants organized by concern (e.g., `length.ts` for field size limits). Centralize here only constraints that are shared across multiple schemas or represent application-wide conventions (`MAX_DESCRIPTION_LENGTH`, `MAX_NUMERIC_VALUE`). Domain-specific technical constraints (e.g., `MAX_BARCODE_LENGTH`) stay local to their schema.
 
