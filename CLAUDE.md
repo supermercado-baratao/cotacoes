@@ -80,7 +80,7 @@ src/
 
 **`src/infra/`** — database access layer. `database.ts` exposes a generic `database` object with methods (`findMany`, `create`, `update`, `deleteUniqueById`, etc.) over Firestore. All documents automatically receive `id`, `createdAt`, and `updatedAt`.
 
-**`src/models/`** — domain models. Each model (e.g., `productModel`) defines business operations by calling `database` with the Firestore collection path. This is where new entity types are added.
+**`src/models/`** — domain models. Each model (e.g., `productModel`) defines business operations by calling `database` with the Firestore collection path. This is where new entity types are added. Functions are not marked `async` — they return the `Promise` from `database` directly. Type parameters are only specified on `database` calls where TypeScript cannot infer them (e.g., `findMany<T>`).
 
 **Example model structure:**
 
@@ -93,21 +93,17 @@ import { type TProduct } from './types'
 
 const PATH = 'products'
 
-const create = async (data: TCreateData<TProduct>): Promise<TProduct> => {
-  return database.create({ path: PATH, data })
-}
+const create = (data: TCreateData<TProduct>): Promise<TProduct> =>
+  database.create({ path: PATH, data })
 
-const findMany = async (): Promise<TProduct[]> => {
-  return database.findMany<TProduct>({ path: PATH })
-}
+const findMany = (): Promise<TProduct[]> =>
+  database.findMany<TProduct>({ path: PATH })
 
-const update = async (data: TUpdateData<TProduct>): Promise<TProduct> => {
-  return database.update<TProduct>({ path: PATH, data })
-}
+const update = (data: TUpdateData<TProduct>): Promise<TProduct> =>
+  database.update({ path: PATH, data })
 
-const deleteUniqueById = async (id: string): Promise<string> => {
-  return database.deleteUniqueById({ path: PATH, id })
-}
+const deleteUniqueById = (id: string): Promise<string> =>
+  database.deleteUniqueById({ path: PATH, id })
 
 export const productModel = {
   create,
