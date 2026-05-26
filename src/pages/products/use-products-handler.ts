@@ -6,11 +6,10 @@ import { useAppStore } from '@/stores'
 import { filterProducts } from './utils'
 
 export const useProductsHandler = () => {
-  const { products, deleteProduct } = useAppStore()
+  const { products } = useAppStore()
 
   const [formProduct, setFormProduct] = useState<TProduct | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [productToDelete, setProductToDelete] = useState<TProduct | null>(null)
   const [search, setSearch] = useState('')
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
 
@@ -33,21 +32,6 @@ export const useProductsHandler = () => {
     setIsFormOpen(false)
   }
 
-  const handleDeleteDialogOpen = (product: TProduct) => {
-    setProductToDelete(product)
-  }
-
-  const handleDeleteDialogClose = () => {
-    setProductToDelete(null)
-  }
-
-  const handleDeleteDialogConfirm = () => {
-    if (productToDelete) {
-      deleteProduct(productToDelete.id)
-      handleDeleteDialogClose()
-    }
-  }
-
   const isFetching = products === null
   const hasProducts = !!products?.length
 
@@ -59,14 +43,10 @@ export const useProductsHandler = () => {
     handleFormOpen,
     filteredProducts,
     handleFormEdit,
-    handleDeleteDialogOpen,
     handleFormClose,
-    handleDeleteDialogClose,
-    handleDeleteDialogConfirm,
     isFormOpen,
     formProduct,
     setFormProduct,
-    productToDelete,
     quickCreateFamily,
     setQuickCreateFamily
   }

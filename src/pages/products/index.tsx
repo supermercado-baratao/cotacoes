@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material'
 
-import { DeleteDialog, FamilyForm, Loader, PageHeader } from '@/components'
+import { FamilyForm, Loader, PageHeader } from '@/components'
 
 import { Form, Table } from './_components'
 import { useProductsHandler } from './use-products-handler'
@@ -14,14 +14,10 @@ export const Products = () => {
     handleFormOpen,
     filteredProducts,
     handleFormEdit,
-    handleDeleteDialogOpen,
     handleFormClose,
-    handleDeleteDialogClose,
-    handleDeleteDialogConfirm,
     isFormOpen,
     formProduct,
     setFormProduct,
-    productToDelete,
     quickCreateFamily,
     setQuickCreateFamily
   } = useProductsHandler()
@@ -39,11 +35,7 @@ export const Products = () => {
       {isFetching ? (
         <Loader />
       ) : hasProducts ? (
-        <Table
-          products={filteredProducts!}
-          handleEdit={handleFormEdit}
-          handleDelete={handleDeleteDialogOpen}
-        />
+        <Table products={filteredProducts!} handleEdit={handleFormEdit} />
       ) : (
         <Typography sx={{ mt: 2 }}>
           Você ainda não tem nenhum produto. Cadastre um para começar!
@@ -61,13 +53,6 @@ export const Products = () => {
         family={null}
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
-      />
-      <DeleteDialog
-        open={!!productToDelete}
-        title="Excluir Produto"
-        item={productToDelete?.description ?? ''}
-        handleConfirm={handleDeleteDialogConfirm}
-        handleClose={handleDeleteDialogClose}
       />
     </>
   )

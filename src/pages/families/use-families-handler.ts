@@ -6,11 +6,10 @@ import { useAppStore } from '@/stores'
 import { filterFamilies } from './utils'
 
 export const useFamiliesHandler = () => {
-  const { families, deleteFamily } = useAppStore()
+  const { families } = useAppStore()
 
   const [formFamily, setFormFamily] = useState<TFamily | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [familyToDelete, setFamilyToDelete] = useState<TFamily | null>(null)
   const [search, setSearch] = useState('')
 
   const filteredFamilies = useMemo(
@@ -32,21 +31,6 @@ export const useFamiliesHandler = () => {
     setIsFormOpen(false)
   }
 
-  const handleDeleteDialogOpen = (family: TFamily) => {
-    setFamilyToDelete(family)
-  }
-
-  const handleDeleteDialogClose = () => {
-    setFamilyToDelete(null)
-  }
-
-  const handleDeleteDialogConfirm = () => {
-    if (familyToDelete) {
-      deleteFamily(familyToDelete.id)
-      handleDeleteDialogClose()
-    }
-  }
-
   const isFetching = families === null
   const hasFamilies = !!families?.length
 
@@ -58,13 +42,9 @@ export const useFamiliesHandler = () => {
     handleFormOpen,
     filteredFamilies,
     handleFormEdit,
-    handleDeleteDialogOpen,
     handleFormClose,
-    handleDeleteDialogClose,
-    handleDeleteDialogConfirm,
     isFormOpen,
     formFamily,
-    setFormFamily,
-    familyToDelete
+    setFormFamily
   }
 }

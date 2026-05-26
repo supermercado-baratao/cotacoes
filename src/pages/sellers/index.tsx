@@ -1,12 +1,6 @@
 import { Typography } from '@mui/material'
 
-import {
-  DeleteDialog,
-  Loader,
-  PageHeader,
-  SellerForm,
-  SupplierForm
-} from '@/components'
+import { Loader, PageHeader, SellerForm, SupplierForm } from '@/components'
 
 import { Table } from './_components'
 import { useSellersHandler } from './use-sellers-handler'
@@ -20,14 +14,10 @@ export const Sellers = () => {
     handleFormOpen,
     filteredSellers,
     handleFormEdit,
-    handleDeleteDialogOpen,
     handleFormClose,
-    handleDeleteDialogClose,
-    handleDeleteDialogConfirm,
     isFormOpen,
     setFormSeller,
     formSeller,
-    sellerToDelete,
     quickCreateSupplier,
     setQuickCreateSupplier
   } = useSellersHandler()
@@ -45,11 +35,7 @@ export const Sellers = () => {
       {isFetching ? (
         <Loader />
       ) : hasSellers ? (
-        <Table
-          sellers={filteredSellers!}
-          handleEdit={handleFormEdit}
-          handleDelete={handleDeleteDialogOpen}
-        />
+        <Table sellers={filteredSellers!} handleEdit={handleFormEdit} />
       ) : (
         <Typography sx={{ mt: 2 }}>
           Você ainda não tem nenhum vendedor. Cadastre um para começar!
@@ -67,13 +53,6 @@ export const Sellers = () => {
         supplier={null}
         setFormSupplier={() => {}}
         handleClose={() => setQuickCreateSupplier(false)}
-      />
-      <DeleteDialog
-        open={!!sellerToDelete}
-        title="Excluir Vendedor"
-        item={sellerToDelete?.name ?? ''}
-        handleConfirm={handleDeleteDialogConfirm}
-        handleClose={handleDeleteDialogClose}
       />
     </>
   )

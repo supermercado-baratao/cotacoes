@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material'
 
-import { DeleteDialog, FamilyForm, Loader, PageHeader } from '@/components'
+import { FamilyForm, Loader, PageHeader } from '@/components'
 
 import { Table } from './_components'
 import { useFamiliesHandler } from './use-families-handler'
@@ -14,14 +14,10 @@ export const Families = () => {
     handleFormOpen,
     filteredFamilies,
     handleFormEdit,
-    handleDeleteDialogOpen,
     handleFormClose,
-    handleDeleteDialogClose,
-    handleDeleteDialogConfirm,
     isFormOpen,
     setFormFamily,
-    formFamily,
-    familyToDelete
+    formFamily
   } = useFamiliesHandler()
 
   return (
@@ -37,11 +33,7 @@ export const Families = () => {
       {isFetching ? (
         <Loader />
       ) : hasFamilies ? (
-        <Table
-          families={filteredFamilies!}
-          handleEdit={handleFormEdit}
-          handleDelete={handleDeleteDialogOpen}
-        />
+        <Table families={filteredFamilies!} handleEdit={handleFormEdit} />
       ) : (
         <Typography sx={{ mt: 2 }}>
           Você ainda não tem nenhuma família. Crie uma para começar!
@@ -52,13 +44,6 @@ export const Families = () => {
         family={formFamily}
         setFormFamily={setFormFamily}
         handleClose={handleFormClose}
-      />
-      <DeleteDialog
-        open={!!familyToDelete}
-        title="Excluir Família"
-        item={familyToDelete?.description ?? ''}
-        handleConfirm={handleDeleteDialogConfirm}
-        handleClose={handleDeleteDialogClose}
       />
     </>
   )

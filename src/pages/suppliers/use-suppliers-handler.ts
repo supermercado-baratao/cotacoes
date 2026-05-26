@@ -6,13 +6,10 @@ import { useAppStore } from '@/stores'
 import { filterSuppliers } from './utils'
 
 export const useSuppliersHandler = () => {
-  const { suppliers, deleteSupplier } = useAppStore()
+  const { suppliers } = useAppStore()
 
   const [formSupplier, setFormSupplier] = useState<TSupplier | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [supplierToDelete, setSupplierToDelete] = useState<TSupplier | null>(
-    null
-  )
   const [search, setSearch] = useState('')
   const [quickCreateSeller, setQuickCreateSeller] = useState(false)
 
@@ -35,21 +32,6 @@ export const useSuppliersHandler = () => {
     setIsFormOpen(false)
   }
 
-  const handleDeleteDialogOpen = (supplier: TSupplier) => {
-    setSupplierToDelete(supplier)
-  }
-
-  const handleDeleteDialogClose = () => {
-    setSupplierToDelete(null)
-  }
-
-  const handleDeleteDialogConfirm = () => {
-    if (supplierToDelete) {
-      deleteSupplier(supplierToDelete.id)
-      handleDeleteDialogClose()
-    }
-  }
-
   const isFetching = suppliers === null
   const hasSuppliers = !!suppliers?.length
 
@@ -61,14 +43,10 @@ export const useSuppliersHandler = () => {
     handleFormOpen,
     filteredSuppliers,
     handleFormEdit,
-    handleDeleteDialogOpen,
     handleFormClose,
-    handleDeleteDialogClose,
-    handleDeleteDialogConfirm,
     isFormOpen,
     formSupplier,
     setFormSupplier,
-    supplierToDelete,
     quickCreateSeller,
     setQuickCreateSeller
   }
