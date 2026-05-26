@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router'
 
-import { AppLayout } from './components'
+import { AppLayout } from '@/layout'
+
 import { Families, NotFound, Products, Sellers, Suppliers } from './pages'
 
 export const Router = () => (

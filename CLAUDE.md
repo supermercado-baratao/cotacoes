@@ -45,12 +45,24 @@ VITE_APP_MEASUREMENT_ID
 
 ```text
 src/
-├── components/          # Reusable UI components
-│   ├── app-layout/      # Layout wrapper with navigation
-│   ├── forms/           # Shared entity forms (FamilyForm, SellerForm, SupplierForm)
-│   ├── page-header/     # Page title + search + create button
-│   └── ui/              # Generic UI primitives (Modal, Dialog, Loader, Table, Autocomplete)
+├── components/          # Reusable components
+│   ├── blocks/          # Project-specific reusable components
+│   │   ├── data-view/   # Loading/empty/content state wrapper
+│   │   ├── family-form/ # Shared entity forms
+│   │   ├── page-header/ # Page title + search + create button
+│   │   ├── seller-form/
+│   │   ├── supplier-form/
+│   │   └── table/       # Base table with edit/delete actions
+│   └── ui/              # Generic UI primitives (no domain knowledge)
+│       ├── alert/
+│       ├── autocomplete/
+│       ├── currency-input/
+│       ├── dialog/
+│       ├── loader/
+│       ├── masked-input/
+│       └── modal/
 ├── infra/               # Infrastructure layer (Firestore access)
+├── layout/              # App shell and navigation (AppLayout)
 ├── models/              # Domain models (entity-specific operations)
 │   └── product-model/   # Example: product CRUD operations
 ├── pages/               # Route-level pages
@@ -227,7 +239,7 @@ const hasProducts = !!products?.length // false when empty array
 
 ### Shared Table Component
 
-`src/components/ui/table.tsx` provides a generic `<Table>` that wraps MUI DataGrid with Edit/Delete action columns. Each page's private `_components/table/index.tsx` wraps this generic component with entity-specific typing and column definitions:
+`src/components/blocks/table/` provides a generic `<Table>` that wraps MUI DataGrid with Edit/Delete action columns. Each page's private `_components/table/index.tsx` wraps this generic component with entity-specific typing and column definitions:
 
 ```typescript
 // pages/products/_components/table/index.tsx
@@ -246,7 +258,7 @@ export const Table = ({ products, handleEdit, handleDelete }: TTableProps) => (
 pnpm generate
 ```
 
-Creates `src/components/<name>/index.tsx` and `style.ts`, and automatically updates `src/components/index.ts`.
+Creates `src/components/<name>/index.tsx` and `style.ts`, and automatically updates `src/components/index.ts`. Note: the generator outputs to the root of `components/` — move the result to `blocks/` or `ui/` as appropriate.
 
 ## Key Utilities
 
