@@ -2,3 +2,7 @@ export const CNPJ_LENGTH = 14
 
 export const PHONE_MIN_LENGTH = 10
 export const PHONE_MAX_LENGTH = 11
+
+export const MAX_DESCRIPTION_LENGTH = 100
+export const MAX_OBSERVATIONS_LENGTH = 500
+export const MAX_NUMERIC_VALUE = 999999999999999

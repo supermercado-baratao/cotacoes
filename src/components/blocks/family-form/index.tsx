@@ -1,10 +1,10 @@
 import { Box, Button, TextField } from '@mui/material'
 
 import { Autocomplete, Modal, type TModalProps } from '@/components'
+import { MAX_DESCRIPTION_LENGTH } from '@/constants'
 import type { TFamily } from '@/models'
 import { selectOnFocus } from '@/utils'
 
-import { MAX_DESCRIPTION_LENGTH } from './schema'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 

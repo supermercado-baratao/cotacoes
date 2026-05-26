@@ -6,15 +6,15 @@ import {
   Modal,
   type TModalProps
 } from '@/components'
+import {
+  MAX_DESCRIPTION_LENGTH,
+  MAX_NUMERIC_VALUE,
+  MAX_OBSERVATIONS_LENGTH
+} from '@/constants'
 import type { TProduct } from '@/models'
 import { selectOnFocus } from '@/utils'
 
-import {
-  MAX_BARCODE_LENGTH,
-  MAX_DESCRIPTION_LENGTH,
-  MAX_NUMERIC_VALUE,
-  MAX_OBSERVATION_LENGTH
-} from './schema'
+import { MAX_BARCODE_LENGTH } from './schema'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 
@@ -119,7 +119,7 @@ export const Form = ({
           helperText={errors.observations?.message}
           sx={S.FullWidth}
           onFocus={selectOnFocus}
-          slotProps={{ htmlInput: { maxLength: MAX_OBSERVATION_LENGTH } }}
+          slotProps={{ htmlInput: { maxLength: MAX_OBSERVATIONS_LENGTH } }}
         />
         <Box sx={S.Actions}>
           <Button onClick={handleClose}>Cancelar</Button>

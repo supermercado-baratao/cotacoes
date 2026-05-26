@@ -1,10 +1,10 @@
 import { Box, Button, TextField } from '@mui/material'
 
 import { Autocomplete, Modal, PhoneInput, type TModalProps } from '@/components'
+import { MAX_DESCRIPTION_LENGTH } from '@/constants'
 import type { TSeller } from '@/models'
 import { selectOnFocus } from '@/utils'
 
-import { MAX_NAME_LENGTH } from './schema'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 
@@ -39,7 +39,7 @@ export const SellerForm = ({
             error={!!errors.name}
             helperText={errors.name?.message}
             onFocus={selectOnFocus}
-            slotProps={{ htmlInput: { maxLength: MAX_NAME_LENGTH } }}
+            slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
           />
           <PhoneInput
             name="phone"
