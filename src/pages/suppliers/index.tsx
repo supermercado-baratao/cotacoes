@@ -1,6 +1,4 @@
-import { Typography } from '@mui/material'
-
-import { Loader, PageHeader, SellerForm, SupplierForm } from '@/components'
+import { DataView, PageHeader, SellerForm, SupplierForm } from '@/components'
 
 import { Table } from './_components'
 import { useSuppliersHandler } from './use-suppliers-handler'
@@ -32,15 +30,16 @@ export const Suppliers = () => {
         setSearch={setSearch}
         handleFormOpen={handleFormOpen}
       />
-      {isFetching ? (
-        <Loader />
-      ) : hasSuppliers ? (
-        <Table suppliers={filteredSuppliers!} handleEdit={handleFormEdit} />
-      ) : (
-        <Typography sx={{ mt: 2 }}>
-          Você ainda não tem nenhum fornecedor. Cadastre um para começar!
-        </Typography>
-      )}
+      <DataView
+        isFetching={isFetching}
+        isEmpty={!hasSuppliers}
+        emptyMessage="Você ainda não tem nenhum fornecedor. Cadastre um para começar!"
+      >
+        <Table
+          suppliers={filteredSuppliers ?? []}
+          handleEdit={handleFormEdit}
+        />
+      </DataView>
       <SupplierForm
         isOpened={isFormOpen}
         supplier={formSupplier}

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { useFormState } from '@/hooks'
 import type { TProduct } from '@/models'
 import { useAppStore } from '@/stores'
 
@@ -7,9 +8,15 @@ import { filterProducts } from './utils'
 
 export const useProductsHandler = () => {
   const { products } = useAppStore()
+  const {
+    formItem: formProduct,
+    setFormItem: setFormProduct,
+    isFormOpen,
+    handleFormOpen,
+    handleFormEdit,
+    handleFormClose
+  } = useFormState<TProduct>()
 
-  const [formProduct, setFormProduct] = useState<TProduct | null>(null)
-  const [isFormOpen, setIsFormOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
 
@@ -17,20 +24,6 @@ export const useProductsHandler = () => {
     () => (products ? filterProducts(search, products) : null),
     [search, products]
   )
-
-  const handleFormOpen = () => {
-    setFormProduct(null)
-    setIsFormOpen(true)
-  }
-
-  const handleFormEdit = (product: TProduct) => {
-    setFormProduct(product)
-    setIsFormOpen(true)
-  }
-
-  const handleFormClose = () => {
-    setIsFormOpen(false)
-  }
 
   const isFetching = products === null
   const hasProducts = !!products?.length

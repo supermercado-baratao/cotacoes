@@ -1,6 +1,4 @@
-import { Typography } from '@mui/material'
-
-import { Loader, PageHeader, SellerForm, SupplierForm } from '@/components'
+import { DataView, PageHeader, SellerForm, SupplierForm } from '@/components'
 
 import { Table } from './_components'
 import { useSellersHandler } from './use-sellers-handler'
@@ -32,15 +30,13 @@ export const Sellers = () => {
         setSearch={setSearch}
         handleFormOpen={handleFormOpen}
       />
-      {isFetching ? (
-        <Loader />
-      ) : hasSellers ? (
-        <Table sellers={filteredSellers!} handleEdit={handleFormEdit} />
-      ) : (
-        <Typography sx={{ mt: 2 }}>
-          Você ainda não tem nenhum vendedor. Cadastre um para começar!
-        </Typography>
-      )}
+      <DataView
+        isFetching={isFetching}
+        isEmpty={!hasSellers}
+        emptyMessage="Você ainda não tem nenhum vendedor. Cadastre um para começar!"
+      >
+        <Table sellers={filteredSellers ?? []} handleEdit={handleFormEdit} />
+      </DataView>
       <SellerForm
         isOpened={isFormOpen}
         seller={formSeller}

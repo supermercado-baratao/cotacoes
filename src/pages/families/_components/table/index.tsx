@@ -1,8 +1,9 @@
 import { DeleteDialog, Table as _Table } from '@/components'
+import { useDeleteHandler } from '@/hooks'
 import type { TFamily } from '@/models'
+import { useAppStore } from '@/stores'
 
 import { columns } from './columns'
-import { useTableHandler } from './use-table-handler'
 
 type TTableProps = {
   families: TFamily[]
@@ -10,12 +11,13 @@ type TTableProps = {
 }
 
 export const Table = ({ families, handleEdit }: TTableProps) => {
+  const { deleteFamily } = useAppStore()
   const {
-    familyToDelete,
+    itemToDelete,
     handleDelete,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm
-  } = useTableHandler()
+  } = useDeleteHandler<TFamily>(deleteFamily)
 
   return (
     <>
@@ -26,9 +28,9 @@ export const Table = ({ families, handleEdit }: TTableProps) => {
         handleDelete={handleDelete}
       />
       <DeleteDialog
-        open={!!familyToDelete}
+        open={!!itemToDelete}
         title="Excluir Família"
-        item={familyToDelete?.description ?? ''}
+        item={itemToDelete?.description ?? ''}
         handleConfirm={handleDeleteDialogConfirm}
         handleClose={handleDeleteDialogClose}
       />

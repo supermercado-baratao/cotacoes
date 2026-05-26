@@ -1,6 +1,4 @@
-import { Typography } from '@mui/material'
-
-import { FamilyForm, Loader, PageHeader } from '@/components'
+import { DataView, FamilyForm, PageHeader } from '@/components'
 
 import { Form, Table } from './_components'
 import { useProductsHandler } from './use-products-handler'
@@ -32,15 +30,13 @@ export const Products = () => {
         setSearch={setSearch}
         handleFormOpen={handleFormOpen}
       />
-      {isFetching ? (
-        <Loader />
-      ) : hasProducts ? (
-        <Table products={filteredProducts!} handleEdit={handleFormEdit} />
-      ) : (
-        <Typography sx={{ mt: 2 }}>
-          Você ainda não tem nenhum produto. Cadastre um para começar!
-        </Typography>
-      )}
+      <DataView
+        isFetching={isFetching}
+        isEmpty={!hasProducts}
+        emptyMessage="Você ainda não tem nenhum produto. Cadastre um para começar!"
+      >
+        <Table products={filteredProducts ?? []} handleEdit={handleFormEdit} />
+      </DataView>
       <Form
         isOpened={isFormOpen}
         product={formProduct}

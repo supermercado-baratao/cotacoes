@@ -1,8 +1,9 @@
 import { DeleteDialog, Table as _Table } from '@/components'
+import { useDeleteHandler } from '@/hooks'
 import type { TSupplier } from '@/models'
+import { useAppStore } from '@/stores'
 
 import { columns } from './columns'
-import { useTableHandler } from './use-table-handler'
 
 type TTableProps = {
   suppliers: TSupplier[]
@@ -10,12 +11,13 @@ type TTableProps = {
 }
 
 export const Table = ({ suppliers, handleEdit }: TTableProps) => {
+  const { deleteSupplier } = useAppStore()
   const {
-    supplierToDelete,
+    itemToDelete,
     handleDelete,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm
-  } = useTableHandler()
+  } = useDeleteHandler<TSupplier>(deleteSupplier)
 
   return (
     <>
@@ -26,9 +28,9 @@ export const Table = ({ suppliers, handleEdit }: TTableProps) => {
         handleDelete={handleDelete}
       />
       <DeleteDialog
-        open={!!supplierToDelete}
+        open={!!itemToDelete}
         title="Excluir Fornecedor"
-        item={supplierToDelete?.tradeName ?? ''}
+        item={itemToDelete?.tradeName ?? ''}
         handleConfirm={handleDeleteDialogConfirm}
         handleClose={handleDeleteDialogClose}
       />

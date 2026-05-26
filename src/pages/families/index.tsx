@@ -1,6 +1,4 @@
-import { Typography } from '@mui/material'
-
-import { FamilyForm, Loader, PageHeader } from '@/components'
+import { DataView, FamilyForm, PageHeader } from '@/components'
 
 import { Table } from './_components'
 import { useFamiliesHandler } from './use-families-handler'
@@ -30,15 +28,13 @@ export const Families = () => {
         setSearch={setSearch}
         handleFormOpen={handleFormOpen}
       />
-      {isFetching ? (
-        <Loader />
-      ) : hasFamilies ? (
-        <Table families={filteredFamilies!} handleEdit={handleFormEdit} />
-      ) : (
-        <Typography sx={{ mt: 2 }}>
-          Você ainda não tem nenhuma família. Crie uma para começar!
-        </Typography>
-      )}
+      <DataView
+        isFetching={isFetching}
+        isEmpty={!hasFamilies}
+        emptyMessage="Você ainda não tem nenhuma família. Crie uma para começar!"
+      >
+        <Table families={filteredFamilies ?? []} handleEdit={handleFormEdit} />
+      </DataView>
       <FamilyForm
         isOpened={isFormOpen}
         family={formFamily}
