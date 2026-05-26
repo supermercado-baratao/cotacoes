@@ -61,6 +61,8 @@ src/
 │       ├── loader/
 │       ├── masked-input/
 │       └── modal/
+├── constants/           # Application-wide shared constants
+│   └── length.ts        # Field length and numeric limits
 ├── infra/               # Infrastructure layer (Firestore access)
 ├── layout/              # App shell and navigation (AppLayout)
 ├── models/              # Domain models (entity-specific operations)
@@ -77,6 +79,8 @@ src/
 ```
 
 ### Layers
+
+**`src/constants/`** — application-wide constants organized by concern (e.g., `length.ts` for field size limits). Centralize here only constraints that are shared across multiple schemas or represent application-wide conventions (`MAX_DESCRIPTION_LENGTH`, `MAX_NUMERIC_VALUE`). Domain-specific technical constraints (e.g., `MAX_BARCODE_LENGTH`) stay local to their schema.
 
 **`src/infra/`** — database access layer. `database.ts` exposes a generic `database` object with methods (`findMany`, `create`, `update`, `deleteUniqueById`, etc.) over Firestore. All documents automatically receive `id`, `createdAt`, and `updatedAt`.
 
