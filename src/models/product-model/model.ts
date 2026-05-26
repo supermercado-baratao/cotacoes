@@ -5,21 +5,17 @@ import { type TProduct } from './types'
 
 const PATH = 'products'
 
-const create = async (data: TCreateData<TProduct>): Promise<TProduct> => {
-  return database.create({ path: PATH, data })
-}
+const create = (data: TCreateData<TProduct>): Promise<TProduct> =>
+  database.create({ path: PATH, data })
 
-const findMany = async (): Promise<TProduct[]> => {
-  return database.findMany<TProduct>({ path: PATH })
-}
+const findMany = (): Promise<TProduct[]> =>
+  database.findMany<TProduct>({ path: PATH })
 
-const update = async (data: TUpdateData<TProduct>): Promise<TProduct> => {
-  return database.update<TProduct>({ path: PATH, data })
-}
+const update = (data: TUpdateData<TProduct>): Promise<TProduct> =>
+  database.update({ path: PATH, data })
 
-const deleteUniqueById = async (id: string): Promise<string> => {
-  return database.deleteUniqueById({ path: PATH, id })
-}
+const deleteUniqueById = (id: string): Promise<string> =>
+  database.deleteUniqueById({ path: PATH, id })
 
 export const productModel = {
   create,
