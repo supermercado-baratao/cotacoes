@@ -1,12 +1,7 @@
-import { Add, Search } from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  InputAdornment,
-  TextField,
-  Typography
-} from '@mui/material'
+import { Add } from '@mui/icons-material'
+import { Box, Button, Typography } from '@mui/material'
 
+import { SearchInput } from '../../ui/search-input'
 import * as S from './style'
 
 type TPageHeaderProps = {
@@ -34,21 +29,10 @@ export const PageHeader = ({
       <Button variant="contained" startIcon={<Add />} onClick={handleFormOpen}>
         {buttonLabel}
       </Button>
-      <TextField
-        size="small"
+      <SearchInput
         placeholder={searchPlaceholder}
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search fontSize="small" />
-              </InputAdornment>
-            )
-          }
-        }}
-        sx={S.SearchField}
+        onValueChange={setSearch}
       />
     </Box>
   )

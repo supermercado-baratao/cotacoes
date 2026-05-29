@@ -8,8 +8,3 @@ export const Wrapper: SxProps<Theme> = {
   flexWrap: 'wrap',
   mb: 2
 }
-
-export const SearchField: SxProps<Theme> = {
-  flex: 1,
-  maxWidth: 320
-}
