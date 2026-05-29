@@ -3,6 +3,7 @@ import {
   Category,
   Inventory2,
   People,
+  RequestQuote,
   type SvgIconComponent
 } from '@mui/icons-material'
 
@@ -13,6 +14,7 @@ type TNavItem = {
 }
 
 export const navItems: TNavItem[] = [
+  { label: 'Cotações', path: '/quotes', icon: RequestQuote },
   { label: 'Produtos', path: '/products', icon: Inventory2 },
   { label: 'Fornecedores', path: '/suppliers', icon: Business },
   { label: 'Vendedores', path: '/sellers', icon: People },

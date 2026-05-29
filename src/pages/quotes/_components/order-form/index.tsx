@@ -1,0 +1,170 @@
+import { Box, Button, type SxProps, TextField, type Theme } from '@mui/material'
+import { useState } from 'react'
+
+import {
+  Autocomplete,
+  CurrencyInput,
+  FamilyForm,
+  Modal,
+  ProductForm,
+  SellerForm,
+  SupplierForm,
+  type TModalProps
+} from '@/components'
+import { MAX_NUMERIC_VALUE, MAX_OBSERVATIONS_LENGTH } from '@/constants'
+import type { TOrder } from '@/models'
+import { formatCurrency, selectOnFocus } from '@/utils'
+
+import * as S from './style'
+import { useFormHandler } from './use-form-handler'
+
+type TOrderFormProps = {
+  productId: string | null
+  order: TOrder | null
+  setFormOrder: (order: TOrder | null) => void
+} & Pick<TModalProps, 'isOpened' | 'handleClose'>
+
+export const OrderForm = ({
+  isOpened,
+  productId,
+  order,
+  setFormOrder,
+  handleClose
+}: TOrderFormProps) => {
+  const { register, onSubmit, errors, control, suppliers, sellers, product } =
+    useFormHandler(productId, order, setFormOrder, handleClose)
+
+  const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
+  const [quickCreateSeller, setQuickCreateSeller] = useState(false)
+  const [isProductFormOpen, setIsProductFormOpen] = useState(false)
+  const [quickCreateFamily, setQuickCreateFamily] = useState(false)
+
+  const title = order ? 'Editar Pedido' : 'Novo Pedido'
+
+  return (
+    <>
+      <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
+        <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
+          <TextField
+            label="Produto"
+            value={product?.description.toUpperCase() ?? ''}
+            sx={[S.FourCol, S.Clickable] as SxProps<Theme>}
+            slotProps={{ input: { readOnly: true } }}
+            onClick={() => setIsProductFormOpen(true)}
+          />
+          <TextField
+            label="Preço de Venda"
+            value={product?.price != null ? formatCurrency(product.price) : '—'}
+            sx={[S.TwoCol, S.Clickable] as SxProps<Theme>}
+            slotProps={{ input: { readOnly: true } }}
+            onClick={() => setIsProductFormOpen(true)}
+          />
+          <CurrencyInput
+            name="price"
+            control={control}
+            label="Preço de Custo"
+            error={!!errors.price}
+            helperText={errors.price?.message}
+            sx={S.ThreeCol}
+            onFocus={selectOnFocus}
+          />
+          <TextField
+            {...register('quantity', { valueAsNumber: true })}
+            label="Quantidade"
+            type="number"
+            error={!!errors.quantity}
+            helperText={errors.quantity?.message}
+            sx={S.ThreeCol}
+            onFocus={selectOnFocus}
+            slotProps={{
+              htmlInput: { min: 1, max: MAX_NUMERIC_VALUE, step: 1 }
+            }}
+          />
+          <TextField
+            {...register('packing')}
+            label="Embalagem"
+            error={!!errors.packing}
+            helperText={errors.packing?.message}
+            sx={S.ThreeCol}
+            onFocus={selectOnFocus}
+          />
+          <TextField
+            {...register('date')}
+            label="Data"
+            type="date"
+            error={!!errors.date}
+            helperText={errors.date?.message}
+            sx={S.ThreeCol}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+          <Autocomplete
+            name="supplierId"
+            control={control}
+            options={suppliers}
+            getOptionLabel={(s) => s.tradeName}
+            getOptionValue={(s) => s.id}
+            label="Fornecedor"
+            error={!!errors.supplierId}
+            helperText={errors.supplierId?.message}
+            addLabel="Novo Fornecedor"
+            handleAddClick={() => setQuickCreateSupplier(true)}
+            sx={S.ThreeCol}
+          />
+          <Autocomplete
+            name="sellerId"
+            control={control}
+            options={sellers}
+            getOptionLabel={(s) => s.name}
+            getOptionValue={(s) => s.id}
+            label="Vendedor"
+            addLabel="Novo Vendedor"
+            handleAddClick={() => setQuickCreateSeller(true)}
+            sx={S.ThreeCol}
+          />
+          <TextField
+            {...register('observations')}
+            label="Observações"
+            multiline
+            minRows={2}
+            error={!!errors.observations}
+            helperText={errors.observations?.message}
+            sx={S.FullWidth}
+            onFocus={selectOnFocus}
+            slotProps={{ htmlInput: { maxLength: MAX_OBSERVATIONS_LENGTH } }}
+          />
+          <Box sx={S.Actions}>
+            <Button onClick={handleClose}>Cancelar</Button>
+            <Button type="submit" variant="contained">
+              Salvar
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+      <SupplierForm
+        isOpened={quickCreateSupplier}
+        supplier={null}
+        setFormSupplier={() => {}}
+        handleClose={() => setQuickCreateSupplier(false)}
+      />
+      <SellerForm
+        isOpened={quickCreateSeller}
+        seller={null}
+        setFormSeller={() => {}}
+        handleClose={() => setQuickCreateSeller(false)}
+      />
+      <ProductForm
+        isOpened={isProductFormOpen}
+        product={product}
+        setFormProduct={() => {}}
+        handleClose={() => setIsProductFormOpen(false)}
+        setQuickCreateFamily={setQuickCreateFamily}
+      />
+      <FamilyForm
+        isOpened={quickCreateFamily}
+        family={null}
+        setFormFamily={() => {}}
+        handleClose={() => setQuickCreateFamily(false)}
+      />
+    </>
+  )
+}

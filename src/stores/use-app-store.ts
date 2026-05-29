@@ -1,6 +1,13 @@
 import { create } from 'zustand'
 
-import type { TFamily, TProduct, TSeller, TSupplier } from '@/models'
+import type {
+  TFamily,
+  TOrder,
+  TProduct,
+  TQuote,
+  TSeller,
+  TSupplier
+} from '@/models'
 import type { TCreateData, TUpdateData } from '@/types'
 
 type TAppStore = {
@@ -27,6 +34,21 @@ type TAppStore = {
   createFamily: (family: TCreateData<TFamily>) => void
   updateFamily: (family: TUpdateData<TFamily>) => void
   deleteFamily: (id: string) => void
+
+  quotes: TQuote[] | null
+  setQuotes: (quotes: TQuote[]) => void
+  createQuote: (quote: TCreateData<TQuote>) => void
+  updateQuote: (quote: TUpdateData<TQuote>) => void
+  deleteQuote: (id: string) => void
+
+  ordersByQuoteId: TOrder[] | null
+  setOrdersByQuoteId: (orders: TOrder[]) => void
+  createOrder: (order: TCreateData<TOrder>) => void
+  updateOrder: (order: TUpdateData<TOrder>) => void
+  deleteOrder: (id: string) => void
+
+  quoteId: string | null
+  setQuoteId: (id: string | null) => void
 }
 
 export const useAppStore = create<TAppStore>((set) => ({
@@ -52,5 +74,20 @@ export const useAppStore = create<TAppStore>((set) => ({
   setFamilies: (families) => set({ families }),
   createFamily: () => {},
   updateFamily: () => {},
-  deleteFamily: () => {}
+  deleteFamily: () => {},
+
+  quotes: null,
+  setQuotes: (quotes) => set({ quotes }),
+  createQuote: () => {},
+  updateQuote: () => {},
+  deleteQuote: () => {},
+
+  ordersByQuoteId: null,
+  setOrdersByQuoteId: (orders) => set({ ordersByQuoteId: orders }),
+  createOrder: () => {},
+  updateOrder: () => {},
+  deleteOrder: () => {},
+
+  quoteId: null,
+  setQuoteId: (id) => set({ quoteId: id })
 }))

@@ -1,0 +1,92 @@
+import { Box, Button, MenuItem, Select, Typography } from '@mui/material'
+
+import { MONTHS } from './constants'
+import * as S from './style'
+import { getDaysInYearMonth } from './utils'
+
+type THeaderProps = {
+  availableYears: number[]
+  availableMonths: number[]
+  availableDays: number[]
+  year: number
+  month: number
+  day: number
+  onYearChange: (year: number) => void
+  onMonthChange: (month: number) => void
+  onDayChange: (day: number) => void
+  handleQuoteFormOpen: () => void
+}
+
+export const Header = ({
+  availableYears,
+  availableMonths,
+  availableDays,
+  year,
+  month,
+  day,
+  onYearChange,
+  onMonthChange,
+  onDayChange,
+  handleQuoteFormOpen
+}: THeaderProps) => {
+  const days = getDaysInYearMonth(year, month)
+
+  return (
+    <Box sx={S.Wrapper}>
+      <Typography variant="h5" component="h1">
+        Cotações
+      </Typography>
+
+      <Button variant="contained" onClick={handleQuoteFormOpen}>
+        Nova Cotação
+      </Button>
+
+      <Box sx={S.DateSelectWrapper}>
+        <Select
+          value={day}
+          onChange={(e) => onDayChange(Number(e.target.value))}
+          size="small"
+        >
+          {[...days].reverse().map((day) => (
+            <MenuItem
+              key={day}
+              value={day}
+              disabled={!availableDays.includes(day)}
+            >
+              {day}
+            </MenuItem>
+          ))}
+        </Select>
+        <Select
+          value={month}
+          onChange={(e) => onMonthChange(Number(e.target.value))}
+          size="small"
+        >
+          {[...MONTHS].reverse().map((month, reverseIndex) => {
+            const value = MONTHS.length - reverseIndex
+            return (
+              <MenuItem
+                key={value}
+                value={value}
+                disabled={!availableMonths.includes(value)}
+              >
+                {month}
+              </MenuItem>
+            )
+          })}
+        </Select>
+        <Select
+          value={year}
+          onChange={(e) => onYearChange(Number(e.target.value))}
+          size="small"
+        >
+          {availableYears.map((year) => (
+            <MenuItem key={year} value={year}>
+              {year}
+            </MenuItem>
+          ))}
+        </Select>
+      </Box>
+    </Box>
+  )
+}
