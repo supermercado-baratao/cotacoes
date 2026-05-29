@@ -8,8 +8,7 @@ const PATH = 'sellers'
 const create = (data: TCreateData<TSeller>): Promise<TSeller> =>
   database.create({ path: PATH, data })
 
-const findMany = (): Promise<TSeller[]> =>
-  database.findMany<TSeller>({ path: PATH })
+const findMany = (): Promise<TSeller[]> => database.findMany({ path: PATH })
 
 const update = (data: TUpdateData<TSeller>): Promise<TSeller> =>
   database.update({ path: PATH, data })

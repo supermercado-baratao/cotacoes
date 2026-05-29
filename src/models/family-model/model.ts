@@ -8,8 +8,7 @@ const PATH = 'families'
 const create = (data: TCreateData<TFamily>): Promise<TFamily> =>
   database.create({ path: PATH, data })
 
-const findMany = (): Promise<TFamily[]> =>
-  database.findMany<TFamily>({ path: PATH })
+const findMany = (): Promise<TFamily[]> => database.findMany({ path: PATH })
 
 const update = (data: TUpdateData<TFamily>): Promise<TFamily> =>
   database.update({ path: PATH, data })
