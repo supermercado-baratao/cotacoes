@@ -18,7 +18,7 @@ import { MAX_BARCODE_LENGTH } from './schema'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 
-type TFormProps = {
+type TProductFormProps = {
   product: TProduct | null
   setFormProduct: (product: TProduct | null) => void
   setQuickCreateFamily: (quickCreateFamily: boolean) => void
@@ -26,13 +26,13 @@ type TFormProps = {
 
 const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
 
-export const Form = ({
+export const ProductForm = ({
   isOpened,
   product,
   handleClose,
   setFormProduct,
   setQuickCreateFamily
-}: TFormProps) => {
+}: TProductFormProps) => {
   const { register, onSubmit, errors, control, families } = useFormHandler(
     product,
     setFormProduct,

@@ -13,7 +13,6 @@ export const useFormHandler = (
   handleClose: () => void
 ) => {
   const { createProduct, updateProduct, families } = useAppStore()
-
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
@@ -54,11 +53,5 @@ export const useFormHandler = (
     createProduct(data)
   })
 
-  return {
-    register,
-    onSubmit,
-    errors,
-    control,
-    families: families ?? []
-  }
+  return { register, onSubmit, errors, control, families: families ?? [] }
 }

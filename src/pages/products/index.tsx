@@ -1,6 +1,6 @@
-import { DataView, FamilyForm, PageHeader } from '@/components'
+import { DataView, FamilyForm, PageHeader, ProductForm } from '@/components'
 
-import { Form, Table } from './_components'
+import { Table } from './_components'
 import { useProductsHandler } from './use-products-handler'
 
 export const Products = () => {
@@ -37,7 +37,7 @@ export const Products = () => {
       >
         <Table products={filteredProducts ?? []} handleEdit={handleFormEdit} />
       </DataView>
-      <Form
+      <ProductForm
         isOpened={isFormOpen}
         product={formProduct}
         setFormProduct={setFormProduct}
