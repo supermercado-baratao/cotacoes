@@ -36,5 +36,7 @@ export const formatPhone = (phone: string): string =>
 export const formatCurrency = (value: number): string =>
   `R$ ${numericInputPipe(value)}`
 
-export const formatNumericValue = (value: number): string =>
-  numericInputPipe(value)
+export const formatNumericValue = (value: number): string => {
+  const formatted = numericInputPipe(value)
+  return formatted.endsWith(',00') ? formatted.slice(0, -3) : formatted
+}
