@@ -10,7 +10,7 @@ export const columns: GridColDef<TQuoteRow>[] = [
     headerName: 'Descrição',
     minWidth: 200,
     flex: 1,
-    valueFormatter: (value: string) => value.toUpperCase()
+    valueFormatter: (value: string | null) => value?.toUpperCase() ?? ''
   },
   {
     field: 'productPrice',
@@ -28,13 +28,13 @@ export const columns: GridColDef<TQuoteRow>[] = [
     field: 'orderPrice',
     headerName: 'Custo',
     minWidth: 130,
-    valueFormatter: (value: number) => formatCurrency(value)
+    valueFormatter: (value: number | null) => formatCurrency(value ?? 0)
   },
   {
     field: 'quantity',
     headerName: 'Qtd',
     width: 80,
-    valueFormatter: (value: number) => formatNumericValue(value)
+    valueFormatter: (value: number | null) => formatNumericValue(value ?? 0)
   },
   {
     field: 'packing',
