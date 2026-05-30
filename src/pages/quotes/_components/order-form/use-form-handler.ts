@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
 import { useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 
 import type { TOrder } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
@@ -58,6 +58,23 @@ export const useFormHandler = (
     defaultValues
   })
 
+  const watchedSupplierId = useWatch({ control, name: 'supplierId' })
+  const watchedSellerId = useWatch({ control, name: 'sellerId' })
+
+  const filteredSellers = useMemo(() => {
+    if (!watchedSupplierId) return sellers ?? []
+    const supplier = suppliers?.find((s) => s.id === watchedSupplierId)
+    if (!supplier) return sellers ?? []
+    return (sellers ?? []).filter((s) => supplier.sellerIds.includes(s.id))
+  }, [watchedSupplierId, suppliers, sellers])
+
+  const filteredSuppliers = useMemo(() => {
+    if (!watchedSellerId) return suppliers ?? []
+    const seller = sellers?.find((s) => s.id === watchedSellerId)
+    if (!seller) return suppliers ?? []
+    return (suppliers ?? []).filter((s) => seller.supplierIds.includes(s.id))
+  }, [watchedSellerId, suppliers, sellers])
+
   useEffect(() => {
     reset(defaultValues)
   }, [defaultValues, reset])
@@ -84,8 +101,8 @@ export const useFormHandler = (
     onSubmit,
     errors,
     control,
-    suppliers: suppliers ?? [],
-    sellers: sellers ?? [],
+    suppliers: filteredSuppliers,
+    sellers: filteredSellers,
     product
   }
 }
