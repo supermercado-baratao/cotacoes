@@ -1,6 +1,7 @@
-import { BrowserRouter, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
 
 import { AppLayout } from '@/layout'
+import { useAuthStore } from '@/stores'
 
 import {
   Families,
@@ -8,20 +9,53 @@ import {
   Products,
   Quotes,
   Sellers,
-  Suppliers
+  Signin,
+  Signup,
+  Suppliers,
+  VerifyEmail
 } from './pages'
+
+const PrivateRoute = () => {
+  const user = useAuthStore((state) => state.user)
+  if (!user) return <Navigate to="/signin" replace />
+  if (!user.emailVerified) return <Navigate to="/verify-email" replace />
+  return <Outlet />
+}
+
+const PublicRoute = () => {
+  const user = useAuthStore((state) => state.user)
+  if (!user) return <Outlet />
+  if (!user.emailVerified) return <Navigate to="/verify-email" replace />
+  return <Navigate to="/" replace />
+}
+
+const VerifyEmailRoute = () => {
+  const user = useAuthStore((state) => state.user)
+  if (!user) return <Navigate to="/signin" replace />
+  if (user.emailVerified) return <Navigate to="/" replace />
+  return <Outlet />
+}
 
 export const Router = () => (
   <BrowserRouter>
     <Routes>
-      <Route element={<AppLayout />}>
-        <Route path="/quotes" element={<Quotes />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/suppliers" element={<Suppliers />} />
-        <Route path="/sellers" element={<Sellers />} />
-        <Route path="/families" element={<Families />} />
-        <Route path="*" element={<NotFound />} />
+      <Route element={<PublicRoute />}>
+        <Route path="/signin" element={<Signin />} />
+        <Route path="/signup" element={<Signup />} />
       </Route>
+      <Route element={<VerifyEmailRoute />}>
+        <Route path="/verify-email" element={<VerifyEmail />} />
+      </Route>
+      <Route element={<PrivateRoute />}>
+        <Route element={<AppLayout />}>
+          <Route path="/quotes" element={<Quotes />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/sellers" element={<Sellers />} />
+          <Route path="/families" element={<Families />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<NotFound />} />
     </Routes>
   </BrowserRouter>
 )
