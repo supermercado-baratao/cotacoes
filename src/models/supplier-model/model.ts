@@ -1,24 +1,18 @@
-import { database } from '@/infra'
+import { database, getUserPath } from '@/infra'
 import type { TCreateData, TUpdateData } from '@/types'
 
 import { type TSupplier } from './types'
 
-const PATH = 'suppliers'
-
 const create = (data: TCreateData<TSupplier>): Promise<TSupplier> =>
-  database.create({ path: PATH, data })
+  database.create({ path: getUserPath('suppliers'), data })
 
-const findMany = (): Promise<TSupplier[]> => database.findMany({ path: PATH })
+const findMany = (): Promise<TSupplier[]> =>
+  database.findMany({ path: getUserPath('suppliers') })
 
 const update = (data: TUpdateData<TSupplier>): Promise<TSupplier> =>
-  database.update({ path: PATH, data })
+  database.update({ path: getUserPath('suppliers'), data })
 
 const deleteUniqueById = (id: string): Promise<string> =>
-  database.deleteUniqueById({ path: PATH, id })
+  database.deleteUniqueById({ path: getUserPath('suppliers'), id })
 
-export const supplierModel = {
-  create,
-  findMany,
-  update,
-  deleteUniqueById
-}
+export const supplierModel = { create, findMany, update, deleteUniqueById }

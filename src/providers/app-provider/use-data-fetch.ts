@@ -9,23 +9,36 @@ import {
   sellerModel,
   supplierModel
 } from '@/models'
-import { useAlertStore, useAppStore } from '@/stores'
+import { useAlertStore, useAppStore, useAuthStore } from '@/stores'
 
 export const useDataFetch = () => {
   const { alert } = useAlertStore()
   const quoteId = useAppStore((state) => state.quoteId)
+  const user = useAuthStore((state) => state.user)
 
   const queries = useQueries({
     queries: [
-      { queryKey: ['products'], queryFn: productModel.findMany },
-      { queryKey: ['suppliers'], queryFn: supplierModel.findMany },
-      { queryKey: ['sellers'], queryFn: sellerModel.findMany },
-      { queryKey: ['families'], queryFn: familyModel.findMany },
-      { queryKey: ['quotes'], queryFn: quoteModel.findMany },
+      {
+        queryKey: ['products'],
+        queryFn: productModel.findMany,
+        enabled: !!user
+      },
+      {
+        queryKey: ['suppliers'],
+        queryFn: supplierModel.findMany,
+        enabled: !!user
+      },
+      { queryKey: ['sellers'], queryFn: sellerModel.findMany, enabled: !!user },
+      {
+        queryKey: ['families'],
+        queryFn: familyModel.findMany,
+        enabled: !!user
+      },
+      { queryKey: ['quotes'], queryFn: quoteModel.findMany, enabled: !!user },
       {
         queryKey: ['orders', quoteId],
         queryFn: () => orderModel.findManyByQuoteId(quoteId!),
-        enabled: !!quoteId
+        enabled: !!quoteId && !!user
       }
     ]
   })
