@@ -4,6 +4,7 @@ import { AppLayout } from '@/layout'
 import { useAuthStore } from '@/stores'
 
 import {
+  Dashboard,
   Families,
   NotFound,
   Products,
@@ -26,13 +27,13 @@ const PublicRoute = () => {
   const user = useAuthStore((state) => state.user)
   if (!user) return <Outlet />
   if (!user.emailVerified) return <Navigate to="/verify-email" replace />
-  return <Navigate to="/" replace />
+  return <Navigate to="/dashboard" replace />
 }
 
 const VerifyEmailRoute = () => {
   const user = useAuthStore((state) => state.user)
   if (!user) return <Navigate to="/signin" replace />
-  if (user.emailVerified) return <Navigate to="/" replace />
+  if (user.emailVerified) return <Navigate to="/dashboard" replace />
   return <Outlet />
 }
 
@@ -48,6 +49,7 @@ export const Router = () => (
       </Route>
       <Route element={<PrivateRoute />}>
         <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/quotes" element={<Quotes />} />
           <Route path="/products" element={<Products />} />
           <Route path="/suppliers" element={<Suppliers />} />

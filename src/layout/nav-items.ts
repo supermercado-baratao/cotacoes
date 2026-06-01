@@ -1,6 +1,7 @@
 import {
   Business,
   Category,
+  Dashboard,
   Inventory2,
   People,
   RequestQuote,
@@ -14,6 +15,7 @@ type TNavItem = {
 }
 
 export const navItems: TNavItem[] = [
+  { label: 'Dashboard', path: '/dashboard', icon: Dashboard },
   { label: 'Cotações', path: '/quotes', icon: RequestQuote },
   { label: 'Produtos', path: '/products', icon: Inventory2 },
   { label: 'Fornecedores', path: '/suppliers', icon: Business },
