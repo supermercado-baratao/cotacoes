@@ -14,8 +14,8 @@ import * as S from './style'
 type TTableProps<T extends GridValidRowModel> = {
   items: T[]
   columns: GridColDef<T>[]
-  handleEdit: (item: T) => void
-  handleDelete: (item: T) => void
+  handleEdit?: (item: T) => void
+  handleDelete?: (item: T) => void
 } & Omit<DataGridProps<T>, 'columns' | 'rows'>
 
 export const Table = <T extends GridValidRowModel>({
@@ -25,34 +25,42 @@ export const Table = <T extends GridValidRowModel>({
   handleDelete,
   ...props
 }: TTableProps<T>) => {
-  const actionColumn = useMemo(
-    () => ({
+  const actionColumn = useMemo(() => {
+    if (!handleEdit && !handleDelete) return null
+    return {
       field: 'actions',
       type: 'actions' as const,
       headerName: 'Ações',
       width: 90,
       getActions: ({ row }: { row: T }) => [
-        <GridActionsCellItem
-          key="edit"
-          icon={<Edit />}
-          label="Editar"
-          onClick={() => handleEdit(row)}
-        />,
-        <GridActionsCellItem
-          key="delete"
-          icon={<Delete />}
-          label="Excluir"
-          onClick={() => handleDelete(row)}
-        />
+        ...(handleEdit
+          ? [
+              <GridActionsCellItem
+                key="edit"
+                icon={<Edit />}
+                label="Editar"
+                onClick={() => handleEdit(row)}
+              />
+            ]
+          : []),
+        ...(handleDelete
+          ? [
+              <GridActionsCellItem
+                key="delete"
+                icon={<Delete />}
+                label="Excluir"
+                onClick={() => handleDelete(row)}
+              />
+            ]
+          : [])
       ]
-    }),
-    [handleEdit, handleDelete]
-  )
+    }
+  }, [handleEdit, handleDelete])
 
   return (
     <div>
       <DataGrid
-        columns={[...columns, actionColumn]}
+        columns={actionColumn ? [...columns, actionColumn] : columns}
         rows={items}
         pageSizeOptions={[25, 50, 100]}
         initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}

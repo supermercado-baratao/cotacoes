@@ -11,7 +11,7 @@ export const Suppliers = () => {
     setSearch,
     handleFormOpen,
     filteredSuppliers,
-    handleFormEdit,
+
     handleFormClose,
     isFormOpen,
     setFormSupplier,
@@ -37,7 +37,7 @@ export const Suppliers = () => {
       >
         <Table
           suppliers={filteredSuppliers ?? []}
-          handleEdit={handleFormEdit}
+          handleEdit={handleFormOpen}
         />
       </DataView>
       <SupplierForm

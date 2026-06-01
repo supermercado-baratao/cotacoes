@@ -13,7 +13,6 @@ export const useSellersHandler = () => {
     setFormItem: setFormSeller,
     isFormOpen,
     handleFormOpen,
-    handleFormEdit,
     handleFormClose
   } = useFormState<TSeller>()
 
@@ -35,7 +34,6 @@ export const useSellersHandler = () => {
     setSearch,
     handleFormOpen,
     filteredSellers,
-    handleFormEdit,
     handleFormClose,
     isFormOpen,
     formSeller,

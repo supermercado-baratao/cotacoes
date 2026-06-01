@@ -17,8 +17,14 @@ import {
 } from './utils'
 
 export const useQuotesHandler = () => {
-  const { quotes, products, ordersByQuoteId, suppliers, setQuoteId } =
-    useAppStore()
+  const {
+    quotes,
+    products,
+    ordersByQuoteId,
+    suppliers,
+    setQuoteId,
+    setHistoryProductId
+  } = useAppStore()
 
   const availableYears = getAvailableYears(quotes || [])
   const [year, setYear] = useState(availableYears[0])
@@ -50,7 +56,6 @@ export const useQuotesHandler = () => {
     setFormItem: setFormOrder,
     isFormOpen: isOrderFormOpen,
     handleFormOpen: handleOrderFormOpen,
-    handleFormEdit: handleOrderFormEdit,
     handleFormClose: handleOrderFormClose
   } = useFormState<TOrder>()
 
@@ -73,6 +78,10 @@ export const useQuotesHandler = () => {
     setQuoteId(quote?.id ?? null)
   }, [quote, setQuoteId])
 
+  useEffect(() => {
+    setHistoryProductId(isOrderFormOpen ? orderProductId : null)
+  }, [isOrderFormOpen, orderProductId, setHistoryProductId])
+
   const onYearChange = (year: number) => setYear(year)
 
   const onMonthChange = (month: number) => setMonth(month)
@@ -87,12 +96,10 @@ export const useQuotesHandler = () => {
 
   const handleOrderEdit = (row: TQuoteRow) => {
     setOrderProductId(row.id)
-    if (row.orderId) {
-      const order = ordersByQuoteId?.find((o) => o.id === row.orderId) ?? null
-      if (order) handleOrderFormEdit(order)
-    } else {
-      handleOrderFormOpen()
-    }
+    const order = row.orderId
+      ? (ordersByQuoteId?.find((o) => o.id === row.orderId) ?? null)
+      : null
+    handleOrderFormOpen(order)
   }
 
   const isFetching = quotes === null

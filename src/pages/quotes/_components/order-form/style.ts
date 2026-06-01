@@ -40,3 +40,17 @@ export const Actions: SxProps<Theme> = {
   gap: 1,
   gridColumn: { sm: '1 / -1' }
 }
+
+export const LastOrder: SxProps<Theme> = {
+  gridColumn: { sm: '1 / -1' },
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: 0.5,
+  px: 1.5,
+  py: 1,
+  borderRadius: 1,
+  border: '1px solid',
+  borderColor: 'divider',
+  backgroundColor: 'action.hover'
+}

@@ -13,7 +13,6 @@ export const useSuppliersHandler = () => {
     setFormItem: setFormSupplier,
     isFormOpen,
     handleFormOpen,
-    handleFormEdit,
     handleFormClose
   } = useFormState<TSupplier>()
 
@@ -35,7 +34,6 @@ export const useSuppliersHandler = () => {
     setSearch,
     handleFormOpen,
     filteredSuppliers,
-    handleFormEdit,
     handleFormClose,
     isFormOpen,
     formSupplier,

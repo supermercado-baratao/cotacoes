@@ -17,7 +17,7 @@ export const Table = ({ families, handleEdit }: TTableProps) => {
     handleDelete,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm
-  } = useDeleteHandler<TFamily>(deleteFamily)
+  } = useDeleteHandler<TFamily>((item) => deleteFamily(item.id))
 
   return (
     <>

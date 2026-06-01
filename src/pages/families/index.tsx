@@ -11,7 +11,7 @@ export const Families = () => {
     setSearch,
     handleFormOpen,
     filteredFamilies,
-    handleFormEdit,
+
     handleFormClose,
     isFormOpen,
     setFormFamily,
@@ -33,7 +33,7 @@ export const Families = () => {
         isEmpty={!hasFamilies}
         emptyMessage="Você ainda não tem nenhuma família. Crie uma para começar!"
       >
-        <Table families={filteredFamilies ?? []} handleEdit={handleFormEdit} />
+        <Table families={filteredFamilies ?? []} handleEdit={handleFormOpen} />
       </DataView>
       <FamilyForm
         isOpened={isFormOpen}

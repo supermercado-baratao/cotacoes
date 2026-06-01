@@ -23,7 +23,7 @@ import { useFormHandler } from './use-form-handler'
 type TFormProps = {
   quote: TQuote | null
   setFormQuote: (quote: TQuote | null) => void
-  setQuickCreateProduct: (open: boolean) => void
+  setQuickCreateProduct: () => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 export const Form = ({
@@ -73,7 +73,7 @@ export const Form = ({
                 color="inherit"
                 size="small"
                 sx={{ minWidth: 'auto' }}
-                onClick={() => setQuickCreateProduct(true)}
+                onClick={setQuickCreateProduct}
               >
                 <Add />
               </Button>

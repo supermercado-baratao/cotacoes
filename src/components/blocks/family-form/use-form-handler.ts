@@ -47,5 +47,5 @@ export const useFormHandler = (
     createFamily(data)
   })
 
-  return { register, onSubmit, errors, control, products }
+  return { register, onSubmit, errors, control, products: products ?? [] }
 }

@@ -19,7 +19,8 @@ export const useAppHandler = () => {
     setSellers,
     setFamilies,
     setQuotes,
-    setOrdersByQuoteId
+    setOrdersByQuoteId,
+    setOrdersByProductId
   } = useAppStore(
     useShallow((state) => ({
       setProducts: state.setProducts,
@@ -27,12 +28,20 @@ export const useAppHandler = () => {
       setSellers: state.setSellers,
       setFamilies: state.setFamilies,
       setQuotes: state.setQuotes,
-      setOrdersByQuoteId: state.setOrdersByQuoteId
+      setOrdersByQuoteId: state.setOrdersByQuoteId,
+      setOrdersByProductId: state.setOrdersByProductId
     }))
   )
 
-  const { products, suppliers, sellers, families, quotes, ordersByQuoteId } =
-    useDataFetch()
+  const {
+    products,
+    suppliers,
+    sellers,
+    families,
+    quotes,
+    ordersByQuoteId,
+    ordersByProductId
+  } = useDataFetch()
   const { createProduct, updateProduct, deleteProduct } = useProductMutation()
   const { createSupplier, updateSupplier, deleteSupplier } =
     useSupplierMutation()
@@ -68,6 +77,10 @@ export const useAppHandler = () => {
   useEffect(() => {
     setOrdersByQuoteId(ordersByQuoteId ?? [])
   }, [ordersByQuoteId, setOrdersByQuoteId])
+
+  useEffect(() => {
+    setOrdersByProductId(ordersByProductId ?? [])
+  }, [ordersByProductId, setOrdersByProductId])
 
   useEffect(() => {
     useAppStore.setState({

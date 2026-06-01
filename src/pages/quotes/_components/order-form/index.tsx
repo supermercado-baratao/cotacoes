@@ -1,4 +1,12 @@
-import { Box, Button, type SxProps, TextField, type Theme } from '@mui/material'
+import {
+  Box,
+  Button,
+  type SxProps,
+  TextField,
+  type Theme,
+  Typography
+} from '@mui/material'
+import dayjs from 'dayjs'
 import { useState } from 'react'
 
 import {
@@ -13,7 +21,7 @@ import {
 } from '@/components'
 import { MAX_NUMERIC_VALUE, MAX_OBSERVATIONS_LENGTH } from '@/constants'
 import type { TOrder } from '@/models'
-import { formatCurrency, selectOnFocus } from '@/utils'
+import { formatCurrency, formatNumericValue, selectOnFocus } from '@/utils'
 
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
@@ -31,8 +39,16 @@ export const OrderForm = ({
   setFormOrder,
   handleClose
 }: TOrderFormProps) => {
-  const { register, onSubmit, errors, control, suppliers, sellers, product } =
-    useFormHandler(productId, order, setFormOrder, handleClose)
+  const {
+    register,
+    onSubmit,
+    errors,
+    control,
+    suppliers,
+    sellers,
+    product,
+    lastOrder
+  } = useFormHandler(productId, order, setFormOrder, handleClose)
 
   const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
   const [quickCreateSeller, setQuickCreateSeller] = useState(false)
@@ -132,6 +148,29 @@ export const OrderForm = ({
             onFocus={selectOnFocus}
             slotProps={{ htmlInput: { maxLength: MAX_OBSERVATIONS_LENGTH } }}
           />
+          {lastOrder && (
+            <Box sx={S.LastOrder}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontWeight: 600 }}
+              >
+                Último pedido:
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {[
+                  dayjs(lastOrder.date).format('DD/MM/YYYY'),
+                  lastOrder.supplierName.toUpperCase(),
+                  lastOrder.sellerName?.toUpperCase(),
+                  formatCurrency(lastOrder.price),
+                  formatNumericValue(lastOrder.quantity),
+                  lastOrder.packing.toUpperCase()
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Typography>
+            </Box>
+          )}
           <Box sx={S.Actions}>
             <Button onClick={handleClose}>Cancelar</Button>
             <Button type="submit" variant="contained">

@@ -14,6 +14,7 @@ import { useAlertStore, useAppStore, useAuthStore } from '@/stores'
 export const useDataFetch = () => {
   const { alert } = useAlertStore()
   const quoteId = useAppStore((state) => state.quoteId)
+  const historyProductId = useAppStore((state) => state.historyProductId)
   const user = useAuthStore((state) => state.user)
 
   const queries = useQueries({
@@ -39,6 +40,11 @@ export const useDataFetch = () => {
         queryKey: ['orders', quoteId],
         queryFn: () => orderModel.findManyByQuoteId(quoteId!),
         enabled: !!quoteId && !!user
+      },
+      {
+        queryKey: ['orders', 'product', historyProductId],
+        queryFn: () => orderModel.findManyByProductId(historyProductId!),
+        enabled: !!historyProductId && !!user
       }
     ]
   })
@@ -49,7 +55,8 @@ export const useDataFetch = () => {
     { data: sellers },
     { data: families },
     { data: quotes },
-    { data: ordersByQuoteId }
+    { data: ordersByQuoteId },
+    { data: ordersByProductId }
   ] = queries
 
   const isError = queries.some((query) => query.isError)
@@ -70,6 +77,7 @@ export const useDataFetch = () => {
     sellers,
     families,
     quotes,
-    ordersByQuoteId
+    ordersByQuoteId,
+    ordersByProductId
   }
 }

@@ -4,12 +4,7 @@ export const useFormState = <T>() => {
   const [formItem, setFormItem] = useState<T | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
 
-  const handleFormOpen = () => {
-    setFormItem(null)
-    setIsFormOpen(true)
-  }
-
-  const handleFormEdit = (item: T) => {
+  const handleFormOpen = (item: T | null = null) => {
     setFormItem(item)
     setIsFormOpen(true)
   }
@@ -23,7 +18,6 @@ export const useFormState = <T>() => {
     setFormItem,
     isFormOpen,
     handleFormOpen,
-    handleFormEdit,
     handleFormClose
   }
 }

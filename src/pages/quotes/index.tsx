@@ -48,6 +48,7 @@ export const Quotes = () => {
         year={year}
         month={month}
         day={day}
+        quote={quote}
         onYearChange={onYearChange}
         onMonthChange={onMonthChange}
         onDayChange={onDayChange}

@@ -6,6 +6,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import type { TOrder } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
+import { useProductHistory } from '../use-product-history'
 import { createSchema, type TSchema } from './schema'
 
 export const useFormHandler = (
@@ -26,6 +27,9 @@ export const useFormHandler = (
 
   const product = products?.find((p) => p.id === productId) ?? null
   const { setSuccessCallbacks } = useCallbackStore()
+
+  const { history } = useProductHistory()
+  const lastOrder = history[0] ?? null
 
   const quoteDate = useMemo(
     () => quotes?.find((q) => q.id === quoteId)?.date ?? '',
@@ -103,6 +107,7 @@ export const useFormHandler = (
     control,
     suppliers: filteredSuppliers,
     sellers: filteredSellers,
-    product
+    product,
+    lastOrder
   }
 }

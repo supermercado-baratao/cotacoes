@@ -43,12 +43,16 @@ type TAppStore = {
 
   ordersByQuoteId: TOrder[] | null
   setOrdersByQuoteId: (orders: TOrder[]) => void
+  ordersByProductId: TOrder[] | null
+  setOrdersByProductId: (orders: TOrder[]) => void
   createOrder: (order: TCreateData<TOrder>) => void
   updateOrder: (order: TUpdateData<TOrder>) => void
   deleteOrder: (id: string) => void
 
   quoteId: string | null
   setQuoteId: (id: string | null) => void
+  historyProductId: string | null
+  setHistoryProductId: (id: string | null) => void
 }
 
 export const useAppStore = create<TAppStore>((set) => ({
@@ -84,10 +88,14 @@ export const useAppStore = create<TAppStore>((set) => ({
 
   ordersByQuoteId: null,
   setOrdersByQuoteId: (orders) => set({ ordersByQuoteId: orders }),
+  ordersByProductId: null,
+  setOrdersByProductId: (orders) => set({ ordersByProductId: orders }),
   createOrder: () => {},
   updateOrder: () => {},
   deleteOrder: () => {},
 
   quoteId: null,
-  setQuoteId: (id) => set({ quoteId: id })
+  setQuoteId: (id) => set({ quoteId: id }),
+  historyProductId: null,
+  setHistoryProductId: (id) => set({ historyProductId: id })
 }))

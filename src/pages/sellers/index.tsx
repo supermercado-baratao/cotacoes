@@ -11,7 +11,7 @@ export const Sellers = () => {
     setSearch,
     handleFormOpen,
     filteredSellers,
-    handleFormEdit,
+
     handleFormClose,
     isFormOpen,
     setFormSeller,
@@ -35,7 +35,7 @@ export const Sellers = () => {
         isEmpty={!hasSellers}
         emptyMessage="Você ainda não tem nenhum vendedor. Cadastre um para começar!"
       >
-        <Table sellers={filteredSellers ?? []} handleEdit={handleFormEdit} />
+        <Table sellers={filteredSellers ?? []} handleEdit={handleFormOpen} />
       </DataView>
       <SellerForm
         isOpened={isFormOpen}

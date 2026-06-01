@@ -13,7 +13,6 @@ export const useFamiliesHandler = () => {
     setFormItem: setFormFamily,
     isFormOpen,
     handleFormOpen,
-    handleFormEdit,
     handleFormClose
   } = useFormState<TFamily>()
 
@@ -34,7 +33,6 @@ export const useFamiliesHandler = () => {
     setSearch,
     handleFormOpen,
     filteredFamilies,
-    handleFormEdit,
     handleFormClose,
     isFormOpen,
     formFamily,

@@ -11,7 +11,7 @@ export const Products = () => {
     setSearch,
     handleFormOpen,
     filteredProducts,
-    handleFormEdit,
+
     handleFormClose,
     isFormOpen,
     formProduct,
@@ -35,7 +35,7 @@ export const Products = () => {
         isEmpty={!hasProducts}
         emptyMessage="Você ainda não tem nenhum produto. Cadastre um para começar!"
       >
-        <Table products={filteredProducts ?? []} handleEdit={handleFormEdit} />
+        <Table products={filteredProducts ?? []} handleEdit={handleFormOpen} />
       </DataView>
       <ProductForm
         isOpened={isFormOpen}

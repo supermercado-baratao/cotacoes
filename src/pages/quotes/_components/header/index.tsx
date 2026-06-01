@@ -1,5 +1,7 @@
 import { Box, Button, MenuItem, Select, Typography } from '@mui/material'
 
+import type { TQuote } from '@/models'
+
 import { MONTHS } from './constants'
 import * as S from './style'
 import { getDaysInYearMonth } from './utils'
@@ -11,10 +13,11 @@ type THeaderProps = {
   year: number
   month: number
   day: number
+  quote: TQuote | null
   onYearChange: (year: number) => void
   onMonthChange: (month: number) => void
   onDayChange: (day: number) => void
-  handleQuoteFormOpen: () => void
+  handleQuoteFormOpen: (quote: TQuote | null) => void
 }
 
 export const Header = ({
@@ -24,6 +27,7 @@ export const Header = ({
   year,
   month,
   day,
+  quote,
   onYearChange,
   onMonthChange,
   onDayChange,
@@ -37,9 +41,20 @@ export const Header = ({
         Cotações
       </Typography>
 
-      <Button variant="contained" onClick={handleQuoteFormOpen}>
-        Nova Cotação
-      </Button>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        {quote && (
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleQuoteFormOpen(quote)}
+          >
+            Editar Cotação
+          </Button>
+        )}
+        <Button variant="contained" onClick={() => handleQuoteFormOpen(null)}>
+          Nova Cotação
+        </Button>
+      </Box>
 
       <Box sx={S.DateSelectWrapper}>
         <Select
