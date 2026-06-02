@@ -1,33 +1,33 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Este arquivo fornece orientações ao Claude Code (claude.ai/code) ao trabalhar com o código deste repositório.
 
 ## Sobre o projeto
 
 Aplicação web para gerenciamento de cotações e controle de pedidos para supermercados. Stack: React 19 + TypeScript + Vite + MUI + Firebase Firestore.
 
-## Commands
+## Comandos
 
 ```bash
-pnpm dev              # start development server
-pnpm build            # production build (tsc + vite build)
-pnpm test             # run tests once
-pnpm test:watch       # run tests in watch mode
-pnpm eslint:check     # lint check
-pnpm eslint:fix       # auto-fix lint issues
-pnpm prettier:fix     # format code
-pnpm generate         # generate new component via plop
+pnpm dev              # iniciar servidor de desenvolvimento
+pnpm build            # build de produção (tsc + vite build)
+pnpm test             # executar testes uma vez
+pnpm test:watch       # executar testes em modo watch
+pnpm eslint:check     # verificar lint
+pnpm eslint:fix       # corrigir problemas de lint automaticamente
+pnpm prettier:fix     # formatar código
+pnpm generate         # gerar novo componente via plop
 ```
 
-To run a single test file:
+Para executar um único arquivo de teste:
 
 ```bash
 pnpm vitest run src/tests/app.test.tsx
 ```
 
-## Environment Setup
+## Configuração do ambiente
 
-Copy `.env.example` to `.env` and fill in Firebase credentials:
+Copie `.env.example` para `.env` e preencha as credenciais do Firebase:
 
 ```text
 VITE_API_KEY
@@ -39,21 +39,22 @@ VITE_APP_ID
 VITE_APP_MEASUREMENT_ID
 ```
 
-## Architecture
+## Arquitetura
 
-### Directory Structure
+### Estrutura de diretórios
 
 ```text
 src/
-├── components/          # Reusable components
-│   ├── blocks/          # Project-specific reusable components
-│   │   ├── data-view/   # Loading/empty/content state wrapper
-│   │   ├── family-form/ # Shared entity forms
-│   │   ├── page-header/ # Page title + search + create button
+├── components/          # Componentes reutilizáveis
+│   ├── blocks/          # Componentes reutilizáveis específicos do projeto
+│   │   ├── data-view/   # Wrapper para estados de carregamento/vazio/conteúdo
+│   │   ├── family-form/ # Formulários de entidades compartilhados
+│   │   ├── group-form/
+│   │   ├── page-header/ # Título da página + busca + botão de criação
 │   │   ├── seller-form/
 │   │   ├── supplier-form/
-│   │   └── table/       # Base table with edit/delete actions
-│   └── ui/              # Generic UI primitives (no domain knowledge)
+│   │   └── table/       # Tabela base com ações de editar/excluir
+│   └── ui/              # Primitivos de UI genéricos (sem conhecimento de domínio)
 │       ├── alert/
 │       ├── autocomplete/
 │       ├── currency-input/
@@ -61,42 +62,43 @@ src/
 │       ├── loader/
 │       ├── masked-input/
 │       └── modal/
-├── constants/           # Application-wide shared constants
-│   └── length.ts        # Field length and numeric limits
-├── hooks/               # Shared React hooks
-│   ├── use-delete-handler.ts  # Delete dialog state (itemToDelete + handlers)
-│   └── use-form-state.ts      # Form open/edit/close state (formItem + handlers)
-├── infra/               # Infrastructure layer (Firestore access)
-├── layout/              # App shell (AppLayout + sidebar navigation)
+├── constants/           # Constantes compartilhadas da aplicação
+│   └── length.ts        # Limites de tamanho de campos e valores numéricos
+├── hooks/               # React hooks compartilhados
+│   ├── use-delete-handler.ts  # Estado do dialog de exclusão (itemToDelete + handlers)
+│   └── use-form-state.ts      # Estado de abertura/edição/fechamento do formulário (formItem + handlers)
+├── infra/               # Camada de infraestrutura (acesso ao Firestore)
+├── layout/              # Shell da aplicação (AppLayout + navegação lateral)
 │   ├── index.tsx        # AppLayout: sidebar + Outlet
-│   ├── nav-items.ts     # Navigation route definitions
+│   ├── nav-items.ts     # Definições de rotas de navegação
 │   └── style.ts
-├── models/              # Domain models (entity-specific operations)
-│   └── product-model/   # Example: product CRUD operations
-├── pages/               # Route-level pages
-│   └── products/        # Products page with private components
-│       └── _components/ # Page-private components (not shared)
+├── models/              # Modelos de domínio (operações específicas de cada entidade)
+│   ├── group-model/
+│   └── product-model/   # Exemplo: operações CRUD de produto
+├── pages/               # Páginas no nível de rota
+│   └── products/        # Página de produtos com componentes privados
+│       └── _components/ # Componentes privados da página (não compartilhados)
 ├── providers/           # React context providers
-│   └── app-provider/    # Main app orchestrator (React Query + Zustand)
-├── stores/              # Zustand global state stores
-├── themes/              # MUI theme configuration (dark/light)
-├── types/               # TypeScript type definitions
-└── utils/               # Utility functions
+│   └── app-provider/    # Orquestrador principal da aplicação (React Query + Zustand)
+├── stores/              # Estado global com Zustand
+├── themes/              # Configuração de tema MUI (dark/light)
+├── types/               # Definições de tipos TypeScript
+└── utils/               # Funções utilitárias
 ```
 
-### Layers
+### Camadas
 
-**`src/layout/`** — app shell. `AppLayout` renders the sidebar and the `<Outlet>` for nested routes. Imported directly by `Router.tsx` via `@/layout`, not exported through `@/components`. Adding a new route requires updating `nav-items.ts`.
+**`src/layout/`** — shell da aplicação. `AppLayout` renderiza a sidebar e o `<Outlet>` para rotas aninhadas. Importado diretamente pelo `Router.tsx` via `@/layout`, não exportado por `@/components`. Adicionar uma nova rota requer atualizar `nav-items.ts`.
 
-**`src/hooks/`** — shared React hooks used across multiple pages. `useFormState<T>` centralizes form open/edit/close state; `useDeleteHandler<T>` centralizes delete dialog state and calls the mutation. Both follow the naming conventions defined in this file.
+**`src/hooks/`** — React hooks compartilhados usados em múltiplas páginas. `useFormState<T>` centraliza o estado de abertura/edição/fechamento do formulário; `useDeleteHandler<T>` centraliza o estado do dialog de exclusão e chama a mutation. Ambos seguem as convenções de nomenclatura definidas neste arquivo.
 
-**`src/constants/`** — application-wide constants organized by concern (e.g., `length.ts` for field size limits). Centralize here only constraints that are shared across multiple schemas or represent application-wide conventions (`MAX_DESCRIPTION_LENGTH`, `MAX_NUMERIC_VALUE`). Domain-specific technical constraints (e.g., `MAX_BARCODE_LENGTH`) stay local to their schema.
+**`src/constants/`** — constantes da aplicação organizadas por domínio (ex: `length.ts` para limites de tamanho de campos). Centralize aqui apenas restrições compartilhadas entre múltiplos schemas ou que representam convenções da aplicação (`MAX_DESCRIPTION_LENGTH`, `MAX_NUMERIC_VALUE`). Restrições técnicas específicas de domínio (ex: `MAX_BARCODE_LENGTH`) permanecem locais ao seu schema.
 
-**`src/infra/`** — database access layer. `database.ts` exposes a generic `database` object with methods (`findMany`, `create`, `update`, `deleteUniqueById`, etc.) over Firestore. All documents automatically receive `id`, `createdAt`, and `updatedAt`.
+**`src/infra/`** — camada de acesso ao banco de dados. `database.ts` expõe um objeto genérico `database` com métodos (`findMany`, `create`, `update`, `deleteUniqueById`, etc.) sobre o Firestore. Todos os documentos recebem automaticamente `id`, `createdAt` e `updatedAt`.
 
-**`src/models/`** — domain models. Each model (e.g., `productModel`) defines business operations by calling `database` with the Firestore collection path. This is where new entity types are added. Functions are not marked `async` — they return the `Promise` from `database` directly. Type parameters are only specified on `database` calls where TypeScript cannot infer them (e.g., `findMany<T>`).
+**`src/models/`** — modelos de domínio. Cada modelo (ex: `productModel`) define operações de negócio chamando `database` com o caminho da coleção Firestore. É aqui que novos tipos de entidade são adicionados. As funções não são marcadas com `async` — elas retornam diretamente a `Promise` do `database`. Parâmetros de tipo são especificados nas chamadas ao `database` somente quando o TypeScript não consegue inferí-los (ex: `findMany<T>`).
 
-**Example model structure:**
+**Exemplo de estrutura de model:**
 
 ```typescript
 // models/product-model/model.ts
@@ -127,15 +129,15 @@ export const productModel = {
 }
 ```
 
-**`src/providers/app-provider/`** — central application orchestrator. Uses React Query for data fetching and mutations. Injects mutation functions directly into Zustand store (`useAppStore`) via `useEffect`. This allows any component to trigger mutations through the store without needing React Query hooks.
+**`src/providers/app-provider/`** — orquestrador central da aplicação. Usa React Query para busca de dados e mutations. Injeta as funções de mutation diretamente no store Zustand (`useAppStore`) via `useEffect`. Isso permite que qualquer componente dispare mutations pelo store sem precisar de hooks do React Query.
 
-**`src/stores/`** — global state with Zustand:
+**`src/stores/`** — estado global com Zustand:
 
-- `useAppStore` — application data (products, etc.); mutation functions (`createProduct`, `updateProduct`, `deleteProduct`) are populated by `AppProvider`
-- `useAlertStore` — global snackbar/alert notifications
-- `useCallbackStore` — success/error callbacks registered by components before triggering mutations
+- `useAppStore` — dados da aplicação (produtos, etc.); funções de mutation (`createProduct`, `updateProduct`, `deleteProduct`) são populadas pelo `AppProvider`
+- `useAlertStore` — notificações globais via snackbar/alert
+- `useCallbackStore` — callbacks de sucesso/erro registrados por componentes antes de disparar mutations
 
-### Data Flow
+### Fluxo de dados
 
 ```text
 Component → useAppStore.createProduct() → useMutation (React Query)
@@ -143,31 +145,31 @@ Component → useAppStore.createProduct() → useMutation (React Query)
                                          → onError: alert + callbacks
 ```
 
-**Callback pattern** (`useCallbackStore`): Allows a component to register what should happen after a mutation succeeds or fails (e.g., close modal) without coupling the component to the provider.
+**Padrão de callbacks** (`useCallbackStore`): permite que um componente registre o que deve acontecer após uma mutation ter sucesso ou falhar (ex: fechar modal) sem acoplar o componente ao provider.
 
-### Page Pattern Example
+### Exemplo de padrão de página
 
-**`pages/products/use-products-handler.ts`** — custom hook that encapsulates page logic:
+**`pages/products/use-products-handler.ts`** — custom hook que encapsula a lógica da página:
 
-- Manages local UI state (form open/close, item to delete, search)
-- Uses `useAppStore` to access global products and mutations
-- Exposes handlers for user interactions following the naming conventions below
+- Gerencia estado de UI local (formulário aberto/fechado, item a excluir, busca)
+- Usa `useAppStore` para acessar dados globais e mutations
+- Expõe handlers para interações do usuário seguindo as convenções de nomenclatura abaixo
 
-**`pages/products/_components/form/use-form-handler.ts`** — form-specific logic:
+**`pages/products/_components/form/use-form-handler.ts`** — lógica específica do formulário:
 
-- Uses `react-hook-form` with Zod validation
-- Registers callbacks via `useCallbackStore` for post-mutation actions
+- Usa `react-hook-form` com validação Zod
+- Registra callbacks via `useCallbackStore` para ações pós-mutation
 
-### Form Pattern
+### Padrão de formulários
 
-Forms follow a consistent pattern:
+Formulários seguem um padrão consistente:
 
-1. **`schema.ts`** — Zod schema with validation rules and exported MAX\_\* constants
-2. **`use-form-handler.ts`** — custom hook for form logic (defaults, validation, submission)
-3. **`style.ts`** — MUI sx properties for styling
-4. **`index.tsx`** — component rendering with MUI components
+1. **`schema.ts`** — schema Zod com regras de validação e constantes MAX\_\* exportadas
+2. **`use-form-handler.ts`** — custom hook para lógica do formulário (defaults, validação, submissão)
+3. **`style.ts`** — propriedades sx do MUI para estilização
+4. **`index.tsx`** — renderização do componente com componentes MUI
 
-**Example `use-form-handler.ts`:**
+**Exemplo de `use-form-handler.ts`:**
 
 ```typescript
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -184,7 +186,7 @@ export const useFormHandler = (
   setFormProduct: (product: TProduct | null) => void,
   handleClose: () => void
 ) => {
-  const { createProduct, updateProduct, families } = useAppStore()
+  const { createProduct, updateProduct, families, groups } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
@@ -195,7 +197,8 @@ export const useFormHandler = (
       tax: product?.tax ?? null,
       margin: product?.margin ?? null,
       observations: product?.observations ?? null,
-      familyId: product?.familyId ?? null
+      familyId: product?.familyId ?? null,
+      groupId: product?.groupId ?? null
     }),
     [product]
   )
@@ -206,10 +209,7 @@ export const useFormHandler = (
     reset,
     control,
     formState: { errors }
-  } = useForm({
-    resolver: zodResolver(schema),
-    defaultValues
-  })
+  } = useForm({ resolver: zodResolver(schema), defaultValues })
 
   useEffect(() => {
     reset(defaultValues)
@@ -225,19 +225,26 @@ export const useFormHandler = (
     createProduct(data)
   })
 
-  return { register, onSubmit, errors, control, families: families ?? [] }
+  return {
+    register,
+    onSubmit,
+    errors,
+    control,
+    families: families ?? [],
+    groups: groups ?? []
+  }
 }
 ```
 
-### Loading and Empty State Pattern
+### Padrão de estado de carregamento e vazio
 
-Every page uses `null` as the initial state for data (before first fetch) and `[]` for an empty list after fetch. Use `isFetching` and `hasX` flags derived from these:
+Toda página usa `null` como estado inicial dos dados (antes do primeiro fetch) e `[]` para lista vazia após o fetch. Use flags `isFetching` e `hasX` derivadas desses valores:
 
 ```typescript
-const isFetching = products === null   // true only during initial load
-const hasProducts = !!products?.length // false when empty array
+const isFetching = products === null   // true apenas durante o carregamento inicial
+const hasProducts = !!products?.length // false quando a lista está vazia
 
-// In JSX:
+// No JSX:
 {isFetching ? (
   <Loader />
 ) : hasProducts ? (
@@ -247,9 +254,9 @@ const hasProducts = !!products?.length // false when empty array
 )}
 ```
 
-### Shared Table Component
+### Componente de tabela compartilhado
 
-`src/components/blocks/table/` provides a generic `<Table>` that wraps MUI DataGrid with Edit/Delete action columns. Each page's private `_components/table/index.tsx` wraps this generic component with entity-specific typing and column definitions:
+`src/components/blocks/table/` fornece um `<Table>` genérico que envolve o MUI DataGrid com colunas de ações de editar/excluir. O `_components/table/index.tsx` de cada página envolve esse componente genérico com tipagem e definições de colunas específicas da entidade:
 
 ```typescript
 // pages/products/_components/table/index.tsx
@@ -262,77 +269,77 @@ export const Table = ({ products, handleEdit, handleDelete }: TTableProps) => (
 )
 ```
 
-### Component Generator
+### Gerador de componentes
 
 ```bash
 pnpm generate
 ```
 
-Creates `src/components/<name>/index.tsx` and `style.ts`, and automatically updates `src/components/index.ts`. Note: the generator outputs to the root of `components/` — move the result to `blocks/` or `ui/` as appropriate.
+Cria `src/components/<name>/index.tsx` e `style.ts`, e atualiza automaticamente `src/components/index.ts`. Atenção: o gerador cria na raiz de `components/` — mova o resultado para `blocks/` ou `ui/` conforme apropriado.
 
-## Key Utilities
+## Utilitários principais
 
-- `selectOnFocus` — selects all text when input receives focus
+- `selectOnFocus` — seleciona todo o texto quando o input recebe foco
 
-## Type System
+## Sistema de tipos
 
-**`src/types/generics.ts`** provides helper types:
+**`src/types/generics.ts`** fornece tipos auxiliares:
 
-- `TCreateData<T>` — omits `id`, `createdAt`, `updatedAt` for create operations
-- `TUpdateData<T>` — requires `id` and partial data for updates
+- `TCreateData<T>` — omite `id`, `createdAt`, `updatedAt` para operações de criação
+- `TUpdateData<T>` — requer `id` e dados parciais para atualizações
 
-## Conventions
+## Convenções
 
-- Path alias `@/` points to `src/`
-- Each module exports via `index.ts` in its folder
-- Component styles go in separate `style.ts` file using `MUI SxProps<Theme>`
-- Text inputs use `textTransform: 'uppercase'` (see `style.ts`)
-- Number inputs have defined `min`/`max` from schema constants
-- Text inputs have defined `maxLength` from schema constants
-- Always use arrow functions
-- Collection path constants in models use `SCREAMING_SNAKE_CASE` (e.g., `const PATH = 'products'`)
-- Firestore IDs are validated with `z.string()`, not `z.uuid()`, since Firestore generates non-UUID IDs
-- Nullable fields default to `null` in form `defaultValues` (not `0` or `''`) to preserve database semantics
+- O alias de caminho `@/` aponta para `src/`
+- Cada módulo exporta via `index.ts` na sua pasta
+- Estilos de componentes ficam em arquivo `style.ts` separado usando `MUI SxProps<Theme>`
+- Inputs de texto usam `textTransform: 'uppercase'` (ver `style.ts`)
+- Inputs numéricos têm `min`/`max` definidos a partir de constantes do schema
+- Inputs de texto têm `maxLength` definido a partir de constantes do schema
+- Sempre usar arrow functions
+- Constantes de caminho de coleção em models usam `SCREAMING_SNAKE_CASE` (ex: `const PATH = 'products'`)
+- IDs do Firestore são validados com `z.string()`, não `z.uuid()`, pois o Firestore gera IDs que não são UUIDs
+- Campos anuláveis têm `null` como valor padrão em `defaultValues` do formulário (não `0` ou `''`) para preservar a semântica do banco de dados
 
-## Naming Conventions
+## Convenções de nomenclatura
 
-Handler and variable names follow the **`[Subject][Action]`** order — subject (the component or element) comes before the action (the event or verb).
+Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o sujeito (o componente ou elemento) vem antes da ação (o evento ou verbo).
 
-### Handler functions — `handle[Subject][Action]`
+### Funções de handler — `handle[Sujeito][Ação]`
 
-| Pattern                 | Example                                                                          | Rule                             |
-| ----------------------- | -------------------------------------------------------------------------------- | -------------------------------- |
-| UI element + DOM event  | `handleAddClick`                                                                 | Add = element, Click = event     |
-| Form modal + action     | `handleFormOpen`, `handleFormEdit`, `handleFormClose`                            | Form = the modal component       |
-| DeleteDialog + action   | `handleDeleteDialogOpen`, `handleDeleteDialogClose`, `handleDeleteDialogConfirm` | Use component name               |
-| Table action props      | `handleEdit`, `handleDelete`                                                     | Short; action is self-describing |
-| Autocomplete add button | `handleAddClick`                                                                 |                                  |
+| Padrão                             | Exemplo                                                                          | Regra                          |
+| ---------------------------------- | -------------------------------------------------------------------------------- | ------------------------------ |
+| Elemento de UI + evento DOM        | `handleAddClick`                                                                 | Add = elemento, Click = evento |
+| Modal de formulário + ação         | `handleFormOpen`, `handleFormEdit`, `handleFormClose`                            | Form = o componente modal      |
+| DeleteDialog + ação                | `handleDeleteDialogOpen`, `handleDeleteDialogClose`, `handleDeleteDialogConfirm` | Usar o nome do componente      |
+| Props de ação de tabela            | `handleEdit`, `handleDelete`                                                     | Curto; a ação se descreve      |
+| Botão de adicionar no Autocomplete | `handleAddClick`                                                                 |                                |
 
-**Exception:** `onSubmit` — kept as-is because it matches the native `<form onSubmit>` prop and would conflict with react-hook-form's `handleSubmit`.
+**Exceção:** `onSubmit` — mantido assim pois corresponde à prop nativa `<form onSubmit>` e entraria em conflito com o `handleSubmit` do react-hook-form.
 
-### State variables
+### Variáveis de estado
 
-| Pattern              | Example                                    | Rule                                   |
-| -------------------- | ------------------------------------------ | -------------------------------------- |
-| Entity in form       | `formProduct`, `formSeller`                | `form[Entity]` — context before entity |
-| Entity being deleted | `productToDelete`, `sellerToDelete`        | `[entity]ToDelete`                     |
-| Boolean state        | `isFormOpen`, `isFetching`, `hasProducts`  | `is[Subject][State]`, `has[Subject]`   |
-| Quick-create flag    | `quickCreateFamily`, `quickCreateSupplier` | `quickCreate[Entity]`                  |
+| Padrão                  | Exemplo                                    | Regra                                         |
+| ----------------------- | ------------------------------------------ | --------------------------------------------- |
+| Entidade no formulário  | `formProduct`, `formSeller`                | `form[Entidade]` — contexto antes da entidade |
+| Entidade sendo excluída | `productToDelete`, `sellerToDelete`        | `[entidade]ToDelete`                          |
+| Estado booleano         | `isFormOpen`, `isFetching`, `hasProducts`  | `is[Sujeito][Estado]`, `has[Sujeito]`         |
+| Flag de criação rápida  | `quickCreateFamily`, `quickCreateSupplier` | `quickCreate[Entidade]`                       |
 
-### Component props
+### Props de componentes
 
-Props on shared components follow the same `handle[Subject][Action]` rule. Use `on*` only for native DOM event props (e.g., `onFocus`, `onChange`) passed through to underlying HTML elements.
+Props em componentes compartilhados seguem a mesma regra `handle[Sujeito][Ação]`. Use `on*` apenas para props de eventos DOM nativos (ex: `onFocus`, `onChange`) repassados para elementos HTML subjacentes.
 
-## Commit Convention
+## Convenção de commits
 
-Commit messages must be in English and follow this format:
+Mensagens de commit devem estar em inglês e seguir este formato:
 
-- Use the following semantic prefixes: '🎉 init, ✨ feat, 🐛 fix, 📚 docs, 💎 style, 📦 refactor, 🚀 perf, 🚨 test, 🛠 build, ⚙️ ci, ♻️ chore, 🗑 revert'
-- The message must be imperative and in lowercase.
-- Write the commit body as a list
-- Reference the associated issue by number if exists using `Issue: #<number>` format.
+- Use os seguintes prefixos semânticos: `🎉 init, ✨ feat, 🐛 fix, 📚 docs, 💎 style, 📦 refactor, 🚀 perf, 🚨 test, 🛠 build, ⚙️ ci, ♻️ chore, 🗑 revert`
+- A mensagem deve estar no imperativo e em letras minúsculas.
+- Escreva o corpo do commit como uma lista
+- Referencie a issue associada pelo número, se existir, usando o formato `Issue: #<número>`.
 
-Example:
+Exemplo:
 
 ```text
 ✨ feat: add products page
