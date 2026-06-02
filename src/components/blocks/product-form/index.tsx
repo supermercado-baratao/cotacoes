@@ -21,7 +21,8 @@ import { useFormHandler } from './use-form-handler'
 type TProductFormProps = {
   product: TProduct | null
   setFormProduct: (product: TProduct | null) => void
-  setQuickCreateFamily: (quickCreateFamily: boolean) => void
+  setQuickCreateFamily: (open: boolean) => void
+  setQuickCreateGroup: (open: boolean) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
@@ -31,13 +32,11 @@ export const ProductForm = ({
   product,
   handleClose,
   setFormProduct,
-  setQuickCreateFamily
+  setQuickCreateFamily,
+  setQuickCreateGroup
 }: TProductFormProps) => {
-  const { register, onSubmit, errors, control, families } = useFormHandler(
-    product,
-    setFormProduct,
-    handleClose
-  )
+  const { register, onSubmit, errors, control, families, groups } =
+    useFormHandler(product, setFormProduct, handleClose)
 
   const title = product ? 'Editar Produto' : 'Novo Produto'
 
@@ -73,7 +72,20 @@ export const ProductForm = ({
           helperText={errors.familyId?.message}
           handleAddClick={() => setQuickCreateFamily(true)}
           addLabel="Nova Família"
-          sx={S.FourCol}
+          sx={S.TwoCol}
+        />
+        <Autocomplete
+          name="groupId"
+          control={control}
+          options={groups}
+          getOptionLabel={(g) => g.description}
+          getOptionValue={(g) => g.id}
+          label="Grupo"
+          error={!!errors.groupId}
+          helperText={errors.groupId?.message}
+          addLabel="Novo Grupo"
+          handleAddClick={() => setQuickCreateGroup(true)}
+          sx={S.TwoCol}
         />
         <CurrencyInput
           name="price"

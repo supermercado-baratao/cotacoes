@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores'
 import {
   Dashboard,
   Families,
+  Groups,
   NotFound,
   Products,
   Quotes,
@@ -55,6 +56,7 @@ export const Router = () => (
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/sellers" element={<Sellers />} />
           <Route path="/families" element={<Families />} />
+          <Route path="/groups" element={<Groups />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

@@ -1,6 +1,14 @@
 import dayjs from 'dayjs'
 
-import type { TOrder, TProduct, TQuote, TSupplier } from '@/models'
+import type {
+  TFamily,
+  TGroup,
+  TOrder,
+  TProduct,
+  TQuote,
+  TQuoteItemType,
+  TSupplier
+} from '@/models'
 
 export const getAvailableYears = (quotes: TQuote[]) => {
   const years = Array.from(
@@ -67,52 +75,61 @@ export const getSelectedQuote = (
 
   return quote ?? null
 }
-
-export const getNumberOfSuppliers = (orders: TOrder[]) => {
-  const supplierIds = orders.map((order) => order.supplierId)
-  return Array.from(new Set(supplierIds)).length
-}
-
-export const getQuoteProducts = (
-  productIds: string[],
-  products: TProduct[]
-) => {
-  return products.filter((product) => productIds.includes(product.id))
-}
+export const getNumberOfSuppliers = (orders: TOrder[]) =>
+  new Set(orders.map((order) => order.supplierId)).size
 
 export type TQuoteRow = {
   id: string
+  type: TQuoteItemType
   description: string
-  productPrice: number | null
-  orderId: string | null
-  orderPrice: number | null
-  quantity: number | null
-  packing: string | null
-  supplierName: string | null
-  observations: string | null
+  orderCount: number
+  bestOrderPrice: number | null
+  bestSupplierName: string | null
+}
+
+const resolveItemDescription = (
+  id: string,
+  type: TQuoteItemType,
+  products: TProduct[],
+  families: TFamily[],
+  groups: TGroup[]
+): string => {
+  if (type === 'product')
+    return products.find((p) => p.id === id)?.description ?? id
+  if (type === 'family')
+    return families.find((f) => f.id === id)?.description ?? id
+  return groups.find((g) => g.id === id)?.description ?? id
 }
 
 export const getQuoteRows = (
-  quoteProducts: TProduct[],
-  ordersByQuoteId: TOrder[],
+  quote: TQuote,
+  products: TProduct[],
+  families: TFamily[],
+  groups: TGroup[],
+  orders: TOrder[],
   suppliers: TSupplier[]
 ): TQuoteRow[] =>
-  quoteProducts.map((product) => {
-    const order =
-      ordersByQuoteId.find((o) => o.productId === product.id) ?? null
-    const supplier = order
-      ? (suppliers.find((s) => s.id === order.supplierId) ?? null)
+  quote.items.map((item) => {
+    const itemOrders = orders.filter((o) => o.quoteItemId === item.id)
+    const bestOrder = itemOrders.length
+      ? itemOrders.reduce((best, o) => (o.price < best.price ? o : best))
+      : null
+    const bestSupplier = bestOrder
+      ? (suppliers.find((s) => s.id === bestOrder.supplierId) ?? null)
       : null
 
     return {
-      id: product.id,
-      description: product.description,
-      productPrice: product.price,
-      orderId: order?.id ?? null,
-      orderPrice: order?.price ?? null,
-      quantity: order?.quantity ?? null,
-      packing: order?.packing ?? null,
-      supplierName: supplier?.tradeName ?? null,
-      observations: order?.observations ?? product.observations
+      id: item.id,
+      type: item.type,
+      description: resolveItemDescription(
+        item.id,
+        item.type,
+        products,
+        families,
+        groups
+      ),
+      orderCount: itemOrders.length,
+      bestOrderPrice: bestOrder?.price ?? null,
+      bestSupplierName: bestSupplier?.tradeName ?? null
     }
   })

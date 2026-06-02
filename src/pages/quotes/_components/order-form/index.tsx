@@ -13,6 +13,7 @@ import {
   Autocomplete,
   CurrencyInput,
   FamilyForm,
+  GroupForm,
   Modal,
   ProductForm,
   SellerForm,
@@ -20,21 +21,21 @@ import {
   type TModalProps
 } from '@/components'
 import { MAX_NUMERIC_VALUE, MAX_OBSERVATIONS_LENGTH } from '@/constants'
-import type { TOrder } from '@/models'
+import type { TOrder, TQuoteItem } from '@/models'
 import { formatCurrency, formatNumericValue, selectOnFocus } from '@/utils'
 
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 
 type TOrderFormProps = {
-  productId: string | null
+  quoteItem: TQuoteItem | null
   order: TOrder | null
   setFormOrder: (order: TOrder | null) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 export const OrderForm = ({
   isOpened,
-  productId,
+  quoteItem,
   order,
   setFormOrder,
   handleClose
@@ -46,14 +47,17 @@ export const OrderForm = ({
     control,
     suppliers,
     sellers,
+    selectableProducts,
+    showProductSelect,
     product,
     lastOrder
-  } = useFormHandler(productId, order, setFormOrder, handleClose)
+  } = useFormHandler(quoteItem, order, setFormOrder, handleClose)
 
   const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
   const [quickCreateSeller, setQuickCreateSeller] = useState(false)
-  const [isProductFormOpen, setIsProductFormOpen] = useState(false)
+  const [quickCreateProduct, setQuickCreateProduct] = useState(false)
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
+  const [quickCreateGroup, setQuickCreateGroup] = useState(false)
 
   const title = order ? 'Editar Pedido' : 'Novo Pedido'
 
@@ -61,20 +65,40 @@ export const OrderForm = ({
     <>
       <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
         <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
-          <TextField
-            label="Produto"
-            value={product?.description.toUpperCase() ?? ''}
-            sx={[S.FourCol, S.Clickable] as SxProps<Theme>}
-            slotProps={{ input: { readOnly: true } }}
-            onClick={() => setIsProductFormOpen(true)}
-          />
-          <TextField
-            label="Preço de Venda"
-            value={product?.price != null ? formatCurrency(product.price) : '—'}
-            sx={[S.TwoCol, S.Clickable] as SxProps<Theme>}
-            slotProps={{ input: { readOnly: true } }}
-            onClick={() => setIsProductFormOpen(true)}
-          />
+          {showProductSelect ? (
+            <Autocomplete
+              name="productId"
+              control={control}
+              options={selectableProducts}
+              getOptionLabel={(p) => p.description}
+              getOptionValue={(p) => p.id}
+              label="Produto"
+              error={!!errors.productId}
+              helperText={errors.productId?.message}
+              addLabel="Novo Produto"
+              handleAddClick={() => setQuickCreateProduct(true)}
+              sx={S.FullWidth}
+            />
+          ) : (
+            <>
+              <TextField
+                label="Produto"
+                value={product?.description.toUpperCase() ?? ''}
+                sx={[S.FourCol, S.Clickable] as SxProps<Theme>}
+                slotProps={{ input: { readOnly: true } }}
+                onClick={() => setQuickCreateProduct(true)}
+              />
+              <TextField
+                label="Preço de Venda"
+                value={
+                  product?.price != null ? formatCurrency(product.price) : '—'
+                }
+                sx={[S.TwoCol, S.Clickable] as SxProps<Theme>}
+                slotProps={{ input: { readOnly: true } }}
+                onClick={() => setQuickCreateProduct(true)}
+              />
+            </>
+          )}
           <CurrencyInput
             name="price"
             control={control}
@@ -192,17 +216,24 @@ export const OrderForm = ({
         handleClose={() => setQuickCreateSeller(false)}
       />
       <ProductForm
-        isOpened={isProductFormOpen}
-        product={product}
+        isOpened={quickCreateProduct}
+        product={showProductSelect ? null : product}
         setFormProduct={() => {}}
-        handleClose={() => setIsProductFormOpen(false)}
+        handleClose={() => setQuickCreateProduct(false)}
         setQuickCreateFamily={setQuickCreateFamily}
+        setQuickCreateGroup={setQuickCreateGroup}
       />
       <FamilyForm
         isOpened={quickCreateFamily}
         family={null}
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
+      />
+      <GroupForm
+        isOpened={quickCreateGroup}
+        group={null}
+        setFormGroup={() => {}}
+        handleClose={() => setQuickCreateGroup(false)}
       />
     </>
   )

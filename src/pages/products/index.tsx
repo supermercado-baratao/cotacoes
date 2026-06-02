@@ -1,4 +1,10 @@
-import { DataView, FamilyForm, PageHeader, ProductForm } from '@/components'
+import {
+  DataView,
+  FamilyForm,
+  GroupForm,
+  PageHeader,
+  ProductForm
+} from '@/components'
 
 import { Table } from './_components'
 import { useProductsHandler } from './use-products-handler'
@@ -11,13 +17,14 @@ export const Products = () => {
     setSearch,
     handleFormOpen,
     filteredProducts,
-
     handleFormClose,
     isFormOpen,
     formProduct,
     setFormProduct,
     quickCreateFamily,
-    setQuickCreateFamily
+    setQuickCreateFamily,
+    quickCreateGroup,
+    setQuickCreateGroup
   } = useProductsHandler()
 
   return (
@@ -43,12 +50,19 @@ export const Products = () => {
         setFormProduct={setFormProduct}
         handleClose={handleFormClose}
         setQuickCreateFamily={setQuickCreateFamily}
+        setQuickCreateGroup={setQuickCreateGroup}
       />
       <FamilyForm
         isOpened={quickCreateFamily}
         family={null}
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
+      />
+      <GroupForm
+        isOpened={quickCreateGroup}
+        group={null}
+        setFormGroup={() => {}}
+        handleClose={() => setQuickCreateGroup(false)}
       />
     </>
   )

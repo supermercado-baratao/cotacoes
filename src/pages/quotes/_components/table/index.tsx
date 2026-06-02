@@ -1,6 +1,6 @@
-import { Delete, Edit, History } from '@mui/icons-material'
+import { Delete, History, ListAlt } from '@mui/icons-material'
 import { GridActionsCellItem, type GridColDef } from '@mui/x-data-grid'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { DeleteDialog, Table as _Table } from '@/components'
 import { useDeleteHandler } from '@/hooks'
@@ -10,28 +10,36 @@ import { useAppStore } from '@/stores'
 import type { TQuoteRow } from '../../utils'
 import { columns } from './columns'
 import { HistoryDrawer } from './history-drawer'
-
-type TDrawerState = {
-  productId: string
-  productName: string
-}
+import { OrdersDrawer } from './orders-drawer'
 
 type TTableProps = {
   quote: TQuote
   rows: TQuoteRow[]
-  handleEdit: (row: TQuoteRow) => void
 }
 
-export const Table = ({ quote, rows, handleEdit }: TTableProps) => {
-  const { updateQuote, deleteOrder, setHistoryProductId } = useAppStore()
-  const [drawer, setDrawer] = useState<TDrawerState | null>(null)
+export const Table = ({ quote, rows }: TTableProps) => {
+  const { updateQuote, setHistoryProductId } = useAppStore()
+  const [drawerRow, setDrawerRow] = useState<TQuoteRow | null>(null)
+  const [historyRow, setHistoryRow] = useState<TQuoteRow | null>(null)
+
+  const handleHistoryOpen = useCallback(
+    (row: TQuoteRow) => {
+      setHistoryRow(row)
+      setHistoryProductId(row.id)
+    },
+    [setHistoryProductId]
+  )
+
+  const handleHistoryClose = () => {
+    setHistoryRow(null)
+    setHistoryProductId(null)
+  }
 
   const removeFromQuote = (row: TQuoteRow) => {
     updateQuote({
       ...quote,
-      products: quote.products.filter((id) => id !== row.id)
+      items: quote.items.filter((i) => i.id !== row.id)
     })
-    if (row.orderId) deleteOrder(row.orderId)
   }
 
   const {
@@ -48,20 +56,21 @@ export const Table = ({ quote, rows, handleEdit }: TTableProps) => {
       headerName: 'Ações',
       width: 120,
       getActions: ({ row }) => [
+        ...(row.type === 'product'
+          ? [
+              <GridActionsCellItem
+                key="history"
+                icon={<History />}
+                label="Histórico"
+                onClick={() => handleHistoryOpen(row)}
+              />
+            ]
+          : []),
         <GridActionsCellItem
-          key="history"
-          icon={<History />}
-          label="Histórico"
-          onClick={() => {
-            setDrawer({ productId: row.id, productName: row.description })
-            setHistoryProductId(row.id)
-          }}
-        />,
-        <GridActionsCellItem
-          key="edit"
-          icon={<Edit />}
-          label="Editar"
-          onClick={() => handleEdit(row)}
+          key="orders"
+          icon={<ListAlt />}
+          label="Pedidos"
+          onClick={() => setDrawerRow(row)}
         />,
         <GridActionsCellItem
           key="delete"
@@ -71,23 +80,21 @@ export const Table = ({ quote, rows, handleEdit }: TTableProps) => {
         />
       ]
     }),
-    [handleEdit, handleDelete, setHistoryProductId]
+    [handleDelete, handleHistoryOpen]
   )
 
   return (
     <>
       <_Table columns={[...columns, actionsColumn]} items={rows} />
+      <OrdersDrawer row={drawerRow} handleClose={() => setDrawerRow(null)} />
       <HistoryDrawer
-        productId={drawer?.productId ?? null}
-        productName={drawer?.productName ?? null}
-        onClose={() => {
-          setDrawer(null)
-          setHistoryProductId(null)
-        }}
+        productId={historyRow?.id ?? null}
+        productName={historyRow?.description ?? null}
+        handleClose={handleHistoryClose}
       />
       <DeleteDialog
         open={!!itemToDelete}
-        title="Remover produto da cotação"
+        title="Remover item da cotação"
         item={itemToDelete?.description ?? ''}
         handleConfirm={handleDeleteDialogConfirm}
         handleClose={handleDeleteDialogClose}

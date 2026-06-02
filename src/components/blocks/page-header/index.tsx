@@ -26,7 +26,11 @@ export const PageHeader = ({
       <Typography component="h1" variant="h5">
         {title}
       </Typography>
-      <Button variant="contained" startIcon={<Add />} onClick={handleFormOpen}>
+      <Button
+        variant="contained"
+        startIcon={<Add />}
+        onClick={() => handleFormOpen()}
+      >
         {buttonLabel}
       </Button>
       <SearchInput

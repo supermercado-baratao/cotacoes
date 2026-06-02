@@ -2,6 +2,7 @@ import {
   Business,
   Category,
   Dashboard,
+  Folder,
   Inventory2,
   People,
   RequestQuote,
@@ -20,5 +21,6 @@ export const navItems: TNavItem[] = [
   { label: 'Produtos', path: '/products', icon: Inventory2 },
   { label: 'Fornecedores', path: '/suppliers', icon: Business },
   { label: 'Vendedores', path: '/sellers', icon: People },
-  { label: 'Famílias', path: '/families', icon: Category }
+  { label: 'Famílias', path: '/families', icon: Category },
+  { label: 'Grupos', path: '/groups', icon: Folder }
 ]

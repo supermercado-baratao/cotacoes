@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 
 import { useFormState } from '@/hooks'
-import type { TOrder, TProduct, TQuote } from '@/models'
+import type { TProduct, TQuote } from '@/models'
 import { useAppStore } from '@/stores'
 
 import {
@@ -10,20 +10,19 @@ import {
   getAvailableMonths,
   getAvailableYears,
   getNumberOfSuppliers,
-  getQuoteProducts,
   getQuoteRows,
-  getSelectedQuote,
-  type TQuoteRow
+  getSelectedQuote
 } from './utils'
 
 export const useQuotesHandler = () => {
   const {
     quotes,
     products,
+    families,
+    groups,
     ordersByQuoteId,
     suppliers,
-    setQuoteId,
-    setHistoryProductId
+    setQuoteId
   } = useAppStore()
 
   const availableYears = getAvailableYears(quotes || [])
@@ -51,55 +50,36 @@ export const useQuotesHandler = () => {
     handleFormClose: handleProductFormClose
   } = useFormState<TProduct>()
 
-  const {
-    formItem: formOrder,
-    setFormItem: setFormOrder,
-    isFormOpen: isOrderFormOpen,
-    handleFormOpen: handleOrderFormOpen,
-    handleFormClose: handleOrderFormClose
-  } = useFormState<TOrder>()
-
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
-  const [orderProductId, setOrderProductId] = useState<string | null>(null)
+  const [quickCreateGroup, setQuickCreateGroup] = useState(false)
 
   const quote = getSelectedQuote(quotes || [], year, month, day) ?? null
-
   const numberOfSuppliers = getNumberOfSuppliers(ordersByQuoteId || [])
 
-  const quoteProducts = getQuoteProducts(quote?.products || [], products || [])
-
-  const quoteRows = getQuoteRows(
-    quoteProducts,
-    ordersByQuoteId || [],
-    suppliers || []
-  )
+  const quoteRows =
+    quote && products && families && groups && suppliers
+      ? getQuoteRows(
+          quote,
+          products,
+          families,
+          groups,
+          ordersByQuoteId || [],
+          suppliers
+        )
+      : []
 
   useEffect(() => {
     setQuoteId(quote?.id ?? null)
   }, [quote, setQuoteId])
 
-  useEffect(() => {
-    setHistoryProductId(isOrderFormOpen ? orderProductId : null)
-  }, [isOrderFormOpen, orderProductId, setHistoryProductId])
-
   const onYearChange = (year: number) => setYear(year)
-
   const onMonthChange = (month: number) => setMonth(month)
-
   const onDayChange = (day: number) => setDay(day)
 
   const handleCreateQuote = (date: string) => {
     setYear(dayjs(date).year())
     setMonth(dayjs(date).month())
     setDay(dayjs(date).date())
-  }
-
-  const handleOrderEdit = (row: TQuoteRow) => {
-    setOrderProductId(row.id)
-    const order = row.orderId
-      ? (ordersByQuoteId?.find((o) => o.id === row.orderId) ?? null)
-      : null
-    handleOrderFormOpen(order)
   }
 
   const isFetching = quotes === null
@@ -129,14 +109,10 @@ export const useQuotesHandler = () => {
     isProductFormOpen,
     handleProductFormOpen,
     handleProductFormClose,
-    formOrder,
-    setFormOrder,
-    isOrderFormOpen,
-    orderProductId,
-    handleOrderFormClose,
-    handleOrderEdit,
     quickCreateFamily,
     setQuickCreateFamily,
+    quickCreateGroup,
+    setQuickCreateGroup,
     numberOfSuppliers,
     handleCreateQuote
   }

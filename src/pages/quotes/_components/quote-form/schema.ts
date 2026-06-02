@@ -6,7 +6,9 @@ import type { TCreateData } from '@/types'
 
 export const schema = z.object({
   date: z.string().min(1),
-  products: z.array(z.string()),
+  items: z.array(
+    z.object({ id: z.string(), type: z.enum(['product', 'family', 'group']) })
+  ),
   observations: z.string().max(MAX_OBSERVATIONS_LENGTH).nullable(),
   status: z.enum(['opened', 'closed']),
   orders: z.array(z.string())

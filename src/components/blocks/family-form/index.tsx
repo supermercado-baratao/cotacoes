@@ -1,6 +1,6 @@
 import { Box, Button, TextField } from '@mui/material'
 
-import { Autocomplete, Modal, type TModalProps } from '@/components'
+import { Modal, type TModalProps } from '@/components'
 import { MAX_DESCRIPTION_LENGTH } from '@/constants'
 import type { TFamily } from '@/models'
 import { selectOnFocus } from '@/utils'
@@ -19,7 +19,7 @@ export const FamilyForm = ({
   handleClose,
   setFormFamily
 }: TFamilyFormProps) => {
-  const { register, onSubmit, errors, control, products } = useFormHandler(
+  const { register, onSubmit, errors } = useFormHandler(
     family,
     setFormFamily,
     handleClose
@@ -37,18 +37,6 @@ export const FamilyForm = ({
           helperText={errors.description?.message}
           onFocus={selectOnFocus}
           slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
-        />
-        <Autocomplete
-          name="productIds"
-          control={control}
-          options={products ?? []}
-          getOptionLabel={(p) => p.description}
-          getOptionValue={(p) => p.id}
-          label="Produtos"
-          error={!!errors.productIds}
-          helperText={errors.productIds?.message}
-          multiple
-          disableCloseOnSelect
         />
         <Box sx={S.Actions}>
           <Button onClick={handleClose}>Cancelar</Button>

@@ -9,11 +9,5 @@ export const columns: GridColDef<TFamily>[] = [
     minWidth: 280,
     flex: 1,
     valueFormatter: (value: string) => value.toUpperCase()
-  },
-  {
-    field: 'productIds',
-    headerName: 'Total de Produtos',
-    width: 160,
-    valueGetter: (_: never, row: TFamily) => row.productIds?.length ?? 0
   }
 ]

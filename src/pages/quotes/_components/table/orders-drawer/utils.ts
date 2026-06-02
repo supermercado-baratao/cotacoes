@@ -1,0 +1,14 @@
+import type { TProduct, TSeller, TSupplier } from '@/models'
+
+export const getProductDescription = (
+  productId: string,
+  products: TProduct[]
+) => products?.find((product) => product.id === productId)?.description ?? '—'
+
+export const getSupplierName = (supplierId: string, suppliers: TSupplier[]) =>
+  suppliers?.find((supplier) => supplier.id === supplierId)?.tradeName ?? '—'
+
+export const getSellerName = (sellerId: string | null, sellers: TSeller[]) =>
+  sellerId
+    ? (sellers?.find((seller) => seller.id === sellerId)?.name ?? '—')
+    : '—'

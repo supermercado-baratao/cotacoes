@@ -1,5 +1,6 @@
 export * from './dashboard'
 export * from './families'
+export * from './groups'
 export * from './not-found'
 export * from './products'
 export * from './quotes'

@@ -12,7 +12,7 @@ export const useFormHandler = (
   setFormProduct: (product: TProduct | null) => void,
   handleClose: () => void
 ) => {
-  const { createProduct, updateProduct, families } = useAppStore()
+  const { createProduct, updateProduct, families, groups } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
@@ -23,7 +23,8 @@ export const useFormHandler = (
       tax: product?.tax ?? null,
       margin: product?.margin ?? null,
       observations: product?.observations ?? null,
-      familyId: product?.familyId ?? null
+      familyId: product?.familyId ?? null,
+      groupId: product?.groupId ?? null
     }),
     [product]
   )
@@ -34,10 +35,7 @@ export const useFormHandler = (
     reset,
     control,
     formState: { errors }
-  } = useForm({
-    resolver: zodResolver(schema),
-    defaultValues
-  })
+  } = useForm({ resolver: zodResolver(schema), defaultValues })
 
   useEffect(() => {
     reset(defaultValues)
@@ -53,5 +51,12 @@ export const useFormHandler = (
     createProduct(data)
   })
 
-  return { register, onSubmit, errors, control, families: families ?? [] }
+  return {
+    register,
+    onSubmit,
+    errors,
+    control,
+    families: families ?? [],
+    groups: groups ?? []
+  }
 }

@@ -18,6 +18,7 @@ export const useProductsHandler = () => {
 
   const [search, setSearch] = useState('')
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
+  const [quickCreateGroup, setQuickCreateGroup] = useState(false)
 
   const filteredProducts = useMemo(
     () => (products ? filterProducts(search, products) : null),
@@ -39,6 +40,8 @@ export const useProductsHandler = () => {
     formProduct,
     setFormProduct,
     quickCreateFamily,
-    setQuickCreateFamily
+    setQuickCreateFamily,
+    quickCreateGroup,
+    setQuickCreateGroup
   }
 }

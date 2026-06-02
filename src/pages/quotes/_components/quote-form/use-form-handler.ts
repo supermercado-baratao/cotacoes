@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
-import type { TQuote } from '@/models'
+import type { TQuote, TQuoteItem, TQuoteItemType } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
 import { schema, type TSchema } from './schema'
@@ -13,15 +13,16 @@ export const useFormHandler = (
   setFormQuote: (quote: TQuote | null) => void,
   handleClose: () => void
 ) => {
-  const { createQuote, updateQuote, products } = useAppStore()
+  const { createQuote, updateQuote, products, families, groups } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
-  const [productSearch, setProductSearch] = useState('')
+  const [search, setSearch] = useState('')
+  const [activeTab, setActiveTab] = useState<TQuoteItemType>('product')
 
   const defaultValues: TSchema = useMemo(
     () => ({
       date: quote?.date ?? dayjs().format('YYYY-MM-DD'),
-      products: quote?.products ?? [],
+      items: quote?.items ?? [],
       observations: quote?.observations ?? null,
       status: quote?.status ?? 'opened',
       orders: quote?.orders ?? []
@@ -36,36 +37,46 @@ export const useFormHandler = (
     control,
     setValue,
     formState: { errors }
-  } = useForm({
-    resolver: zodResolver(schema),
-    defaultValues
-  })
+  } = useForm({ resolver: zodResolver(schema), defaultValues })
 
   useEffect(() => {
     reset(defaultValues)
   }, [defaultValues, reset])
 
-  const selectedProducts = useWatch({ control, name: 'products' })
+  const selectedItems = useWatch({ control, name: 'items' }) ?? []
 
-  const filteredProducts = useMemo(() => {
-    if (!products) return []
-    if (!productSearch.trim()) return products
-    return products.filter((p) =>
-      p.description.toLowerCase().includes(productSearch.toLowerCase())
-    )
-  }, [products, productSearch])
+  const isSelected = (id: string) => selectedItems.some((i) => i.id === id)
 
-  const handleProductToggle = (productId: string) => {
-    const current = selectedProducts ?? []
-    if (current.includes(productId)) {
+  const handleItemToggle = (id: string, type: TQuoteItemType) => {
+    if (isSelected(id)) {
       setValue(
-        'products',
-        current.filter((id) => id !== productId)
+        'items',
+        selectedItems.filter((i) => i.id !== id)
       )
     } else {
-      setValue('products', [...current, productId])
+      setValue('items', [...selectedItems, { id, type } satisfies TQuoteItem])
     }
   }
+
+  const filteredOptions = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    if (activeTab === 'product') {
+      const list = products ?? []
+      return term
+        ? list.filter((p) => p.description.toLowerCase().includes(term))
+        : list
+    }
+    if (activeTab === 'family') {
+      const list = families ?? []
+      return term
+        ? list.filter((f) => f.description.toLowerCase().includes(term))
+        : list
+    }
+    const list = groups ?? []
+    return term
+      ? list.filter((g) => g.description.toLowerCase().includes(term))
+      : list
+  }, [activeTab, search, products, families, groups])
 
   const onSubmit = handleSubmit((data) => {
     if (quote) {
@@ -81,10 +92,12 @@ export const useFormHandler = (
     register,
     onSubmit,
     errors,
-    productSearch,
-    setProductSearch,
-    filteredProducts,
-    selectedProducts: selectedProducts ?? [],
-    handleProductToggle
+    search,
+    setSearch,
+    activeTab,
+    setActiveTab,
+    filteredOptions,
+    isSelected,
+    handleItemToggle
   }
 }

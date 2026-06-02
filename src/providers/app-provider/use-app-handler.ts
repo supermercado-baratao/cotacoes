@@ -6,6 +6,7 @@ import { useAppStore } from '@/stores'
 
 import { useDataFetch } from './use-data-fetch'
 import { useFamilyMutation } from './use-family-mutation'
+import { useGroupMutation } from './use-group-mutation'
 import { useOrderMutation } from './use-order-mutation'
 import { useProductMutation } from './use-product-mutation'
 import { useQuoteMutation } from './use-quote-mutation'
@@ -18,6 +19,7 @@ export const useAppHandler = () => {
     setSuppliers,
     setSellers,
     setFamilies,
+    setGroups,
     setQuotes,
     setOrdersByQuoteId,
     setOrdersByProductId
@@ -27,6 +29,7 @@ export const useAppHandler = () => {
       setSuppliers: state.setSuppliers,
       setSellers: state.setSellers,
       setFamilies: state.setFamilies,
+      setGroups: state.setGroups,
       setQuotes: state.setQuotes,
       setOrdersByQuoteId: state.setOrdersByQuoteId,
       setOrdersByProductId: state.setOrdersByProductId
@@ -38,6 +41,7 @@ export const useAppHandler = () => {
     suppliers,
     sellers,
     families,
+    groups,
     quotes,
     ordersByQuoteId,
     ordersByProductId
@@ -47,6 +51,7 @@ export const useAppHandler = () => {
     useSupplierMutation()
   const { createSeller, updateSeller, deleteSeller } = useSellerMutation()
   const { createFamily, updateFamily, deleteFamily } = useFamilyMutation()
+  const { createGroup, updateGroup, deleteGroup } = useGroupMutation()
   const { createQuote, updateQuote, deleteQuote } = useQuoteMutation()
   const { createOrder, updateOrder, deleteOrder } = useOrderMutation()
 
@@ -57,27 +62,24 @@ export const useAppHandler = () => {
   useEffect(() => {
     if (products) setProducts(products)
   }, [products, setProducts])
-
   useEffect(() => {
     if (suppliers) setSuppliers(suppliers)
   }, [suppliers, setSuppliers])
-
   useEffect(() => {
     if (sellers) setSellers(sellers)
   }, [sellers, setSellers])
-
   useEffect(() => {
     if (families) setFamilies(families)
   }, [families, setFamilies])
-
+  useEffect(() => {
+    if (groups) setGroups(groups)
+  }, [groups, setGroups])
   useEffect(() => {
     if (quotes) setQuotes(quotes)
   }, [quotes, setQuotes])
-
   useEffect(() => {
     setOrdersByQuoteId(ordersByQuoteId ?? [])
   }, [ordersByQuoteId, setOrdersByQuoteId])
-
   useEffect(() => {
     setOrdersByProductId(ordersByProductId ?? [])
   }, [ordersByProductId, setOrdersByProductId])
@@ -96,6 +98,9 @@ export const useAppHandler = () => {
       createFamily,
       updateFamily,
       deleteFamily,
+      createGroup,
+      updateGroup,
+      deleteGroup,
       createQuote,
       updateQuote,
       deleteQuote,
@@ -116,6 +121,9 @@ export const useAppHandler = () => {
     createFamily,
     updateFamily,
     deleteFamily,
+    createGroup,
+    updateGroup,
+    deleteGroup,
     createQuote,
     updateQuote,
     deleteQuote,

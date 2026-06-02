@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 import type {
   TFamily,
+  TGroup,
   TOrder,
   TProduct,
   TQuote,
@@ -34,6 +35,12 @@ type TAppStore = {
   createFamily: (family: TCreateData<TFamily>) => void
   updateFamily: (family: TUpdateData<TFamily>) => void
   deleteFamily: (id: string) => void
+
+  groups: TGroup[] | null
+  setGroups: (groups: TGroup[]) => void
+  createGroup: (group: TCreateData<TGroup>) => void
+  updateGroup: (group: TUpdateData<TGroup>) => void
+  deleteGroup: (id: string) => void
 
   quotes: TQuote[] | null
   setQuotes: (quotes: TQuote[]) => void
@@ -79,6 +86,12 @@ export const useAppStore = create<TAppStore>((set) => ({
   createFamily: () => {},
   updateFamily: () => {},
   deleteFamily: () => {},
+
+  groups: null,
+  setGroups: (groups) => set({ groups }),
+  createGroup: () => {},
+  updateGroup: () => {},
+  deleteGroup: () => {},
 
   quotes: null,
   setQuotes: (quotes) => set({ quotes }),

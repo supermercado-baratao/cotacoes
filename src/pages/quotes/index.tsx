@@ -1,7 +1,7 @@
-import { FamilyForm, ProductForm } from '@/components'
+import { FamilyForm, GroupForm, ProductForm } from '@/components'
 import { DataView } from '@/components'
 
-import { Form, Header, OrderForm, Table } from './_components'
+import { Form, Header, Table } from './_components'
 import { useQuotesHandler } from './use-quotes-handler'
 
 export const Quotes = () => {
@@ -27,16 +27,11 @@ export const Quotes = () => {
     formProduct,
     setFormProduct,
     isProductFormOpen,
-    handleProductFormOpen,
     handleProductFormClose,
-    formOrder,
-    setFormOrder,
-    isOrderFormOpen,
-    orderProductId,
-    handleOrderFormClose,
-    handleOrderEdit,
     quickCreateFamily,
-    setQuickCreateFamily
+    setQuickCreateFamily,
+    quickCreateGroup,
+    setQuickCreateGroup
   } = useQuotesHandler()
 
   return (
@@ -57,25 +52,15 @@ export const Quotes = () => {
       <DataView
         isFetching={isFetching}
         isEmpty={!hasQuoteRows}
-        emptyMessage="Nenhum produto nesta cotação. Crie uma cotação ou adicione produtos!"
+        emptyMessage="Nenhum item nesta cotação. Crie uma cotação ou adicione itens!"
       >
-        {quote && (
-          <Table quote={quote} rows={quoteRows} handleEdit={handleOrderEdit} />
-        )}
+        {quote && <Table quote={quote} rows={quoteRows} />}
       </DataView>
       <Form
         isOpened={isQuoteFormOpen}
         quote={formQuote}
         setFormQuote={setFormQuote}
         handleClose={handleQuoteFormClose}
-        setQuickCreateProduct={handleProductFormOpen}
-      />
-      <OrderForm
-        isOpened={isOrderFormOpen}
-        order={formOrder}
-        setFormOrder={setFormOrder}
-        productId={orderProductId}
-        handleClose={handleOrderFormClose}
       />
       <ProductForm
         isOpened={isProductFormOpen}
@@ -83,12 +68,19 @@ export const Quotes = () => {
         setFormProduct={setFormProduct}
         handleClose={handleProductFormClose}
         setQuickCreateFamily={setQuickCreateFamily}
+        setQuickCreateGroup={setQuickCreateGroup}
       />
       <FamilyForm
         isOpened={quickCreateFamily}
         family={null}
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
+      />
+      <GroupForm
+        isOpened={quickCreateGroup}
+        group={null}
+        setFormGroup={() => {}}
+        handleClose={() => setQuickCreateGroup(false)}
       />
     </>
   )

@@ -1,8 +1,9 @@
 import type { GridColDef } from '@mui/x-data-grid'
 
-import { formatCurrency, formatNumericValue } from '@/utils'
+import { formatCurrency } from '@/utils'
 
 import type { TQuoteRow } from '../../utils'
+import { TYPE_LABELS } from './orders-drawer/constants'
 
 export const columns: GridColDef<TQuoteRow>[] = [
   {
@@ -10,43 +11,32 @@ export const columns: GridColDef<TQuoteRow>[] = [
     headerName: 'Descrição',
     minWidth: 200,
     flex: 1,
-    valueFormatter: (value: string | null) => value?.toUpperCase() ?? ''
+    valueFormatter: (value: string) => value?.toUpperCase() ?? ''
   },
   {
-    field: 'productPrice',
-    headerName: 'Venda',
-    minWidth: 130,
-    valueFormatter: (value: number | null) => formatCurrency(value ?? 0)
+    field: 'type',
+    headerName: 'Tipo',
+    width: 100,
+    valueFormatter: (value: TQuoteRow['type']) => TYPE_LABELS[value] ?? ''
   },
   {
-    field: 'supplierName',
+    field: 'orderCount',
+    headerName: 'Pedidos',
+    width: 90,
+    type: 'number'
+  },
+  {
+    field: 'bestOrderPrice',
+    headerName: 'Melhor Preço',
+    width: 140,
+    valueFormatter: (value: number | null) =>
+      value != null ? formatCurrency(value) : '—'
+  },
+  {
+    field: 'bestSupplierName',
     headerName: 'Fornecedor',
     minWidth: 160,
-    valueFormatter: (value: string | null) => value?.toUpperCase() ?? ''
-  },
-  {
-    field: 'orderPrice',
-    headerName: 'Custo',
-    minWidth: 130,
-    valueFormatter: (value: number | null) => formatCurrency(value ?? 0)
-  },
-  {
-    field: 'quantity',
-    headerName: 'Qtd',
-    width: 80,
-    valueFormatter: (value: number | null) => formatNumericValue(value ?? 0)
-  },
-  {
-    field: 'packing',
-    headerName: 'Embalagem',
-    minWidth: 120,
-    valueFormatter: (value: string | null) => value?.toUpperCase() ?? ''
-  },
-  {
-    field: 'observations',
-    headerName: 'Observações',
-    minWidth: 180,
     flex: 1,
-    valueFormatter: (value: string | null) => value?.toUpperCase() ?? ''
+    valueFormatter: (value: string | null) => value?.toUpperCase() ?? '—'
   }
 ]

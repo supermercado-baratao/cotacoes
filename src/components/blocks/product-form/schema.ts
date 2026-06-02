@@ -17,7 +17,8 @@ export const schema = z.object({
   tax: z.number().min(0).max(MAX_NUMERIC_VALUE).nullable(),
   margin: z.number().min(0).max(MAX_NUMERIC_VALUE).nullable(),
   observations: z.string().max(MAX_OBSERVATIONS_LENGTH).nullable(),
-  familyId: z.string().nullable()
+  familyId: z.string().nullable(),
+  groupId: z.string().nullable()
 }) satisfies z.ZodType<TCreateData<TProduct>>
 
 export type TSchema = z.infer<typeof schema>
