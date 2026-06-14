@@ -3,7 +3,8 @@ import {
   FamilyForm,
   GroupForm,
   PageHeader,
-  ProductForm
+  ProductForm,
+  SupplierForm
 } from '@/components'
 
 import { Table } from './_components'
@@ -24,7 +25,9 @@ export const Products = () => {
     quickCreateFamily,
     setQuickCreateFamily,
     quickCreateGroup,
-    setQuickCreateGroup
+    setQuickCreateGroup,
+    quickCreateSupplier,
+    setQuickCreateSupplier
   } = useProductsHandler()
 
   return (
@@ -51,6 +54,7 @@ export const Products = () => {
         handleClose={handleFormClose}
         setQuickCreateFamily={setQuickCreateFamily}
         setQuickCreateGroup={setQuickCreateGroup}
+        setQuickCreateSupplier={setQuickCreateSupplier}
       />
       <FamilyForm
         isOpened={quickCreateFamily}
@@ -63,6 +67,12 @@ export const Products = () => {
         group={null}
         setFormGroup={() => {}}
         handleClose={() => setQuickCreateGroup(false)}
+      />
+      <SupplierForm
+        isOpened={quickCreateSupplier}
+        supplier={null}
+        setFormSupplier={() => {}}
+        handleClose={() => setQuickCreateSupplier(false)}
       />
     </>
   )

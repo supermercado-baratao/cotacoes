@@ -222,6 +222,7 @@ export const OrderForm = ({
         handleClose={() => setQuickCreateProduct(false)}
         setQuickCreateFamily={setQuickCreateFamily}
         setQuickCreateGroup={setQuickCreateGroup}
+        setQuickCreateSupplier={setQuickCreateSupplier}
       />
       <FamilyForm
         isOpened={quickCreateFamily}

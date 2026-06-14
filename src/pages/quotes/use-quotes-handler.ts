@@ -52,6 +52,7 @@ export const useQuotesHandler = () => {
 
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
   const [quickCreateGroup, setQuickCreateGroup] = useState(false)
+  const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
 
   const quote = getSelectedQuote(quotes || [], year, month, day) ?? null
   const numberOfSuppliers = getNumberOfSuppliers(ordersByQuoteId || [])
@@ -113,6 +114,8 @@ export const useQuotesHandler = () => {
     setQuickCreateFamily,
     quickCreateGroup,
     setQuickCreateGroup,
+    quickCreateSupplier,
+    setQuickCreateSupplier,
     numberOfSuppliers,
     handleCreateQuote
   }
