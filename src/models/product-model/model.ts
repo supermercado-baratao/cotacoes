@@ -15,6 +15,20 @@ const createMany = (data: TCreateData<TProduct>[]): Promise<TProduct[]> =>
     data: data.map((item) => ({ ...item, id: item.vrId }))
   })
 
+const upsertMany = (data: TCreateData<TProduct>[]): Promise<void> =>
+  database.upsertManyWithIds<TProduct>({
+    path: getUserPath('products'),
+    data: data.map((item) => ({ ...item, id: item.vrId })),
+    updateFields: [
+      'id',
+      'vrId',
+      'description',
+      'price',
+      'familyId',
+      'supplierIds'
+    ]
+  })
+
 const findMany = (): Promise<TProduct[]> =>
   database.findMany({ path: getUserPath('products') })
 
@@ -27,6 +41,7 @@ const deleteUniqueById = (id: string): Promise<string> =>
 export const productModel = {
   create,
   createMany,
+  upsertMany,
   findMany,
   update,
   deleteUniqueById

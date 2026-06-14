@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore'
+
 export type TProduct = {
   id: string
   vrId: string
@@ -10,6 +12,6 @@ export type TProduct = {
   familyId: string | null
   groupId: string | null
   supplierIds: string[]
-  createdAt: number
-  updatedAt: number
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }

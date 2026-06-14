@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore'
+
 import type { TQuoteItemType } from '../quote-model'
 
 export type TOrder = {
@@ -13,6 +15,6 @@ export type TOrder = {
   sellerId: string | null
   date: string
   observations: string | null
-  createdAt: number
-  updatedAt: number
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }

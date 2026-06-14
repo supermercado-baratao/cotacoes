@@ -9,6 +9,19 @@ const create = (data: TCreateData<TFamily>): Promise<TFamily> =>
     data: { ...data, id: data.vrId }
   })
 
+const createMany = (data: TCreateData<TFamily>[]): Promise<TFamily[]> =>
+  database.createManyWithIds<TFamily>({
+    path: getUserPath('families'),
+    data: data.map((item) => ({ ...item, id: item.vrId }))
+  })
+
+const upsertMany = (data: TCreateData<TFamily>[]): Promise<void> =>
+  database.upsertManyWithIds<TFamily>({
+    path: getUserPath('families'),
+    data: data.map((item) => ({ ...item, id: item.vrId })),
+    updateFields: ['id', 'vrId', 'description']
+  })
+
 const findMany = (): Promise<TFamily[]> =>
   database.findMany({ path: getUserPath('families') })
 
@@ -18,15 +31,10 @@ const update = (data: TUpdateData<TFamily>): Promise<TFamily> =>
 const deleteUniqueById = (id: string): Promise<string> =>
   database.deleteUniqueById({ path: getUserPath('families'), id })
 
-const createMany = (data: TCreateData<TFamily>[]): Promise<TFamily[]> =>
-  database.createManyWithIds<TFamily>({
-    path: getUserPath('families'),
-    data: data.map((item) => ({ ...item, id: item.vrId }))
-  })
-
 export const familyModel = {
   create,
   createMany,
+  upsertMany,
   findMany,
   update,
   deleteUniqueById

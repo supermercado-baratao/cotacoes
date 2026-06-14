@@ -10,9 +10,9 @@ const importData = async ({
   products
 }: TImportData): Promise<void> => {
   await Promise.all([
-    familyModel.createMany(families),
-    supplierModel.createMany(suppliers),
-    productModel.createMany(products)
+    familyModel.upsertMany(families),
+    supplierModel.upsertMany(suppliers),
+    productModel.upsertMany(products)
   ])
 }
 

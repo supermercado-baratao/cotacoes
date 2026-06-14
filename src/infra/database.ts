@@ -6,7 +6,9 @@ import {
   getDocs,
   query,
   type QueryConstraint,
+  serverTimestamp,
   setDoc,
+  Timestamp,
   updateDoc,
   writeBatch
 } from 'firebase/firestore'
@@ -52,15 +54,14 @@ const create = async <T>({
   path: string
 }): Promise<T> => {
   const docRef = doc(collection(firestore, path))
-  const timestamp = Date.now()
-  const value = {
+  const now = Timestamp.now()
+  await setDoc(docRef, {
     ...data,
     id: docRef.id,
-    createdAt: timestamp,
-    updatedAt: timestamp
-  }
-  await setDoc(docRef, value)
-  return value as T
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  })
+  return { ...data, id: docRef.id, createdAt: now, updatedAt: now } as T
 }
 
 const createWithId = async <T>({
@@ -70,25 +71,25 @@ const createWithId = async <T>({
   data: TCreateData<T> & { id: string }
   path: string
 }): Promise<T> => {
-  const timestamp = Date.now()
-  const value = {
+  const now = Timestamp.now()
+  await setDoc(doc(firestore, path, data.id), {
     ...data,
-    createdAt: timestamp,
-    updatedAt: timestamp
-  }
-  await setDoc(doc(firestore, path, data.id), value)
-  return value as T
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  })
+  return { ...data, createdAt: now, updatedAt: now } as T
 }
 
 const BATCH_CHUNK_SIZE = 500
 
 const commitInChunks = async (
-  items: Array<{ id: string; ref: ReturnType<typeof doc>; data: object }>
+  items: Array<{ id: string; ref: ReturnType<typeof doc>; data: object }>,
+  options?: Parameters<ReturnType<typeof writeBatch>['set']>[2]
 ) => {
   for (let i = 0; i < items.length; i += BATCH_CHUNK_SIZE) {
     const batch = writeBatch(firestore)
     items.slice(i, i + BATCH_CHUNK_SIZE).forEach(({ ref, data }) => {
-      batch.set(ref, data)
+      batch.set(ref, data, options ?? {})
     })
     await batch.commit()
   }
@@ -101,21 +102,42 @@ const createManyWithIds = async <T>({
   data: Array<TCreateData<T> & { id: string }>
   path: string
 }): Promise<T[]> => {
-  const timestamp = Date.now()
-  const values = data.map((item) => ({
-    ...item,
-    createdAt: timestamp,
-    updatedAt: timestamp
-  }))
+  const now = Timestamp.now()
   await commitInChunks(
-    values.map((value) => ({
-      id: value.id,
-      ref: doc(firestore, path, value.id),
-      data: value
+    data.map((item) => ({
+      id: item.id,
+      ref: doc(firestore, path, item.id),
+      data: {
+        ...item,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }
     }))
   )
-  return values as T[]
+  return data.map((item) => ({
+    ...item,
+    createdAt: now,
+    updatedAt: now
+  })) as T[]
 }
+
+const upsertManyWithIds = async <T>({
+  data,
+  path,
+  updateFields
+}: {
+  data: Array<TCreateData<T> & { id: string }>
+  path: string
+  updateFields: string[]
+}): Promise<void> =>
+  commitInChunks(
+    data.map((item) => ({
+      id: item.id,
+      ref: doc(firestore, path, item.id),
+      data: { ...item, updatedAt: serverTimestamp() }
+    })),
+    { mergeFields: [...updateFields, 'updatedAt'] }
+  )
 
 const createMany = async <T>({
   data,
@@ -124,19 +146,26 @@ const createMany = async <T>({
   data: TCreateData<T[]>
   path: string
 }): Promise<T[]> => {
-  const timestamp = Date.now()
-  const values = data.map((item) => {
-    const id = crypto.randomUUID()
-    return { ...item, id, createdAt: timestamp, updatedAt: timestamp }
-  })
+  const now = Timestamp.now()
+  const ids = data.map(() => crypto.randomUUID())
   await commitInChunks(
-    values.map((value) => ({
-      id: value.id,
-      ref: doc(firestore, path, value.id),
-      data: value
+    data.map((item, i) => ({
+      id: ids[i],
+      ref: doc(firestore, path, ids[i]),
+      data: {
+        ...item,
+        id: ids[i],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }
     }))
   )
-  return values as T[]
+  return data.map((item, i) => ({
+    ...item,
+    id: ids[i],
+    createdAt: now,
+    updatedAt: now
+  })) as T[]
 }
 
 const update = async <T>({
@@ -149,12 +178,12 @@ const update = async <T>({
   if (Array.isArray(data)) {
     throw new InternalServerError({ cause: 'Data must be an object' })
   }
-  const value = {
+  const now = Timestamp.now()
+  await updateDoc(doc(firestore, path, data.id), {
     ...data,
-    updatedAt: Date.now()
-  } as object
-  await updateDoc(doc(firestore, path, data.id), value)
-  return value as T
+    updatedAt: serverTimestamp()
+  })
+  return { ...data, updatedAt: now } as T
 }
 
 const updateMany = async <T>({
@@ -164,17 +193,16 @@ const updateMany = async <T>({
   data: TUpdateData<T[]>
   path: string
 }): Promise<T[]> => {
+  const now = Timestamp.now()
   const batch = writeBatch(firestore)
-  const values: object[] = []
-  data.forEach((value) => {
-    const ref = doc(firestore, path, value.id)
-    const timestamp = Date.now()
-    const updatedValue = { ...value, updatedAt: timestamp }
-    values.push(updatedValue)
-    batch.update(ref, updatedValue)
+  data.forEach((item) => {
+    batch.update(doc(firestore, path, item.id), {
+      ...item,
+      updatedAt: serverTimestamp()
+    })
   })
   await batch.commit()
-  return values as T[]
+  return data.map((item) => ({ ...item, updatedAt: now })) as T[]
 }
 
 const deleteUniqueById = async ({
@@ -211,6 +239,7 @@ export const database = {
   createWithId,
   createMany,
   createManyWithIds,
+  upsertManyWithIds,
   update,
   updateMany,
   deleteUniqueById,

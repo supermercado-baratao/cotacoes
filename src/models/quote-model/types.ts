@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore'
+
 export type TQuoteStatus = 'opened' | 'closed'
 
 export type TQuoteItemType = 'product' | 'family' | 'group'
@@ -14,6 +16,6 @@ export type TQuote = {
   status: TQuoteStatus
   date: string
   observations: string | null
-  createdAt: number
-  updatedAt: number
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }

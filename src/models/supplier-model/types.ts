@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore'
+
 export type TSupplier = {
   id: string
   vrId: string
@@ -6,6 +8,6 @@ export type TSupplier = {
   cnpj: string
   email: string | null
   phone: string | null
-  createdAt: number
-  updatedAt: number
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }
