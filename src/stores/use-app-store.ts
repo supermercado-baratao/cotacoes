@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import type {
   TFamily,
   TGroup,
+  TImportData,
   TOrder,
   TProduct,
   TQuote,
@@ -60,6 +61,8 @@ type TAppStore = {
   setQuoteId: (id: string | null) => void
   historyProductId: string | null
   setHistoryProductId: (id: string | null) => void
+
+  importData: (data: TImportData) => void
 }
 
 export const useAppStore = create<TAppStore>((set) => ({
@@ -110,5 +113,7 @@ export const useAppStore = create<TAppStore>((set) => ({
   quoteId: null,
   setQuoteId: (id) => set({ quoteId: id }),
   historyProductId: null,
-  setHistoryProductId: (id) => set({ historyProductId: id })
+  setHistoryProductId: (id) => set({ historyProductId: id }),
+
+  importData: () => {}
 }))

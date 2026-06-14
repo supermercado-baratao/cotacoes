@@ -7,6 +7,7 @@ import {
   Dashboard,
   Families,
   Groups,
+  Import,
   NotFound,
   Products,
   Quotes,
@@ -57,6 +58,7 @@ export const Router = () => (
           <Route path="/sellers" element={<Sellers />} />
           <Route path="/families" element={<Families />} />
           <Route path="/groups" element={<Groups />} />
+          <Route path="/import" element={<Import />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

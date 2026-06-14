@@ -7,6 +7,7 @@ import { useAppStore } from '@/stores'
 import { useDataFetch } from './use-data-fetch'
 import { useFamilyMutation } from './use-family-mutation'
 import { useGroupMutation } from './use-group-mutation'
+import { useImportMutation } from './use-import-mutation'
 import { useOrderMutation } from './use-order-mutation'
 import { useProductMutation } from './use-product-mutation'
 import { useQuoteMutation } from './use-quote-mutation'
@@ -47,6 +48,7 @@ export const useAppHandler = () => {
     ordersByProductId
   } = useDataFetch()
   const { createProduct, updateProduct, deleteProduct } = useProductMutation()
+  const { importData } = useImportMutation()
   const { createSupplier, updateSupplier, deleteSupplier } =
     useSupplierMutation()
   const { createSeller, updateSeller, deleteSeller } = useSellerMutation()
@@ -106,7 +108,8 @@ export const useAppHandler = () => {
       deleteQuote,
       createOrder,
       updateOrder,
-      deleteOrder
+      deleteOrder,
+      importData
     })
   }, [
     createProduct,
@@ -129,7 +132,8 @@ export const useAppHandler = () => {
     deleteQuote,
     createOrder,
     updateOrder,
-    deleteOrder
+    deleteOrder,
+    importData
   ])
 
   return { isLoading }
