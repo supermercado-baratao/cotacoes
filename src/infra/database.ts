@@ -80,6 +80,43 @@ const createWithId = async <T>({
   return value as T
 }
 
+const BATCH_CHUNK_SIZE = 500
+
+const commitInChunks = async (
+  items: Array<{ id: string; ref: ReturnType<typeof doc>; data: object }>
+) => {
+  for (let i = 0; i < items.length; i += BATCH_CHUNK_SIZE) {
+    const batch = writeBatch(firestore)
+    items.slice(i, i + BATCH_CHUNK_SIZE).forEach(({ ref, data }) => {
+      batch.set(ref, data)
+    })
+    await batch.commit()
+  }
+}
+
+const createManyWithIds = async <T>({
+  data,
+  path
+}: {
+  data: Array<TCreateData<T> & { id: string }>
+  path: string
+}): Promise<T[]> => {
+  const timestamp = Date.now()
+  const values = data.map((item) => ({
+    ...item,
+    createdAt: timestamp,
+    updatedAt: timestamp
+  }))
+  await commitInChunks(
+    values.map((value) => ({
+      id: value.id,
+      ref: doc(firestore, path, value.id),
+      data: value
+    }))
+  )
+  return values as T[]
+}
+
 const createMany = async <T>({
   data,
   path
@@ -87,22 +124,18 @@ const createMany = async <T>({
   data: TCreateData<T[]>
   path: string
 }): Promise<T[]> => {
-  const batch = writeBatch(firestore)
-  const values: object[] = []
-  data.forEach((value) => {
+  const timestamp = Date.now()
+  const values = data.map((item) => {
     const id = crypto.randomUUID()
-    const ref = doc(firestore, path, id)
-    const timestamp = Date.now()
-    const newValue = {
-      ...value,
-      id,
-      createdAt: timestamp,
-      updatedAt: timestamp
-    }
-    values.push(newValue)
-    batch.set(ref, newValue)
+    return { ...item, id, createdAt: timestamp, updatedAt: timestamp }
   })
-  await batch.commit()
+  await commitInChunks(
+    values.map((value) => ({
+      id: value.id,
+      ref: doc(firestore, path, value.id),
+      data: value
+    }))
+  )
   return values as T[]
 }
 
@@ -177,6 +210,7 @@ export const database = {
   create,
   createWithId,
   createMany,
+  createManyWithIds,
   update,
   updateMany,
   deleteUniqueById,
