@@ -35,13 +35,5 @@ export const columns: GridColDef<TSupplier>[] = [
     headerName: 'Telefone',
     width: 150,
     valueFormatter: (value: string) => formatPhone(value)
-  },
-  {
-    field: 'sellerIds',
-    headerName: 'Vendedores',
-    width: 120,
-    valueGetter: (_: never, row: TSupplier) => row.sellerIds?.length ?? 0,
-    valueFormatter: (value: number) =>
-      value === 1 ? '1 vendedor' : `${value} vendedores`
   }
 ]

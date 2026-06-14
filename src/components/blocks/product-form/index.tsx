@@ -23,6 +23,7 @@ type TProductFormProps = {
   setFormProduct: (product: TProduct | null) => void
   setQuickCreateFamily: (open: boolean) => void
   setQuickCreateGroup: (open: boolean) => void
+  setQuickCreateSupplier: (open: boolean) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
@@ -33,9 +34,10 @@ export const ProductForm = ({
   handleClose,
   setFormProduct,
   setQuickCreateFamily,
-  setQuickCreateGroup
+  setQuickCreateGroup,
+  setQuickCreateSupplier
 }: TProductFormProps) => {
-  const { register, onSubmit, errors, control, families, groups } =
+  const { register, onSubmit, errors, control, families, groups, suppliers } =
     useFormHandler(product, setFormProduct, handleClose)
 
   const title = product ? 'Editar Produto' : 'Novo Produto'
@@ -51,6 +53,14 @@ export const ProductForm = ({
           sx={S.FullWidth}
           onFocus={selectOnFocus}
           slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
+        />
+        <TextField
+          {...register('vrId')}
+          label="Código VR"
+          error={!!errors.vrId}
+          helperText={errors.vrId?.message}
+          sx={S.TwoCol}
+          onFocus={selectOnFocus}
         />
         <TextField
           {...register('barcode')}
@@ -86,6 +96,21 @@ export const ProductForm = ({
           addLabel="Novo Grupo"
           handleAddClick={() => setQuickCreateGroup(true)}
           sx={S.TwoCol}
+        />
+        <Autocomplete
+          name="supplierIds"
+          control={control}
+          options={suppliers}
+          getOptionLabel={(s) => s.tradeName}
+          getOptionValue={(s) => s.id}
+          label="Fornecedores"
+          error={!!errors.supplierIds}
+          helperText={errors.supplierIds?.message}
+          multiple
+          disableCloseOnSelect
+          handleAddClick={() => setQuickCreateSupplier(true)}
+          addLabel="Novo Fornecedor"
+          sx={S.FullWidth}
         />
         <CurrencyInput
           name="price"

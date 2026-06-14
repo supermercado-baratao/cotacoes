@@ -11,6 +11,7 @@ import type { TCreateData } from '@/types'
 export const MAX_BARCODE_LENGTH = 14
 
 export const schema = z.object({
+  vrId: z.string().min(1),
   description: z.string().min(1).max(MAX_DESCRIPTION_LENGTH),
   price: z.number().nonnegative().max(MAX_NUMERIC_VALUE).nullable(),
   barcode: z.string().max(MAX_BARCODE_LENGTH).nullable(),
@@ -18,7 +19,8 @@ export const schema = z.object({
   margin: z.number().min(0).max(MAX_NUMERIC_VALUE).nullable(),
   observations: z.string().max(MAX_OBSERVATIONS_LENGTH).nullable(),
   familyId: z.string().nullable(),
-  groupId: z.string().nullable()
+  groupId: z.string().nullable(),
+  supplierIds: z.array(z.string())
 }) satisfies z.ZodType<TCreateData<TProduct>>
 
 export type TSchema = z.infer<typeof schema>

@@ -16,7 +16,10 @@ export const useFormHandler = (
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
-    () => ({ description: family?.description ?? '' }),
+    () => ({
+      vrId: family?.vrId ?? '',
+      description: family?.description ?? ''
+    }),
     [family]
   )
 

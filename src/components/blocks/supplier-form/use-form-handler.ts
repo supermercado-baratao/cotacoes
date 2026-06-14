@@ -12,17 +12,17 @@ export const useFormHandler = (
   setFormSupplier: (supplier: TSupplier | null) => void,
   handleClose: () => void
 ) => {
-  const { createSupplier, updateSupplier, sellers } = useAppStore()
+  const { createSupplier, updateSupplier } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
     () => ({
+      vrId: supplier?.vrId ?? '',
       legalName: supplier?.legalName ?? '',
       tradeName: supplier?.tradeName ?? '',
       cnpj: supplier?.cnpj ?? '',
       email: supplier?.email ?? null,
-      phone: supplier?.phone ?? null,
-      sellerIds: supplier?.sellerIds ?? []
+      phone: supplier?.phone ?? null
     }),
     [supplier]
   )
@@ -51,11 +51,5 @@ export const useFormHandler = (
     createSupplier(data)
   })
 
-  return {
-    register,
-    onSubmit,
-    errors,
-    control,
-    sellers: sellers ?? []
-  }
+  return { register, onSubmit, errors, control }
 }

@@ -31,6 +31,13 @@ export const FamilyForm = ({
     <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
       <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
         <TextField
+          {...register('vrId')}
+          label="Código VR"
+          error={!!errors.vrId}
+          helperText={errors.vrId?.message}
+          onFocus={selectOnFocus}
+        />
+        <TextField
           {...register('description')}
           label="Descrição"
           error={!!errors.description}

@@ -1,4 +1,4 @@
-import { DataView, PageHeader, SellerForm, SupplierForm } from '@/components'
+import { DataView, PageHeader, SupplierForm } from '@/components'
 
 import { Table } from './_components'
 import { useSuppliersHandler } from './use-suppliers-handler'
@@ -15,9 +15,7 @@ export const Suppliers = () => {
     handleFormClose,
     isFormOpen,
     setFormSupplier,
-    formSupplier,
-    quickCreateSeller,
-    setQuickCreateSeller
+    formSupplier
   } = useSuppliersHandler()
 
   return (
@@ -45,13 +43,6 @@ export const Suppliers = () => {
         supplier={formSupplier}
         setFormSupplier={setFormSupplier}
         handleClose={handleFormClose}
-        setQuickCreateSeller={setQuickCreateSeller}
-      />
-      <SellerForm
-        isOpened={quickCreateSeller}
-        seller={null}
-        setFormSeller={() => {}}
-        handleClose={() => setQuickCreateSeller(false)}
       />
     </>
   )

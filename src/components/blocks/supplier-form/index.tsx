@@ -1,12 +1,6 @@
 import { Box, Button, TextField } from '@mui/material'
 
-import {
-  Autocomplete,
-  CnpjInput,
-  Modal,
-  PhoneInput,
-  type TModalProps
-} from '@/components'
+import { CnpjInput, Modal, PhoneInput, type TModalProps } from '@/components'
 import type { TSupplier } from '@/models'
 import { selectOnFocus } from '@/utils'
 
@@ -17,17 +11,15 @@ import { useFormHandler } from './use-form-handler'
 type TSupplierFormProps = {
   supplier: TSupplier | null
   setFormSupplier: (supplier: TSupplier | null) => void
-  setQuickCreateSeller?: (value: boolean) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 export const SupplierForm = ({
   isOpened,
   supplier,
   handleClose,
-  setFormSupplier,
-  setQuickCreateSeller
+  setFormSupplier
 }: TSupplierFormProps) => {
-  const { register, onSubmit, errors, control, sellers } = useFormHandler(
+  const { register, onSubmit, errors, control } = useFormHandler(
     supplier,
     setFormSupplier,
     handleClose
@@ -39,6 +31,14 @@ export const SupplierForm = ({
     <>
       <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
         <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
+          <TextField
+            {...register('vrId')}
+            label="Código VR"
+            error={!!errors.vrId}
+            helperText={errors.vrId?.message}
+            sx={S.ThreeCol}
+            onFocus={selectOnFocus}
+          />
           <TextField
             {...register('legalName')}
             label="Razão Social"
@@ -83,25 +83,6 @@ export const SupplierForm = ({
             helperText={errors.email?.message}
             sx={S.EmailField}
             onFocus={selectOnFocus}
-          />
-          <Autocomplete
-            name="sellerIds"
-            control={control}
-            options={sellers}
-            getOptionLabel={(s) => s.name}
-            getOptionValue={(s) => s.id}
-            label="Vendedores"
-            error={!!errors.sellerIds}
-            helperText={errors.sellerIds?.message}
-            multiple
-            disableCloseOnSelect
-            handleAddClick={
-              setQuickCreateSeller
-                ? () => setQuickCreateSeller(true)
-                : undefined
-            }
-            addLabel="Novo Vendedor"
-            sx={S.FullWidth}
           />
           <Box sx={S.Actions}>
             <Button onClick={handleClose}>Cancelar</Button>

@@ -86,7 +86,7 @@ export const useFormHandler = (
     if (!watchedSupplierId) return sellers ?? []
     const supplier = suppliers?.find((s) => s.id === watchedSupplierId)
     if (!supplier) return sellers ?? []
-    return (sellers ?? []).filter((s) => supplier.sellerIds.includes(s.id))
+    return (sellers ?? []).filter((s) => s.supplierIds.includes(supplier.id))
   }, [watchedSupplierId, suppliers, sellers])
 
   const filteredSuppliers = useMemo(() => {

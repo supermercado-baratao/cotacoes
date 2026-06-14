@@ -17,7 +17,6 @@ export const useSuppliersHandler = () => {
   } = useFormState<TSupplier>()
 
   const [search, setSearch] = useState('')
-  const [quickCreateSeller, setQuickCreateSeller] = useState(false)
 
   const filteredSuppliers = useMemo(
     () => (suppliers ? filterSuppliers(search, suppliers) : null),
@@ -37,8 +36,6 @@ export const useSuppliersHandler = () => {
     handleFormClose,
     isFormOpen,
     formSupplier,
-    setFormSupplier,
-    quickCreateSeller,
-    setQuickCreateSeller
+    setFormSupplier
   }
 }
