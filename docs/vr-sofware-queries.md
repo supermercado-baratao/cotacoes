@@ -1,7 +1,7 @@
 - Buscar dados para importação:
 
 ```sql
-  SELECT
+  SELECT DISTINCT
     p.id                AS id_produto,
     p.descricaocompleta,
     fp.id               AS id_familia_preco,
@@ -10,19 +10,14 @@
     f.razaosocial,
     f.nomefantasia,
     f.cnpj,
-    pc.precovenda,
+    pc.precovenda
   FROM produto p
-  LEFT JOIN familiaproduto fp     ON fp.id = p.id_familiaproduto
-  LEFT JOIN produtofornecedor pf  ON pf.id_produto = p.id
-  LEFT JOIN fornecedor f          ON f.id = pf.id_fornecedor
-  LEFT JOIN produtocomplemento pc ON pc.id_produto = p.id
-  WHERE EXISTS (
-      SELECT 1
-      FROM notaentradaitem nei
-      JOIN notaentrada ne ON ne.id = nei.id_notaentrada
-      WHERE nei.id_produto = p.id
-        AND ne.dataemissao >= '2026-01-01'
-  )
+  LEFT JOIN familiaproduto fp      ON fp.id = p.id_familiaproduto
+  INNER JOIN notaentradaitem nei   ON nei.id_produto = p.id
+  INNER JOIN notaentrada ne        ON ne.id = nei.id_notaentrada
+                                  AND ne.dataemissao >= '2026-01-01'
+  INNER JOIN fornecedor f          ON f.id = ne.id_fornecedor
+  LEFT JOIN produtocomplemento pc  ON pc.id_produto = p.id
   ORDER BY p.descricaocompleta;
 ```
 
