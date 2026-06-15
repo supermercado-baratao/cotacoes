@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
+import { Navigate, Outlet, Route, Routes } from 'react-router'
 
 import { AppLayout } from '@/layout'
 import { useAuthStore } from '@/stores'
@@ -40,28 +40,26 @@ const VerifyEmailRoute = () => {
 }
 
 export const Router = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route element={<PublicRoute />}>
-        <Route path="/signin" element={<Signin />} />
-        <Route path="/signup" element={<Signup />} />
+  <Routes>
+    <Route element={<PublicRoute />}>
+      <Route path="/signin" element={<Signin />} />
+      <Route path="/signup" element={<Signup />} />
+    </Route>
+    <Route element={<VerifyEmailRoute />}>
+      <Route path="/verify-email" element={<VerifyEmail />} />
+    </Route>
+    <Route element={<PrivateRoute />}>
+      <Route element={<AppLayout />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/quotes" element={<Quotes />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/suppliers" element={<Suppliers />} />
+        <Route path="/sellers" element={<Sellers />} />
+        <Route path="/families" element={<Families />} />
+        <Route path="/groups" element={<Groups />} />
+        <Route path="/import" element={<Import />} />
       </Route>
-      <Route element={<VerifyEmailRoute />}>
-        <Route path="/verify-email" element={<VerifyEmail />} />
-      </Route>
-      <Route element={<PrivateRoute />}>
-        <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/quotes" element={<Quotes />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/suppliers" element={<Suppliers />} />
-          <Route path="/sellers" element={<Sellers />} />
-          <Route path="/families" element={<Families />} />
-          <Route path="/groups" element={<Groups />} />
-          <Route path="/import" element={<Import />} />
-        </Route>
-      </Route>
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  </BrowserRouter>
+    </Route>
+    <Route path="*" element={<NotFound />} />
+  </Routes>
 )

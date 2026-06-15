@@ -38,7 +38,7 @@ export const usePageHandler = () => {
     try {
       await auth.currentUser!.reload()
       setUser(auth.currentUser)
-      navigate('/', { replace: true })
+      navigate('/dashboard', { replace: true })
     } catch {
       alert({
         title: 'Erro',

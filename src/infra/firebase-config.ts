@@ -12,7 +12,7 @@ const firebaseConfig: FirebaseOptions = {
   measurementId: import.meta.env.VITE_APP_MEASUREMENT_ID
 }
 
-const app = initializeApp(firebaseConfig)
+export const app = initializeApp(firebaseConfig)
 
 export const firestore = getFirestore(app)
 

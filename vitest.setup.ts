@@ -1,9 +1,18 @@
-import * as matchers from '@testing-library/jest-dom/matchers'
-import { cleanup } from '@testing-library/react'
-import { afterEach, expect } from 'vitest'
+import '@testing-library/jest-dom/vitest'
 
-expect.extend(matchers)
+import { cleanup } from '@testing-library/react'
+import { afterAll, afterEach, beforeAll } from 'vitest'
+
+import orchestrator from '@/tests/orchestrator'
+
+beforeAll(() => {
+  orchestrator.connectToEmulators()
+})
 
 afterEach(() => {
   cleanup()
+})
+
+afterAll(() => {
+  orchestrator.clearEmulatorData()
 })

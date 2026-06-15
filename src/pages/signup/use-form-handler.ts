@@ -31,8 +31,10 @@ export const useFormHandler = () => {
         data.email,
         data.password
       )
-      await updateProfile(firebaseUser, { displayName: data.name })
-      await sendEmailVerification(firebaseUser)
+      await Promise.all([
+        updateProfile(firebaseUser, { displayName: data.name }),
+        sendEmailVerification(firebaseUser)
+      ])
     } catch (err: unknown) {
       const code = (err as { code?: string }).code ?? ''
       alert({

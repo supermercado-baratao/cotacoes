@@ -5,9 +5,7 @@ import { AppProvider, AuthProvider } from './providers'
 import { Router } from './Router'
 import { dark } from './themes'
 
-const queryClient = new QueryClient()
-
-const App = () => (
+const App = ({ queryClient }: { queryClient: QueryClient }) => (
   <ThemeProvider theme={dark}>
     <CssBaseline />
     <QueryClientProvider client={queryClient}>
