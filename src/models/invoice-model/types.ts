@@ -1,0 +1,46 @@
+import { Timestamp } from 'firebase/firestore'
+
+export type TInvoiceOrigin = 'issued' | 'posted'
+
+export type TInvoiceVerificationStatus = 'pending' | 'approved' | 'divergent'
+
+export type TInvoiceItemMatchStatus =
+  | 'matched'
+  | 'unmatched_product'
+  | 'unmatched_order'
+  | 'manual'
+
+export type TInvoiceItem = {
+  itemNumber: number
+  supplierProductCode: string
+  barcode: string | null
+  description: string
+  unit: string
+  quantity: number
+  unitPrice: number
+  totalPrice: number
+  productId: string | null
+  orderId: string | null
+  matchStatus: TInvoiceItemMatchStatus
+  priceDivergence: number | null
+  quantityDivergence: number | null
+}
+
+export type TInvoice = {
+  id: string
+  accessKey: string
+  number: string
+  series: string
+  emissionDate: string
+  supplierCnpj: string
+  supplierName: string
+  supplierId: string | null
+  destinationCnpj: string
+  totalValue: number
+  items: TInvoiceItem[]
+  origin: TInvoiceOrigin
+  verificationStatus: TInvoiceVerificationStatus
+  quoteId: string | null
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}

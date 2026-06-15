@@ -8,6 +8,7 @@ import { useDataFetch } from './use-data-fetch'
 import { useFamilyMutation } from './use-family-mutation'
 import { useGroupMutation } from './use-group-mutation'
 import { useImportMutation } from './use-import-mutation'
+import { useInvoiceMutation } from './use-invoice-mutation'
 import { useOrderMutation } from './use-order-mutation'
 import { useProductMutation } from './use-product-mutation'
 import { useQuoteMutation } from './use-quote-mutation'
@@ -23,7 +24,8 @@ export const useAppHandler = () => {
     setGroups,
     setQuotes,
     setOrdersByQuoteId,
-    setOrdersByProductId
+    setOrdersByProductId,
+    setInvoices
   } = useAppStore(
     useShallow((state) => ({
       setProducts: state.setProducts,
@@ -33,7 +35,8 @@ export const useAppHandler = () => {
       setGroups: state.setGroups,
       setQuotes: state.setQuotes,
       setOrdersByQuoteId: state.setOrdersByQuoteId,
-      setOrdersByProductId: state.setOrdersByProductId
+      setOrdersByProductId: state.setOrdersByProductId,
+      setInvoices: state.setInvoices
     }))
   )
 
@@ -45,7 +48,8 @@ export const useAppHandler = () => {
     groups,
     quotes,
     ordersByQuoteId,
-    ordersByProductId
+    ordersByProductId,
+    invoices
   } = useDataFetch()
   const { createProduct, updateProduct, deleteProduct } = useProductMutation()
   const { importData } = useImportMutation()
@@ -56,6 +60,7 @@ export const useAppHandler = () => {
   const { createGroup, updateGroup, deleteGroup } = useGroupMutation()
   const { createQuote, updateQuote, deleteQuote } = useQuoteMutation()
   const { createOrder, updateOrder, deleteOrder } = useOrderMutation()
+  const { createInvoice, updateInvoice, deleteInvoice } = useInvoiceMutation()
 
   const isFetching = useIsFetching()
   const isMutating = useIsMutating()
@@ -64,27 +69,38 @@ export const useAppHandler = () => {
   useEffect(() => {
     if (products) setProducts(products)
   }, [products, setProducts])
+
   useEffect(() => {
     if (suppliers) setSuppliers(suppliers)
   }, [suppliers, setSuppliers])
+
   useEffect(() => {
     if (sellers) setSellers(sellers)
   }, [sellers, setSellers])
+
   useEffect(() => {
     if (families) setFamilies(families)
   }, [families, setFamilies])
+
   useEffect(() => {
     if (groups) setGroups(groups)
   }, [groups, setGroups])
+
   useEffect(() => {
     if (quotes) setQuotes(quotes)
   }, [quotes, setQuotes])
+
   useEffect(() => {
     setOrdersByQuoteId(ordersByQuoteId ?? [])
   }, [ordersByQuoteId, setOrdersByQuoteId])
+
   useEffect(() => {
     setOrdersByProductId(ordersByProductId ?? [])
   }, [ordersByProductId, setOrdersByProductId])
+
+  useEffect(() => {
+    if (invoices) setInvoices(invoices)
+  }, [invoices, setInvoices])
 
   useEffect(() => {
     useAppStore.setState({
@@ -109,7 +125,10 @@ export const useAppHandler = () => {
       createOrder,
       updateOrder,
       deleteOrder,
-      importData
+      importData,
+      createInvoice,
+      updateInvoice,
+      deleteInvoice
     })
   }, [
     createProduct,
@@ -133,7 +152,10 @@ export const useAppHandler = () => {
     createOrder,
     updateOrder,
     deleteOrder,
-    importData
+    importData,
+    createInvoice,
+    updateInvoice,
+    deleteInvoice
   ])
 
   return { isLoading }

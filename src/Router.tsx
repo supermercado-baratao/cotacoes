@@ -8,6 +8,8 @@ import {
   Families,
   Groups,
   Import,
+  InvoiceDetail,
+  Invoices,
   NotFound,
   Products,
   Quotes,
@@ -58,6 +60,8 @@ export const Router = () => (
         <Route path="/families" element={<Families />} />
         <Route path="/groups" element={<Groups />} />
         <Route path="/import" element={<Import />} />
+        <Route path="/invoices" element={<Invoices />} />
+        <Route path="/invoices/:id" element={<InvoiceDetail />} />
       </Route>
     </Route>
     <Route path="*" element={<NotFound />} />

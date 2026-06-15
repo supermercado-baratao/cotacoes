@@ -4,6 +4,7 @@ import type {
   TFamily,
   TGroup,
   TImportData,
+  TInvoice,
   TOrder,
   TProduct,
   TQuote,
@@ -63,6 +64,12 @@ type TAppStore = {
   setHistoryProductId: (id: string | null) => void
 
   importData: (data: TImportData) => void
+
+  invoices: TInvoice[] | null
+  setInvoices: (invoices: TInvoice[]) => void
+  createInvoice: (invoice: Omit<TInvoice, 'createdAt' | 'updatedAt'>) => void
+  updateInvoice: (invoice: TUpdateData<TInvoice>) => void
+  deleteInvoice: (id: string) => void
 }
 
 export const useAppStore = create<TAppStore>((set) => ({
@@ -115,5 +122,11 @@ export const useAppStore = create<TAppStore>((set) => ({
   historyProductId: null,
   setHistoryProductId: (id) => set({ historyProductId: id }),
 
-  importData: () => {}
+  importData: () => {},
+
+  invoices: null,
+  setInvoices: (invoices) => set({ invoices }),
+  createInvoice: () => {},
+  updateInvoice: () => {},
+  deleteInvoice: () => {}
 }))

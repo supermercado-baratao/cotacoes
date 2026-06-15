@@ -1,6 +1,7 @@
 export * from './family-model'
 export * from './group-model'
 export * from './import-model'
+export * from './invoice-model'
 export * from './order-model'
 export * from './product-model'
 export * from './quote-model'

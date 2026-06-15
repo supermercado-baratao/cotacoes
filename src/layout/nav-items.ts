@@ -5,6 +5,7 @@ import {
   Folder,
   Inventory2,
   People,
+  ReceiptLong,
   RequestQuote,
   type SvgIconComponent,
   UploadFile
@@ -19,6 +20,7 @@ type TNavItem = {
 export const navItems: TNavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: Dashboard },
   { label: 'Cotações', path: '/quotes', icon: RequestQuote },
+  { label: 'Conferência', path: '/invoices', icon: ReceiptLong },
   { label: 'Produtos', path: '/products', icon: Inventory2 },
   { label: 'Fornecedores', path: '/suppliers', icon: Business },
   { label: 'Vendedores', path: '/sellers', icon: People },

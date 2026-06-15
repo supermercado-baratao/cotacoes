@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import {
   familyModel,
   groupModel,
+  invoiceModel,
   orderModel,
   productModel,
   quoteModel,
@@ -47,6 +48,11 @@ export const useDataFetch = () => {
         queryKey: ['orders', 'product', historyProductId],
         queryFn: () => orderModel.findManyByProductId(historyProductId!),
         enabled: !!historyProductId && !!user
+      },
+      {
+        queryKey: ['invoices'],
+        queryFn: invoiceModel.findMany,
+        enabled: !!user
       }
     ]
   })
@@ -59,7 +65,8 @@ export const useDataFetch = () => {
     { data: groups },
     { data: quotes },
     { data: ordersByQuoteId },
-    { data: ordersByProductId }
+    { data: ordersByProductId },
+    { data: invoices }
   ] = queries
 
   const isError = queries.some((query) => query.isError)
@@ -82,6 +89,7 @@ export const useDataFetch = () => {
     groups,
     quotes,
     ordersByQuoteId,
-    ordersByProductId
+    ordersByProductId,
+    invoices
   }
 }
