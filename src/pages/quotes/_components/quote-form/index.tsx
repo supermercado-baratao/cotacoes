@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Checkbox,
-  List,
   ListItem,
   ListItemButton,
   ListItemIcon,
@@ -12,6 +11,8 @@ import {
   TextField,
   Typography
 } from '@mui/material'
+import { useVirtualizer } from '@tanstack/react-virtual'
+import { useEffect, useState } from 'react'
 
 import { Modal, SearchInput, type TModalProps } from '@/components'
 import { MAX_OBSERVATIONS_LENGTH } from '@/constants'
@@ -25,6 +26,8 @@ type TFormProps = {
   quote: TQuote | null
   setFormQuote: (quote: TQuote | null) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
+
+const ITEM_HEIGHT = 40
 
 export const Form = ({
   isOpened,
@@ -42,8 +45,23 @@ export const Form = ({
     setActiveTab,
     filteredOptions,
     isSelected,
-    handleItemToggle
+    handleItemToggle,
+    selectedCount
   } = useFormHandler(quote, setFormQuote, handleClose)
+
+  const [listEl, setListEl] = useState<HTMLDivElement | null>(null)
+
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const rowVirtualizer = useVirtualizer({
+    count: filteredOptions.length,
+    getScrollElement: () => listEl,
+    estimateSize: () => ITEM_HEIGHT,
+    overscan: 5
+  })
+
+  useEffect(() => {
+    if (listEl) listEl.scrollTop = 0
+  }, [filteredOptions, listEl])
 
   const title = quote ? 'Editar Cotação' : 'Nova Cotação'
 
@@ -76,30 +94,55 @@ export const Form = ({
             onValueChange={setSearch}
             sx={{ maxWidth: 'none' }}
           />
-          <List sx={S.ProductList}>
-            {filteredOptions.map((item) => (
-              <ListItem key={item.id} disablePadding>
-                <ListItemButton
-                  dense
-                  onClick={() => handleItemToggle(item.id, activeTab)}
-                >
-                  <ListItemIcon>
-                    <Checkbox
-                      edge="start"
-                      checked={isSelected(item.id)}
-                      disableRipple
-                    />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.description}
-                    slotProps={{ primary: { variant: 'body2' } }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+          <Box sx={S.ListInfo}>
+            <Typography variant="caption" color="text.secondary">
+              {filteredOptions.length} itens
+            </Typography>
+            <Typography variant="caption" color="primary">
+              {selectedCount} selecionados
+            </Typography>
+          </Box>
+          <Box ref={setListEl} sx={S.ProductList}>
+            <Box
+              sx={{
+                height: rowVirtualizer.getTotalSize(),
+                position: 'relative'
+              }}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                const item = filteredOptions[virtualItem.index]
+                return (
+                  <ListItem
+                    key={item.id}
+                    disablePadding
+                    sx={{
+                      position: 'absolute',
+                      top: virtualItem.start,
+                      width: '100%'
+                    }}
+                  >
+                    <ListItemButton
+                      dense
+                      onClick={() => handleItemToggle(item.id, activeTab)}
+                    >
+                      <ListItemIcon>
+                        <Checkbox
+                          edge="start"
+                          checked={isSelected(item.id)}
+                          disableRipple
+                        />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.description}
+                        slotProps={{ primary: { variant: 'body2' } }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                )
+              })}
+            </Box>
+          </Box>
         </Box>
-
         <TextField
           {...register('observations')}
           label="Observações"
@@ -109,7 +152,6 @@ export const Form = ({
           helperText={errors.observations?.message}
           slotProps={{ htmlInput: { maxLength: MAX_OBSERVATIONS_LENGTH } }}
         />
-
         <Box sx={S.Actions}>
           <Button onClick={handleClose}>Cancelar</Button>
           <Button type="submit" variant="contained">

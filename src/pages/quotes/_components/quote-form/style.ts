@@ -19,6 +19,11 @@ export const ProductSearchRow: SxProps<Theme> = {
   alignItems: 'stretch'
 }
 
+export const ListInfo: SxProps<Theme> = {
+  display: 'flex',
+  justifyContent: 'space-between'
+}
+
 export const ProductList: SxProps<Theme> = {
   maxHeight: 220,
   overflow: 'auto',

@@ -98,6 +98,7 @@ export const useFormHandler = (
     setActiveTab,
     filteredOptions,
     isSelected,
-    handleItemToggle
+    handleItemToggle,
+    selectedCount: selectedItems.length
   }
 }
