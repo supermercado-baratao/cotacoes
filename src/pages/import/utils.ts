@@ -28,10 +28,39 @@ export const parseXlsx = async (file: File): Promise<TImportData> => {
     { raw: false }
   )
 
+  const productMap = new Map<string, TCreateData<TProduct>>()
   const familyMap = new Map<string, TCreateData<TFamily>>()
   const supplierMap = new Map<string, TCreateData<TSupplier>>()
 
-  const products: TCreateData<TProduct>[] = raw.map((row) => {
+  raw.forEach((row) => {
+    if (!row.id_produto) return
+
+    const supplierId = row.id_fornecedor || null
+    const existing = productMap.get(row.id_produto)
+
+    if (existing) {
+      if (supplierId) {
+        const merged = new Set([...existing.supplierIds, supplierId])
+        productMap.set(row.id_produto, {
+          ...existing,
+          supplierIds: [...merged]
+        })
+      }
+    } else {
+      productMap.set(row.id_produto, {
+        vrId: row.id_produto,
+        description: row.descricaocompleta,
+        price: Number(row.precovenda) / 10000,
+        familyId: row.id_familia_preco || null,
+        supplierIds: supplierId ? [supplierId] : [],
+        barcode: null,
+        tax: null,
+        margin: null,
+        observations: null,
+        groupId: null
+      })
+    }
+
     if (
       row.id_familia_preco &&
       row.familia_preco &&
@@ -43,9 +72,9 @@ export const parseXlsx = async (file: File): Promise<TImportData> => {
       })
     }
 
-    if (!supplierMap.has(row.id_fornecedor)) {
-      supplierMap.set(row.id_fornecedor, {
-        vrId: row.id_fornecedor,
+    if (supplierId && !supplierMap.has(supplierId)) {
+      supplierMap.set(supplierId, {
+        vrId: supplierId,
         tradeName: row.nomefantasia,
         legalName: row.razaosocial,
         cnpj: row.cnpj,
@@ -53,23 +82,10 @@ export const parseXlsx = async (file: File): Promise<TImportData> => {
         phone: null
       })
     }
-
-    return {
-      vrId: row.id_produto,
-      description: row.descricaocompleta,
-      price: Number(row.precovenda) / 10000,
-      familyId: row.id_familia_preco || null,
-      supplierIds: [row.id_fornecedor],
-      barcode: null,
-      tax: null,
-      margin: null,
-      observations: null,
-      groupId: null
-    }
   })
 
   return {
-    products,
+    products: [...productMap.values()],
     families: [...familyMap.values()],
     suppliers: [...supplierMap.values()]
   }
