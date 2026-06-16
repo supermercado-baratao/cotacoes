@@ -1,5 +1,12 @@
+import { faker } from '@faker-js/faker'
 import retry from 'async-retry'
-import { applyActionCode, connectAuthEmulator } from 'firebase/auth'
+import {
+  applyActionCode,
+  connectAuthEmulator,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile
+} from 'firebase/auth'
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
 
 import { app, auth } from '@/infra'
@@ -60,12 +67,38 @@ const verifyEmail = (email: string): Promise<void> =>
     await applyActionCode(auth, oobCode)
   })
 
+const createUser = async (
+  user?: Partial<{
+    name: string
+    email: string
+    password: string
+  }>
+) => {
+  const name = user?.name || faker.person.fullName()
+  const email = user?.email || faker.internet.email()
+  const password = user?.password || faker.internet.password()
+
+  const { user: createdUser } = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password
+  )
+  await Promise.all([
+    sendEmailVerification(createdUser),
+    updateProfile(createdUser, { displayName: name })
+  ])
+  await verifyEmail(email)
+  await createdUser.reload()
+  return createdUser
+}
+
 const orchestrator = {
   connectToEmulators,
   clearAuthUsers,
   clearFirestoreData,
   clearEmulatorData,
-  verifyEmail
+  verifyEmail,
+  createUser
 }
 
 export default orchestrator
