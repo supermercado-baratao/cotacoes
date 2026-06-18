@@ -1,4 +1,4 @@
-import { FamilyForm, GroupForm, ProductForm, SupplierForm } from '@/components'
+import { FamilyForm, ProductForm, SupplierForm } from '@/components'
 import { DataView } from '@/components'
 
 import { Form, Header, Table } from './_components'
@@ -30,8 +30,6 @@ export const Quotes = () => {
     handleProductFormClose,
     quickCreateFamily,
     setQuickCreateFamily,
-    quickCreateGroup,
-    setQuickCreateGroup,
     quickCreateSupplier,
     setQuickCreateSupplier
   } = useQuotesHandler()
@@ -70,7 +68,6 @@ export const Quotes = () => {
         setFormProduct={setFormProduct}
         handleClose={handleProductFormClose}
         setQuickCreateFamily={setQuickCreateFamily}
-        setQuickCreateGroup={setQuickCreateGroup}
         setQuickCreateSupplier={setQuickCreateSupplier}
       />
       <FamilyForm
@@ -78,12 +75,6 @@ export const Quotes = () => {
         family={null}
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
-      />
-      <GroupForm
-        isOpened={quickCreateGroup}
-        group={null}
-        setFormGroup={() => {}}
-        handleClose={() => setQuickCreateGroup(false)}
       />
       <SupplierForm
         isOpened={quickCreateSupplier}

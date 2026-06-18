@@ -13,7 +13,7 @@ export const useFormHandler = (
   setFormQuote: (quote: TQuote | null) => void,
   handleClose: () => void
 ) => {
-  const { createQuote, updateQuote, products, families, groups } = useAppStore()
+  const { createQuote, updateQuote, products, families } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const [search, setSearch] = useState('')
@@ -66,17 +66,11 @@ export const useFormHandler = (
         ? list.filter((p) => p.description.toLowerCase().includes(term))
         : list
     }
-    if (activeTab === 'family') {
-      const list = families ?? []
-      return term
-        ? list.filter((f) => f.description.toLowerCase().includes(term))
-        : list
-    }
-    const list = groups ?? []
+    const list = families ?? []
     return term
-      ? list.filter((g) => g.description.toLowerCase().includes(term))
+      ? list.filter((f) => f.description.toLowerCase().includes(term))
       : list
-  }, [activeTab, search, products, families, groups])
+  }, [activeTab, search, products, families])
 
   const onSubmit = handleSubmit((data) => {
     if (quote) {

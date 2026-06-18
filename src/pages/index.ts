@@ -1,6 +1,5 @@
 export * from './dashboard'
 export * from './families'
-export * from './groups'
 export * from './import'
 export * from './invoices'
 export * from './invoices/detail'

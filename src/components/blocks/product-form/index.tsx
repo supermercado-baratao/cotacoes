@@ -22,7 +22,6 @@ type TProductFormProps = {
   product: TProduct | null
   setFormProduct: (product: TProduct | null) => void
   setQuickCreateFamily: (open: boolean) => void
-  setQuickCreateGroup: (open: boolean) => void
   setQuickCreateSupplier: (open: boolean) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
@@ -34,10 +33,9 @@ export const ProductForm = ({
   handleClose,
   setFormProduct,
   setQuickCreateFamily,
-  setQuickCreateGroup,
   setQuickCreateSupplier
 }: TProductFormProps) => {
-  const { register, onSubmit, errors, control, families, groups, suppliers } =
+  const { register, onSubmit, errors, control, families, suppliers } =
     useFormHandler(product, setFormProduct, handleClose)
 
   const title = product ? 'Editar Produto' : 'Novo Produto'
@@ -82,19 +80,6 @@ export const ProductForm = ({
           helperText={errors.familyId?.message}
           handleAddClick={() => setQuickCreateFamily(true)}
           addLabel="Nova Família"
-          sx={S.TwoCol}
-        />
-        <Autocomplete
-          name="groupId"
-          control={control}
-          options={groups}
-          getOptionLabel={(g) => g.description}
-          getOptionValue={(g) => g.id}
-          label="Grupo"
-          error={!!errors.groupId}
-          helperText={errors.groupId?.message}
-          addLabel="Novo Grupo"
-          handleAddClick={() => setQuickCreateGroup(true)}
           sx={S.TwoCol}
         />
         <Autocomplete

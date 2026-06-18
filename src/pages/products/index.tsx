@@ -1,7 +1,6 @@
 import {
   DataView,
   FamilyForm,
-  GroupForm,
   PageHeader,
   ProductForm,
   SupplierForm
@@ -24,8 +23,6 @@ export const Products = () => {
     setFormProduct,
     quickCreateFamily,
     setQuickCreateFamily,
-    quickCreateGroup,
-    setQuickCreateGroup,
     quickCreateSupplier,
     setQuickCreateSupplier
   } = useProductsHandler()
@@ -53,7 +50,6 @@ export const Products = () => {
         setFormProduct={setFormProduct}
         handleClose={handleFormClose}
         setQuickCreateFamily={setQuickCreateFamily}
-        setQuickCreateGroup={setQuickCreateGroup}
         setQuickCreateSupplier={setQuickCreateSupplier}
       />
       <FamilyForm
@@ -61,12 +57,6 @@ export const Products = () => {
         family={null}
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
-      />
-      <GroupForm
-        isOpened={quickCreateGroup}
-        group={null}
-        setFormGroup={() => {}}
-        handleClose={() => setQuickCreateGroup(false)}
       />
       <SupplierForm
         isOpened={quickCreateSupplier}

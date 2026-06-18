@@ -2,7 +2,6 @@ import dayjs from 'dayjs'
 
 import type {
   TFamily,
-  TGroup,
   TOrder,
   TProduct,
   TQuote,
@@ -91,21 +90,17 @@ const resolveItemDescription = (
   id: string,
   type: TQuoteItemType,
   products: TProduct[],
-  families: TFamily[],
-  groups: TGroup[]
+  families: TFamily[]
 ): string => {
   if (type === 'product')
     return products.find((p) => p.id === id)?.description ?? id
-  if (type === 'family')
-    return families.find((f) => f.id === id)?.description ?? id
-  return groups.find((g) => g.id === id)?.description ?? id
+  return families.find((f) => f.id === id)?.description ?? id
 }
 
 export const getQuoteRows = (
   quote: TQuote,
   products: TProduct[],
   families: TFamily[],
-  groups: TGroup[],
   orders: TOrder[],
   suppliers: TSupplier[]
 ): TQuoteRow[] =>
@@ -125,8 +120,7 @@ export const getQuoteRows = (
         item.id,
         item.type,
         products,
-        families,
-        groups
+        families
       ),
       orderCount: itemOrders.length,
       bestOrderPrice: bestOrder?.price ?? null,

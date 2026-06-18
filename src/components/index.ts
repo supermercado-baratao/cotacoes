@@ -1,6 +1,5 @@
 export * from './blocks/data-view'
 export * from './blocks/family-form'
-export * from './blocks/group-form'
 export * from './blocks/page-header'
 export * from './blocks/product-form'
 export * from './blocks/seller-form'

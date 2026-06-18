@@ -10,7 +10,6 @@ export type TProduct = {
   margin: number | null
   observations: string | null
   familyId: string | null
-  groupId: string | null
   supplierIds: string[]
   createdAt: Timestamp
   updatedAt: Timestamp

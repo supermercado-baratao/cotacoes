@@ -56,8 +56,7 @@ export const parseXlsx = async (file: File): Promise<TImportData> => {
         barcode: null,
         tax: null,
         margin: null,
-        observations: null,
-        groupId: null
+        observations: null
       })
     }
 

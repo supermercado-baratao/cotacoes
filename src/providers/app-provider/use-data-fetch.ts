@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 
 import {
   familyModel,
-  groupModel,
   invoiceModel,
   orderModel,
   productModel,
@@ -37,7 +36,6 @@ export const useDataFetch = () => {
         queryFn: familyModel.findMany,
         enabled: !!user
       },
-      { queryKey: ['groups'], queryFn: groupModel.findMany, enabled: !!user },
       { queryKey: ['quotes'], queryFn: quoteModel.findMany, enabled: !!user },
       {
         queryKey: ['orders', quoteId],
@@ -62,7 +60,6 @@ export const useDataFetch = () => {
     { data: suppliers },
     { data: sellers },
     { data: families },
-    { data: groups },
     { data: quotes },
     { data: ordersByQuoteId },
     { data: ordersByProductId },
@@ -86,7 +83,6 @@ export const useDataFetch = () => {
     suppliers,
     sellers,
     families,
-    groups,
     quotes,
     ordersByQuoteId,
     ordersByProductId,

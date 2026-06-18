@@ -6,7 +6,6 @@ import { useAuthStore } from '@/stores'
 import {
   Dashboard,
   Families,
-  Groups,
   Import,
   InvoiceDetail,
   Invoices,
@@ -58,7 +57,6 @@ export const Router = () => (
         <Route path="/suppliers" element={<Suppliers />} />
         <Route path="/sellers" element={<Sellers />} />
         <Route path="/families" element={<Families />} />
-        <Route path="/groups" element={<Groups />} />
         <Route path="/import" element={<Import />} />
         <Route path="/invoices" element={<Invoices />} />
         <Route path="/invoices/:id" element={<InvoiceDetail />} />

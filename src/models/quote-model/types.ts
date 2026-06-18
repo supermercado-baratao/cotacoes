@@ -2,7 +2,7 @@ import { Timestamp } from 'firebase/firestore'
 
 export type TQuoteStatus = 'opened' | 'closed'
 
-export type TQuoteItemType = 'product' | 'family' | 'group'
+export type TQuoteItemType = 'product' | 'family'
 
 export type TQuoteItem = {
   id: string

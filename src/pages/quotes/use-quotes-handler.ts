@@ -15,15 +15,8 @@ import {
 } from './utils'
 
 export const useQuotesHandler = () => {
-  const {
-    quotes,
-    products,
-    families,
-    groups,
-    ordersByQuoteId,
-    suppliers,
-    setQuoteId
-  } = useAppStore()
+  const { quotes, products, families, ordersByQuoteId, suppliers, setQuoteId } =
+    useAppStore()
 
   const availableYears = getAvailableYears(quotes || [])
   const [year, setYear] = useState(availableYears[0])
@@ -51,19 +44,17 @@ export const useQuotesHandler = () => {
   } = useFormState<TProduct>()
 
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
-  const [quickCreateGroup, setQuickCreateGroup] = useState(false)
   const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
 
   const quote = getSelectedQuote(quotes || [], year, month, day) ?? null
   const numberOfSuppliers = getNumberOfSuppliers(ordersByQuoteId || [])
 
   const quoteRows =
-    quote && products && families && groups && suppliers
+    quote && products && families && suppliers
       ? getQuoteRows(
           quote,
           products,
           families,
-          groups,
           ordersByQuoteId || [],
           suppliers
         )
@@ -112,8 +103,6 @@ export const useQuotesHandler = () => {
     handleProductFormClose,
     quickCreateFamily,
     setQuickCreateFamily,
-    quickCreateGroup,
-    setQuickCreateGroup,
     quickCreateSupplier,
     setQuickCreateSupplier,
     numberOfSuppliers,

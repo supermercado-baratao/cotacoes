@@ -39,9 +39,7 @@ export const useFormHandler = (
     if (!quoteItem) return []
     if (quoteItem.type === 'product')
       return (products ?? []).filter((p) => p.id === quoteItem.id)
-    if (quoteItem.type === 'family')
-      return (products ?? []).filter((p) => p.familyId === quoteItem.id)
-    return (products ?? []).filter((p) => p.groupId === quoteItem.id)
+    return (products ?? []).filter((p) => p.familyId === quoteItem.id)
   }, [quoteItem, products])
 
   const defaultValues: Partial<TSchema> = useMemo(

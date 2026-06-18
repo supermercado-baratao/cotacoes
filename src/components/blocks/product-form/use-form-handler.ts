@@ -12,21 +12,19 @@ export const useFormHandler = (
   setFormProduct: (product: TProduct | null) => void,
   handleClose: () => void
 ) => {
-  const { createProduct, updateProduct, families, groups, suppliers } =
-    useAppStore()
+  const { createProduct, updateProduct, families, suppliers } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
     () => ({
       vrId: product?.vrId ?? '',
       description: product?.description ?? '',
-      price: product?.price ?? null,
+      price: product?.price ?? 0,
       barcode: product?.barcode ?? null,
       tax: product?.tax ?? null,
       margin: product?.margin ?? null,
       observations: product?.observations ?? null,
       familyId: product?.familyId ?? null,
-      groupId: product?.groupId ?? null,
       supplierIds: product?.supplierIds ?? []
     }),
     [product]
@@ -60,7 +58,6 @@ export const useFormHandler = (
     errors,
     control,
     families: families ?? [],
-    groups: groups ?? [],
     suppliers: suppliers ?? []
   }
 }

@@ -13,7 +13,6 @@ import {
   Autocomplete,
   CurrencyInput,
   FamilyForm,
-  GroupForm,
   Modal,
   ProductForm,
   SellerForm,
@@ -57,7 +56,6 @@ export const OrderForm = ({
   const [quickCreateSeller, setQuickCreateSeller] = useState(false)
   const [quickCreateProduct, setQuickCreateProduct] = useState(false)
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
-  const [quickCreateGroup, setQuickCreateGroup] = useState(false)
 
   const title = order ? 'Editar Pedido' : 'Novo Pedido'
 
@@ -221,7 +219,6 @@ export const OrderForm = ({
         setFormProduct={() => {}}
         handleClose={() => setQuickCreateProduct(false)}
         setQuickCreateFamily={setQuickCreateFamily}
-        setQuickCreateGroup={setQuickCreateGroup}
         setQuickCreateSupplier={setQuickCreateSupplier}
       />
       <FamilyForm
@@ -229,12 +226,6 @@ export const OrderForm = ({
         family={null}
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
-      />
-      <GroupForm
-        isOpened={quickCreateGroup}
-        group={null}
-        setFormGroup={() => {}}
-        handleClose={() => setQuickCreateGroup(false)}
       />
     </>
   )
