@@ -40,17 +40,21 @@ export const useFormHandler = (
 
   const parseItems = (lines: string, existing: TQuoteItem[]): TQuoteItem[] => {
     const existingByDesc = new Map(
-      existing.map((i) => [i.description.trim().toLowerCase(), i.id])
+      existing.map((i) => [i.description.trim().toLowerCase(), i])
     )
     return lines
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean)
-      .map((description) => ({
-        id:
-          existingByDesc.get(description.toLowerCase()) ?? crypto.randomUUID(),
-        description
-      }))
+      .map((description) => {
+        const match = existingByDesc.get(description.toLowerCase())
+        return {
+          id: match?.id ?? crypto.randomUUID(),
+          description,
+          salePrice: match?.salePrice ?? null,
+          priceRef: match?.priceRef ?? null
+        }
+      })
   }
 
   const onSubmit = handleSubmit(({ lines, ...rest }) => {

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 
-import type { TOrder, TQuote, TSupplier } from '@/models'
+import type { TOrder, TPriceRef, TQuote, TSupplier } from '@/models'
 
 export const getAvailableYears = (quotes: TQuote[]) => {
   const years = Array.from(
@@ -75,6 +75,8 @@ export type TQuoteRow = {
   id: string
   description: string
   orderCount: number
+  salePrice: number | null
+  priceRef: TPriceRef
   bestOrderPrice: number | null
   bestSupplierName: string | null
 }
@@ -97,6 +99,8 @@ export const getQuoteRows = (
       id: item.id,
       description: item.description,
       orderCount: itemOrders.length,
+      salePrice: item.salePrice,
+      priceRef: item.priceRef,
       bestOrderPrice: bestOrder?.price ?? null,
       bestSupplierName: bestSupplier?.tradeName ?? null
     }

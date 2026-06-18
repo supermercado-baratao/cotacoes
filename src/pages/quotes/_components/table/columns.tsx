@@ -19,9 +19,16 @@ export const columns: GridColDef<TQuoteRow>[] = [
     type: 'number'
   },
   {
+    field: 'salePrice',
+    headerName: 'Venda',
+    width: 120,
+    valueFormatter: (value: number | null) =>
+      value != null ? formatCurrency(value) : '—'
+  },
+  {
     field: 'bestOrderPrice',
-    headerName: 'Melhor Preço',
-    width: 140,
+    headerName: 'Custo',
+    width: 120,
     valueFormatter: (value: number | null) =>
       value != null ? formatCurrency(value) : '—'
   },

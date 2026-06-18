@@ -1,15 +1,16 @@
-import { Delete, ListAlt } from '@mui/icons-material'
+import { AttachMoney, Delete, ListAlt } from '@mui/icons-material'
 import { GridActionsCellItem, type GridColDef } from '@mui/x-data-grid'
 import { useCallback, useMemo, useState } from 'react'
 
 import { DeleteDialog, Table as _Table } from '@/components'
 import { useDeleteHandler } from '@/hooks'
-import type { TQuote } from '@/models'
+import type { TQuote, TQuoteItem } from '@/models'
 import { useAppStore } from '@/stores'
 
 import type { TQuoteRow } from '../../utils'
 import { columns } from './columns'
 import { OrdersDrawer } from './orders-drawer'
+import { SalePriceForm } from './sale-price-form'
 
 type TTableProps = {
   quote: TQuote
@@ -19,6 +20,7 @@ type TTableProps = {
 export const Table = ({ quote, rows }: TTableProps) => {
   const { updateQuote } = useAppStore()
   const [drawerRow, setDrawerRow] = useState<TQuoteRow | null>(null)
+  const [salePriceItem, setSalePriceItem] = useState<TQuoteItem | null>(null)
 
   const removeFromQuote = useCallback(
     (row: TQuoteRow) => {
@@ -37,13 +39,27 @@ export const Table = ({ quote, rows }: TTableProps) => {
     handleDeleteDialogConfirm
   } = useDeleteHandler<TQuoteRow>(removeFromQuote)
 
+  const handleSalePriceOpen = useCallback(
+    (row: TQuoteRow) => {
+      const item = quote.items.find((i) => i.id === row.id) ?? null
+      setSalePriceItem(item)
+    },
+    [quote.items]
+  )
+
   const actionsColumn: GridColDef<TQuoteRow> = useMemo(
     () => ({
       field: 'actions',
       type: 'actions',
       headerName: 'Ações',
-      width: 100,
+      width: 120,
       getActions: ({ row }) => [
+        <GridActionsCellItem
+          key="sale-price"
+          icon={<AttachMoney />}
+          label="Preço de venda"
+          onClick={() => handleSalePriceOpen(row)}
+        />,
         <GridActionsCellItem
           key="orders"
           icon={<ListAlt />}
@@ -58,13 +74,19 @@ export const Table = ({ quote, rows }: TTableProps) => {
         />
       ]
     }),
-    [handleDelete]
+    [handleDelete, handleSalePriceOpen]
   )
 
   return (
     <>
       <_Table columns={[...columns, actionsColumn]} items={rows} />
       <OrdersDrawer row={drawerRow} handleClose={() => setDrawerRow(null)} />
+      <SalePriceForm
+        isOpened={!!salePriceItem}
+        quoteItem={salePriceItem}
+        quote={quote}
+        handleClose={() => setSalePriceItem(null)}
+      />
       <DeleteDialog
         open={!!itemToDelete}
         title="Remover item da cotação"

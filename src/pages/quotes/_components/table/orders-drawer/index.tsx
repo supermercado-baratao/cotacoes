@@ -40,7 +40,12 @@ export const OrdersDrawer = ({ row, handleClose }: TOrdersDrawerProps) => {
   )
 
   const quoteItem: TQuoteItem | null = row
-    ? { id: row.id, description: row.description }
+    ? {
+        id: row.id,
+        description: row.description,
+        salePrice: row.salePrice,
+        priceRef: row.priceRef
+      }
     : null
 
   return (
