@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 
-import { useFormState } from '@/hooks'
+import { useDeleteHandler, useFormState } from '@/hooks'
 import type { TProduct, TQuote } from '@/models'
 import { useAppStore } from '@/stores'
 
@@ -15,8 +15,15 @@ import {
 } from './utils'
 
 export const useQuotesHandler = () => {
-  const { quotes, products, families, ordersByQuoteId, suppliers, setQuoteId } =
-    useAppStore()
+  const {
+    quotes,
+    products,
+    families,
+    ordersByQuoteId,
+    suppliers,
+    setQuoteId,
+    deleteQuote
+  } = useAppStore()
 
   const availableYears = getAvailableYears(quotes || [])
   const [year, setYear] = useState(availableYears[0])
@@ -42,6 +49,13 @@ export const useQuotesHandler = () => {
     handleFormOpen: handleProductFormOpen,
     handleFormClose: handleProductFormClose
   } = useFormState<TProduct>()
+
+  const {
+    itemToDelete: quoteToDelete,
+    handleDelete: handleDeleteQuote,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm
+  } = useDeleteHandler<TQuote>((quote) => deleteQuote(quote.id))
 
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
   const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
@@ -106,6 +120,10 @@ export const useQuotesHandler = () => {
     quickCreateSupplier,
     setQuickCreateSupplier,
     numberOfSuppliers,
-    handleCreateQuote
+    handleCreateQuote,
+    quoteToDelete,
+    handleDeleteQuote,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm
   }
 }

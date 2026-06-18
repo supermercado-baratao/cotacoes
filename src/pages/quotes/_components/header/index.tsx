@@ -18,6 +18,7 @@ type THeaderProps = {
   onMonthChange: (month: number) => void
   onDayChange: (day: number) => void
   handleQuoteFormOpen: (quote: TQuote | null) => void
+  handleDeleteQuote: (quote: TQuote) => void
 }
 
 export const Header = ({
@@ -31,7 +32,8 @@ export const Header = ({
   onYearChange,
   onMonthChange,
   onDayChange,
-  handleQuoteFormOpen
+  handleQuoteFormOpen,
+  handleDeleteQuote
 }: THeaderProps) => {
   const days = getDaysInYearMonth(year, month)
 
@@ -43,13 +45,22 @@ export const Header = ({
 
       <Box sx={{ display: 'flex', gap: 1 }}>
         {quote && (
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => handleQuoteFormOpen(quote)}
-          >
-            Editar Cotação
-          </Button>
+          <>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => handleDeleteQuote(quote)}
+            >
+              Excluir Cotação
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => handleQuoteFormOpen(quote)}
+            >
+              Editar Cotação
+            </Button>
+          </>
         )}
         <Button variant="contained" onClick={() => handleQuoteFormOpen(null)}>
           Nova Cotação

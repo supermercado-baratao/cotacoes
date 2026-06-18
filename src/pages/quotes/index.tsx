@@ -1,5 +1,10 @@
-import { FamilyForm, ProductForm, SupplierForm } from '@/components'
-import { DataView } from '@/components'
+import {
+  DataView,
+  DeleteDialog,
+  FamilyForm,
+  ProductForm,
+  SupplierForm
+} from '@/components'
 
 import { Form, Header, Table } from './_components'
 import { useQuotesHandler } from './use-quotes-handler'
@@ -31,7 +36,11 @@ export const Quotes = () => {
     quickCreateFamily,
     setQuickCreateFamily,
     quickCreateSupplier,
-    setQuickCreateSupplier
+    setQuickCreateSupplier,
+    quoteToDelete,
+    handleDeleteQuote,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm
   } = useQuotesHandler()
 
   return (
@@ -48,6 +57,7 @@ export const Quotes = () => {
         onMonthChange={onMonthChange}
         onDayChange={onDayChange}
         handleQuoteFormOpen={handleQuoteFormOpen}
+        handleDeleteQuote={handleDeleteQuote}
       />
       <DataView
         isFetching={isFetching}
@@ -81,6 +91,13 @@ export const Quotes = () => {
         supplier={null}
         setFormSupplier={() => {}}
         handleClose={() => setQuickCreateSupplier(false)}
+      />
+      <DeleteDialog
+        open={!!quoteToDelete}
+        title="Excluir cotação"
+        item={quoteToDelete?.date ?? ''}
+        handleConfirm={handleDeleteDialogConfirm}
+        handleClose={handleDeleteDialogClose}
       />
     </>
   )
