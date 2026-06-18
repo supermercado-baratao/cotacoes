@@ -15,6 +15,8 @@ import {
   type Path
 } from 'react-hook-form'
 
+import { matchesSearch } from '@/utils'
+
 import * as S from './style'
 
 type TAutocompleteProps<TOption, TFieldValues extends FieldValues> = {
@@ -59,6 +61,9 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
           disableCloseOnSelect={disableCloseOnSelect}
           options={options}
           getOptionLabel={getOptionLabel}
+          filterOptions={(opts, { inputValue }) =>
+            opts.filter((o) => matchesSearch(inputValue, getOptionLabel(o)))
+          }
           isOptionEqualToValue={(opt, val) =>
             getOptionValue(opt) === getOptionValue(val)
           }
