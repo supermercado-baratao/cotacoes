@@ -1,11 +1,13 @@
 import { type TSupplier } from '@/models'
+import { matchesSearch } from '@/utils'
 
-export const filterSuppliers = (search: string, suppliers: TSupplier[]) => {
-  const lower = search.toLowerCase()
-  return suppliers.filter(
-    (s) =>
-      s.legalName.toLowerCase().includes(lower) ||
-      s.tradeName.toLowerCase().includes(lower) ||
-      s.cnpj.includes(lower.replace(/\D/g, ''))
+export const filterSuppliers = (search: string, suppliers: TSupplier[]) =>
+  suppliers.filter((s) =>
+    matchesSearch(
+      search,
+      s.legalName,
+      s.tradeName,
+      s.cnpj,
+      s.cnpj.replace(/\D/g, '')
+    )
   )
-}

@@ -1,6 +1,5 @@
 import { type TFamily } from '@/models'
+import { matchesSearch } from '@/utils'
 
-export const filterFamilies = (search: string, families: TFamily[]) => {
-  const lower = search.toLowerCase()
-  return families.filter((f) => f.description.toLowerCase().includes(lower))
-}
+export const filterFamilies = (search: string, families: TFamily[]) =>
+  families.filter((f) => matchesSearch(search, f.description))

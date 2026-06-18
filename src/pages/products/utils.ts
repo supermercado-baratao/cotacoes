@@ -1,10 +1,5 @@
 import { type TProduct } from '@/models'
+import { matchesSearch } from '@/utils'
 
-export const filterProducts = (search: string, products: TProduct[]) => {
-  const lower = search.toLowerCase()
-  return products.filter(
-    (p) =>
-      p.description.toLowerCase().includes(lower) ||
-      p.barcode?.toLowerCase().includes(lower)
-  )
-}
+export const filterProducts = (search: string, products: TProduct[]) =>
+  products.filter((p) => matchesSearch(search, p.description, p.barcode))
