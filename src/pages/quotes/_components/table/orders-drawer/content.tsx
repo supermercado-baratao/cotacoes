@@ -15,14 +15,12 @@ import {
 import dayjs from 'dayjs'
 
 import type { TOrder, TProduct, TSeller, TSupplier } from '@/models'
-import type { TQuoteRow } from '@/pages/quotes/utils'
 import { formatCurrency, formatNumericValue } from '@/utils'
 
 import * as S from './style'
 import { getProductDescription, getSellerName, getSupplierName } from './utils'
 
 type TContentProps = {
-  row: TQuoteRow | null
   itemOrders: TOrder[]
   products: TProduct[]
   suppliers: TSupplier[]
@@ -32,7 +30,6 @@ type TContentProps = {
 }
 
 export const Content = ({
-  row,
   itemOrders,
   products,
   suppliers,
@@ -67,7 +64,7 @@ export const Content = ({
       <MuiTable size="small" stickyHeader sx={S.Table}>
         <TableHead>
           <TableRow>
-            {row?.type !== 'product' && <TableCell>Produto</TableCell>}
+            <TableCell>Produto</TableCell>
             <TableCell>Fornecedor</TableCell>
             <TableCell>Vendedor</TableCell>
             <TableCell>Preço</TableCell>
@@ -80,14 +77,9 @@ export const Content = ({
         <TableBody>
           {itemOrders.map((order) => (
             <TableRow key={order.id} hover>
-              {row?.type !== 'product' && (
-                <TableCell>
-                  {getProductDescription(
-                    order.productId,
-                    products
-                  ).toUpperCase()}
-                </TableCell>
-              )}
+              <TableCell>
+                {getProductDescription(order.productId, products).toUpperCase()}
+              </TableCell>
               <TableCell>
                 {getSupplierName(order.supplierId, suppliers).toUpperCase()}
               </TableCell>

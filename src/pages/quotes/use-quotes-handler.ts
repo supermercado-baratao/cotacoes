@@ -15,15 +15,8 @@ import {
 } from './utils'
 
 export const useQuotesHandler = () => {
-  const {
-    quotes,
-    products,
-    families,
-    ordersByQuoteId,
-    suppliers,
-    setQuoteId,
-    deleteQuote
-  } = useAppStore()
+  const { quotes, ordersByQuoteId, suppliers, setQuoteId, deleteQuote } =
+    useAppStore()
 
   const availableYears = getAvailableYears(quotes || [])
   const [year, setYear] = useState(availableYears[0])
@@ -64,14 +57,8 @@ export const useQuotesHandler = () => {
   const numberOfSuppliers = getNumberOfSuppliers(ordersByQuoteId || [])
 
   const quoteRows =
-    quote && products && families && suppliers
-      ? getQuoteRows(
-          quote,
-          products,
-          families,
-          ordersByQuoteId || [],
-          suppliers
-        )
+    quote && suppliers
+      ? getQuoteRows(quote, ordersByQuoteId || [], suppliers)
       : []
 
   useEffect(() => {

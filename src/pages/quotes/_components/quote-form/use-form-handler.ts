@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
-import { useEffect, useMemo, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useEffect, useMemo } from 'react'
+import { useForm } from 'react-hook-form'
 
-import type { TQuote, TQuoteItem, TQuoteItemType } from '@/models'
+import type { TQuote, TQuoteItem } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
 import { schema, type TSchema } from './schema'
@@ -13,16 +13,13 @@ export const useFormHandler = (
   setFormQuote: (quote: TQuote | null) => void,
   handleClose: () => void
 ) => {
-  const { createQuote, updateQuote, products, families } = useAppStore()
+  const { createQuote, updateQuote } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
-
-  const [search, setSearch] = useState('')
-  const [activeTab, setActiveTab] = useState<TQuoteItemType>('product')
 
   const defaultValues: TSchema = useMemo(
     () => ({
       date: quote?.date ?? dayjs().format('YYYY-MM-DD'),
-      items: quote?.items ?? [],
+      lines: quote?.items.map((i) => i.description).join('\n') ?? '',
       observations: quote?.observations ?? null,
       status: quote?.status ?? 'opened',
       orders: quote?.orders ?? []
@@ -34,8 +31,6 @@ export const useFormHandler = (
     register,
     handleSubmit,
     reset,
-    control,
-    setValue,
     formState: { errors }
   } = useForm({ resolver: zodResolver(schema), defaultValues })
 
@@ -43,56 +38,31 @@ export const useFormHandler = (
     reset(defaultValues)
   }, [defaultValues, reset])
 
-  const selectedItems = useWatch({ control, name: 'items' }) ?? []
-
-  const isSelected = (id: string) => selectedItems.some((i) => i.id === id)
-
-  const handleItemToggle = (id: string, type: TQuoteItemType) => {
-    if (isSelected(id)) {
-      setValue(
-        'items',
-        selectedItems.filter((i) => i.id !== id)
-      )
-    } else {
-      setValue('items', [...selectedItems, { id, type } satisfies TQuoteItem])
-    }
+  const parseItems = (lines: string, existing: TQuoteItem[]): TQuoteItem[] => {
+    const existingByDesc = new Map(
+      existing.map((i) => [i.description.trim().toLowerCase(), i.id])
+    )
+    return lines
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map((description) => ({
+        id:
+          existingByDesc.get(description.toLowerCase()) ?? crypto.randomUUID(),
+        description
+      }))
   }
 
-  const filteredOptions = useMemo(() => {
-    const term = search.trim().toLowerCase()
-    if (activeTab === 'product') {
-      const list = products ?? []
-      return term
-        ? list.filter((p) => p.description.toLowerCase().includes(term))
-        : list
-    }
-    const list = families ?? []
-    return term
-      ? list.filter((f) => f.description.toLowerCase().includes(term))
-      : list
-  }, [activeTab, search, products, families])
-
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = handleSubmit(({ lines, ...rest }) => {
+    const items = parseItems(lines, quote?.items ?? [])
     if (quote) {
       setSuccessCallbacks([handleClose, () => setFormQuote(null)])
-      updateQuote({ ...quote, ...data })
+      updateQuote({ ...quote, ...rest, items })
       return
     }
     setSuccessCallbacks([handleClose, () => reset(defaultValues)])
-    createQuote(data)
+    createQuote({ ...rest, items })
   })
 
-  return {
-    register,
-    onSubmit,
-    errors,
-    search,
-    setSearch,
-    activeTab,
-    setActiveTab,
-    filteredOptions,
-    isSelected,
-    handleItemToggle,
-    selectedCount: selectedItems.length
-  }
+  return { register, onSubmit, errors }
 }

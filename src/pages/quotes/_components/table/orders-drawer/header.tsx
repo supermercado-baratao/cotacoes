@@ -1,10 +1,9 @@
 import { Add, Close } from '@mui/icons-material'
-import { Box, Button, Chip, IconButton, Typography } from '@mui/material'
+import { Box, Button, IconButton, Typography } from '@mui/material'
 
 import type { TOrder } from '@/models'
 
 import type { TQuoteRow } from '../../../utils'
-import { TYPE_COLORS, TYPE_LABELS } from './constants'
 import * as S from './style'
 
 type THeaderProps = {
@@ -27,19 +26,11 @@ export const Header = ({
           <Typography variant="h6" sx={S.HeaderTitle} noWrap>
             {row?.description}
           </Typography>
-          <Box sx={S.HeaderChipRow}>
-            <Chip
-              label={row ? TYPE_LABELS[row.type] : ''}
-              size="small"
-              color={row ? TYPE_COLORS[row.type] : 'default'}
-              variant="outlined"
-            />
-            <Typography variant="caption" color="text.secondary">
-              {itemOrders.length === 0
-                ? 'Nenhum pedido'
-                : `${itemOrders.length} pedido${itemOrders.length > 1 ? 's' : ''}`}
-            </Typography>
-          </Box>
+          <Typography variant="caption" color="text.secondary">
+            {itemOrders.length === 0
+              ? 'Nenhum pedido'
+              : `${itemOrders.length} pedido${itemOrders.length > 1 ? 's' : ''}`}
+          </Typography>
         </Box>
       </Box>
       <Box sx={S.HeaderActions}>

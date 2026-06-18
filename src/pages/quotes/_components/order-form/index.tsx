@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  type SxProps,
-  TextField,
-  type Theme,
-  Typography
-} from '@mui/material'
+import { Box, Button, TextField, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 
@@ -47,8 +40,7 @@ export const OrderForm = ({
     suppliers,
     sellers,
     selectableProducts,
-    showProductSelect,
-    product,
+    selectedProduct,
     lastOrder
   } = useFormHandler(quoteItem, order, setFormOrder, handleClose)
 
@@ -63,39 +55,26 @@ export const OrderForm = ({
     <>
       <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
         <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
-          {showProductSelect ? (
-            <Autocomplete
-              name="productId"
-              control={control}
-              options={selectableProducts}
-              getOptionLabel={(p) => p.description}
-              getOptionValue={(p) => p.id}
-              label="Produto"
-              error={!!errors.productId}
-              helperText={errors.productId?.message}
-              addLabel="Novo Produto"
-              handleAddClick={() => setQuickCreateProduct(true)}
-              sx={S.FullWidth}
+          <Autocomplete
+            name="productId"
+            control={control}
+            options={selectableProducts}
+            getOptionLabel={(p) => p.description}
+            getOptionValue={(p) => p.id}
+            label="Produto"
+            error={!!errors.productId}
+            helperText={errors.productId?.message}
+            addLabel="Novo Produto"
+            handleAddClick={() => setQuickCreateProduct(true)}
+            sx={S.FullWidth}
+          />
+          {selectedProduct?.price != null && (
+            <TextField
+              label="Preço de Venda"
+              value={formatCurrency(selectedProduct.price)}
+              sx={S.ThreeCol}
+              slotProps={{ input: { readOnly: true } }}
             />
-          ) : (
-            <>
-              <TextField
-                label="Produto"
-                value={product?.description.toUpperCase() ?? ''}
-                sx={[S.FourCol, S.Clickable] as SxProps<Theme>}
-                slotProps={{ input: { readOnly: true } }}
-                onClick={() => setQuickCreateProduct(true)}
-              />
-              <TextField
-                label="Preço de Venda"
-                value={
-                  product?.price != null ? formatCurrency(product.price) : '—'
-                }
-                sx={[S.TwoCol, S.Clickable] as SxProps<Theme>}
-                slotProps={{ input: { readOnly: true } }}
-                onClick={() => setQuickCreateProduct(true)}
-              />
-            </>
           )}
           <CurrencyInput
             name="price"
@@ -215,7 +194,7 @@ export const OrderForm = ({
       />
       <ProductForm
         isOpened={quickCreateProduct}
-        product={showProductSelect ? null : product}
+        product={null}
         setFormProduct={() => {}}
         handleClose={() => setQuickCreateProduct(false)}
         setQuickCreateFamily={setQuickCreateFamily}

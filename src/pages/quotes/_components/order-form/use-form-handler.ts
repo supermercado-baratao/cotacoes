@@ -35,18 +35,9 @@ export const useFormHandler = (
     [quotes, quoteId]
   )
 
-  const selectableProducts = useMemo(() => {
-    if (!quoteItem) return []
-    if (quoteItem.type === 'product')
-      return (products ?? []).filter((p) => p.id === quoteItem.id)
-    return (products ?? []).filter((p) => p.familyId === quoteItem.id)
-  }, [quoteItem, products])
-
   const defaultValues: Partial<TSchema> = useMemo(
     () => ({
-      productId:
-        order?.productId ??
-        (quoteItem?.type === 'product' ? (quoteItem.id ?? '') : ''),
+      productId: order?.productId ?? '',
       supplierId: order?.supplierId ?? '',
       sellerId: order?.sellerId ?? null,
       date: order?.date ?? dayjs().format('YYYY-MM-DD'),
@@ -55,7 +46,7 @@ export const useFormHandler = (
       packing: order?.packing ?? '',
       observations: order?.observations ?? null
     }),
-    [order, quoteItem]
+    [order]
   )
 
   const schema = useMemo(() => createSchema(quoteDate), [quoteDate])
@@ -108,20 +99,12 @@ export const useFormHandler = (
     }
 
     setSuccessCallbacks([handleClose])
-    createOrder({
-      ...data,
-      quoteId,
-      quoteItemId: quoteItem.id,
-      quoteItemType: quoteItem.type
-    })
+    createOrder({ ...data, quoteId, quoteItemId: quoteItem.id })
   })
 
-  const product = useMemo(
-    () =>
-      quoteItem?.type === 'product'
-        ? (products?.find((p) => p.id === quoteItem.id) ?? null)
-        : null,
-    [quoteItem, products]
+  const selectedProduct = useMemo(
+    () => products?.find((p) => p.id === watchedProductId) ?? null,
+    [watchedProductId, products]
   )
 
   return {
@@ -131,9 +114,8 @@ export const useFormHandler = (
     control,
     suppliers: filteredSuppliers,
     sellers: filteredSellers,
-    selectableProducts,
-    showProductSelect: quoteItem?.type !== 'product',
-    product,
+    selectableProducts: products ?? [],
+    selectedProduct,
     lastOrder
   }
 }
