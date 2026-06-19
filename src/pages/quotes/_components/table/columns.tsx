@@ -1,8 +1,25 @@
-import type { GridColDef } from '@mui/x-data-grid'
+import { Box, Divider } from '@mui/material'
+import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
+import { Fragment } from 'react'
 
 import { formatCurrency } from '@/utils'
 
 import type { TQuoteRow } from '../../utils'
+import * as S from './style'
+
+const joinWithDivider = (items: string[]) =>
+  items.length ? (
+    <Box sx={S.Divider}>
+      {items.map((item, i) => (
+        <Fragment key={i}>
+          {i > 0 && <Divider orientation="vertical" />}
+          {item}
+        </Fragment>
+      ))}
+    </Box>
+  ) : (
+    '—'
+  )
 
 export const columns: GridColDef<TQuoteRow>[] = [
   {
@@ -26,17 +43,18 @@ export const columns: GridColDef<TQuoteRow>[] = [
       value != null ? formatCurrency(value) : '—'
   },
   {
-    field: 'bestOrderPrice',
+    field: 'orderPrices',
     headerName: 'Custo',
-    width: 120,
-    valueFormatter: (value: number | null) =>
-      value != null ? formatCurrency(value) : '—'
+    width: 180,
+    renderCell: ({ value }: GridRenderCellParams<TQuoteRow, number[]>) =>
+      joinWithDivider((value ?? []).map(formatCurrency))
   },
   {
-    field: 'bestSupplierName',
+    field: 'supplierNames',
     headerName: 'Fornecedor',
     minWidth: 160,
     flex: 1,
-    valueFormatter: (value: string | null) => value?.toUpperCase() ?? '—'
+    renderCell: ({ value }: GridRenderCellParams<TQuoteRow, string[]>) =>
+      joinWithDivider((value ?? []).map((n) => n.toUpperCase()))
   }
 ]

@@ -77,8 +77,8 @@ export type TQuoteRow = {
   orderCount: number
   salePrice: number | null
   priceRef: TPriceRef
-  bestOrderPrice: number | null
-  bestSupplierName: string | null
+  orderPrices: number[]
+  supplierNames: string[]
 }
 
 export const getQuoteRows = (
@@ -88,12 +88,17 @@ export const getQuoteRows = (
 ): TQuoteRow[] =>
   quote.items.map((item) => {
     const itemOrders = orders.filter((o) => o.quoteItemId === item.id)
-    const bestOrder = itemOrders.length
-      ? itemOrders.reduce((best, o) => (o.price < best.price ? o : best))
-      : null
-    const bestSupplier = bestOrder
-      ? (suppliers.find((s) => s.id === bestOrder.supplierId) ?? null)
-      : null
+    const sorted = [...itemOrders].sort((a, b) => a.price - b.price)
+    const seen = new Set<number>()
+    const orderPrices: number[] = []
+    const supplierNames: string[] = []
+    for (const order of sorted) {
+      if (seen.has(order.price)) continue
+      seen.add(order.price)
+      orderPrices.push(order.price)
+      const supplier = suppliers.find((s) => s.id === order.supplierId)
+      supplierNames.push(supplier?.tradeName ?? '')
+    }
 
     return {
       id: item.id,
@@ -101,7 +106,7 @@ export const getQuoteRows = (
       orderCount: itemOrders.length,
       salePrice: item.salePrice,
       priceRef: item.priceRef,
-      bestOrderPrice: bestOrder?.price ?? null,
-      bestSupplierName: bestSupplier?.tradeName ?? null
+      orderPrices,
+      supplierNames
     }
   })
