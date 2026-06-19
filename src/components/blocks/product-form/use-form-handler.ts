@@ -17,7 +17,7 @@ export const useFormHandler = (
 
   const defaultValues: TSchema = useMemo(
     () => ({
-      vrId: product?.vrId ?? '',
+      id: product?.id ?? '',
       description: product?.description ?? '',
       price: product?.price ?? 0,
       barcode: product?.barcode ?? null,
@@ -45,7 +45,7 @@ export const useFormHandler = (
   const onSubmit = handleSubmit((data) => {
     if (product) {
       setSuccessCallbacks([handleClose, () => setFormProduct(null)])
-      updateProduct({ ...product, ...data })
+      updateProduct({ ...product, ...data, id: product.id })
       return
     }
     setSuccessCallbacks([handleClose, () => reset(defaultValues)])

@@ -2,7 +2,6 @@ import { Timestamp } from 'firebase/firestore'
 
 export type TProduct = {
   id: string
-  vrId: string
   description: string
   price: number
   barcode: string | null

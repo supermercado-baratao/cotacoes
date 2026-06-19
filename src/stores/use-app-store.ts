@@ -10,18 +10,18 @@ import type {
   TSeller,
   TSupplier
 } from '@/models'
-import type { TCreateData, TUpdateData } from '@/types'
+import type { TCreateData, TCreateDataWithId, TUpdateData } from '@/types'
 
 type TAppStore = {
   products: TProduct[] | null
   setProducts: (products: TProduct[]) => void
-  createProduct: (product: TCreateData<TProduct>) => void
+  createProduct: (product: TCreateDataWithId<TProduct>) => void
   updateProduct: (product: TUpdateData<TProduct>) => void
   deleteProduct: (id: string) => void
 
   suppliers: TSupplier[] | null
   setSuppliers: (suppliers: TSupplier[]) => void
-  createSupplier: (supplier: TCreateData<TSupplier>) => void
+  createSupplier: (supplier: TCreateDataWithId<TSupplier>) => void
   updateSupplier: (supplier: TUpdateData<TSupplier>) => void
   deleteSupplier: (id: string) => void
 
@@ -33,7 +33,7 @@ type TAppStore = {
 
   families: TFamily[] | null
   setFamilies: (families: TFamily[]) => void
-  createFamily: (family: TCreateData<TFamily>) => void
+  createFamily: (family: TCreateDataWithId<TFamily>) => void
   updateFamily: (family: TUpdateData<TFamily>) => void
   deleteFamily: (id: string) => void
 

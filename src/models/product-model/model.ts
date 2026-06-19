@@ -1,32 +1,25 @@
 import { database, getUserPath } from '@/infra'
-import type { TCreateData, TUpdateData } from '@/types'
+import type { TCreateDataWithId, TUpdateData } from '@/types'
 
 import { type TProduct } from './types'
 
-const create = (data: TCreateData<TProduct>): Promise<TProduct> =>
+const create = (data: TCreateDataWithId<TProduct>): Promise<TProduct> =>
   database.createWithId({
     path: getUserPath('products'),
-    data: { ...data, id: data.vrId }
+    data
   })
 
-const createMany = (data: TCreateData<TProduct>[]): Promise<TProduct[]> =>
+const createMany = (data: TCreateDataWithId<TProduct>[]): Promise<TProduct[]> =>
   database.createManyWithIds<TProduct>({
     path: getUserPath('products'),
-    data: data.map((item) => ({ ...item, id: item.vrId }))
+    data
   })
 
-const upsertMany = (data: TCreateData<TProduct>[]): Promise<void> =>
+const upsertMany = (data: TCreateDataWithId<TProduct>[]): Promise<void> =>
   database.upsertManyWithIds<TProduct>({
     path: getUserPath('products'),
-    data: data.map((item) => ({ ...item, id: item.vrId })),
-    updateFields: [
-      'id',
-      'vrId',
-      'description',
-      'price',
-      'familyId',
-      'supplierIds'
-    ]
+    data,
+    updateFields: ['id', 'description', 'price', 'familyId', 'supplierIds']
   })
 
 const findMany = (): Promise<TProduct[]> =>

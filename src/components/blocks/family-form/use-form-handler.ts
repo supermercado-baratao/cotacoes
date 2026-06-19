@@ -17,7 +17,7 @@ export const useFormHandler = (
 
   const defaultValues: TSchema = useMemo(
     () => ({
-      vrId: family?.vrId ?? '',
+      id: family?.id ?? '',
       description: family?.description ?? ''
     }),
     [family]
@@ -37,7 +37,7 @@ export const useFormHandler = (
   const onSubmit = handleSubmit((data) => {
     setSuccessCallbacks([handleClose, () => setFormFamily(null)])
     if (family) {
-      updateFamily({ ...family, ...data })
+      updateFamily({ ...family, ...data, id: family.id })
       return
     }
     createFamily(data)

@@ -17,7 +17,7 @@ export const useFormHandler = (
 
   const defaultValues: TSchema = useMemo(
     () => ({
-      vrId: supplier?.vrId ?? '',
+      id: supplier?.id ?? '',
       legalName: supplier?.legalName ?? '',
       tradeName: supplier?.tradeName ?? '',
       cnpj: supplier?.cnpj ?? '',
@@ -45,7 +45,7 @@ export const useFormHandler = (
   const onSubmit = handleSubmit((data) => {
     setSuccessCallbacks([handleClose, () => setFormSupplier(null)])
     if (supplier) {
-      updateSupplier({ ...supplier, ...data })
+      updateSupplier({ ...supplier, ...data, id: supplier.id })
       return
     }
     createSupplier(data)

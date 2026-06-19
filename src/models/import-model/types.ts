@@ -1,10 +1,8 @@
-import type { TFamily } from '@/models/family-model'
-import type { TProduct } from '@/models/product-model'
-import type { TSupplier } from '@/models/supplier-model'
-import type { TCreateData } from '@/types'
+import type { TFamily, TProduct, TSupplier } from '@/models'
+import type { TCreateDataWithId } from '@/types'
 
 export type TImportData = {
-  products: TCreateData<TProduct>[]
-  families: TCreateData<TFamily>[]
-  suppliers: TCreateData<TSupplier>[]
+  products: TCreateDataWithId<TProduct>[]
+  families: TCreateDataWithId<TFamily>[]
+  suppliers: TCreateDataWithId<TSupplier>[]
 }

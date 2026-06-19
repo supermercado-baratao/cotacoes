@@ -17,7 +17,7 @@ export const Table = ({
   handleSelectionChange
 }: TTableProps) => {
   const columns: GridColDef[] = [
-    { field: 'vrId', headerName: 'ID (VR)', width: 100 },
+    { field: 'id', headerName: 'ID (VR)', width: 100 },
     { field: 'description', headerName: 'Descrição', flex: 1 },
     {
       field: 'familyId',
@@ -27,7 +27,7 @@ export const Table = ({
       headerAlign: 'center',
       renderCell: ({ row }) =>
         row.familyId !== null &&
-        importData.families.some((f) => f.vrId === row.familyId) ? (
+        importData.families.some((f) => f.id === row.familyId) ? (
           <Category fontSize="small" color="action" />
         ) : null
     },
@@ -44,7 +44,7 @@ export const Table = ({
       valueGetter: (value: string[]) =>
         value
           .map((id) => {
-            const supplier = importData.suppliers.find((s) => s.vrId === id)
+            const supplier = importData.suppliers.find((s) => s.id === id)
             if (!supplier) return id
             return supplier.tradeName || supplier.legalName
           })
@@ -56,7 +56,7 @@ export const Table = ({
     <DataTable
       items={importData.products}
       columns={columns}
-      getRowId={(row) => row.vrId}
+      getRowId={(row) => row.id}
       checkboxSelection
       disableRowSelectionOnClick={false}
       rowSelectionModel={{ type: 'include', ids: new Set(selectedIds) }}

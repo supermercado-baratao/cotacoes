@@ -32,10 +32,10 @@ export const SupplierForm = ({
       <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
         <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
           <TextField
-            {...register('vrId')}
+            {...register('id')}
             label="Código VR"
-            error={!!errors.vrId}
-            helperText={errors.vrId?.message}
+            error={!!errors.id}
+            helperText={errors.id?.message}
             sx={S.ThreeCol}
             onFocus={selectOnFocus}
           />

@@ -1,25 +1,27 @@
 import { database, getUserPath } from '@/infra'
-import type { TCreateData, TUpdateData } from '@/types'
+import type { TCreateDataWithId, TUpdateData } from '@/types'
 
 import { type TSupplier } from './types'
 
-const create = (data: TCreateData<TSupplier>): Promise<TSupplier> =>
+const create = (data: TCreateDataWithId<TSupplier>): Promise<TSupplier> =>
   database.createWithId({
     path: getUserPath('suppliers'),
-    data: { ...data, id: data.vrId }
+    data
   })
 
-const createMany = (data: TCreateData<TSupplier>[]): Promise<TSupplier[]> =>
+const createMany = (
+  data: TCreateDataWithId<TSupplier>[]
+): Promise<TSupplier[]> =>
   database.createManyWithIds<TSupplier>({
     path: getUserPath('suppliers'),
-    data: data.map((item) => ({ ...item, id: item.vrId }))
+    data
   })
 
-const upsertMany = (data: TCreateData<TSupplier>[]): Promise<void> =>
+const upsertMany = (data: TCreateDataWithId<TSupplier>[]): Promise<void> =>
   database.upsertManyWithIds<TSupplier>({
     path: getUserPath('suppliers'),
-    data: data.map((item) => ({ ...item, id: item.vrId })),
-    updateFields: ['id', 'vrId', 'tradeName', 'legalName', 'cnpj']
+    data,
+    updateFields: ['id', 'tradeName', 'legalName', 'cnpj']
   })
 
 const findMany = (): Promise<TSupplier[]> =>

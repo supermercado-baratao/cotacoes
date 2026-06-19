@@ -6,12 +6,12 @@ import {
   MAX_OBSERVATIONS_LENGTH
 } from '@/constants'
 import { type TProduct } from '@/models'
-import type { TCreateData } from '@/types'
+import type { TCreateDataWithId } from '@/types'
 
 export const MAX_BARCODE_LENGTH = 14
 
 export const schema = z.object({
-  vrId: z.string().min(1),
+  id: z.string().min(1),
   description: z.string().min(1).max(MAX_DESCRIPTION_LENGTH),
   price: z.number().nonnegative().max(MAX_NUMERIC_VALUE),
   barcode: z.string().max(MAX_BARCODE_LENGTH).nullable(),
@@ -20,6 +20,6 @@ export const schema = z.object({
   observations: z.string().max(MAX_OBSERVATIONS_LENGTH).nullable(),
   familyId: z.string().nullable(),
   supplierIds: z.array(z.string())
-}) satisfies z.ZodType<TCreateData<TProduct>>
+}) satisfies z.ZodType<TCreateDataWithId<TProduct>>
 
 export type TSchema = z.infer<typeof schema>

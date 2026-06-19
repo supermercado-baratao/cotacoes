@@ -17,7 +17,7 @@ export const useImportHandler = () => {
     setFile(selected)
     const data = await parseXlsx(selected)
     setImportData(data)
-    setSelectedIds(data.products.map((p) => p.vrId))
+    setSelectedIds(data.products.map((p) => p.id))
   }
 
   const handleFileRemove = () => {
@@ -30,7 +30,7 @@ export const useImportHandler = () => {
     if (!importData) return
 
     const selectedProducts = importData.products.filter((p) =>
-      selectedIds.includes(p.vrId)
+      selectedIds.includes(p.id)
     )
     const selectedFamilyIds = new Set(
       selectedProducts.map((p) => p.familyId).filter(Boolean)
@@ -42,11 +42,9 @@ export const useImportHandler = () => {
     setSuccessCallbacks([handleFileRemove])
     runImport({
       products: selectedProducts,
-      families: importData.families.filter((f) =>
-        selectedFamilyIds.has(f.vrId)
-      ),
+      families: importData.families.filter((f) => selectedFamilyIds.has(f.id)),
       suppliers: importData.suppliers.filter((s) =>
-        selectedSupplierIds.has(s.vrId)
+        selectedSupplierIds.has(s.id)
       )
     })
   }

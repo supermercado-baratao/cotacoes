@@ -1,7 +1,7 @@
 import * as xlsx from 'xlsx'
 
 import type { TFamily, TImportData, TProduct, TSupplier } from '@/models'
-import type { TCreateData } from '@/types'
+import type { TCreateDataWithId } from '@/types'
 
 type TRawRow = {
   id_produto: string
@@ -28,9 +28,9 @@ export const parseXlsx = async (file: File): Promise<TImportData> => {
     { raw: false }
   )
 
-  const productMap = new Map<string, TCreateData<TProduct>>()
-  const familyMap = new Map<string, TCreateData<TFamily>>()
-  const supplierMap = new Map<string, TCreateData<TSupplier>>()
+  const productMap = new Map<string, TCreateDataWithId<TProduct>>()
+  const familyMap = new Map<string, TCreateDataWithId<TFamily>>()
+  const supplierMap = new Map<string, TCreateDataWithId<TSupplier>>()
 
   raw.forEach((row) => {
     if (!row.id_produto) return
@@ -48,7 +48,7 @@ export const parseXlsx = async (file: File): Promise<TImportData> => {
       }
     } else {
       productMap.set(row.id_produto, {
-        vrId: row.id_produto,
+        id: row.id_produto,
         description: row.descricaocompleta,
         price: Number(row.precovenda) / 10000,
         familyId: row.id_familia_preco || null,
@@ -66,14 +66,14 @@ export const parseXlsx = async (file: File): Promise<TImportData> => {
       !familyMap.has(row.id_familia_preco)
     ) {
       familyMap.set(row.id_familia_preco, {
-        vrId: row.id_familia_preco,
+        id: row.id_familia_preco,
         description: row.familia_preco
       })
     }
 
     if (supplierId && !supplierMap.has(supplierId)) {
       supplierMap.set(supplierId, {
-        vrId: supplierId,
+        id: supplierId,
         tradeName: row.nomefantasia,
         legalName: row.razaosocial,
         cnpj: row.cnpj,

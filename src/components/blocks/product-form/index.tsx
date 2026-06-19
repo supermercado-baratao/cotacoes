@@ -53,10 +53,10 @@ export const ProductForm = ({
           slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
         />
         <TextField
-          {...register('vrId')}
+          {...register('id')}
           label="Código VR"
-          error={!!errors.vrId}
-          helperText={errors.vrId?.message}
+          error={!!errors.id}
+          helperText={errors.id?.message}
           sx={S.TwoCol}
           onFocus={selectOnFocus}
         />
