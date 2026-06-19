@@ -2,25 +2,14 @@ import { faker } from '@faker-js/faker'
 import retry from 'async-retry'
 import {
   applyActionCode,
-  connectAuthEmulator,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   updateProfile
 } from 'firebase/auth'
-import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
 
-import { app, auth } from '@/infra'
+import { auth } from '@/infra'
 
 const PROJECT_ID = import.meta.env.VITE_PROJECT_ID as string
-
-let connected = false
-
-const connectToEmulators = (): void => {
-  if (connected) return
-  connected = true
-  connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true })
-  connectFirestoreEmulator(getFirestore(app), 'localhost', 8080)
-}
 
 const clearAuthUsers = async (): Promise<void> => {
   const res = await fetch(
@@ -93,7 +82,6 @@ const createUser = async (
 }
 
 const orchestrator = {
-  connectToEmulators,
   clearAuthUsers,
   clearFirestoreData,
   clearEmulatorData,

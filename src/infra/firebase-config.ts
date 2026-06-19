@@ -1,6 +1,6 @@
 import { type FirebaseOptions, initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { connectAuthEmulator, getAuth } from 'firebase/auth'
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -20,3 +20,10 @@ export const auth = getAuth(app)
 
 export const getUserPath = (collection: string) =>
   `users/${auth.currentUser!.uid}/${collection}`
+
+if (import.meta.env.MODE !== 'production') {
+  connectAuthEmulator(auth, 'http://localhost:9099', {
+    disableWarnings: true
+  })
+  connectFirestoreEmulator(firestore, 'localhost', 8080)
+}
