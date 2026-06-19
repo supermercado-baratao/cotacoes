@@ -18,8 +18,8 @@ export const TwoCol: SxProps<Theme> = {
   gridColumn: { sm: 'span 2' }
 }
 
-export const FourCol: SxProps<Theme> = {
-  gridColumn: { sm: 'span 4' }
+export const ThreeCol: SxProps<Theme> = {
+  gridColumn: { sm: 'span 3' }
 }
 
 export const Actions: SxProps<Theme> = {

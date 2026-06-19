@@ -57,7 +57,7 @@ export const ProductForm = ({
           label="Código VR"
           error={!!errors.id}
           helperText={errors.id?.message}
-          sx={S.TwoCol}
+          sx={S.ThreeCol}
           onFocus={selectOnFocus}
         />
         <TextField
@@ -65,7 +65,7 @@ export const ProductForm = ({
           label="Código de Barras"
           error={!!errors.barcode}
           helperText={errors.barcode?.message}
-          sx={S.TwoCol}
+          sx={S.ThreeCol}
           onFocus={selectOnFocus}
           slotProps={{ htmlInput: { maxLength: MAX_BARCODE_LENGTH } }}
         />
@@ -80,7 +80,7 @@ export const ProductForm = ({
           helperText={errors.familyId?.message}
           handleAddClick={() => setQuickCreateFamily(true)}
           addLabel="Nova Família"
-          sx={S.TwoCol}
+          sx={S.FullWidth}
         />
         <Autocomplete
           name="supplierIds"
