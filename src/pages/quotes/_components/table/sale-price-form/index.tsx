@@ -37,7 +37,11 @@ export const SalePriceForm = ({
         : TrendingDown
 
   return (
-    <Modal title="Preço de venda" isOpened={isOpened} handleClose={handleClose}>
+    <Modal
+      title="Referência de preço"
+      isOpened={isOpened}
+      handleClose={handleClose}
+    >
       <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
         <Autocomplete
           name="familyId"

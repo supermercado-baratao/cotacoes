@@ -1,7 +1,7 @@
 import { CheckCircleOutlined } from '@mui/icons-material'
 import { Box, Button, Typography } from '@mui/material'
 
-import { DataPreview, DropZone } from './_components'
+import { DataPreview, DropZone, SqlQuery } from './_components'
 import * as S from './style'
 import { useImportHandler } from './use-import-handler'
 
@@ -21,7 +21,10 @@ export const Import = () => {
         Importação
       </Typography>
       {!file ? (
-        <DropZone onFileSelect={handleFileSelect} />
+        <>
+          <SqlQuery />
+          <DropZone onFileSelect={handleFileSelect} />
+        </>
       ) : (
         <>
           {importData && (

@@ -41,7 +41,7 @@ export const Form = ({
         <TextField
           {...register('lines')}
           label="Lista de faltas"
-          placeholder={'Gelatina\nAlcool Nobre 1L\nLeite Em Pó Ninho 480g'}
+          placeholder={'Gelatina\nÁlcool Nobre 1L\nLeite Em Pó Ninho 480g'}
           multiline
           minRows={8}
           error={!!errors.lines}
