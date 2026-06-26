@@ -4,7 +4,7 @@ export const Wrapper: SxProps<Theme> = {
   display: 'grid',
   gridTemplateColumns: { xs: '1fr', sm: 'repeat(6, 1fr)' },
   gap: 2,
-  mt: 1,
+  mt: 2,
   '.MuiInputBase-input': {
     textTransform: 'uppercase'
   }
@@ -22,9 +22,17 @@ export const ThreeCol: SxProps<Theme> = {
   gridColumn: { sm: 'span 3' }
 }
 
+export const FourCol: SxProps<Theme> = {
+  gridColumn: { sm: 'span 4' }
+}
+
+export const FiveCol: SxProps<Theme> = {
+  gridColumn: { sm: 'span 5' }
+}
+
 export const Actions: SxProps<Theme> = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: 1,
-  gridColumn: { sm: '1 / -1' }
+  mt: 2
 }

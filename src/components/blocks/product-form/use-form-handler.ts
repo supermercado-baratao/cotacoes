@@ -12,23 +12,31 @@ export const useFormHandler = (
   setFormProduct: (product: TProduct | null) => void,
   handleClose: () => void
 ) => {
-  const { createProduct, updateProduct, families, suppliers } = useAppStore()
+  const { createProduct, updateProduct, families } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
-  const defaultValues: TSchema = useMemo(
-    () => ({
+  const defaultValues: TSchema = useMemo(() => {
+    const barcodes = product?.barcodes ?? []
+    return {
       id: product?.id ?? '',
       description: product?.description ?? '',
       price: product?.price ?? 0,
-      barcode: product?.barcode ?? null,
       tax: product?.tax ?? null,
       margin: product?.margin ?? null,
+      stock: product?.stock ?? 0,
+      packagings: barcodes.length
+        ? barcodes.map((barcode, i) => ({
+            barcode,
+            packType: product?.packTypes[i] ?? ''
+          }))
+        : [{ barcode: '', packType: '' }],
+      department: product?.department ?? '',
+      section: product?.section ?? '',
+      group: product?.group ?? '',
       observations: product?.observations ?? null,
-      familyId: product?.familyId ?? null,
-      supplierIds: product?.supplierIds ?? []
-    }),
-    [product]
-  )
+      familyId: product?.familyId ?? null
+    }
+  }, [product])
 
   const {
     register,
@@ -42,14 +50,21 @@ export const useFormHandler = (
     reset(defaultValues)
   }, [defaultValues, reset])
 
-  const onSubmit = handleSubmit((data) => {
-    if (product) {
-      setSuccessCallbacks([handleClose, () => setFormProduct(null)])
-      updateProduct({ ...product, ...data, id: product.id })
-      return
-    }
-    setSuccessCallbacks([handleClose, () => reset(defaultValues)])
-    createProduct(data)
+  const onSubmit = handleSubmit(({ packagings, ...rest }) => {
+    const barcodes = packagings.map((p) => p.barcode)
+    const packTypes = packagings.map((p) => p.packType)
+
+    product
+      ? updateProduct({
+          ...product,
+          ...rest,
+          id: product.id,
+          barcodes,
+          packTypes
+        })
+      : createProduct({ ...rest, barcodes, packTypes, vrCreatedAt: '' })
+
+    setSuccessCallbacks([handleClose, () => setFormProduct(null)])
   })
 
   return {
@@ -57,7 +72,6 @@ export const useFormHandler = (
     onSubmit,
     errors,
     control,
-    families: families ?? [],
-    suppliers: suppliers ?? []
+    families: families ?? []
   }
 }

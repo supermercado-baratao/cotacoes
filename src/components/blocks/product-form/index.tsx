@@ -1,4 +1,13 @@
-import { Box, Button, InputAdornment, TextField } from '@mui/material'
+import { Add, Delete } from '@mui/icons-material'
+import {
+  Box,
+  Button,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography
+} from '@mui/material'
+import { useFieldArray } from 'react-hook-form'
 
 import {
   Autocomplete,
@@ -14,7 +23,6 @@ import {
 import type { TProduct } from '@/models'
 import { selectOnFocus } from '@/utils'
 
-import { MAX_BARCODE_LENGTH } from './schema'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 
@@ -22,7 +30,6 @@ type TProductFormProps = {
   product: TProduct | null
   setFormProduct: (product: TProduct | null) => void
   setQuickCreateFamily: (open: boolean) => void
-  setQuickCreateSupplier: (open: boolean) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
@@ -32,117 +39,193 @@ export const ProductForm = ({
   product,
   handleClose,
   setFormProduct,
-  setQuickCreateFamily,
-  setQuickCreateSupplier
+  setQuickCreateFamily
 }: TProductFormProps) => {
-  const { register, onSubmit, errors, control, families, suppliers } =
-    useFormHandler(product, setFormProduct, handleClose)
+  const { register, onSubmit, errors, control, families } = useFormHandler(
+    product,
+    setFormProduct,
+    handleClose
+  )
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'packagings'
+  })
 
   const title = product ? 'Editar Produto' : 'Novo Produto'
 
   return (
     <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
-      <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
-        <TextField
-          {...register('description')}
-          label="Descrição"
-          error={!!errors.description}
-          helperText={errors.description?.message}
-          sx={S.FullWidth}
-          onFocus={selectOnFocus}
-          slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
-        />
-        <TextField
-          {...register('id')}
-          label="Código VR"
-          error={!!errors.id}
-          helperText={errors.id?.message}
-          sx={S.ThreeCol}
-          onFocus={selectOnFocus}
-        />
-        <TextField
-          {...register('barcode')}
-          label="Código de Barras"
-          error={!!errors.barcode}
-          helperText={errors.barcode?.message}
-          sx={S.ThreeCol}
-          onFocus={selectOnFocus}
-          slotProps={{ htmlInput: { maxLength: MAX_BARCODE_LENGTH } }}
-        />
-        <Autocomplete
-          name="familyId"
-          control={control}
-          options={families}
-          getOptionLabel={(f) => f.description}
-          getOptionValue={(f) => f.id}
-          label="Família"
-          error={!!errors.familyId}
-          helperText={errors.familyId?.message}
-          handleAddClick={() => setQuickCreateFamily(true)}
-          addLabel="Nova Família"
-          sx={S.FullWidth}
-        />
-        <Autocomplete
-          name="supplierIds"
-          control={control}
-          options={suppliers}
-          getOptionLabel={(s) => s.tradeName}
-          getOptionValue={(s) => s.id}
-          label="Fornecedores"
-          error={!!errors.supplierIds}
-          helperText={errors.supplierIds?.message}
-          multiple
-          disableCloseOnSelect
-          handleAddClick={() => setQuickCreateSupplier(true)}
-          addLabel="Novo Fornecedor"
-          sx={S.FullWidth}
-        />
-        <CurrencyInput
-          name="price"
-          control={control}
-          label="Preço"
-          error={!!errors.price}
-          helperText={errors.price?.message}
-          sx={S.TwoCol}
-          onFocus={selectOnFocus}
-        />
-        <TextField
-          {...register('tax', { valueAsNumber: true })}
-          label="Imposto"
-          type="number"
-          error={!!errors.tax}
-          helperText={errors.tax?.message}
-          sx={S.TwoCol}
-          onFocus={selectOnFocus}
-          slotProps={{
-            input: { endAdornment: percentageAdornment },
-            htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
-          }}
-        />
-        <TextField
-          {...register('margin', { valueAsNumber: true })}
-          label="Margem de Lucro"
-          type="number"
-          error={!!errors.margin}
-          helperText={errors.margin?.message}
-          sx={S.TwoCol}
-          onFocus={selectOnFocus}
-          slotProps={{
-            input: { endAdornment: percentageAdornment },
-            htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
-          }}
-        />
-        <TextField
-          {...register('observations')}
-          label="Observações"
-          multiline
-          minRows={3}
-          error={!!errors.observations}
-          helperText={errors.observations?.message}
-          sx={S.FullWidth}
-          onFocus={selectOnFocus}
-          slotProps={{ htmlInput: { maxLength: MAX_OBSERVATIONS_LENGTH } }}
-        />
+      <Box component="form" onSubmit={onSubmit} noValidate>
+        <Box sx={S.Wrapper}>
+          <TextField
+            {...register('description')}
+            label="Descrição"
+            error={!!errors.description}
+            helperText={errors.description?.message}
+            sx={S.FullWidth}
+            onFocus={selectOnFocus}
+            slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
+          />
+          <TextField
+            {...register('id')}
+            label="Código VR"
+            error={!!errors.id}
+            helperText={errors.id?.message}
+            sx={S.TwoCol}
+            onFocus={selectOnFocus}
+          />
+          <Autocomplete
+            name="familyId"
+            control={control}
+            options={families}
+            getOptionLabel={(f) => f.description}
+            getOptionValue={(f) => f.id}
+            label="Família"
+            error={!!errors.familyId}
+            helperText={errors.familyId?.message}
+            handleAddClick={() => setQuickCreateFamily(true)}
+            addLabel="Nova Família"
+            sx={S.FourCol}
+          />
+          <TextField
+            {...register('department')}
+            label="Departamento"
+            error={!!errors.department}
+            helperText={errors.department?.message}
+            sx={S.TwoCol}
+            onFocus={selectOnFocus}
+            slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
+          />
+          <TextField
+            {...register('section')}
+            label="Seção"
+            error={!!errors.section}
+            helperText={errors.section?.message}
+            sx={S.TwoCol}
+            onFocus={selectOnFocus}
+            slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
+          />
+          <TextField
+            {...register('group')}
+            label="Grupo"
+            error={!!errors.group}
+            helperText={errors.group?.message}
+            sx={S.TwoCol}
+            onFocus={selectOnFocus}
+            slotProps={{ htmlInput: { maxLength: MAX_DESCRIPTION_LENGTH } }}
+          />
+          <CurrencyInput
+            name="price"
+            control={control}
+            label="Preço de Venda"
+            error={!!errors.price}
+            helperText={errors.price?.message}
+            sx={S.ThreeCol}
+            onFocus={selectOnFocus}
+          />
+          <TextField
+            {...register('stock', { valueAsNumber: true })}
+            label="Estoque"
+            type="number"
+            error={!!errors.stock}
+            helperText={errors.stock?.message}
+            sx={S.ThreeCol}
+            onFocus={selectOnFocus}
+            slotProps={{ htmlInput: { step: 0.001, max: MAX_NUMERIC_VALUE } }}
+          />
+          <TextField
+            {...register('tax', { valueAsNumber: true })}
+            label="Imposto"
+            type="number"
+            error={!!errors.tax}
+            helperText={errors.tax?.message}
+            sx={S.ThreeCol}
+            onFocus={selectOnFocus}
+            slotProps={{
+              input: { endAdornment: percentageAdornment },
+              htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
+            }}
+          />
+          <TextField
+            {...register('margin', { valueAsNumber: true })}
+            label="Margem Padrão"
+            type="number"
+            error={!!errors.margin}
+            helperText={errors.margin?.message}
+            sx={S.ThreeCol}
+            onFocus={selectOnFocus}
+            slotProps={{
+              input: { endAdornment: percentageAdornment },
+              htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
+            }}
+          />
+
+          <Box sx={S.FullWidth}>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              Embalagens
+            </Typography>
+            <Stack spacing={1}>
+              {fields.map((field, index) => (
+                <Stack
+                  key={field.id}
+                  direction="row"
+                  spacing={1}
+                  sx={{ alignItems: 'stretch' }}
+                >
+                  <TextField
+                    {...register(`packagings.${index}.barcode`)}
+                    label="Cód. de Barras"
+                    error={!!errors.packagings?.[index]?.barcode}
+                    helperText={errors.packagings?.[index]?.barcode?.message}
+                    onFocus={selectOnFocus}
+                    sx={{ flex: 2 }}
+                  />
+                  <TextField
+                    {...register(`packagings.${index}.packType`)}
+                    label="Tipo Embalagem"
+                    error={!!errors.packagings?.[index]?.packType}
+                    helperText={errors.packagings?.[index]?.packType?.message}
+                    onFocus={selectOnFocus}
+                    sx={{ flex: 1 }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="inherit"
+                    size="small"
+                    onClick={() => remove(index)}
+                    sx={{ minWidth: 'auto' }}
+                    aria-label="Remover embalagem"
+                  >
+                    <Delete />
+                  </Button>
+                </Stack>
+              ))}
+              <Box>
+                <Button
+                  size="small"
+                  startIcon={<Add />}
+                  onClick={() => append({ barcode: '', packType: '' })}
+                >
+                  Adicionar embalagem
+                </Button>
+              </Box>
+            </Stack>
+          </Box>
+
+          <TextField
+            {...register('observations')}
+            label="Observações"
+            multiline
+            minRows={3}
+            error={!!errors.observations}
+            helperText={errors.observations?.message}
+            sx={S.FullWidth}
+            onFocus={selectOnFocus}
+            slotProps={{ htmlInput: { maxLength: MAX_OBSERVATIONS_LENGTH } }}
+          />
+        </Box>
+
         <Box sx={S.Actions}>
           <Button onClick={handleClose}>Cancelar</Button>
           <Button type="submit" variant="contained">
