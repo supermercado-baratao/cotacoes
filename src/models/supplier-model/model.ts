@@ -21,7 +21,14 @@ const upsertMany = (data: TCreateDataWithId<TSupplier>[]): Promise<void> =>
   database.upsertManyWithIds<TSupplier>({
     path: getUserPath('suppliers'),
     data,
-    updateFields: ['id', 'tradeName', 'legalName', 'cnpj']
+    updateFields: [
+      'id',
+      'tradeName',
+      'legalName',
+      'cnpj',
+      'phone',
+      'vrCreatedAt'
+    ]
   })
 
 const findMany = (): Promise<TSupplier[]> =>

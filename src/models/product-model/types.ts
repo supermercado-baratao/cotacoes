@@ -4,12 +4,17 @@ export type TProduct = {
   id: string
   description: string
   price: number
-  barcode: string | null
+  barcodes: string[]
+  packTypes: string[]
   tax: number | null
   margin: number | null
   observations: string | null
   familyId: string | null
-  supplierIds: string[]
+  department: string
+  section: string
+  group: string
+  stock: number
+  vrCreatedAt: string
   createdAt: Timestamp
   updatedAt: Timestamp
 }

@@ -7,6 +7,8 @@ export type TSupplier = {
   cnpj: string
   email: string | null
   phone: string | null
+  vrCreatedAt: string | null
+  observations: string | null
   createdAt: Timestamp
   updatedAt: Timestamp
 }
