@@ -13,18 +13,18 @@ import { formatCurrency, selectOnFocus } from '@/utils'
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 
-type TSalePriceFormProps = {
+type TProductReferenceFormProps = {
   quoteItem: TQuoteItem | null
   quote: TQuote
   handleClose: () => void
 } & Pick<TModalProps, 'isOpened'>
 
-export const SalePriceForm = ({
+export const ProductReferenceForm = ({
   isOpened,
   quoteItem,
   quote,
   handleClose
-}: TSalePriceFormProps) => {
+}: TProductReferenceFormProps) => {
   const { control, onSubmit, families, products, priceComparison } =
     useFormHandler(quoteItem, quote, handleClose)
 

@@ -10,7 +10,7 @@ import { useAppStore } from '@/stores'
 import type { TQuoteRow } from '../../utils'
 import { columns } from './columns'
 import { OrdersDrawer } from './orders-drawer'
-import { SalePriceForm } from './sale-price-form'
+import { ProductReferenceForm } from './product-reference-form'
 
 type TTableProps = {
   quote: TQuote
@@ -81,7 +81,7 @@ export const Table = ({ quote, rows }: TTableProps) => {
     <>
       <_Table columns={[...columns, actionsColumn]} items={rows} />
       <OrdersDrawer row={drawerRow} handleClose={() => setDrawerRow(null)} />
-      <SalePriceForm
+      <ProductReferenceForm
         isOpened={!!salePriceItem}
         quoteItem={salePriceItem}
         quote={quote}
