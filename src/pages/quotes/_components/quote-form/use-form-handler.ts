@@ -11,7 +11,8 @@ import { schema, type TSchema } from './schema'
 export const useFormHandler = (
   quote: TQuote | null,
   setFormQuote: (quote: TQuote | null) => void,
-  handleClose: () => void
+  handleClose: () => void,
+  handleSuccess: (date: string) => void
 ) => {
   const { createQuote, updateQuote } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
@@ -60,11 +61,19 @@ export const useFormHandler = (
   const onSubmit = handleSubmit(({ lines, ...rest }) => {
     const items = parseItems(lines, quote?.items ?? [])
     if (quote) {
-      setSuccessCallbacks([handleClose, () => setFormQuote(null)])
+      setSuccessCallbacks([
+        handleClose,
+        () => setFormQuote(null),
+        () => handleSuccess(rest.date)
+      ])
       updateQuote({ ...quote, ...rest, items })
       return
     }
-    setSuccessCallbacks([handleClose, () => reset(defaultValues)])
+    setSuccessCallbacks([
+      handleClose,
+      () => reset(defaultValues),
+      () => handleSuccess(rest.date)
+    ])
     createQuote({ ...rest, items })
   })
 

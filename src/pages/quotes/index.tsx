@@ -32,7 +32,8 @@ export const Quotes = () => {
     quoteToDelete,
     handleDeleteQuote,
     handleDeleteDialogClose,
-    handleDeleteDialogConfirm
+    handleDeleteDialogConfirm,
+    handleSuccess
   } = useQuotesHandler()
 
   return (
@@ -63,6 +64,7 @@ export const Quotes = () => {
         quote={formQuote}
         setFormQuote={setFormQuote}
         handleClose={handleQuoteFormClose}
+        handleSuccess={handleSuccess}
       />
       <ProductForm
         isOpened={isProductFormOpen}

@@ -11,18 +11,21 @@ import { useFormHandler } from './use-form-handler'
 type TFormProps = {
   quote: TQuote | null
   setFormQuote: (quote: TQuote | null) => void
+  handleSuccess: (date: string) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 export const Form = ({
   isOpened,
   quote,
   handleClose,
-  setFormQuote
+  setFormQuote,
+  handleSuccess
 }: TFormProps) => {
   const { register, onSubmit, errors } = useFormHandler(
     quote,
     setFormQuote,
-    handleClose
+    handleClose,
+    handleSuccess
   )
 
   const title = quote ? 'Editar Cotação' : 'Nova Cotação'
