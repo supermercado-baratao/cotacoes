@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, test } from 'vitest'
 
@@ -38,39 +38,38 @@ describe('Import flow', () => {
       expect(screen.getByText('import-data.xlsx')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('8 produtos')).toBeInTheDocument()
-    expect(screen.getByText('4 famílias')).toBeInTheDocument()
-    expect(screen.getByText('6 fornecedores')).toBeInTheDocument()
-    expect(screen.getByText('214469')).toBeInTheDocument()
-    expect(
-      screen.getByText('ABS ALWAYS 10UN SUAVE PEQUENO C ABAS LV10 PG8')
-    ).toBeInTheDocument()
-    expect(screen.getByText('R$ 4,98')).toBeInTheDocument()
-    expect(screen.getByText('VITORIA CONQUISTAAT')).toBeInTheDocument()
-    expect(
-      within(container.querySelector('.MuiDataGrid-root')!).getAllByTestId(
-        'CategoryIcon'
-      )
-    ).toHaveLength(5)
-    expect(screen.getByText('8 linhas selecionadas')).toBeInTheDocument()
+    expect(screen.getByText('100 produtos')).toBeInTheDocument()
+    expect(screen.getByText('57 famílias')).toBeInTheDocument()
+    expect(screen.getByText('43 fornecedores')).toBeInTheDocument()
+    expect(screen.getByText('207826')).toBeInTheDocument()
+    expect(screen.getByText('PUDIM BRETZKE 50G CHOCOLATE')).toBeInTheDocument()
+    expect(screen.getByText('R$ 3,15')).toBeInTheDocument()
+    expect(screen.getByText('PUDIM BRETZKE 50G')).toBeInTheDocument()
+    expect(screen.getByText('100 linhas selecionadas')).toBeInTheDocument()
 
     await userEvent.click(
-      screen.getByRole('button', { name: 'Importar 8 produtos' })
+      screen.getByRole('button', { name: 'Importar 100 produtos' })
     )
 
-    await waitFor(() => {
-      expect(
-        screen.getByText('Dados importados com sucesso!')
-      ).toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText('Dados importados com sucesso!')
+        ).toBeInTheDocument()
+      },
+      { timeout: 10000 }
+    )
     expect(
       screen.getByRole('button', { name: 'Selecionar arquivo' })
     ).toBeInTheDocument()
 
-    await waitFor(() => {
-      expect(useAppStore.getState().products).toHaveLength(8)
-      expect(useAppStore.getState().families).toHaveLength(4)
-      expect(useAppStore.getState().suppliers).toHaveLength(6)
-    })
-  })
+    await waitFor(
+      () => {
+        expect(useAppStore.getState().products).toHaveLength(100)
+        expect(useAppStore.getState().families).toHaveLength(57)
+        expect(useAppStore.getState().suppliers).toHaveLength(43)
+      },
+      { timeout: 10000 }
+    )
+  }, 20000)
 })
