@@ -1,4 +1,4 @@
-import { ArrowBack, CheckCircle, Warning } from '@mui/icons-material'
+import { ArrowBack, CheckCircle, Save, Warning } from '@mui/icons-material'
 import {
   Autocomplete,
   Box,
@@ -58,15 +58,44 @@ export const InvoiceDetail = () => {
     invoice,
     isFetching,
     quotes,
+    products,
     selectedQuoteId,
     handleQuoteChange,
     itemsWithDivergences,
     missingOrders,
     productMap,
+    handleSaveAdjustments,
     handleApprove,
     handleMarkDivergent,
-    handleBack
+    handleBack,
+    handleConfirmMatch,
+    handleRejectMatch,
+    handleAssignProduct
   } = useInvoiceDetailHandler()
+
+  const summary = {
+    total: itemsWithDivergences.length,
+    matched: itemsWithDivergences.filter((i) => i.matchStatus === 'matched')
+      .length,
+    manual: itemsWithDivergences.filter((i) => i.matchStatus === 'manual')
+      .length,
+    unmatchedProduct: itemsWithDivergences.filter(
+      (i) => i.matchStatus === 'unmatched_product'
+    ).length,
+    unmatchedOrder: itemsWithDivergences.filter(
+      (i) => i.matchStatus === 'unmatched_order'
+    ).length,
+    withDivergence: itemsWithDivergences.filter(
+      (i) => i.priceDivergence !== null && i.priceDivergence !== 0
+    ).length,
+    totalDivergence: itemsWithDivergences.reduce(
+      (acc, i) =>
+        i.priceDivergence !== null && i.priceDivergence !== 0
+          ? acc + i.priceDivergence * i.quantity
+          : acc,
+      0
+    )
+  }
 
   if (isFetching || !invoice) return null
 
@@ -155,10 +184,51 @@ export const InvoiceDetail = () => {
       </Paper>
 
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Itens da nota ({invoice.items.length})
+        <Typography variant="h6" sx={{ mb: 1.5 }}>
+          Itens da nota ({summary.total})
         </Typography>
-        <ItemsTable items={itemsWithDivergences} />
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+          <Chip
+            label={`${summary.matched}/${summary.total} identificados`}
+            color="success"
+            size="small"
+          />
+          {summary.manual > 0 && (
+            <Chip
+              label={`${summary.manual} a revisar`}
+              color="info"
+              size="small"
+            />
+          )}
+          {summary.unmatchedProduct > 0 && (
+            <Chip
+              label={`${summary.unmatchedProduct} sem produto`}
+              color="error"
+              size="small"
+            />
+          )}
+          {summary.unmatchedOrder > 0 && (
+            <Chip
+              label={`${summary.unmatchedOrder} sem pedido`}
+              color="warning"
+              size="small"
+            />
+          )}
+          {summary.withDivergence > 0 && (
+            <Chip
+              label={`${summary.withDivergence} divergência${summary.withDivergence !== 1 ? 's' : ''} de preço (${formatCurrency(summary.totalDivergence)})`}
+              color={summary.totalDivergence > 0 ? 'error' : 'warning'}
+              size="small"
+            />
+          )}
+        </Box>
+        <ItemsTable
+          items={itemsWithDivergences}
+          products={products}
+          handleConfirmMatch={handleConfirmMatch}
+          handleRejectMatch={handleRejectMatch}
+          handleAssignProduct={handleAssignProduct}
+        />
       </Paper>
 
       {missingOrders.length > 0 && (
@@ -192,6 +262,13 @@ export const InvoiceDetail = () => {
       )}
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<Save />}
+          onClick={handleSaveAdjustments}
+        >
+          Salvar ajustes
+        </Button>
         <Button
           variant="outlined"
           color="warning"

@@ -38,6 +38,12 @@ export const useInvoiceDetailHandler = () => {
     invoice?.quoteId ?? null
   )
 
+  const [productIdOverrides, setProductIdOverrides] = useState<
+    Map<number, string | null>
+  >(new Map())
+
+  const [confirmedManual, setConfirmedManual] = useState<Set<number>>(new Set())
+
   const handleQuoteChange = (quoteId: string | null) => {
     setSelectedQuoteId(quoteId)
     setQuoteId(quoteId)
@@ -59,19 +65,31 @@ export const useInvoiceDetailHandler = () => {
   const itemsWithDivergences = useMemo((): TInvoiceItemRow[] => {
     if (!invoice) return []
     return invoice.items.map((item) => {
-      const order = item.productId
-        ? (ordersForSupplier.find((o) => o.productId === item.productId) ??
+      const effectiveProductId = productIdOverrides.has(item.itemNumber)
+        ? (productIdOverrides.get(item.itemNumber) ?? null)
+        : item.productId
+
+      const order = effectiveProductId
+        ? (ordersForSupplier.find((o) => o.productId === effectiveProductId) ??
           null)
         : null
 
-      const matchStatus: TInvoiceItemMatchStatus = !item.productId
+      const isManual =
+        item.matchStatus === 'manual' &&
+        !confirmedManual.has(item.itemNumber) &&
+        !productIdOverrides.has(item.itemNumber)
+
+      const matchStatus: TInvoiceItemMatchStatus = !effectiveProductId
         ? 'unmatched_product'
-        : !order
-          ? 'unmatched_order'
-          : 'matched'
+        : isManual
+          ? 'manual'
+          : !order
+            ? 'unmatched_order'
+            : 'matched'
 
       return {
         ...item,
+        productId: effectiveProductId,
         matchStatus,
         orderId: order?.id ?? null,
         priceDivergence: order ? item.unitPrice - order.price : null,
@@ -79,18 +97,50 @@ export const useInvoiceDetailHandler = () => {
         orderQuantity: order?.quantity ?? null,
         orderPrice: order?.price ?? null,
         productDescription:
-          productMap.get(item.productId ?? '')?.description ?? null
+          productMap.get(effectiveProductId ?? '')?.description ?? null
       }
     })
-  }, [invoice, ordersForSupplier, productMap])
+  }, [
+    invoice,
+    ordersForSupplier,
+    productMap,
+    productIdOverrides,
+    confirmedManual
+  ])
 
   const missingOrders = useMemo(
     () =>
       ordersForSupplier.filter(
-        (o) => !invoice?.items.some((item) => item.productId === o.productId)
+        (o) =>
+          !itemsWithDivergences.some((item) => item.productId === o.productId)
       ),
-    [ordersForSupplier, invoice]
+    [ordersForSupplier, itemsWithDivergences]
   )
+
+  const handleConfirmMatch = (itemNumber: number) => {
+    setConfirmedManual((prev) => new Set([...prev, itemNumber]))
+  }
+
+  const handleRejectMatch = (itemNumber: number) => {
+    setProductIdOverrides((prev) => {
+      const next = new Map(prev)
+      next.set(itemNumber, null)
+      return next
+    })
+    setConfirmedManual((prev) => {
+      const next = new Set(prev)
+      next.delete(itemNumber)
+      return next
+    })
+  }
+
+  const handleAssignProduct = (itemNumber: number, productId: string) => {
+    setProductIdOverrides((prev) => {
+      const next = new Map(prev)
+      next.set(itemNumber, productId)
+      return next
+    })
+  }
 
   const buildUpdatedItems = (): TInvoiceItem[] =>
     itemsWithDivergences.map(
@@ -110,6 +160,15 @@ export const useInvoiceDetailHandler = () => {
         quantityDivergence: item.quantityDivergence
       })
     )
+
+  const handleSaveAdjustments = () => {
+    if (!invoice) return
+    updateInvoice({
+      ...invoice,
+      quoteId: selectedQuoteId,
+      items: buildUpdatedItems()
+    })
+  }
 
   const handleApprove = () => {
     if (!invoice) return
@@ -137,13 +196,18 @@ export const useInvoiceDetailHandler = () => {
     invoice,
     isFetching,
     quotes,
+    products: products ?? [],
     selectedQuoteId,
     handleQuoteChange,
     itemsWithDivergences,
     missingOrders,
     productMap,
+    handleSaveAdjustments,
     handleApprove,
     handleMarkDivergent,
-    handleBack
+    handleBack,
+    handleConfirmMatch,
+    handleRejectMatch,
+    handleAssignProduct
   }
 }

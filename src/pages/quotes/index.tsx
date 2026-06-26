@@ -1,10 +1,4 @@
-import {
-  DataView,
-  DeleteDialog,
-  FamilyForm,
-  ProductForm,
-  SupplierForm
-} from '@/components'
+import { DataView, DeleteDialog, FamilyForm, ProductForm } from '@/components'
 
 import { Form, Header, Table } from './_components'
 import { useQuotesHandler } from './use-quotes-handler'
@@ -35,8 +29,6 @@ export const Quotes = () => {
     handleProductFormClose,
     quickCreateFamily,
     setQuickCreateFamily,
-    quickCreateSupplier,
-    setQuickCreateSupplier,
     quoteToDelete,
     handleDeleteQuote,
     handleDeleteDialogClose,
@@ -78,19 +70,12 @@ export const Quotes = () => {
         setFormProduct={setFormProduct}
         handleClose={handleProductFormClose}
         setQuickCreateFamily={setQuickCreateFamily}
-        setQuickCreateSupplier={setQuickCreateSupplier}
       />
       <FamilyForm
         isOpened={quickCreateFamily}
         family={null}
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
-      />
-      <SupplierForm
-        isOpened={quickCreateSupplier}
-        supplier={null}
-        setFormSupplier={() => {}}
-        handleClose={() => setQuickCreateSupplier(false)}
       />
       <DeleteDialog
         open={!!quoteToDelete}

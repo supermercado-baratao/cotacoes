@@ -51,7 +51,6 @@ export const useQuotesHandler = () => {
   } = useDeleteHandler<TQuote>((quote) => deleteQuote(quote.id))
 
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
-  const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
 
   const quote = getSelectedQuote(quotes || [], year, month, day) ?? null
   const numberOfSuppliers = getNumberOfSuppliers(ordersByQuoteId || [])
@@ -104,8 +103,6 @@ export const useQuotesHandler = () => {
     handleProductFormClose,
     quickCreateFamily,
     setQuickCreateFamily,
-    quickCreateSupplier,
-    setQuickCreateSupplier,
     numberOfSuppliers,
     handleCreateQuote,
     quoteToDelete,

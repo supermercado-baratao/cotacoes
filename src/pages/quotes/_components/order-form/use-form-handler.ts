@@ -92,14 +92,11 @@ export const useFormHandler = (
   const onSubmit = handleSubmit((data) => {
     if (!quoteId || !quoteItem) return
 
-    if (order) {
-      setSuccessCallbacks([handleClose, () => setFormOrder(null)])
-      updateOrder({ ...order, ...data })
-      return
-    }
+    order
+      ? updateOrder({ ...order, ...data })
+      : createOrder({ ...data, quoteId, quoteItemId: quoteItem.id })
 
-    setSuccessCallbacks([handleClose])
-    createOrder({ ...data, quoteId, quoteItemId: quoteItem.id })
+    setSuccessCallbacks([handleClose, () => setFormOrder(null)])
   })
 
   const selectedProduct = useMemo(

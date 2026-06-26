@@ -19,23 +19,41 @@ const normalizeBarcode = (raw: string): string | null =>
 
 const normalizeCnpj = (cnpj: string): string => cnpj.replace(/\D/g, '')
 
+const buildBarcodeMap = (products: TProduct[]): Map<string, TProduct> => {
+  const barcodeMap = new Map<string, TProduct>()
+  for (const product of products) {
+    for (const barcode of product.barcodes) {
+      barcodeMap.set(barcode, product)
+    }
+  }
+  return barcodeMap
+}
+
 const parseItems = (
   doc: Document,
-  productMap: Map<string, TProduct>
+  barcodeMap: Map<string, TProduct>
 ): TInvoiceItem[] =>
   Array.from(doc.getElementsByTagName('det')).map((det, i) => {
     const prod = det.getElementsByTagName('prod')[0]
-    const barcode = normalizeBarcode(get(prod, 'cEAN'))
-    const product = barcode ? (productMap.get(barcode) ?? null) : null
+    const cEAN = normalizeBarcode(get(prod, 'cEAN'))
+    const cEANTrib = normalizeBarcode(get(prod, 'cEANTrib'))
+    const cProd = get(prod, 'cProd')
+    const xProd = get(prod, 'xProd')
+
+    const product =
+      (cEAN && barcodeMap.get(cEAN)) ||
+      (cEANTrib && barcodeMap.get(cEANTrib)) ||
+      null
+
     const matchStatus: TInvoiceItemMatchStatus = product
       ? 'matched'
       : 'unmatched_product'
 
     return {
       itemNumber: i + 1,
-      supplierProductCode: get(prod, 'cProd'),
-      barcode,
-      description: get(prod, 'xProd'),
+      supplierProductCode: cProd,
+      barcode: cEAN,
+      description: xProd,
       unit: get(prod, 'uCom'),
       quantity: Number(get(prod, 'qCom')),
       unitPrice: Number(get(prod, 'vUnCom')),
@@ -57,7 +75,7 @@ export const parseNfe = (
 ): TParsedNfe => {
   const doc = new DOMParser().parseFromString(xmlString, 'text/xml')
 
-  if (doc.getElementsByTagName('parsererror').length > 0) {
+  if (doc.getElementsByTagName('parseerror').length > 0) {
     throw new Error('Arquivo XML inválido')
   }
 
@@ -72,12 +90,12 @@ export const parseNfe = (
 
   const supplierName = get(doc, 'xFant') || get(doc, 'xNome')
 
-  const productMap = new Map(
-    products.filter((p) => p.barcode).map((p) => [p.barcode!, p])
-  )
   const supplierByCnpj = new Map(
     suppliers.map((s) => [normalizeCnpj(s.cnpj), s])
   )
+  const supplierId = supplierByCnpj.get(supplierCnpj)?.id ?? null
+
+  const barcodeMap = buildBarcodeMap(products)
 
   return {
     id: accessKey,
@@ -87,10 +105,10 @@ export const parseNfe = (
     emissionDate: get(doc, 'dhEmi'),
     supplierCnpj,
     supplierName,
-    supplierId: supplierByCnpj.get(supplierCnpj)?.id ?? null,
+    supplierId,
     destinationCnpj,
     totalValue: Number(get(doc, 'vNF')),
-    items: parseItems(doc, productMap),
+    items: parseItems(doc, barcodeMap),
     verificationStatus: 'pending',
     quoteId: null
   }

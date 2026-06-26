@@ -1,9 +1,10 @@
-import { Chip } from '@mui/material'
+import { Chip, Typography } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 
 import type {
   TInvoice,
+  TInvoiceItem,
   TInvoiceOrigin,
   TInvoiceVerificationStatus
 } from '@/models'
@@ -63,6 +64,24 @@ export const columns: GridColDef<TInvoice>[] = [
     headerName: 'Total NF',
     width: 130,
     valueFormatter: (value: number) => formatCurrency(value)
+  },
+  {
+    field: 'items',
+    headerName: 'Pendências',
+    width: 110,
+    sortable: false,
+    valueGetter: (value: TInvoiceItem[]) =>
+      value.filter((i) => i.matchStatus === 'unmatched_product').length,
+    renderCell: (params) => {
+      const count = params.value as number
+      if (count === 0)
+        return (
+          <Typography variant="body2" color="text.disabled">
+            —
+          </Typography>
+        )
+      return <Chip label={count} color="error" size="small" />
+    }
   },
   {
     field: 'origin',
