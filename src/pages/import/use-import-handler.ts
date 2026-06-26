@@ -3,7 +3,7 @@ import { useState } from 'react'
 import type { TImportData } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
-import { parseXlsx } from './utils'
+import { getData } from './utils'
 
 export const useImportHandler = () => {
   const { importData: runImport } = useAppStore()
@@ -15,7 +15,7 @@ export const useImportHandler = () => {
 
   const handleFileSelect = async (selected: File) => {
     setFile(selected)
-    const data = await parseXlsx(selected)
+    const data = await getData(selected)
     setImportData(data)
     setSelectedIds(data.products.map((p) => p.id))
   }
@@ -35,17 +35,12 @@ export const useImportHandler = () => {
     const selectedFamilyIds = new Set(
       selectedProducts.map((p) => p.familyId).filter(Boolean)
     )
-    const selectedSupplierIds = new Set(
-      selectedProducts.flatMap((p) => p.supplierIds)
-    )
 
     setSuccessCallbacks([handleFileRemove])
     runImport({
       products: selectedProducts,
       families: importData.families.filter((f) => selectedFamilyIds.has(f.id)),
-      suppliers: importData.suppliers.filter((s) =>
-        selectedSupplierIds.has(s.id)
-      )
+      suppliers: importData.suppliers
     })
   }
 
