@@ -1,5 +1,11 @@
 import { TrendingDown, TrendingFlat, TrendingUp } from '@mui/icons-material'
-import { Box, Button, InputAdornment, TextField } from '@mui/material'
+import {
+  Box,
+  Button,
+  InputAdornment,
+  TextField,
+  Typography
+} from '@mui/material'
 
 import {
   Autocomplete,
@@ -43,6 +49,16 @@ export const ProductReferenceForm = ({
       handleClose={handleClose}
     >
       <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
+        {quoteItem && (
+          <Box sx={S.ItemBanner}>
+            <Typography variant="caption" sx={S.ItemLabel}>
+              item
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              {quoteItem.description}
+            </Typography>
+          </Box>
+        )}
         <Autocomplete
           name="familyId"
           control={control}
