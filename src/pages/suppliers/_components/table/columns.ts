@@ -5,6 +5,11 @@ import { formatCNPJ, formatPhone } from '@/utils'
 
 export const columns: GridColDef<TSupplier>[] = [
   {
+    field: 'id',
+    headerName: 'Cód. VR',
+    width: 90
+  },
+  {
     field: 'legalName',
     headerName: 'Razão Social',
     minWidth: 200,
@@ -25,15 +30,23 @@ export const columns: GridColDef<TSupplier>[] = [
     valueFormatter: (value: string) => formatCNPJ(value)
   },
   {
-    field: 'email',
-    headerName: 'E-mail',
-    minWidth: 180,
-    flex: 1
-  },
-  {
     field: 'phone',
     headerName: 'Telefone',
     width: 150,
-    valueFormatter: (value: string) => formatPhone(value)
+    valueFormatter: (value: string | null) => (value ? formatPhone(value) : '—')
+  },
+  {
+    field: 'email',
+    headerName: 'E-mail',
+    minWidth: 180,
+    flex: 1,
+    valueFormatter: (value: string | null) => value ?? '—'
+  },
+  {
+    field: 'vrCreatedAt',
+    headerName: 'Cadastro VR',
+    width: 120,
+    valueFormatter: (value: string | null) =>
+      value ? new Date(value).toLocaleDateString('pt-BR') : '—'
   }
 ]

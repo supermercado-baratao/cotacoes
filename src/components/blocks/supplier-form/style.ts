@@ -2,7 +2,7 @@ import { type SxProps, type Theme } from '@mui/material'
 
 export const Wrapper: SxProps<Theme> = {
   display: 'grid',
-  gridTemplateColumns: { xs: '1fr', sm: 'repeat(6, 1fr)' },
+  gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
   gap: 2,
   mt: 1,
   '.MuiInputBase-input': {
@@ -14,8 +14,12 @@ export const FullWidth: SxProps<Theme> = {
   gridColumn: { sm: '1 / -1' }
 }
 
-export const ThreeCol: SxProps<Theme> = {
-  gridColumn: { sm: 'span 3' }
+export const OneCol: SxProps<Theme> = {
+  gridColumn: { sm: 'span 1' }
+}
+
+export const TwoCol: SxProps<Theme> = {
+  gridColumn: { sm: 'span 2' }
 }
 
 export const EmailField: SxProps<Theme> = {

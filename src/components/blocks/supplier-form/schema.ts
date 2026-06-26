@@ -2,8 +2,6 @@ import { isCNPJ } from 'validation-br'
 import z from 'zod'
 
 import { PHONE_MAX_LENGTH, PHONE_MIN_LENGTH } from '@/constants'
-import type { TSupplier } from '@/models'
-import type { TCreateDataWithId } from '@/types'
 
 export const MAX_LEGAL_NAME_LENGTH = 200
 export const MAX_TRADE_NAME_LENGTH = 200
@@ -18,7 +16,8 @@ export const schema = z.object({
     .string()
     .min(PHONE_MIN_LENGTH, 'Telefone inválido')
     .max(PHONE_MAX_LENGTH, 'Telefone inválido')
-    .nullable()
-}) satisfies z.ZodType<TCreateDataWithId<TSupplier>>
+    .nullable(),
+  observations: z.string().nullable()
+})
 
 export type TSchema = z.infer<typeof schema>

@@ -22,7 +22,8 @@ export const useFormHandler = (
       tradeName: supplier?.tradeName ?? '',
       cnpj: supplier?.cnpj ?? '',
       email: supplier?.email ?? null,
-      phone: supplier?.phone ?? null
+      phone: supplier?.phone ?? null,
+      observations: supplier?.observations ?? null
     }),
     [supplier]
   )
@@ -45,10 +46,15 @@ export const useFormHandler = (
   const onSubmit = handleSubmit((data) => {
     setSuccessCallbacks([handleClose, () => setFormSupplier(null)])
     if (supplier) {
-      updateSupplier({ ...supplier, ...data, id: supplier.id })
+      updateSupplier({
+        ...supplier,
+        ...data,
+        id: supplier.id,
+        vrCreatedAt: supplier.vrCreatedAt
+      })
       return
     }
-    createSupplier(data)
+    createSupplier({ ...data, vrCreatedAt: null })
   })
 
   return { register, onSubmit, errors, control }

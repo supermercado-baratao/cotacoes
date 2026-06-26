@@ -1,6 +1,14 @@
-import { Box, Button, TextField } from '@mui/material'
+import {
+  Box,
+  Button,
+  type CSSObject,
+  TextField,
+  Typography
+} from '@mui/material'
+import dayjs from 'dayjs'
 
 import { CnpjInput, Modal, PhoneInput, type TModalProps } from '@/components'
+import { MAX_OBSERVATIONS_LENGTH } from '@/constants'
 import type { TSupplier } from '@/models'
 import { selectOnFocus } from '@/utils'
 
@@ -25,35 +33,36 @@ export const SupplierForm = ({
     handleClose
   )
 
-  const title = supplier ? 'Editar Fornecedor' : 'Novo Fornecedor'
+  const isEditing = !!supplier
+  const title = isEditing ? 'Editar Fornecedor' : 'Novo Fornecedor'
 
   return (
     <>
       <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
         <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
           <TextField
-            {...register('id')}
-            label="Código VR"
-            error={!!errors.id}
-            helperText={errors.id?.message}
-            sx={S.ThreeCol}
-            onFocus={selectOnFocus}
-          />
-          <TextField
             {...register('legalName')}
             label="Razão Social"
             error={!!errors.legalName}
             helperText={errors.legalName?.message}
-            sx={S.FullWidth}
+            sx={S.TwoCol}
             onFocus={selectOnFocus}
             slotProps={{ htmlInput: { maxLength: MAX_LEGAL_NAME_LENGTH } }}
+          />
+          <TextField
+            {...register('id')}
+            label="Código VR"
+            error={!!errors.id}
+            helperText={errors.id?.message}
+            sx={S.OneCol}
+            onFocus={selectOnFocus}
           />
           <TextField
             {...register('tradeName')}
             label="Nome Fantasia"
             error={!!errors.tradeName}
             helperText={errors.tradeName?.message}
-            sx={S.FullWidth}
+            sx={S.TwoCol}
             onFocus={selectOnFocus}
             slotProps={{ htmlInput: { maxLength: MAX_TRADE_NAME_LENGTH } }}
           />
@@ -63,16 +72,7 @@ export const SupplierForm = ({
             label="CNPJ"
             error={!!errors.cnpj}
             helperText={errors.cnpj?.message}
-            sx={S.ThreeCol}
-            onFocus={selectOnFocus}
-          />
-          <PhoneInput
-            name="phone"
-            control={control}
-            label="Telefone"
-            error={!!errors.phone}
-            helperText={errors.phone?.message}
-            sx={S.ThreeCol}
+            sx={S.OneCol}
             onFocus={selectOnFocus}
           />
           <TextField
@@ -81,9 +81,39 @@ export const SupplierForm = ({
             type="email"
             error={!!errors.email}
             helperText={errors.email?.message}
-            sx={S.EmailField}
+            sx={[S.EmailField as CSSObject, S.TwoCol as CSSObject]}
             onFocus={selectOnFocus}
           />
+          <PhoneInput
+            name="phone"
+            control={control}
+            label="Telefone"
+            error={!!errors.phone}
+            helperText={errors.phone?.message}
+            sx={S.OneCol}
+            onFocus={selectOnFocus}
+          />
+          <TextField
+            {...register('observations')}
+            label="Observações"
+            multiline
+            minRows={3}
+            error={!!errors.observations}
+            helperText={errors.observations?.message}
+            sx={S.FullWidth}
+            onFocus={selectOnFocus}
+            slotProps={{ htmlInput: { maxLength: MAX_OBSERVATIONS_LENGTH } }}
+          />
+          {isEditing && supplier.vrCreatedAt && (
+            <Typography
+              variant="caption"
+              color="textSecondary"
+              sx={S.FullWidth}
+            >
+              Cadastrado no VR em{' '}
+              {dayjs(supplier.vrCreatedAt).format('DD/MM/YYYY')}
+            </Typography>
+          )}
           <Box sx={S.Actions}>
             <Button onClick={handleClose}>Cancelar</Button>
             <Button type="submit" variant="contained">

@@ -4,6 +4,11 @@ import type { TFamily } from '@/models'
 
 export const columns: GridColDef<TFamily>[] = [
   {
+    field: 'id',
+    headerName: 'Cód. VR',
+    width: 90
+  },
+  {
     field: 'description',
     headerName: 'Descrição',
     minWidth: 280,
