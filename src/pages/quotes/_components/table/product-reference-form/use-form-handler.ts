@@ -2,35 +2,48 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
+import type { TAiSuggestion } from '@/infra'
 import type { TPriceRef, TQuote, TQuoteItem } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
 import { schema, type TSchema } from './schema'
 
-const getDefaultValues = (quoteItem: TQuoteItem | null): TSchema => ({
+const getDefaultValues = (
+  quoteItem: TQuoteItem | null,
+  initialSuggestion: TAiSuggestion | null
+): TSchema => ({
   familyId:
-    quoteItem?.priceRef?.type === 'family' ? quoteItem.priceRef.id : null,
+    quoteItem?.priceRef?.type === 'family'
+      ? quoteItem.priceRef.id
+      : initialSuggestion?.type === 'family'
+        ? initialSuggestion.id
+        : null,
   productId:
-    quoteItem?.priceRef?.type === 'product' ? quoteItem.priceRef.id : null,
+    quoteItem?.priceRef?.type === 'product'
+      ? quoteItem.priceRef.id
+      : initialSuggestion?.type === 'product'
+        ? initialSuggestion.id
+        : null,
   salePrice: quoteItem?.salePrice ?? null
 })
 
 export const useFormHandler = (
   quoteItem: TQuoteItem | null,
   quote: TQuote,
-  handleClose: () => void
+  handleClose: () => void,
+  initialSuggestion: TAiSuggestion | null = null
 ) => {
   const { updateQuote, products, families } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const { control, handleSubmit, reset, setValue } = useForm<TSchema>({
     resolver: zodResolver(schema),
-    defaultValues: getDefaultValues(quoteItem)
+    defaultValues: getDefaultValues(quoteItem, initialSuggestion)
   })
 
   useEffect(() => {
-    reset(getDefaultValues(quoteItem))
-  }, [quoteItem, reset])
+    reset(getDefaultValues(quoteItem, initialSuggestion))
+  }, [quoteItem, initialSuggestion, reset])
 
   const watchedFamilyId = useWatch({ control, name: 'familyId' })
   const watchedProductId = useWatch({ control, name: 'productId' })

@@ -80,6 +80,10 @@ export const useQuotesHandler = () => {
   })
 
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
+  const [isAiReferenceOpen, setIsAiReferenceOpen] = useState(false)
+
+  const handleAiReferenceOpen = () => setIsAiReferenceOpen(true)
+  const handleAiReferenceClose = () => setIsAiReferenceOpen(false)
 
   const quote = getSelectedQuote(quotes || [], year, month, day) ?? null
   const numberOfSuppliers = getNumberOfSuppliers(ordersByQuoteId || [])
@@ -99,6 +103,7 @@ export const useQuotesHandler = () => {
 
   const isFetching = quotes === null
   const hasQuoteRows = !!quoteRows.length
+  const hasUnreferenced = !!quote?.items.some((i) => i.priceRef === null)
 
   return {
     isFetching,
@@ -126,6 +131,10 @@ export const useQuotesHandler = () => {
     handleProductFormClose,
     quickCreateFamily,
     setQuickCreateFamily,
+    isAiReferenceOpen,
+    hasUnreferenced,
+    handleAiReferenceOpen,
+    handleAiReferenceClose,
     numberOfSuppliers,
     handleSuccess,
     quoteToDelete,

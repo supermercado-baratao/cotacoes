@@ -1,3 +1,4 @@
+import { AutoFixHigh } from '@mui/icons-material'
 import { Box, Button, MenuItem, Select, Typography } from '@mui/material'
 
 import type { TQuote } from '@/models'
@@ -14,11 +15,13 @@ type THeaderProps = {
   month: number
   day: number
   quote: TQuote | null
+  hasUnreferenced: boolean
   onYearChange: (year: number) => void
   onMonthChange: (month: number) => void
   onDayChange: (day: number) => void
   handleQuoteFormOpen: (quote: TQuote | null) => void
   handleDeleteQuote: (quote: TQuote) => void
+  handleAiReferenceOpen: () => void
 }
 
 export const Header = ({
@@ -29,11 +32,13 @@ export const Header = ({
   month,
   day,
   quote,
+  hasUnreferenced,
   onYearChange,
   onMonthChange,
   onDayChange,
   handleQuoteFormOpen,
-  handleDeleteQuote
+  handleDeleteQuote,
+  handleAiReferenceOpen
 }: THeaderProps) => {
   const days = getDaysInYearMonth(year, month)
 
@@ -60,6 +65,15 @@ export const Header = ({
             >
               Editar Cotação
             </Button>
+            {hasUnreferenced && (
+              <Button
+                variant="outlined"
+                startIcon={<AutoFixHigh />}
+                onClick={handleAiReferenceOpen}
+              >
+                Referenciar com IA
+              </Button>
+            )}
           </>
         )}
         <Button variant="contained" onClick={() => handleQuoteFormOpen(null)}>

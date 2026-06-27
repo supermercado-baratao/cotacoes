@@ -1,6 +1,6 @@
 import { DataView, DeleteDialog, FamilyForm, ProductForm } from '@/components'
 
-import { Form, Header, Table } from './_components'
+import { AiReferenceModal, Form, Header, Table } from './_components'
 import { useQuotesHandler } from './use-quotes-handler'
 
 export const Quotes = () => {
@@ -29,6 +29,10 @@ export const Quotes = () => {
     handleProductFormClose,
     quickCreateFamily,
     setQuickCreateFamily,
+    isAiReferenceOpen,
+    hasUnreferenced,
+    handleAiReferenceOpen,
+    handleAiReferenceClose,
     quoteToDelete,
     handleDeleteQuote,
     handleDeleteDialogClose,
@@ -46,11 +50,13 @@ export const Quotes = () => {
         month={month}
         day={day}
         quote={quote}
+        hasUnreferenced={hasUnreferenced}
         onYearChange={onYearChange}
         onMonthChange={onMonthChange}
         onDayChange={onDayChange}
         handleQuoteFormOpen={handleQuoteFormOpen}
         handleDeleteQuote={handleDeleteQuote}
+        handleAiReferenceOpen={handleAiReferenceOpen}
       />
       <DataView
         isFetching={isFetching}
@@ -79,6 +85,13 @@ export const Quotes = () => {
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
       />
+      {quote && (
+        <AiReferenceModal
+          isOpened={isAiReferenceOpen}
+          quote={quote}
+          onClose={handleAiReferenceClose}
+        />
+      )}
       <DeleteDialog
         open={!!quoteToDelete}
         title="Excluir cotação"

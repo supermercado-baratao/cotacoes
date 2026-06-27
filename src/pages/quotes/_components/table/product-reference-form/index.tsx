@@ -13,6 +13,7 @@ import {
   Modal,
   type TModalProps
 } from '@/components'
+import type { TAiSuggestion } from '@/infra'
 import type { TQuote, TQuoteItem } from '@/models'
 import { formatCurrency, selectOnFocus } from '@/utils'
 
@@ -23,16 +24,18 @@ type TProductReferenceFormProps = {
   quoteItem: TQuoteItem | null
   quote: TQuote
   handleClose: () => void
+  initialSuggestion?: TAiSuggestion | null
 } & Pick<TModalProps, 'isOpened'>
 
 export const ProductReferenceForm = ({
   isOpened,
   quoteItem,
   quote,
-  handleClose
+  handleClose,
+  initialSuggestion = null
 }: TProductReferenceFormProps) => {
   const { control, onSubmit, families, products, priceComparison } =
-    useFormHandler(quoteItem, quote, handleClose)
+    useFormHandler(quoteItem, quote, handleClose, initialSuggestion)
 
   const PriceTrendIcon =
     priceComparison == null ||
