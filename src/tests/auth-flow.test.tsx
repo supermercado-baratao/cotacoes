@@ -1,12 +1,16 @@
 import { faker } from '@faker-js/faker'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test } from 'vitest'
 
 import { createApp } from './_mocks/App'
 import orchestrator from './orchestrator'
 
 describe('Auth flow', () => {
+  beforeEach(async () => {
+    await orchestrator.clearEmulatorData()
+  })
+
   test('For anonymous user', async () => {
     const event = userEvent.setup()
 
