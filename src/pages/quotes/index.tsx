@@ -33,6 +33,7 @@ export const Quotes = () => {
     hasUnreferenced,
     handleAiReferenceOpen,
     handleAiReferenceClose,
+    handlePrint,
     quoteToDelete,
     handleDeleteQuote,
     handleDeleteDialogClose,
@@ -57,6 +58,7 @@ export const Quotes = () => {
         handleQuoteFormOpen={handleQuoteFormOpen}
         handleDeleteQuote={handleDeleteQuote}
         handleAiReferenceOpen={handleAiReferenceOpen}
+        handlePrint={handlePrint}
       />
       <DataView
         isFetching={isFetching}

@@ -1,4 +1,4 @@
-import { AutoFixHigh } from '@mui/icons-material'
+import { AutoFixHigh, Print } from '@mui/icons-material'
 import { Box, Button, MenuItem, Select, Typography } from '@mui/material'
 
 import type { TQuote } from '@/models'
@@ -22,6 +22,7 @@ type THeaderProps = {
   handleQuoteFormOpen: (quote: TQuote | null) => void
   handleDeleteQuote: (quote: TQuote) => void
   handleAiReferenceOpen: () => void
+  handlePrint: () => void
 }
 
 export const Header = ({
@@ -38,7 +39,8 @@ export const Header = ({
   onDayChange,
   handleQuoteFormOpen,
   handleDeleteQuote,
-  handleAiReferenceOpen
+  handleAiReferenceOpen,
+  handlePrint
 }: THeaderProps) => {
   const days = getDaysInYearMonth(year, month)
 
@@ -72,6 +74,15 @@ export const Header = ({
                 onClick={handleAiReferenceOpen}
               >
                 Referenciar com IA
+              </Button>
+            )}
+            {quote.items.length > 0 && (
+              <Button
+                variant="outlined"
+                startIcon={<Print />}
+                onClick={handlePrint}
+              >
+                Imprimir
               </Button>
             )}
           </>
