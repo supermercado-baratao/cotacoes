@@ -81,3 +81,43 @@ export const LoaderWrapper: SxProps<Theme> = {
   gap: 2,
   py: 6
 }
+
+export const EmptyState: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 1.5,
+  py: 4,
+  px: 2,
+  alignItems: 'center',
+  textAlign: 'center'
+}
+
+export const UncachedNotice: SxProps<Theme> = {
+  mt: 1.5,
+  p: 1.5,
+  borderRadius: 1,
+  border: '1px solid',
+  borderColor: 'divider',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 1
+}
+
+export const UncachedItemList: SxProps<Theme> = {
+  pl: 2,
+  m: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 0.25
+}
+
+export const AnalyzeBanner: SxProps<Theme> = {
+  mt: 1.5,
+  p: 1.5,
+  borderRadius: 1,
+  border: '1px solid',
+  borderColor: 'divider',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1.5
+}

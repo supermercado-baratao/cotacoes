@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { suggestPriceReferences, type TAiSuggestion } from '@/infra'
 import type { TQuote, TQuoteItem } from '@/models'
@@ -7,6 +7,7 @@ import { useAppStore, useCallbackStore } from '@/stores'
 import { ANALYSIS_MESSAGE_INTERVAL_MS, ANALYSIS_MESSAGES } from './constants'
 import {
   buildRows,
+  getCachedItemIds,
   isAlreadyReferenced,
   loadFromCache,
   saveToCache,
@@ -22,7 +23,9 @@ export const useAiReference = (
   const { setSuccessCallbacks } = useCallbackStore()
 
   const [rows, setRows] = useState<TSuggestionRow[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [uncachedItems, setUncachedItems] = useState<TQuoteItem[]>([])
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [shouldAnalyze, setShouldAnalyze] = useState(false)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -35,50 +38,50 @@ export const useAiReference = (
     [quote.items]
   )
 
-  const prevItemIds = useRef<string | null>(null)
   useEffect(() => {
-    const current = unreferencedItems
-      .map((i) => i.id)
-      .sort()
-      .join(',')
-    if (prevItemIds.current !== null && prevItemIds.current !== current) {
-      setRows([])
+    if (!isOpened || !products || !families) return
+
+    const run = async () => {
+      const cached = loadFromCache(quote.id)
+      const cachedSet = new Set(getCachedItemIds(quote.id))
+      setUncachedItems(unreferencedItems.filter((i) => !cachedSet.has(i.id)))
+      setRows(
+        buildRows({
+          items: unreferencedItems,
+          suggestions: cached ?? [],
+          products,
+          families
+        })
+      )
     }
-    prevItemIds.current = current
-  }, [unreferencedItems])
+
+    void run()
+  }, [isOpened, products, families, unreferencedItems, quote.id])
 
   useEffect(() => {
-    if (
-      !isOpened ||
-      !unreferencedItems.length ||
-      rows.length > 0 ||
-      !products ||
-      !families
-    )
+    if (isOpened) return
+
+    const run = async () => {
+      setShouldAnalyze(false)
+      setError(null)
+    }
+
+    void run()
+  }, [isOpened])
+
+  useEffect(() => {
+    if (!shouldAnalyze || !uncachedItems.length || !products || !families)
       return
 
     let cancelled = false
     let msgInterval: ReturnType<typeof setInterval> | null = null
     let elapsedInterval: ReturnType<typeof setInterval> | null = null
-    const itemIds = unreferencedItems.map((i) => i.id)
+    const itemIds = uncachedItems.map((i) => i.id)
 
     const run = async () => {
-      const cached = loadFromCache(quote.id, itemIds)
-      if (cached) {
-        if (!cancelled)
-          setRows(
-            buildRows({
-              items: unreferencedItems,
-              suggestions: cached,
-              products,
-              families
-            })
-          )
-        return
-      }
-
       if (!cancelled) {
-        setIsLoading(true)
+        setShouldAnalyze(false)
+        setIsAnalyzing(true)
         setElapsedSeconds(0)
         setError(null)
         setStatusMessage(ANALYSIS_MESSAGES[0])
@@ -99,20 +102,22 @@ export const useAiReference = (
 
       try {
         const suggestions = await suggestPriceReferences(
-          unreferencedItems,
+          uncachedItems,
           products,
           families
         )
         if (!cancelled) {
           saveToCache(quote.id, itemIds, suggestions)
+          const allCached = loadFromCache(quote.id) ?? []
           setRows(
             buildRows({
               items: unreferencedItems,
-              suggestions,
+              suggestions: allCached,
               products,
               families
             })
           )
+          setUncachedItems([])
         }
       } catch {
         if (!cancelled)
@@ -123,7 +128,7 @@ export const useAiReference = (
         if (msgInterval) clearInterval(msgInterval)
         if (elapsedInterval) clearInterval(elapsedInterval)
         if (!cancelled) {
-          setIsLoading(false)
+          setIsAnalyzing(false)
           setStatusMessage(null)
           setElapsedSeconds(0)
         }
@@ -136,7 +141,14 @@ export const useAiReference = (
       if (msgInterval) clearInterval(msgInterval)
       if (elapsedInterval) clearInterval(elapsedInterval)
     }
-  }, [isOpened, rows.length, unreferencedItems, products, families, quote.id])
+  }, [
+    shouldAnalyze,
+    uncachedItems,
+    products,
+    families,
+    quote.id,
+    unreferencedItems
+  ])
 
   const toggleAccepted = (itemId: string) =>
     setRows((prev) =>
@@ -191,15 +203,16 @@ export const useAiReference = (
 
   return {
     rows,
-    isLoading,
+    uncachedItems,
+    isAnalyzing,
     statusMessage,
     elapsedSeconds,
     error,
-    hasUnreferenced: unreferencedItems.length > 0,
     acceptedCount,
     editingItem,
     editingSuggestion,
     handleEdit,
+    handleAnalyze: () => setShouldAnalyze(true),
     toggleAccepted,
     handleApply,
     handleClose,
