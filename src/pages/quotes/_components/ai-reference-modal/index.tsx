@@ -1,4 +1,10 @@
-import { CheckCircle, Edit, Refresh, TipsAndUpdates } from '@mui/icons-material'
+import {
+  AddLink,
+  CheckCircle,
+  Edit,
+  Refresh,
+  TipsAndUpdates
+} from '@mui/icons-material'
 import {
   Alert,
   Box,
@@ -52,6 +58,8 @@ export const AiReferenceModal = ({
     (quote.items.find((i) => i.id === itemId)?.priceRef ?? null) !== null
 
   const hasRows = rows.length > 0
+  const allReferenced =
+    hasRows && rows.every(({ item }) => isAlreadyReferenced(item.id))
   const isProgressMsg =
     !statusMessage.startsWith('Dica:') &&
     !statusMessage.startsWith('Curiosidade:')
@@ -118,7 +126,28 @@ export const AiReferenceModal = ({
           </Box>
         )}
 
-        {!isAnalyzing && hasRows && (
+        {!isAnalyzing && allReferenced && (
+          <>
+            <Box sx={S.AllReferencedWrapper}>
+              <CheckCircle color="success" sx={{ fontSize: 56 }} />
+              <Typography variant="h6">Tudo referenciado!</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Todos os itens desta cotação já possuem referência de preço.
+                <br />
+                Para alterar uma referência, use o ícone de vínculo (
+                <AddLink sx={{ fontSize: 14, verticalAlign: 'middle' }} />) na
+                tabela.
+              </Typography>
+            </Box>
+            <Box sx={S.Actions}>
+              <Button variant="contained" onClick={handleClose}>
+                Fechar
+              </Button>
+            </Box>
+          </>
+        )}
+
+        {!isAnalyzing && hasRows && !allReferenced && (
           <>
             <Box sx={S.List}>
               {rows.map(({ item, suggestion, refName, refPrice, accepted }) => {

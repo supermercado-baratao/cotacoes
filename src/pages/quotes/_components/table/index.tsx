@@ -1,4 +1,4 @@
-import { AttachMoney, Delete, ListAlt } from '@mui/icons-material'
+import { AddLink, Delete, ListAlt } from '@mui/icons-material'
 import { GridActionsCellItem, type GridColDef } from '@mui/x-data-grid'
 import { useCallback, useMemo, useState } from 'react'
 
@@ -56,8 +56,8 @@ export const Table = ({ quote, rows }: TTableProps) => {
       getActions: ({ row }) => [
         <GridActionsCellItem
           key="sale-price"
-          icon={<AttachMoney />}
-          label="Preço de venda"
+          icon={<AddLink />}
+          label="Referenciar"
           onClick={() => handleSalePriceOpen(row)}
         />,
         <GridActionsCellItem

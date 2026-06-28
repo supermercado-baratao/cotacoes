@@ -110,6 +110,16 @@ export const MessageAccent = (isProgress: boolean): SxProps<Theme> => ({
   opacity: 0.7
 })
 
+export const AllReferencedWrapper: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 1.5,
+  py: 5,
+  textAlign: 'center'
+}
+
 export const MessageContent: SxProps<Theme> = {
   display: 'flex',
   alignItems: 'flex-start',
