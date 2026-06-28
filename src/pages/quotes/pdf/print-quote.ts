@@ -5,9 +5,9 @@ import type { TProduct, TQuote } from '@/models'
 
 import { QuotePDF, type TPdfGroup, type TPdfItem } from './quote-pdf'
 
-type TRawItem = Omit<TPdfItem, 'index'>
-
 const resolveCategory = (product: TProduct): string => product.section
+
+type TRawItem = Omit<TPdfItem, 'index'>
 
 const buildGroups = (quote: TQuote, products: TProduct[]): TPdfGroup[] => {
   const groupMap = new Map<string, { label: string; items: TRawItem[] }>()
@@ -26,6 +26,13 @@ const buildGroups = (quote: TQuote, products: TProduct[]): TPdfGroup[] => {
         categoryKey = category
         categoryLabel = category
         refDescription = product.description
+      }
+    } else if (ref?.type === 'family') {
+      const productOfFamily = products.find((p) => p.familyId === ref.id)
+      if (productOfFamily) {
+        const category = resolveCategory(productOfFamily)
+        categoryKey = category
+        categoryLabel = category
       }
     }
 
