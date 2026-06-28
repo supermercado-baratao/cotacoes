@@ -1,6 +1,7 @@
 import { AutoFixHigh, Print } from '@mui/icons-material'
 import { Box, Button, MenuItem, Select, Typography } from '@mui/material'
 
+import { SearchInput } from '@/components'
 import type { TQuote } from '@/models'
 
 import { MONTHS } from './constants'
@@ -15,6 +16,8 @@ type THeaderProps = {
   month: number
   day: number
   quote: TQuote | null
+  search: string
+  setSearch: (search: string) => void
   onYearChange: (year: number) => void
   onMonthChange: (month: number) => void
   onDayChange: (day: number) => void
@@ -33,6 +36,8 @@ export const Header = ({
   month,
   day,
   quote,
+  search,
+  setSearch,
   onYearChange,
   onMonthChange,
   onDayChange,
@@ -46,98 +51,103 @@ export const Header = ({
 
   return (
     <Box sx={S.Wrapper}>
-      <Typography variant="h5" component="h1">
-        Cotações
-      </Typography>
+      <Box sx={S.TopRow}>
+        <Typography variant="h5" component="h1">
+          Cotações
+        </Typography>
 
-      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={S.DateSelectWrapper}>
+          <Select
+            value={day}
+            onChange={(e) => onDayChange(Number(e.target.value))}
+            size="small"
+          >
+            {[...days].reverse().map((d) => (
+              <MenuItem key={d} value={d} disabled={!availableDays.includes(d)}>
+                {d}
+              </MenuItem>
+            ))}
+          </Select>
+          <Select
+            value={month}
+            onChange={(e) => onMonthChange(Number(e.target.value))}
+            size="small"
+          >
+            {[...MONTHS].reverse().map((m, reverseIndex) => {
+              const value = MONTHS.length - reverseIndex
+              return (
+                <MenuItem
+                  key={value}
+                  value={value}
+                  disabled={!availableMonths.includes(value)}
+                >
+                  {m}
+                </MenuItem>
+              )
+            })}
+          </Select>
+          <Select
+            value={year}
+            onChange={(e) => onYearChange(Number(e.target.value))}
+            size="small"
+          >
+            {availableYears.map((y) => (
+              <MenuItem key={y} value={y}>
+                {y}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
+
+        <SearchInput
+          placeholder="Pesquisar itens..."
+          value={search}
+          onValueChange={setSearch}
+          sx={{ width: 260 }}
+        />
+      </Box>
+
+      <Box sx={S.Actions}>
+        <Button variant="contained" onClick={() => handleQuoteFormOpen(null)}>
+          Nova Cotação
+        </Button>
         {quote && (
           <>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => handleDeleteQuote(quote)}
-            >
-              Excluir Cotação
-            </Button>
             <Button
               variant="contained"
               color="secondary"
               onClick={() => handleQuoteFormOpen(quote)}
             >
-              Editar Cotação
+              Editar
             </Button>
-            {quote.items.length > 0 && (
-              <Button
-                variant="outlined"
-                startIcon={<AutoFixHigh />}
-                onClick={handleAiReferenceOpen}
-              >
-                Referenciar com IA
-              </Button>
-            )}
-            {quote.items.length > 0 && (
-              <Button
-                variant="outlined"
-                startIcon={<Print />}
-                onClick={handlePrint}
-                disabled={isPrinting}
-              >
-                Imprimir
-              </Button>
-            )}
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => handleDeleteQuote(quote)}
+            >
+              Excluir
+            </Button>
           </>
         )}
-        <Button variant="contained" onClick={() => handleQuoteFormOpen(null)}>
-          Nova Cotação
-        </Button>
-      </Box>
-
-      <Box sx={S.DateSelectWrapper}>
-        <Select
-          value={day}
-          onChange={(e) => onDayChange(Number(e.target.value))}
-          size="small"
-        >
-          {[...days].reverse().map((day) => (
-            <MenuItem
-              key={day}
-              value={day}
-              disabled={!availableDays.includes(day)}
+        {quote && quote.items.length > 0 && (
+          <>
+            <Button
+              variant="outlined"
+              startIcon={<AutoFixHigh />}
+              onClick={handleAiReferenceOpen}
             >
-              {day}
-            </MenuItem>
-          ))}
-        </Select>
-        <Select
-          value={month}
-          onChange={(e) => onMonthChange(Number(e.target.value))}
-          size="small"
-        >
-          {[...MONTHS].reverse().map((month, reverseIndex) => {
-            const value = MONTHS.length - reverseIndex
-            return (
-              <MenuItem
-                key={value}
-                value={value}
-                disabled={!availableMonths.includes(value)}
-              >
-                {month}
-              </MenuItem>
-            )
-          })}
-        </Select>
-        <Select
-          value={year}
-          onChange={(e) => onYearChange(Number(e.target.value))}
-          size="small"
-        >
-          {availableYears.map((year) => (
-            <MenuItem key={year} value={year}>
-              {year}
-            </MenuItem>
-          ))}
-        </Select>
+              Referenciar com IA
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Print />}
+              onClick={handlePrint}
+              disabled={isPrinting}
+            >
+              Imprimir
+            </Button>
+          </>
+        )}
       </Box>
     </Box>
   )

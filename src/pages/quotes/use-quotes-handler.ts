@@ -89,6 +89,7 @@ export const useQuotesHandler = () => {
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
   const [isAiReferenceOpen, setIsAiReferenceOpen] = useState(false)
   const [isPrinting, setIsPrinting] = useState(false)
+  const [search, setSearch] = useState('')
 
   const handleAiReferenceOpen = () => setIsAiReferenceOpen(true)
   const handleAiReferenceClose = () => setIsAiReferenceOpen(false)
@@ -123,11 +124,19 @@ export const useQuotesHandler = () => {
   const isFetching = quotes === null
   const hasQuoteRows = !!quoteRows.length
 
+  const filteredRows = search
+    ? quoteRows.filter((row) =>
+        row.description.toLowerCase().includes(search.toLowerCase())
+      )
+    : quoteRows
+
   return {
     isFetching,
     quote,
     hasQuoteRows,
-    quoteRows,
+    quoteRows: filteredRows,
+    search,
+    setSearch,
     availableYears,
     year,
     onYearChange,

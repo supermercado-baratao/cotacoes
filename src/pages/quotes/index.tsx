@@ -40,6 +40,8 @@ export const Quotes = () => {
     handleAiReferenceClose,
     handlePrint,
     isPrinting,
+    search,
+    setSearch,
     quoteToDelete,
     handleDeleteQuote,
     handleDeleteDialogClose,
@@ -65,6 +67,8 @@ export const Quotes = () => {
         handleAiReferenceOpen={handleAiReferenceOpen}
         handlePrint={handlePrint}
         isPrinting={isPrinting}
+        search={search}
+        setSearch={setSearch}
       />
       <DataView
         isFetching={isFetching}
