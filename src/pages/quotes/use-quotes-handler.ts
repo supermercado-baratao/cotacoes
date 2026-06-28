@@ -5,7 +5,7 @@ import { useDeleteHandler, useFormState } from '@/hooks'
 import type { TProduct, TQuote } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
-import { printQuote } from './print-quote'
+import { printQuote } from './pdf/print-quote'
 import {
   getAvailableDays,
   getAvailableMonths,
@@ -21,7 +21,6 @@ export const useQuotesHandler = () => {
     ordersByQuoteId,
     suppliers,
     products,
-    families,
     setQuoteId,
     deleteQuote
   } = useAppStore()
@@ -94,8 +93,8 @@ export const useQuotesHandler = () => {
   const handleAiReferenceClose = () => setIsAiReferenceOpen(false)
 
   const handlePrint = () => {
-    if (!quote || !products || !families) return
-    printQuote(quote, products, families)
+    if (!quote || !products) return
+    void printQuote(quote, products)
   }
 
   const quote = getSelectedQuote(quotes || [], year, month, day) ?? null
