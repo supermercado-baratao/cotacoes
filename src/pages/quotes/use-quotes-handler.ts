@@ -88,13 +88,20 @@ export const useQuotesHandler = () => {
 
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
   const [isAiReferenceOpen, setIsAiReferenceOpen] = useState(false)
+  const [isPrinting, setIsPrinting] = useState(false)
 
   const handleAiReferenceOpen = () => setIsAiReferenceOpen(true)
   const handleAiReferenceClose = () => setIsAiReferenceOpen(false)
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     if (!quote || !products) return
-    void printQuote(quote, products)
+    setIsPrinting(true)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    try {
+      await printQuote(quote, products)
+    } finally {
+      setIsPrinting(false)
+    }
   }
 
   const quote = getSelectedQuote(quotes || [], year, month, day) ?? null
@@ -146,6 +153,7 @@ export const useQuotesHandler = () => {
     handleAiReferenceOpen,
     handleAiReferenceClose,
     handlePrint,
+    isPrinting,
     numberOfSuppliers,
     handleSuccess,
     quoteToDelete,

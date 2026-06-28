@@ -22,6 +22,7 @@ type THeaderProps = {
   handleDeleteQuote: (quote: TQuote) => void
   handleAiReferenceOpen: () => void
   handlePrint: () => void
+  isPrinting: boolean
 }
 
 export const Header = ({
@@ -38,7 +39,8 @@ export const Header = ({
   handleQuoteFormOpen,
   handleDeleteQuote,
   handleAiReferenceOpen,
-  handlePrint
+  handlePrint,
+  isPrinting
 }: THeaderProps) => {
   const days = getDaysInYearMonth(year, month)
 
@@ -79,6 +81,7 @@ export const Header = ({
                 variant="outlined"
                 startIcon={<Print />}
                 onClick={handlePrint}
+                disabled={isPrinting}
               >
                 Imprimir
               </Button>

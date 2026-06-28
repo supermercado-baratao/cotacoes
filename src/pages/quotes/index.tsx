@@ -1,4 +1,10 @@
-import { DataView, DeleteDialog, FamilyForm, ProductForm } from '@/components'
+import {
+  DataView,
+  DeleteDialog,
+  FamilyForm,
+  Loader,
+  ProductForm
+} from '@/components'
 
 import { AiReferenceModal, Form, Header, Table } from './_components'
 import { useQuotesHandler } from './use-quotes-handler'
@@ -33,6 +39,7 @@ export const Quotes = () => {
     handleAiReferenceOpen,
     handleAiReferenceClose,
     handlePrint,
+    isPrinting,
     quoteToDelete,
     handleDeleteQuote,
     handleDeleteDialogClose,
@@ -57,6 +64,7 @@ export const Quotes = () => {
         handleDeleteQuote={handleDeleteQuote}
         handleAiReferenceOpen={handleAiReferenceOpen}
         handlePrint={handlePrint}
+        isPrinting={isPrinting}
       />
       <DataView
         isFetching={isFetching}
@@ -92,6 +100,7 @@ export const Quotes = () => {
           onClose={handleAiReferenceClose}
         />
       )}
+      <Loader open={isPrinting} />
       <DeleteDialog
         open={!!quoteToDelete}
         title="Excluir cotação"
