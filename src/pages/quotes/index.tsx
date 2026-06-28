@@ -30,7 +30,6 @@ export const Quotes = () => {
     quickCreateFamily,
     setQuickCreateFamily,
     isAiReferenceOpen,
-    hasUnreferenced,
     handleAiReferenceOpen,
     handleAiReferenceClose,
     handlePrint,
@@ -51,7 +50,6 @@ export const Quotes = () => {
         month={month}
         day={day}
         quote={quote}
-        hasUnreferenced={hasUnreferenced}
         onYearChange={onYearChange}
         onMonthChange={onMonthChange}
         onDayChange={onDayChange}

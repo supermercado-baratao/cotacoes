@@ -1,5 +1,7 @@
 import type { TFamily, TProduct, TQuoteItem } from '@/models'
 
+import { mockSuggestPriceReferences } from '../tests/_mocks/gemini'
+
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string
 const MODEL = import.meta.env.VITE_GEMINI_MODEL as string
 
@@ -14,6 +16,11 @@ export const suggestPriceReferences = async (
   products: TProduct[],
   families: TFamily[]
 ): Promise<TAiSuggestion[]> => {
+  if (import.meta.env.MODE !== 'production') {
+    return mockSuggestPriceReferences(items, products, families)
+  }
+
+  console.log('================\npassou\n=================')
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`
 
   const productList = products
@@ -40,8 +47,8 @@ ITENS DA COTAÇÃO A ASSOCIAR:
 ${itemList}
 
 Para cada item da cotação, encontre a melhor correspondência no catálogo:
-- Prefira um produto específico quando o item corresponde diretamente a um produto do catálogo.
-- Use família quando o item se enquadra na categoria mas não em um produto específico.
+- Prefira sempre família quando o item se enquadra na categoria, pois o preço de família é mais representativo.
+- Use produto específico apenas quando não há família correspondente no catálogo.
 - Use type null e id null quando não há correspondência razoável.
 Considere variações de grafia, abreviações e unidades (ex: "5KG", "1L", "CX", "PCT").`
 

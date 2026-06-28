@@ -77,47 +77,48 @@ export const Actions: SxProps<Theme> = {
 export const LoaderWrapper: SxProps<Theme> = {
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
-  gap: 2,
-  py: 6
+  gap: 2
 }
 
-export const EmptyState: SxProps<Theme> = {
+export const LoaderFooter: SxProps<Theme> = {
   display: 'flex',
-  flexDirection: 'column',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  px: 0.5
+}
+
+export const MessageBox: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'stretch',
+  width: '100%',
+  minHeight: 80,
+  borderRadius: 2,
+  border: '1px solid',
+  borderColor: 'divider',
+  overflow: 'hidden'
+}
+
+export const MessageBoxContent: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'center'
+}
+
+export const MessageAccent = (isProgress: boolean): SxProps<Theme> => ({
+  width: 4,
+  flexShrink: 0,
+  bgcolor: isProgress ? 'primary.main' : 'warning.main',
+  opacity: 0.7
+})
+
+export const MessageContent: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'flex-start',
   gap: 1.5,
-  py: 4,
-  px: 2,
-  alignItems: 'center',
-  textAlign: 'center'
-}
-
-export const UncachedNotice: SxProps<Theme> = {
-  mt: 1.5,
-  p: 1.5,
-  borderRadius: 1,
-  border: '1px solid',
-  borderColor: 'divider',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 1
-}
-
-export const UncachedItemList: SxProps<Theme> = {
-  pl: 2,
-  m: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 0.25
-}
-
-export const AnalyzeBanner: SxProps<Theme> = {
-  mt: 1.5,
-  p: 1.5,
-  borderRadius: 1,
-  border: '1px solid',
-  borderColor: 'divider',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 1.5
+  p: 2,
+  flex: 1,
+  '@keyframes fadeInSlide': {
+    from: { opacity: 0, transform: 'translateY(5px)' },
+    to: { opacity: 1, transform: 'translateY(0)' }
+  },
+  animation: 'fadeInSlide 0.4s ease'
 }

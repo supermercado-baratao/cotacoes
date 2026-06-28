@@ -1,4 +1,4 @@
-import { AutoFixHigh, CheckCircle, Edit } from '@mui/icons-material'
+import { CheckCircle, Edit, Refresh, TipsAndUpdates } from '@mui/icons-material'
 import {
   Alert,
   Box,
@@ -23,17 +23,16 @@ type TAiReferenceModalProps = {
   onClose: () => void
 } & Pick<TModalProps, 'isOpened'>
 
+const formatElapsed = (s: number) =>
+  `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+
 export const AiReferenceModal = ({
   isOpened,
   quote,
   onClose
 }: TAiReferenceModalProps) => {
-  const formatElapsed = (s: number) =>
-    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-
   const {
     rows,
-    uncachedItems,
     isAnalyzing,
     statusMessage,
     elapsedSeconds,
@@ -42,7 +41,7 @@ export const AiReferenceModal = ({
     editingItem,
     editingSuggestion,
     handleEdit,
-    handleAnalyze,
+    handleRetry,
     toggleAccepted,
     handleApply,
     handleClose,
@@ -53,8 +52,9 @@ export const AiReferenceModal = ({
     (quote.items.find((i) => i.id === itemId)?.priceRef ?? null) !== null
 
   const hasRows = rows.length > 0
-  const analyzeLabel =
-    uncachedItems.length === 1 ? '1 item' : `${uncachedItems.length} itens`
+  const isProgressMsg =
+    !statusMessage.startsWith('Dica:') &&
+    !statusMessage.startsWith('Curiosidade:')
 
   return (
     <>
@@ -64,57 +64,61 @@ export const AiReferenceModal = ({
         handleClose={handleClose}
       >
         {error && (
-          <Alert severity="error" sx={{ mt: 1 }}>
+          <Alert
+            severity="error"
+            sx={{ mt: 1 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<Refresh />}
+                onClick={handleRetry}
+              >
+                Tentar novamente
+              </Button>
+            }
+          >
             {error}
           </Alert>
         )}
 
-        {!hasRows && isAnalyzing && (
+        {isAnalyzing && (
           <Box sx={S.LoaderWrapper}>
-            <CircularProgress size={40} />
-            <Typography variant="body2" color="text.secondary">
-              {statusMessage}
-            </Typography>
-            {elapsedSeconds > 0 && (
-              <Typography variant="caption" color="text.disabled">
-                Analisando há {formatElapsed(elapsedSeconds)}
-              </Typography>
-            )}
-          </Box>
-        )}
-
-        {!hasRows && !isAnalyzing && (
-          <Box sx={S.EmptyState}>
-            <Typography variant="body2" color="text.secondary">
-              Nenhuma análise salva para esta cotação.
-            </Typography>
-            {uncachedItems.length > 0 && (
-              <>
-                <Box component="ul" sx={S.UncachedItemList}>
-                  {uncachedItems.map((i) => (
-                    <Typography
-                      key={i.id}
-                      component="li"
-                      variant="caption"
-                      color="text.secondary"
-                    >
-                      {i.description}
-                    </Typography>
-                  ))}
+            <Box sx={S.MessageBox}>
+              <Box sx={S.MessageAccent(isProgressMsg)} />
+              <Box sx={S.MessageBoxContent}>
+                <Box key={statusMessage} sx={S.MessageContent}>
+                  {isProgressMsg ? (
+                    <CircularProgress
+                      size={18}
+                      thickness={4.5}
+                      sx={{ flexShrink: 0, mt: 0.25, color: 'primary.main' }}
+                    />
+                  ) : (
+                    <TipsAndUpdates
+                      fontSize="small"
+                      color="warning"
+                      sx={{ flexShrink: 0, mt: 0.1 }}
+                    />
+                  )}
+                  <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                    {statusMessage}
+                  </Typography>
                 </Box>
-                <Button
-                  variant="contained"
-                  startIcon={<AutoFixHigh />}
-                  onClick={handleAnalyze}
-                >
-                  Analisar {analyzeLabel}
-                </Button>
-              </>
-            )}
+              </Box>
+            </Box>
+            <Box sx={S.LoaderFooter}>
+              <Typography variant="caption" color="text.disabled">
+                {formatElapsed(elapsedSeconds)}
+              </Typography>
+              <Button onClick={handleClose} size="small">
+                Cancelar
+              </Button>
+            </Box>
           </Box>
         )}
 
-        {hasRows && (
+        {!isAnalyzing && hasRows && (
           <>
             <Box sx={S.List}>
               {rows.map(({ item, suggestion, refName, refPrice, accepted }) => {
@@ -189,61 +193,11 @@ export const AiReferenceModal = ({
               })}
             </Box>
 
-            {uncachedItems.length > 0 && !isAnalyzing && (
-              <Box sx={S.UncachedNotice}>
-                <Typography variant="caption" color="text.secondary">
-                  {analyzeLabel} não
-                  {uncachedItems.length === 1 ? ' está' : ' estão'} na análise:
-                </Typography>
-                <Box component="ul" sx={S.UncachedItemList}>
-                  {uncachedItems.map((i) => (
-                    <Typography
-                      key={i.id}
-                      component="li"
-                      variant="caption"
-                      color="text.secondary"
-                    >
-                      {i.description}
-                    </Typography>
-                  ))}
-                </Box>
-                <Box>
-                  <Button
-                    size="small"
-                    startIcon={<AutoFixHigh />}
-                    onClick={handleAnalyze}
-                  >
-                    Analisar {analyzeLabel}
-                  </Button>
-                </Box>
-              </Box>
-            )}
-
-            {isAnalyzing && (
-              <Box sx={S.AnalyzeBanner}>
-                <CircularProgress size={16} />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="caption" color="text.secondary" noWrap>
-                    {statusMessage}
-                  </Typography>
-                  {elapsedSeconds > 0 && (
-                    <Typography
-                      variant="caption"
-                      color="text.disabled"
-                      sx={{ ml: 1 }}
-                    >
-                      {formatElapsed(elapsedSeconds)}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
-            )}
-
             <Box sx={S.Actions}>
               <Button onClick={handleClose}>Cancelar</Button>
               <Button
                 variant="contained"
-                disabled={acceptedCount === 0 || isAnalyzing}
+                disabled={acceptedCount === 0}
                 onClick={handleApply}
               >
                 Aplicar {acceptedCount > 0 ? `${acceptedCount} aceitos` : ''}

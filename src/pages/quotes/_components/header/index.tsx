@@ -15,7 +15,6 @@ type THeaderProps = {
   month: number
   day: number
   quote: TQuote | null
-  hasUnreferenced: boolean
   onYearChange: (year: number) => void
   onMonthChange: (month: number) => void
   onDayChange: (day: number) => void
@@ -33,7 +32,6 @@ export const Header = ({
   month,
   day,
   quote,
-  hasUnreferenced,
   onYearChange,
   onMonthChange,
   onDayChange,
@@ -67,7 +65,7 @@ export const Header = ({
             >
               Editar Cotação
             </Button>
-            {hasUnreferenced && (
+            {quote.items.length > 0 && (
               <Button
                 variant="outlined"
                 startIcon={<AutoFixHigh />}

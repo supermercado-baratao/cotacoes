@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 
+import type { TAiSuggestion } from '@/infra'
 import type {
   TFamily,
   TImportData,
@@ -13,6 +14,8 @@ import type {
 import type { TCreateData, TCreateDataWithId, TUpdateData } from '@/types'
 
 type TAppStore = {
+  aiSuggestions: Record<string, TAiSuggestion[]>
+  setAiSuggestions: (quoteId: string, suggestions: TAiSuggestion[]) => void
   products: TProduct[] | null
   setProducts: (products: TProduct[]) => void
   createProduct: (product: TCreateDataWithId<TProduct>) => void
@@ -66,6 +69,12 @@ type TAppStore = {
 }
 
 export const useAppStore = create<TAppStore>((set) => ({
+  aiSuggestions: {},
+  setAiSuggestions: (quoteId, suggestions) =>
+    set((s) => ({
+      aiSuggestions: { ...s.aiSuggestions, [quoteId]: suggestions }
+    })),
+
   products: null,
   setProducts: (products) => set({ products }),
   createProduct: () => {},

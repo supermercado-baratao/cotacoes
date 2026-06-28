@@ -1,37 +1,38 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { suggestPriceReferences, type TAiSuggestion } from '@/infra'
 import type { TQuote, TQuoteItem } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
-import { ANALYSIS_MESSAGE_INTERVAL_MS, ANALYSIS_MESSAGES } from './constants'
 import {
-  buildRows,
-  getCachedItemIds,
-  isAlreadyReferenced,
-  loadFromCache,
-  saveToCache,
-  type TSuggestionRow
-} from './utils'
+  PROGRESS_MESSAGE_INTERVAL_MS,
+  PROGRESS_MESSAGES,
+  TIP_MESSAGE_INTERVAL_MS,
+  TIP_MESSAGES
+} from './constants'
+import { buildRows, isAlreadyReferenced, type TSuggestionRow } from './utils'
 
 export const useAiReference = (
   quote: TQuote,
   isOpened: boolean,
   onClose: () => void
 ) => {
-  const { products, families, updateQuote } = useAppStore()
+  const { products, families, updateQuote, aiSuggestions, setAiSuggestions } =
+    useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const [rows, setRows] = useState<TSuggestionRow[]>([])
-  const [uncachedItems, setUncachedItems] = useState<TQuoteItem[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [shouldAnalyze, setShouldAnalyze] = useState(false)
-  const [statusMessage, setStatusMessage] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [statusMessage, setStatusMessage] = useState<string>(
+    PROGRESS_MESSAGES[0]
+  )
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<TQuoteItem | null>(null)
   const [editingSuggestion, setEditingSuggestion] =
     useState<TAiSuggestion | null>(null)
+  const analysisStarted = useRef(false)
 
   const unreferencedItems = useMemo(
     () => quote.items.filter((i) => i.priceRef === null),
@@ -39,61 +40,70 @@ export const useAiReference = (
   )
 
   useEffect(() => {
-    if (!isOpened || !products || !families) return
-
-    const run = async () => {
-      const cached = loadFromCache(quote.id)
-      const cachedSet = new Set(getCachedItemIds(quote.id))
-      setUncachedItems(unreferencedItems.filter((i) => !cachedSet.has(i.id)))
-      setRows(
-        buildRows({
-          items: unreferencedItems,
-          suggestions: cached ?? [],
-          products,
-          families
-        })
-      )
-    }
-
-    void run()
-  }, [isOpened, products, families, unreferencedItems, quote.id])
-
-  useEffect(() => {
-    if (isOpened) return
-
-    const run = async () => {
-      setShouldAnalyze(false)
-      setError(null)
-    }
-
-    void run()
-  }, [isOpened])
-
-  useEffect(() => {
-    if (!shouldAnalyze || !uncachedItems.length || !products || !families)
+    if (!isOpened) {
+      analysisStarted.current = false
+      void (async () => {
+        setError(null)
+      })()
       return
+    }
+    if (!products || !families) return
+
+    const stored = aiSuggestions[quote.id] ?? null
+    if (stored) {
+      void (async () => {
+        setRows(
+          buildRows({
+            items: quote.items,
+            suggestions: stored,
+            products,
+            families
+          })
+        )
+      })()
+      return
+    }
+
+    if (analysisStarted.current) return
+    analysisStarted.current = true
+
+    if (unreferencedItems.length === 0) {
+      void (async () => {
+        setAiSuggestions(quote.id, [])
+        setRows(
+          buildRows({ items: quote.items, suggestions: [], products, families })
+        )
+      })()
+      return
+    }
 
     let cancelled = false
-    let msgInterval: ReturnType<typeof setInterval> | null = null
+    let msgTimeout: ReturnType<typeof setTimeout> | null = null
     let elapsedInterval: ReturnType<typeof setInterval> | null = null
-    const itemIds = uncachedItems.map((i) => i.id)
 
     const run = async () => {
-      if (!cancelled) {
-        setShouldAnalyze(false)
-        setIsAnalyzing(true)
-        setElapsedSeconds(0)
-        setError(null)
-        setStatusMessage(ANALYSIS_MESSAGES[0])
-      }
+      setIsAnalyzing(true)
+      setElapsedSeconds(0)
+      setError(null)
+      setStatusMessage(PROGRESS_MESSAGES[0])
 
-      let msgIndex = 0
-      msgInterval = setInterval(() => {
-        if (!cancelled) {
-          msgIndex = Math.min(msgIndex + 1, ANALYSIS_MESSAGES.length - 1)
-          setStatusMessage(ANALYSIS_MESSAGES[msgIndex])
-        }
-      }, ANALYSIS_MESSAGE_INTERVAL_MS)
+      let step = 1
+      const scheduleNext = () => {
+        if (cancelled) return
+        const isProgress = step < PROGRESS_MESSAGES.length
+        const msg = isProgress
+          ? PROGRESS_MESSAGES[step]
+          : TIP_MESSAGES[
+              (step - PROGRESS_MESSAGES.length) % TIP_MESSAGES.length
+            ]
+        const delay = isProgress
+          ? PROGRESS_MESSAGE_INTERVAL_MS
+          : TIP_MESSAGE_INTERVAL_MS
+        setStatusMessage(msg)
+        step++
+        msgTimeout = setTimeout(scheduleNext, delay)
+      }
+      msgTimeout = setTimeout(scheduleNext, PROGRESS_MESSAGE_INTERVAL_MS)
 
       let elapsed = 0
       elapsedInterval = setInterval(() => {
@@ -102,22 +112,15 @@ export const useAiReference = (
 
       try {
         const suggestions = await suggestPriceReferences(
-          uncachedItems,
+          unreferencedItems,
           products,
           families
         )
         if (!cancelled) {
-          saveToCache(quote.id, itemIds, suggestions)
-          const allCached = loadFromCache(quote.id) ?? []
+          setAiSuggestions(quote.id, suggestions)
           setRows(
-            buildRows({
-              items: unreferencedItems,
-              suggestions: allCached,
-              products,
-              families
-            })
+            buildRows({ items: quote.items, suggestions, products, families })
           )
-          setUncachedItems([])
         }
       } catch {
         if (!cancelled)
@@ -125,11 +128,10 @@ export const useAiReference = (
             'Erro ao consultar a IA. Verifique as credenciais e tente novamente.'
           )
       } finally {
-        if (msgInterval) clearInterval(msgInterval)
+        if (msgTimeout) clearTimeout(msgTimeout)
         if (elapsedInterval) clearInterval(elapsedInterval)
         if (!cancelled) {
           setIsAnalyzing(false)
-          setStatusMessage(null)
           setElapsedSeconds(0)
         }
       }
@@ -138,16 +140,20 @@ export const useAiReference = (
     void run()
     return () => {
       cancelled = true
-      if (msgInterval) clearInterval(msgInterval)
+      analysisStarted.current = false
+      if (msgTimeout) clearTimeout(msgTimeout)
       if (elapsedInterval) clearInterval(elapsedInterval)
     }
   }, [
-    shouldAnalyze,
-    uncachedItems,
+    isOpened,
     products,
     families,
+    aiSuggestions,
     quote.id,
-    unreferencedItems
+    quote.items,
+    unreferencedItems,
+    retryCount,
+    setAiSuggestions
   ])
 
   const toggleAccepted = (itemId: string) =>
@@ -181,10 +187,12 @@ export const useAiReference = (
         item.priceRef !== null
       )
         return item
-      return {
-        ...item,
-        priceRef: { type: row.suggestion.type, id: row.suggestion.id }
-      }
+      const { type, id } = row.suggestion
+      const salePrice =
+        type === 'product'
+          ? ((products ?? []).find((p) => p.id === id)?.price ?? null)
+          : ((products ?? []).find((p) => p.familyId === id)?.price ?? null)
+      return { ...item, salePrice, priceRef: { type, id } }
     })
     setSuccessCallbacks([handleClose])
     updateQuote({ ...quote, items: updatedItems })
@@ -201,9 +209,13 @@ export const useAiReference = (
     setEditingSuggestion(null)
   }
 
+  const handleRetry = () => {
+    setError(null)
+    setRetryCount((c) => c + 1)
+  }
+
   return {
     rows,
-    uncachedItems,
     isAnalyzing,
     statusMessage,
     elapsedSeconds,
@@ -212,7 +224,7 @@ export const useAiReference = (
     editingItem,
     editingSuggestion,
     handleEdit,
-    handleAnalyze: () => setShouldAnalyze(true),
+    handleRetry,
     toggleAccepted,
     handleApply,
     handleClose,

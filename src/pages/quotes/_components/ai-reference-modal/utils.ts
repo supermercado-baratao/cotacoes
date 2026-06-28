@@ -9,58 +9,6 @@ export type TSuggestionRow = {
   accepted: boolean
 }
 
-type TCache = { itemIds: string[]; suggestions: TAiSuggestion[] }
-
-const cacheKey = (quoteId: string) => `ai-ref-v1-${quoteId}`
-
-export const loadFromCache = (quoteId: string): TAiSuggestion[] | null => {
-  try {
-    const raw = localStorage.getItem(cacheKey(quoteId))
-    if (!raw) return null
-    return (JSON.parse(raw) as TCache).suggestions
-  } catch {
-    return null
-  }
-}
-
-export const getCachedItemIds = (quoteId: string): string[] => {
-  try {
-    const raw = localStorage.getItem(cacheKey(quoteId))
-    if (!raw) return []
-    return (JSON.parse(raw) as TCache).itemIds
-  } catch {
-    return []
-  }
-}
-
-export const saveToCache = (
-  quoteId: string,
-  newItemIds: string[],
-  newSuggestions: TAiSuggestion[]
-) => {
-  const existing: TCache = (() => {
-    try {
-      const raw = localStorage.getItem(cacheKey(quoteId))
-      return raw
-        ? (JSON.parse(raw) as TCache)
-        : { itemIds: [], suggestions: [] }
-    } catch {
-      return { itemIds: [], suggestions: [] }
-    }
-  })()
-  const newIdSet = new Set(newSuggestions.map((s) => s.itemId))
-  localStorage.setItem(
-    cacheKey(quoteId),
-    JSON.stringify({
-      itemIds: [...new Set([...existing.itemIds, ...newItemIds])],
-      suggestions: [
-        ...existing.suggestions.filter((s) => !newIdSet.has(s.itemId)),
-        ...newSuggestions
-      ]
-    } satisfies TCache)
-  )
-}
-
 const getRefName = (
   s: TAiSuggestion,
   products: TProduct[],

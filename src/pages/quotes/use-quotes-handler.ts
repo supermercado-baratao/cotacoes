@@ -116,7 +116,6 @@ export const useQuotesHandler = () => {
 
   const isFetching = quotes === null
   const hasQuoteRows = !!quoteRows.length
-  const hasUnreferenced = !!quote?.items.some((i) => i.priceRef === null)
 
   return {
     isFetching,
@@ -145,7 +144,6 @@ export const useQuotesHandler = () => {
     quickCreateFamily,
     setQuickCreateFamily,
     isAiReferenceOpen,
-    hasUnreferenced,
     handleAiReferenceOpen,
     handleAiReferenceClose,
     handlePrint,
