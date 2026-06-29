@@ -6,7 +6,13 @@ import {
   ProductForm
 } from '@/components'
 
-import { AiReferenceModal, Form, Header, Table } from './_components'
+import {
+  AiReferenceModal,
+  Form,
+  Header,
+  NfImportDialog,
+  Table
+} from './_components'
 import { useQuotesHandler } from './use-quotes-handler'
 
 export const Quotes = () => {
@@ -38,6 +44,9 @@ export const Quotes = () => {
     isAiReferenceOpen,
     handleAiReferenceOpen,
     handleAiReferenceClose,
+    isNfImportOpen,
+    handleNfImportOpen,
+    handleNfImportClose,
     handlePrint,
     isPrinting,
     search,
@@ -65,6 +74,7 @@ export const Quotes = () => {
         handleQuoteFormOpen={handleQuoteFormOpen}
         handleDeleteQuote={handleDeleteQuote}
         handleAiReferenceOpen={handleAiReferenceOpen}
+        handleNfImportOpen={handleNfImportOpen}
         handlePrint={handlePrint}
         isPrinting={isPrinting}
         search={search}
@@ -97,6 +107,13 @@ export const Quotes = () => {
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
       />
+      {quote && (
+        <NfImportDialog
+          isOpened={isNfImportOpen}
+          quote={quote}
+          handleClose={handleNfImportClose}
+        />
+      )}
       {quote && (
         <AiReferenceModal
           isOpened={isAiReferenceOpen}

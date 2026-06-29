@@ -7,6 +7,7 @@ import { useAppStore } from '@/stores'
 import { useDataFetch } from './use-data-fetch'
 import { useFamilyMutation } from './use-family-mutation'
 import { useImportMutation } from './use-import-mutation'
+import { useImportNfOrdersMutation } from './use-import-nf-orders-mutation'
 import { useInvoiceMutation } from './use-invoice-mutation'
 import { useOrderMutation } from './use-order-mutation'
 import { useProductMutation } from './use-product-mutation'
@@ -54,8 +55,11 @@ export const useAppHandler = () => {
   const { createSeller, updateSeller, deleteSeller } = useSellerMutation()
   const { createFamily, updateFamily, deleteFamily } = useFamilyMutation()
   const { createQuote, updateQuote, deleteQuote } = useQuoteMutation()
-  const { createOrder, updateOrder, deleteOrder } = useOrderMutation()
-  const { createInvoice, updateInvoice, deleteInvoice } = useInvoiceMutation()
+  const { createOrder, createOrdersBatch, updateOrder, deleteOrder } =
+    useOrderMutation()
+  const { createInvoice, createInvoicesBatch, updateInvoice, deleteInvoice } =
+    useInvoiceMutation()
+  const { importNfsWithOrders } = useImportNfOrdersMutation()
 
   const isFetching = useIsFetching()
   const isMutating = useIsMutating()
@@ -111,10 +115,13 @@ export const useAppHandler = () => {
       updateQuote,
       deleteQuote,
       createOrder,
+      createOrdersBatch,
+      importNfsWithOrders,
       updateOrder,
       deleteOrder,
       importData,
       createInvoice,
+      createInvoicesBatch,
       updateInvoice,
       deleteInvoice
     })
@@ -135,10 +142,13 @@ export const useAppHandler = () => {
     updateQuote,
     deleteQuote,
     createOrder,
+    createOrdersBatch,
+    importNfsWithOrders,
     updateOrder,
     deleteOrder,
     importData,
     createInvoice,
+    createInvoicesBatch,
     updateInvoice,
     deleteInvoice
   ])

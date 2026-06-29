@@ -1,4 +1,4 @@
-import { Add, Delete, Edit } from '@mui/icons-material'
+import { Add, Delete, Edit, ReceiptLong } from '@mui/icons-material'
 import {
   Box,
   Button,
@@ -13,6 +13,7 @@ import {
   Typography
 } from '@mui/material'
 import dayjs from 'dayjs'
+import { Link } from 'react-router'
 
 import type { TOrder, TProduct, TSeller, TSupplier } from '@/models'
 import { formatCurrency, formatNumericValue } from '@/utils'
@@ -104,6 +105,17 @@ export const Content = ({
                       >
                         obs
                       </Typography>
+                    </Tooltip>
+                  )}
+                  {order.invoiceId && (
+                    <Tooltip title="Ver nota fiscal">
+                      <IconButton
+                        size="small"
+                        component={Link}
+                        to={`/invoices/${order.invoiceId}`}
+                      >
+                        <ReceiptLong fontSize="small" />
+                      </IconButton>
                     </Tooltip>
                   )}
                   <IconButton

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { invoiceModel } from '@/models'
+import { invoiceModel, type TInvoice } from '@/models'
 import { useAlertStore, useCallbackStore } from '@/stores'
 
 export const useInvoiceMutation = () => {
@@ -32,6 +32,24 @@ export const useInvoiceMutation = () => {
     }
   })
 
+  const { mutate: createInvoicesBatch } = useMutation({
+    mutationFn: (data: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>) =>
+      invoiceModel.createMany(data),
+    onSuccess: (invoices) => {
+      invalidate()
+      const n = invoices.length
+      alert({
+        severity: 'success',
+        title: `${n} ${n === 1 ? 'nota importada' : 'notas importadas'} com sucesso!`
+      })
+      handleSuccessCallbacks()
+    },
+    onError: () => {
+      alert({ severity: 'error', title: 'Erro ao importar notas' })
+      handleErrorCallbacks()
+    }
+  })
+
   const { mutate: updateInvoice } = useMutation({
     mutationFn: invoiceModel.update,
     onSuccess: () => {
@@ -58,5 +76,5 @@ export const useInvoiceMutation = () => {
     }
   })
 
-  return { createInvoice, updateInvoice, deleteInvoice }
+  return { createInvoice, createInvoicesBatch, updateInvoice, deleteInvoice }
 }

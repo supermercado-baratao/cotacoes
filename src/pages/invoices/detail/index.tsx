@@ -1,39 +1,20 @@
-import { ArrowBack, CheckCircle, Save, Warning } from '@mui/icons-material'
+import { ArrowBack, CheckCircle, Warning } from '@mui/icons-material'
 import {
-  Autocomplete,
   Box,
   Button,
   Chip,
   Grid,
   IconButton,
-  List,
-  ListItem,
-  ListItemText,
   Paper,
-  TextField,
   Typography
 } from '@mui/material'
 import dayjs from 'dayjs'
 
-import type {
-  TInvoiceOrigin,
-  TInvoiceVerificationStatus,
-  TQuote
-} from '@/models'
+import type { TInvoiceVerificationStatus } from '@/models'
 import { formatCNPJ, formatCurrency } from '@/utils'
 
 import { ItemsTable } from './items-table'
 import { useInvoiceDetailHandler } from './use-invoice-detail-handler'
-
-const originLabel: Record<TInvoiceOrigin, string> = {
-  issued: 'Emitida',
-  posted: 'Lançada'
-}
-
-const originColor: Record<TInvoiceOrigin, 'warning' | 'success'> = {
-  issued: 'warning',
-  posted: 'success'
-}
 
 const statusLabel: Record<TInvoiceVerificationStatus, string> = {
   pending: 'Pendente',
@@ -50,34 +31,21 @@ const statusColor: Record<
   divergent: 'error'
 }
 
-const getQuoteLabel = (quote: TQuote) =>
-  `${dayjs(quote.date).format('DD/MM/YYYY')}${quote.observations ? ` — ${quote.observations}` : ''}`
-
 export const InvoiceDetail = () => {
   const {
     invoice,
     isFetching,
-    quotes,
-    products,
-    selectedQuoteId,
-    handleQuoteChange,
     itemsWithDivergences,
-    missingOrders,
-    productMap,
-    handleSaveAdjustments,
     handleApprove,
     handleMarkDivergent,
-    handleBack,
-    handleConfirmMatch,
-    handleRejectMatch,
-    handleAssignProduct
+    handleBack
   } = useInvoiceDetailHandler()
+
+  if (isFetching || !invoice) return null
 
   const summary = {
     total: itemsWithDivergences.length,
     matched: itemsWithDivergences.filter((i) => i.matchStatus === 'matched')
-      .length,
-    manual: itemsWithDivergences.filter((i) => i.matchStatus === 'manual')
       .length,
     unmatchedProduct: itemsWithDivergences.filter(
       (i) => i.matchStatus === 'unmatched_product'
@@ -97,10 +65,6 @@ export const InvoiceDetail = () => {
     )
   }
 
-  if (isFetching || !invoice) return null
-
-  const selectedQuote = quotes?.find((q) => q.id === selectedQuoteId) ?? null
-
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 1 }}>
@@ -110,11 +74,6 @@ export const InvoiceDetail = () => {
         <Typography component="h1" variant="h5" sx={{ flex: 1 }}>
           NF nº {invoice.number} — Série {invoice.series}
         </Typography>
-        <Chip
-          label={originLabel[invoice.origin]}
-          color={originColor[invoice.origin]}
-          size="small"
-        />
         <Chip
           label={statusLabel[invoice.verificationStatus]}
           color={statusColor[invoice.verificationStatus]}
@@ -150,7 +109,7 @@ export const InvoiceDetail = () => {
             </Typography>
             <Typography>{formatCurrency(invoice.totalValue)}</Typography>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 12 }}>
             <Typography variant="body2" color="text.secondary">
               Chave de Acesso
             </Typography>
@@ -159,28 +118,6 @@ export const InvoiceDetail = () => {
             </Typography>
           </Grid>
         </Grid>
-      </Paper>
-
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Comparar com cotação
-        </Typography>
-        <Autocomplete
-          options={quotes ?? []}
-          getOptionLabel={getQuoteLabel}
-          value={selectedQuote}
-          onChange={(_, q) => handleQuoteChange(q?.id ?? null)}
-          renderInput={(params) => (
-            <TextField {...params} label="Cotação" size="small" />
-          )}
-          sx={{ maxWidth: 400 }}
-        />
-        {!invoice.supplierId && (
-          <Typography variant="body2" color="warning.main" sx={{ mt: 1 }}>
-            Fornecedor não identificado no sistema — o matching de pedidos não
-            será possível.
-          </Typography>
-        )}
       </Paper>
 
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -193,13 +130,6 @@ export const InvoiceDetail = () => {
             color="success"
             size="small"
           />
-          {summary.manual > 0 && (
-            <Chip
-              label={`${summary.manual} a revisar`}
-              color="info"
-              size="small"
-            />
-          )}
           {summary.unmatchedProduct > 0 && (
             <Chip
               label={`${summary.unmatchedProduct} sem produto`}
@@ -222,53 +152,10 @@ export const InvoiceDetail = () => {
             />
           )}
         </Box>
-        <ItemsTable
-          items={itemsWithDivergences}
-          products={products}
-          handleConfirmMatch={handleConfirmMatch}
-          handleRejectMatch={handleRejectMatch}
-          handleAssignProduct={handleAssignProduct}
-        />
+        <ItemsTable items={itemsWithDivergences} />
       </Paper>
 
-      {missingOrders.length > 0 && (
-        <Paper
-          sx={{
-            p: 2,
-            mb: 3,
-            border: '1px solid',
-            borderColor: 'warning.main'
-          }}
-        >
-          <Typography variant="h6" color="warning.main" sx={{ mb: 1 }}>
-            Itens do pedido não faturados ({missingOrders.length})
-          </Typography>
-          <List dense>
-            {missingOrders.map((order) => {
-              const product = productMap.get(order.productId)
-              return (
-                <ListItem key={order.id} disableGutters>
-                  <ListItemText
-                    primary={
-                      product?.description.toUpperCase() ?? order.productId
-                    }
-                    secondary={`Qtd: ${order.quantity} — Preço: ${formatCurrency(order.price)}`}
-                  />
-                </ListItem>
-              )
-            })}
-          </List>
-        </Paper>
-      )}
-
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-        <Button
-          variant="outlined"
-          startIcon={<Save />}
-          onClick={handleSaveAdjustments}
-        >
-          Salvar ajustes
-        </Button>
         <Button
           variant="outlined"
           color="warning"

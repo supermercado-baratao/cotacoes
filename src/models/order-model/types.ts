@@ -5,6 +5,7 @@ export type TOrder = {
   quoteId: string
   quoteItemId: string
   productId: string
+  invoiceId: string | null
   price: number
   quantity: number
   packing: string

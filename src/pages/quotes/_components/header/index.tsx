@@ -1,4 +1,4 @@
-import { AutoFixHigh, Print } from '@mui/icons-material'
+import { AutoFixHigh, Print, UploadFile } from '@mui/icons-material'
 import { Box, Button, MenuItem, Select, Typography } from '@mui/material'
 
 import { SearchInput } from '@/components'
@@ -24,6 +24,7 @@ type THeaderProps = {
   handleQuoteFormOpen: (quote: TQuote | null) => void
   handleDeleteQuote: (quote: TQuote) => void
   handleAiReferenceOpen: () => void
+  handleNfImportOpen: () => void
   handlePrint: () => void
   isPrinting: boolean
 }
@@ -44,6 +45,7 @@ export const Header = ({
   handleQuoteFormOpen,
   handleDeleteQuote,
   handleAiReferenceOpen,
+  handleNfImportOpen,
   handlePrint,
   isPrinting
 }: THeaderProps) => {
@@ -131,6 +133,13 @@ export const Header = ({
         )}
         {quote && quote.items.length > 0 && (
           <>
+            <Button
+              variant="outlined"
+              startIcon={<UploadFile />}
+              onClick={handleNfImportOpen}
+            >
+              Importar NFs
+            </Button>
             <Button
               variant="outlined"
               startIcon={<AutoFixHigh />}

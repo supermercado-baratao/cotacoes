@@ -94,7 +94,12 @@ export const useFormHandler = (
 
     order
       ? updateOrder({ ...order, ...data })
-      : createOrder({ ...data, quoteId, quoteItemId: quoteItem.id })
+      : createOrder({
+          ...data,
+          quoteId,
+          quoteItemId: quoteItem.id,
+          invoiceId: null
+        })
 
     setSuccessCallbacks([handleClose, () => setFormOrder(null)])
   })

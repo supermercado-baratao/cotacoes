@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import type { TOrder } from '@/models'
 import { orderModel } from '@/models'
 import { useAlertStore, useCallbackStore } from '@/stores'
+import type { TCreateData } from '@/types'
 
 export const useOrderMutation = () => {
   const { alert } = useAlertStore()
@@ -11,6 +13,24 @@ export const useOrderMutation = () => {
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ['orders'] })
+
+  const { mutate: createOrdersBatch } = useMutation({
+    mutationFn: (orders: TCreateData<TOrder>[]) =>
+      orderModel.createMany(orders),
+    onSuccess: (orders) => {
+      invalidate()
+      const n = orders.length
+      alert({
+        severity: 'success',
+        title: `${n} ${n === 1 ? 'pedido criado' : 'pedidos criados'} com sucesso!`
+      })
+      handleSuccessCallbacks()
+    },
+    onError: () => {
+      alert({ severity: 'error', title: 'Erro ao criar pedidos' })
+      handleErrorCallbacks()
+    }
+  })
 
   const { mutate: createOrder } = useMutation({
     mutationFn: orderModel.create,
@@ -51,5 +71,5 @@ export const useOrderMutation = () => {
     }
   })
 
-  return { createOrder, updateOrder, deleteOrder }
+  return { createOrder, createOrdersBatch, updateOrder, deleteOrder }
 }

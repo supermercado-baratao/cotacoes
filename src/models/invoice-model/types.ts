@@ -1,14 +1,11 @@
 import { Timestamp } from 'firebase/firestore'
 
-export type TInvoiceOrigin = 'issued' | 'posted'
-
 export type TInvoiceVerificationStatus = 'pending' | 'approved' | 'divergent'
 
 export type TInvoiceItemMatchStatus =
   | 'matched'
   | 'unmatched_product'
   | 'unmatched_order'
-  | 'manual'
 
 export type TInvoiceItem = {
   itemNumber: number
@@ -38,7 +35,6 @@ export type TInvoice = {
   destinationCnpj: string
   totalValue: number
   items: TInvoiceItem[]
-  origin: TInvoiceOrigin
   verificationStatus: TInvoiceVerificationStatus
   quoteId: string | null
   createdAt: Timestamp

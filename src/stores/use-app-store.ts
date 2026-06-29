@@ -51,6 +51,12 @@ type TAppStore = {
   ordersByProductId: TOrder[] | null
   setOrdersByProductId: (orders: TOrder[]) => void
   createOrder: (order: TCreateData<TOrder>) => void
+  createOrdersBatch: (orders: TCreateData<TOrder>[]) => void
+  importNfsWithOrders: (data: {
+    nfes: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>
+    quoteId: string
+    orders: TCreateData<TOrder>[]
+  }) => void
   updateOrder: (order: TUpdateData<TOrder>) => void
   deleteOrder: (id: string) => void
 
@@ -64,6 +70,9 @@ type TAppStore = {
   invoices: TInvoice[] | null
   setInvoices: (invoices: TInvoice[]) => void
   createInvoice: (invoice: Omit<TInvoice, 'createdAt' | 'updatedAt'>) => void
+  createInvoicesBatch: (
+    invoices: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>
+  ) => void
   updateInvoice: (invoice: TUpdateData<TInvoice>) => void
   deleteInvoice: (id: string) => void
 }
@@ -110,6 +119,8 @@ export const useAppStore = create<TAppStore>((set) => ({
   ordersByProductId: null,
   setOrdersByProductId: (orders) => set({ ordersByProductId: orders }),
   createOrder: () => {},
+  createOrdersBatch: () => {},
+  importNfsWithOrders: () => {},
   updateOrder: () => {},
   deleteOrder: () => {},
 
@@ -123,6 +134,7 @@ export const useAppStore = create<TAppStore>((set) => ({
   invoices: null,
   setInvoices: (invoices) => set({ invoices }),
   createInvoice: () => {},
+  createInvoicesBatch: () => {},
   updateInvoice: () => {},
   deleteInvoice: () => {}
 }))

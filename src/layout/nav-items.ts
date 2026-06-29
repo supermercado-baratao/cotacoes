@@ -19,7 +19,7 @@ type TNavItem = {
 export const navItems: TNavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: Dashboard },
   { label: 'Cotações', path: '/quotes', icon: RequestQuote },
-  { label: 'Conferência', path: '/invoices', icon: ReceiptLong },
+  { label: 'Notas de Entrada', path: '/invoices', icon: ReceiptLong },
   { label: 'Produtos', path: '/products', icon: Inventory2 },
   { label: 'Fornecedores', path: '/suppliers', icon: Business },
   { label: 'Vendedores', path: '/sellers', icon: People },

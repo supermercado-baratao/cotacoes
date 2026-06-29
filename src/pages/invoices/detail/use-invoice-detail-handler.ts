@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
 import type { TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
@@ -14,14 +14,8 @@ export const useInvoiceDetailHandler = () => {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const {
-    invoices,
-    products,
-    quotes,
-    ordersByQuoteId,
-    setQuoteId,
-    updateInvoice
-  } = useAppStore()
+  const { invoices, products, ordersByQuoteId, setQuoteId, updateInvoice } =
+    useAppStore()
 
   const invoice = useMemo(
     () => invoices?.find((inv) => inv.id === id) ?? null,
@@ -29,25 +23,6 @@ export const useInvoiceDetailHandler = () => {
   )
 
   const isFetching = invoices === null
-
-  useEffect(() => {
-    if (invoices !== null && !invoice) navigate('/invoices')
-  }, [invoices, invoice, navigate])
-
-  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(
-    invoice?.quoteId ?? null
-  )
-
-  const [productIdOverrides, setProductIdOverrides] = useState<
-    Map<number, string | null>
-  >(new Map())
-
-  const [confirmedManual, setConfirmedManual] = useState<Set<number>>(new Set())
-
-  const handleQuoteChange = (quoteId: string | null) => {
-    setSelectedQuoteId(quoteId)
-    setQuoteId(quoteId)
-  }
 
   const productMap = useMemo(
     () => new Map(products?.map((p) => [p.id, p]) ?? []),
@@ -65,31 +40,19 @@ export const useInvoiceDetailHandler = () => {
   const itemsWithDivergences = useMemo((): TInvoiceItemRow[] => {
     if (!invoice) return []
     return invoice.items.map((item) => {
-      const effectiveProductId = productIdOverrides.has(item.itemNumber)
-        ? (productIdOverrides.get(item.itemNumber) ?? null)
-        : item.productId
-
-      const order = effectiveProductId
-        ? (ordersForSupplier.find((o) => o.productId === effectiveProductId) ??
+      const order = item.productId
+        ? (ordersForSupplier.find((o) => o.productId === item.productId) ??
           null)
         : null
 
-      const isManual =
-        item.matchStatus === 'manual' &&
-        !confirmedManual.has(item.itemNumber) &&
-        !productIdOverrides.has(item.itemNumber)
-
-      const matchStatus: TInvoiceItemMatchStatus = !effectiveProductId
+      const matchStatus: TInvoiceItemMatchStatus = !item.productId
         ? 'unmatched_product'
-        : isManual
-          ? 'manual'
-          : !order
-            ? 'unmatched_order'
-            : 'matched'
+        : !order
+          ? 'unmatched_order'
+          : 'matched'
 
       return {
         ...item,
-        productId: effectiveProductId,
         matchStatus,
         orderId: order?.id ?? null,
         priceDivergence: order ? item.unitPrice - order.price : null,
@@ -97,97 +60,23 @@ export const useInvoiceDetailHandler = () => {
         orderQuantity: order?.quantity ?? null,
         orderPrice: order?.price ?? null,
         productDescription:
-          productMap.get(effectiveProductId ?? '')?.description ?? null
+          productMap.get(item.productId ?? '')?.description ?? null
       }
     })
-  }, [
-    invoice,
-    ordersForSupplier,
-    productMap,
-    productIdOverrides,
-    confirmedManual
-  ])
+  }, [invoice, ordersForSupplier, productMap])
 
-  const missingOrders = useMemo(
-    () =>
-      ordersForSupplier.filter(
-        (o) =>
-          !itemsWithDivergences.some((item) => item.productId === o.productId)
-      ),
-    [ordersForSupplier, itemsWithDivergences]
-  )
-
-  const handleConfirmMatch = (itemNumber: number) => {
-    setConfirmedManual((prev) => new Set([...prev, itemNumber]))
-  }
-
-  const handleRejectMatch = (itemNumber: number) => {
-    setProductIdOverrides((prev) => {
-      const next = new Map(prev)
-      next.set(itemNumber, null)
-      return next
-    })
-    setConfirmedManual((prev) => {
-      const next = new Set(prev)
-      next.delete(itemNumber)
-      return next
-    })
-  }
-
-  const handleAssignProduct = (itemNumber: number, productId: string) => {
-    setProductIdOverrides((prev) => {
-      const next = new Map(prev)
-      next.set(itemNumber, productId)
-      return next
-    })
-  }
-
-  const buildUpdatedItems = (): TInvoiceItem[] =>
-    itemsWithDivergences.map(
-      (item): TInvoiceItem => ({
-        itemNumber: item.itemNumber,
-        supplierProductCode: item.supplierProductCode,
-        barcode: item.barcode,
-        description: item.description,
-        unit: item.unit,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        totalPrice: item.totalPrice,
-        productId: item.productId,
-        orderId: item.orderId,
-        matchStatus: item.matchStatus,
-        priceDivergence: item.priceDivergence,
-        quantityDivergence: item.quantityDivergence
-      })
-    )
-
-  const handleSaveAdjustments = () => {
-    if (!invoice) return
-    updateInvoice({
-      ...invoice,
-      quoteId: selectedQuoteId,
-      items: buildUpdatedItems()
-    })
+  const handleQuoteChange = (quoteId: string | null) => {
+    setQuoteId(quoteId)
   }
 
   const handleApprove = () => {
     if (!invoice) return
-    updateInvoice({
-      ...invoice,
-      verificationStatus: 'approved',
-      quoteId: selectedQuoteId,
-      items: buildUpdatedItems()
-    })
+    updateInvoice({ ...invoice, verificationStatus: 'approved' })
   }
 
   const handleMarkDivergent = () => {
     if (!invoice) return
-    updateInvoice({
-      ...invoice,
-      verificationStatus: 'divergent',
-      quoteId: selectedQuoteId,
-      items: buildUpdatedItems()
-    })
+    updateInvoice({ ...invoice, verificationStatus: 'divergent' })
   }
 
   const handleBack = () => navigate('/invoices')
@@ -195,19 +84,12 @@ export const useInvoiceDetailHandler = () => {
   return {
     invoice,
     isFetching,
-    quotes,
     products: products ?? [],
-    selectedQuoteId,
-    handleQuoteChange,
     itemsWithDivergences,
-    missingOrders,
     productMap,
-    handleSaveAdjustments,
+    handleQuoteChange,
     handleApprove,
     handleMarkDivergent,
-    handleBack,
-    handleConfirmMatch,
-    handleRejectMatch,
-    handleAssignProduct
+    handleBack
   }
 }

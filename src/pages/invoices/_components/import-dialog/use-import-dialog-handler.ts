@@ -1,47 +1,64 @@
 import { useState } from 'react'
 
-import type { TInvoiceOrigin } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
+import { parseNfe, type TParsedNfe } from '@/utils'
 
-import { parseNfe, type TParsedNfe } from './parse-nfe'
+type TParseError = { filename: string; message: string }
 
 export const useImportDialogHandler = (handleClose: () => void) => {
-  const { products, suppliers, createInvoice } = useAppStore()
+  const { products, suppliers, createInvoicesBatch } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
-  const [origin, setOrigin] = useState<TInvoiceOrigin>('issued')
-  const [parsedNfe, setParsedNfe] = useState<TParsedNfe | null>(null)
-  const [parseError, setParseError] = useState<string | null>(null)
-
-  const handleFileSelect = async (file: File) => {
-    setParseError(null)
-    setParsedNfe(null)
-    try {
-      const xml = await file.text()
-      const result = parseNfe(xml, products ?? [], suppliers ?? [])
-      setParsedNfe(result)
-    } catch (e) {
-      setParseError((e as Error).message)
-    }
-  }
+  const [parsedNfes, setParsedNfes] = useState<TParsedNfe[]>([])
+  const [parseErrors, setParseErrors] = useState<TParseError[]>([])
 
   const handleReset = () => {
-    setParsedNfe(null)
-    setParseError(null)
+    setParsedNfes([])
+    setParseErrors([])
+  }
+
+  const handleFilesChange = async (files: FileList) => {
+    const newNfes: TParsedNfe[] = []
+    const newErrors: TParseError[] = []
+
+    for (const file of Array.from(files)) {
+      try {
+        const xml = await file.text()
+        const result = parseNfe(xml, products ?? [], suppliers ?? [])
+        newNfes.push(result)
+      } catch (e) {
+        newErrors.push({ filename: file.name, message: (e as Error).message })
+      }
+    }
+
+    setParsedNfes((prev) => {
+      const existingKeys = new Set(prev.map((n) => n.accessKey))
+      return [...prev, ...newNfes.filter((n) => !existingKeys.has(n.accessKey))]
+    })
+    setParseErrors((prev) => [...prev, ...newErrors])
+  }
+
+  const handleRemoveNfe = (accessKey: string) => {
+    setParsedNfes((prev) => prev.filter((n) => n.accessKey !== accessKey))
+  }
+
+  const handleRemoveError = (index: number) => {
+    setParseErrors((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleImport = () => {
-    if (!parsedNfe) return
+    if (!parsedNfes.length) return
     setSuccessCallbacks([handleClose, handleReset])
-    createInvoice({ ...parsedNfe, origin })
+    createInvoicesBatch(parsedNfes)
   }
 
   return {
-    origin,
-    setOrigin,
-    parsedNfe,
-    parseError,
-    handleFileSelect,
+    parsedNfes,
+    parseErrors,
+    products: products ?? [],
+    handleFilesChange,
+    handleRemoveNfe,
+    handleRemoveError,
     handleReset,
     handleImport
   }

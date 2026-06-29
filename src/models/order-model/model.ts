@@ -8,6 +8,9 @@ import type { TOrder } from './types'
 const create = (data: TCreateData<TOrder>): Promise<TOrder> =>
   database.create({ path: getUserPath('orders'), data })
 
+const createMany = (data: TCreateData<TOrder>[]): Promise<TOrder[]> =>
+  database.createMany<TOrder>({ path: getUserPath('orders'), data })
+
 const findManyByQuoteId = (quoteId: string): Promise<TOrder[]> =>
   database.findMany({
     path: getUserPath('orders'),
@@ -28,6 +31,7 @@ const deleteUniqueById = (id: string): Promise<string> =>
 
 export const orderModel = {
   create,
+  createMany,
   findManyByQuoteId,
   findManyByProductId,
   update,

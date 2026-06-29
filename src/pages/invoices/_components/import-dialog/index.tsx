@@ -1,19 +1,26 @@
-import { CloudUpload } from '@mui/icons-material'
+import { Close, CloudUpload, ExpandLess, ExpandMore } from '@mui/icons-material'
 import {
   Alert,
   Box,
   Button,
   Chip,
+  CircularProgress,
+  Collapse,
+  Divider,
+  IconButton,
   Paper,
-  ToggleButton,
-  ToggleButtonGroup,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   Typography
 } from '@mui/material'
 import dayjs from 'dayjs'
-import { useRef } from 'react'
+import { useMemo, useRef, useState, useTransition } from 'react'
 
 import { Modal } from '@/components'
-import { formatCurrency } from '@/utils'
+import { formatCurrency, formatNumericValue } from '@/utils'
 
 import { useImportDialogHandler } from './use-import-dialog-handler'
 
@@ -24,138 +31,231 @@ type TImportDialogProps = {
 
 export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
   const {
-    origin,
-    setOrigin,
-    parsedNfe,
-    parseError,
-    handleFileSelect,
+    parsedNfes,
+    parseErrors,
+    products,
+    handleFilesChange,
+    handleRemoveNfe,
+    handleRemoveError,
     handleReset,
     handleImport
   } = useImportDialogHandler(handleClose)
 
   const inputRef = useRef<HTMLInputElement>(null)
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
+  const [pendingKey, setPendingKey] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  const productMap = useMemo(
+    () => new Map(products.map((p) => [p.id, p.description])),
+    [products]
+  )
+
+  const handleCloseAndReset = () => {
+    handleClose()
+    handleReset()
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) handleFileSelect(file)
+    if (e.target.files?.length) handleFilesChange(e.target.files)
     e.target.value = ''
   }
 
-  const matchedCount = parsedNfe?.items.filter((i) => i.productId).length ?? 0
-  const totalCount = parsedNfe?.items.length ?? 0
+  const toggleExpanded = (accessKey: string) => {
+    setPendingKey(accessKey)
+    startTransition(() => {
+      setExpandedKeys((prev) => {
+        const next = new Set(prev)
+        next.has(accessKey) ? next.delete(accessKey) : next.add(accessKey)
+        return next
+      })
+      setPendingKey(null)
+    })
+  }
 
   return (
     <Modal
       isOpened={isOpened}
-      title="Importar Nota Fiscal"
-      handleClose={handleClose}
+      title="Importar Notas Fiscais"
+      handleClose={handleCloseAndReset}
     >
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          Tipo de nota:
-        </Typography>
-        <ToggleButtonGroup
-          value={origin}
-          exclusive
-          onChange={(_, v) => v && setOrigin(v)}
-          size="small"
-        >
-          <ToggleButton value="issued">Emitida</ToggleButton>
-          <ToggleButton value="posted">Lançada</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-
       <input
         ref={inputRef}
         type="file"
         accept=".xml"
+        multiple
         hidden
         onChange={handleFileChange}
       />
 
-      {!parsedNfe && !parseError && (
-        <Button
-          variant="outlined"
-          startIcon={<CloudUpload />}
-          onClick={() => inputRef.current?.click()}
-          fullWidth
-          sx={{ mb: 2 }}
+      <Button
+        variant="outlined"
+        startIcon={<CloudUpload />}
+        onClick={() => inputRef.current?.click()}
+        fullWidth
+        sx={{ mb: 2 }}
+      >
+        {parsedNfes.length > 0
+          ? 'Adicionar mais arquivos XML'
+          : 'Selecionar arquivos XML'}
+      </Button>
+
+      {parseErrors.map((err, i) => (
+        <Alert
+          key={i}
+          severity="error"
+          sx={{ mb: 1 }}
+          action={
+            <IconButton size="small" onClick={() => handleRemoveError(i)}>
+              <Close fontSize="inherit" />
+            </IconButton>
+          }
         >
-          Selecionar arquivo XML
-        </Button>
-      )}
+          <strong>{err.filename}:</strong> {err.message}
+        </Alert>
+      ))}
 
-      {parseError && (
-        <Box sx={{ mb: 2 }}>
-          <Alert severity="error">{parseError}</Alert>
-          <Button
-            variant="text"
-            size="small"
-            sx={{ mt: 1 }}
-            onClick={() => {
-              handleReset()
-              inputRef.current?.click()
-            }}
-          >
-            Tentar outro arquivo
-          </Button>
-        </Box>
-      )}
+      {parsedNfes.map((nfe) => {
+        const matchedCount = nfe.items.filter((i) => i.productId).length
+        const totalCount = nfe.items.length
+        const isExpanded = expandedKeys.has(nfe.accessKey)
 
-      {parsedNfe && (
-        <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
-            NF nº {parsedNfe.number} — Série {parsedNfe.series}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Fornecedor:</strong>{' '}
-            {parsedNfe.supplierName || parsedNfe.supplierCnpj}
-          </Typography>
-          {!parsedNfe.supplierId && (
-            <Typography variant="body2" color="warning.main" sx={{ mt: 0.5 }}>
-              Fornecedor não encontrado no sistema (CNPJ:{' '}
-              {parsedNfe.supplierCnpj})
-            </Typography>
-          )}
-          <Typography variant="body2">
-            <strong>Emissão:</strong>{' '}
-            {dayjs(parsedNfe.emissionDate).format('DD/MM/YYYY')}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Total NF:</strong> {formatCurrency(parsedNfe.totalValue)}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-            <Typography variant="body2">
-              <strong>Itens:</strong> {totalCount}
-            </Typography>
-            <Chip
-              label={`${matchedCount}/${totalCount} produtos identificados`}
-              color={matchedCount === totalCount ? 'success' : 'warning'}
-              size="small"
-            />
-          </Box>
-          <Button
-            variant="text"
-            size="small"
-            sx={{ mt: 1 }}
-            onClick={() => {
-              handleReset()
-              inputRef.current?.click()
-            }}
-          >
-            Trocar arquivo
-          </Button>
-        </Paper>
-      )}
+        const chipColor =
+          matchedCount === 0
+            ? 'error'
+            : matchedCount === totalCount
+              ? 'success'
+              : 'warning'
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
-        <Button onClick={handleClose}>Cancelar</Button>
+        return (
+          <Paper key={nfe.accessKey} variant="outlined" sx={{ mb: 1 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, p: 2 }}
+            >
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  NF nº {nfe.number} — Série {nfe.series}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {(nfe.supplierName || nfe.supplierCnpj).toUpperCase()}
+                </Typography>
+                {!nfe.supplierId && (
+                  <Typography variant="body2" color="warning.main">
+                    Fornecedor não encontrado (CNPJ: {nfe.supplierCnpj})
+                  </Typography>
+                )}
+                <Typography variant="body2" color="text.secondary">
+                  {dayjs(nfe.emissionDate).format('DD/MM/YYYY')} •{' '}
+                  {formatCurrency(nfe.totalValue)}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    mt: 0.5
+                  }}
+                >
+                  <Chip
+                    label={`${matchedCount}/${totalCount} produtos identificados`}
+                    color={chipColor}
+                    size="small"
+                  />
+                  <Button
+                    size="small"
+                    endIcon={
+                      isPending && pendingKey === nfe.accessKey ? (
+                        <CircularProgress size={14} />
+                      ) : isExpanded ? (
+                        <ExpandLess />
+                      ) : (
+                        <ExpandMore />
+                      )
+                    }
+                    disabled={isPending && pendingKey === nfe.accessKey}
+                    onClick={() => toggleExpanded(nfe.accessKey)}
+                    sx={{ ml: 'auto' }}
+                  >
+                    {isExpanded ? 'Ocultar itens' : 'Ver itens'}
+                  </Button>
+                </Box>
+              </Box>
+              <IconButton
+                size="small"
+                onClick={() => handleRemoveNfe(nfe.accessKey)}
+              >
+                <Close fontSize="small" />
+              </IconButton>
+            </Box>
+
+            <Collapse in={isExpanded} mountOnEnter>
+              <Divider />
+              <Box sx={{ overflowX: 'auto' }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Nº</TableCell>
+                      <TableCell>Descrição NF</TableCell>
+                      <TableCell>Cód. Barras</TableCell>
+                      <TableCell align="right">Qtd</TableCell>
+                      <TableCell align="right">Preço</TableCell>
+                      <TableCell>Produto</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {nfe.items.map((item) => (
+                      <TableRow key={item.itemNumber}>
+                        <TableCell>{item.itemNumber}</TableCell>
+                        <TableCell
+                          sx={{
+                            maxWidth: 200,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}
+                        >
+                          {item.description.toUpperCase()}
+                        </TableCell>
+                        <TableCell>{item.barcode ?? '—'}</TableCell>
+                        <TableCell align="right">
+                          {formatNumericValue(item.quantity)}
+                        </TableCell>
+                        <TableCell align="right">
+                          {formatCurrency(item.unitPrice)}
+                        </TableCell>
+                        <TableCell>
+                          {item.productId ? (
+                            <Typography variant="body2" color="success.main">
+                              {(
+                                productMap.get(item.productId) ?? item.productId
+                              ).toUpperCase()}
+                            </Typography>
+                          ) : (
+                            <Typography variant="body2" color="error.main">
+                              Não identificado
+                            </Typography>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Collapse>
+          </Paper>
+        )
+      })}
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+        <Button onClick={handleCloseAndReset}>Cancelar</Button>
         <Button
           variant="contained"
-          disabled={!parsedNfe}
+          disabled={!parsedNfes.length}
           onClick={handleImport}
         >
-          Importar
+          {parsedNfes.length > 0
+            ? `Importar ${parsedNfes.length} ${parsedNfes.length === 1 ? 'nota' : 'notas'}`
+            : 'Importar'}
         </Button>
       </Box>
     </Modal>

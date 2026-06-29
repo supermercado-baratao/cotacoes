@@ -5,6 +5,11 @@ import type { TInvoice } from './types'
 
 const PATH = 'invoices'
 
+const createMany = (
+  data: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>
+): Promise<TInvoice[]> =>
+  database.createManyWithIds<TInvoice>({ path: PATH, data })
+
 const create = async (
   data: Omit<TInvoice, 'createdAt' | 'updatedAt'>
 ): Promise<TInvoice> => {
@@ -27,6 +32,7 @@ const deleteUniqueById = (id: string): Promise<string> =>
 
 export const invoiceModel = {
   create,
+  createMany,
   findMany,
   update,
   deleteUniqueById

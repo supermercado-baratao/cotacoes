@@ -10,7 +10,7 @@ import type { TCreateData } from '@/types'
 
 type TOrderFormData = Omit<
   TCreateData<TOrder>,
-  'quoteId' | 'quoteItemId' | 'quoteItemType'
+  'quoteId' | 'quoteItemId' | 'invoiceId'
 >
 
 export const createSchema = (minDate: string) =>

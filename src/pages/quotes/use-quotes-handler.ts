@@ -89,11 +89,14 @@ export const useQuotesHandler = () => {
 
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
   const [isAiReferenceOpen, setIsAiReferenceOpen] = useState(false)
+  const [isNfImportOpen, setIsNfImportOpen] = useState(false)
   const [isPrinting, setIsPrinting] = useState(false)
   const [search, setSearch] = useState('')
 
   const handleAiReferenceOpen = () => setIsAiReferenceOpen(true)
   const handleAiReferenceClose = () => setIsAiReferenceOpen(false)
+  const handleNfImportOpen = () => setIsNfImportOpen(true)
+  const handleNfImportClose = () => setIsNfImportOpen(false)
 
   const handlePrint = async () => {
     if (!quote || !products || !families) return
@@ -162,6 +165,9 @@ export const useQuotesHandler = () => {
     isAiReferenceOpen,
     handleAiReferenceOpen,
     handleAiReferenceClose,
+    isNfImportOpen,
+    handleNfImportOpen,
+    handleNfImportClose,
     handlePrint,
     isPrinting,
     numberOfSuppliers,

@@ -5,20 +5,9 @@ import dayjs from 'dayjs'
 import type {
   TInvoice,
   TInvoiceItem,
-  TInvoiceOrigin,
   TInvoiceVerificationStatus
 } from '@/models'
 import { formatCurrency } from '@/utils'
-
-const originLabel: Record<TInvoiceOrigin, string> = {
-  issued: 'Emitida',
-  posted: 'Lançada'
-}
-
-const originColor: Record<TInvoiceOrigin, 'warning' | 'success'> = {
-  issued: 'warning',
-  posted: 'success'
-}
 
 const statusLabel: Record<TInvoiceVerificationStatus, string> = {
   pending: 'Pendente',
@@ -82,18 +71,6 @@ export const columns: GridColDef<TInvoice>[] = [
         )
       return <Chip label={count} color="error" size="small" />
     }
-  },
-  {
-    field: 'origin',
-    headerName: 'Tipo',
-    width: 110,
-    renderCell: (params) => (
-      <Chip
-        label={originLabel[params.value as TInvoiceOrigin]}
-        color={originColor[params.value as TInvoiceOrigin]}
-        size="small"
-      />
-    )
   },
   {
     field: 'verificationStatus',
