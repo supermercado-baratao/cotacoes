@@ -33,7 +33,7 @@ type TRowProps = {
 const Row = ({ item, isLast }: TRowProps) => {
   const refLine = [
     item.refDescription,
-    item.salePrice != null ? `PV ${formatCurrency(item.salePrice)}` : null
+    item.salePrice != null ? formatCurrency(item.salePrice) : null
   ]
     .filter(Boolean)
     .join('  ·  ')

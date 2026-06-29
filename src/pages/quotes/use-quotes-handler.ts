@@ -21,6 +21,7 @@ export const useQuotesHandler = () => {
     ordersByQuoteId,
     suppliers,
     products,
+    families,
     setQuoteId,
     deleteQuote
   } = useAppStore()
@@ -95,11 +96,11 @@ export const useQuotesHandler = () => {
   const handleAiReferenceClose = () => setIsAiReferenceOpen(false)
 
   const handlePrint = async () => {
-    if (!quote || !products) return
+    if (!quote || !products || !families) return
     setIsPrinting(true)
     await new Promise((resolve) => setTimeout(resolve, 0))
     try {
-      await printQuote(quote, products)
+      await printQuote(quote, products, families)
     } finally {
       setIsPrinting(false)
     }

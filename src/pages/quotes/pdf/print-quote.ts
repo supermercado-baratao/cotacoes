@@ -1,7 +1,7 @@
 import { type DocumentProps, pdf } from '@react-pdf/renderer'
 import { createElement, type ReactElement } from 'react'
 
-import type { TProduct, TQuote } from '@/models'
+import type { TFamily, TProduct, TQuote } from '@/models'
 
 import { QuotePDF, type TPdfGroup, type TPdfItem } from './quote-pdf'
 
@@ -9,7 +9,11 @@ const resolveCategory = (product: TProduct): string => product.section
 
 type TRawItem = Omit<TPdfItem, 'index'>
 
-const buildGroups = (quote: TQuote, products: TProduct[]): TPdfGroup[] => {
+const buildGroups = (
+  quote: TQuote,
+  products: TProduct[],
+  families: TFamily[]
+): TPdfGroup[] => {
   const groupMap = new Map<string, { label: string; items: TRawItem[] }>()
   const uncategorized: TRawItem[] = []
 
@@ -28,6 +32,10 @@ const buildGroups = (quote: TQuote, products: TProduct[]): TPdfGroup[] => {
         refDescription = product.description
       }
     } else if (ref?.type === 'family') {
+      const family = families.find((f) => f.id === ref.id)
+      if (family) {
+        refDescription = family.description
+      }
       const productOfFamily = products.find((p) => p.familyId === ref.id)
       if (productOfFamily) {
         const category = resolveCategory(productOfFamily)
@@ -77,9 +85,10 @@ const buildGroups = (quote: TQuote, products: TProduct[]): TPdfGroup[] => {
 
 export const printQuote = async (
   quote: TQuote,
-  products: TProduct[]
+  products: TProduct[],
+  families: TFamily[]
 ): Promise<void> => {
-  const groups = buildGroups(quote, products)
+  const groups = buildGroups(quote, products, families)
   const element = createElement(QuotePDF, {
     date: quote.date,
     totalItems: quote.items.length,
