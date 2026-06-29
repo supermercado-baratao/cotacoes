@@ -55,6 +55,16 @@ export const OrderForm = ({
     <>
       <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
         <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
+          {quoteItem && (
+            <Box sx={S.ItemBanner}>
+              <Typography variant="caption" sx={S.ItemLabel}>
+                item
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                {quoteItem.description}
+              </Typography>
+            </Box>
+          )}
           <Autocomplete
             name="productId"
             control={control}
