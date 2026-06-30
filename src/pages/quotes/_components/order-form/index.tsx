@@ -13,16 +13,19 @@ import {
   type TModalProps
 } from '@/components'
 import { MAX_NUMERIC_VALUE, MAX_OBSERVATIONS_LENGTH } from '@/constants'
-import type { TOrder, TQuoteItem } from '@/models'
+import type { TInvoice, TOrder, TQuoteItem } from '@/models'
 import { formatCurrency, formatNumericValue, selectOnFocus } from '@/utils'
 
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'
 
+type TInvoiceRef = { invoice: TInvoice; itemNumber: number }
+
 type TOrderFormProps = {
   quoteItem: TQuoteItem | null
   order: TOrder | null
   setFormOrder: (order: TOrder | null) => void
+  invoiceRef?: TInvoiceRef | null
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 export const OrderForm = ({
@@ -30,6 +33,7 @@ export const OrderForm = ({
   quoteItem,
   order,
   setFormOrder,
+  invoiceRef,
   handleClose
 }: TOrderFormProps) => {
   const {
@@ -41,8 +45,9 @@ export const OrderForm = ({
     sellers,
     selectableProducts,
     selectedProduct,
-    lastOrder
-  } = useFormHandler(quoteItem, order, setFormOrder, handleClose)
+    lastOrder,
+    invoiceItem
+  } = useFormHandler(quoteItem, order, setFormOrder, handleClose, invoiceRef)
 
   const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
   const [quickCreateSeller, setQuickCreateSeller] = useState(false)
@@ -62,6 +67,16 @@ export const OrderForm = ({
               </Typography>
               <Typography variant="body2" color="textSecondary">
                 {quoteItem.description}
+              </Typography>
+            </Box>
+          )}
+          {invoiceItem && invoiceRef && (
+            <Box sx={S.ItemBanner}>
+              <Typography variant="caption" sx={S.ItemLabel}>
+                item da NF {invoiceRef.invoice.number}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                {invoiceItem.description}
               </Typography>
             </Box>
           )}
@@ -101,7 +116,24 @@ export const OrderForm = ({
             type="number"
             error={!!errors.quantity}
             helperText={errors.quantity?.message}
-            sx={S.ThreeCol}
+            sx={S.TwoCol}
+            onFocus={selectOnFocus}
+            slotProps={{
+              htmlInput: { min: 1, max: MAX_NUMERIC_VALUE, step: 1 }
+            }}
+          />
+          <TextField
+            {...register('packingQuantity', {
+              setValueAs: (v) =>
+                v === '' || v === null || v === undefined
+                  ? null
+                  : parseInt(v, 10)
+            })}
+            label="Qtd. Embalagem"
+            type="number"
+            error={!!errors.packingQuantity}
+            helperText={errors.packingQuantity?.message}
+            sx={S.TwoCol}
             onFocus={selectOnFocus}
             slotProps={{
               htmlInput: { min: 1, max: MAX_NUMERIC_VALUE, step: 1 }
@@ -112,7 +144,7 @@ export const OrderForm = ({
             label="Embalagem"
             error={!!errors.packing}
             helperText={errors.packing?.message}
-            sx={S.ThreeCol}
+            sx={S.TwoCol}
             onFocus={selectOnFocus}
           />
           <TextField

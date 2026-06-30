@@ -9,6 +9,7 @@ export type TOrder = {
   price: number
   quantity: number
   packing: string
+  packingQuantity: number | null
   supplierId: string
   sellerId: string | null
   date: string

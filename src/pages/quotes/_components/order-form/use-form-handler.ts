@@ -1,22 +1,26 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
-import type { TOrder, TQuoteItem } from '@/models'
+import type { TInvoice, TOrder, TQuoteItem } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
 import { useProductHistory } from '../use-product-history'
 import { createSchema, type TSchema } from './schema'
 
+type TInvoiceRef = { invoice: TInvoice; itemNumber: number }
+
 export const useFormHandler = (
   quoteItem: TQuoteItem | null,
   order: TOrder | null,
   setFormOrder: (order: TOrder | null) => void,
-  handleClose: () => void
+  handleClose: () => void,
+  invoiceRef?: TInvoiceRef | null
 ) => {
   const {
     createOrder,
+    createOrderWithInvoiceLink,
     updateOrder,
     suppliers,
     sellers,
@@ -35,18 +39,37 @@ export const useFormHandler = (
     [quotes, quoteId]
   )
 
+  const invoiceItem = invoiceRef
+    ? invoiceRef.invoice.items.find(
+        (i) => i.itemNumber === invoiceRef.itemNumber
+      )
+    : null
+
   const defaultValues: Partial<TSchema> = useMemo(
     () => ({
-      productId: order?.productId ?? '',
-      supplierId: order?.supplierId ?? '',
+      productId: order?.productId ?? invoiceItem?.productId ?? '',
+      supplierId: (() => {
+        if (order?.supplierId) return order.supplierId
+        if (invoiceRef?.invoice.supplierId) return invoiceRef.invoice.supplierId
+        const cnpj = invoiceRef?.invoice.supplierCnpj
+        if (!cnpj || !suppliers?.length) return ''
+        return (
+          suppliers.find((s) => s.cnpj.replace(/\D/g, '') === cnpj)?.id ?? ''
+        )
+      })(),
       sellerId: order?.sellerId ?? null,
-      date: order?.date ?? dayjs().format('YYYY-MM-DD'),
-      price: order?.price ?? undefined,
-      quantity: order?.quantity ?? undefined,
-      packing: order?.packing ?? '',
+      date:
+        order?.date ??
+        (invoiceRef
+          ? dayjs(invoiceRef.invoice.emissionDate).format('YYYY-MM-DD')
+          : dayjs().format('YYYY-MM-DD')),
+      price: order?.price ?? invoiceItem?.unitPrice ?? undefined,
+      quantity: order?.quantity ?? invoiceItem?.quantity ?? undefined,
+      packing: order?.packing ?? invoiceItem?.unit ?? '',
+      packingQuantity: order?.packingQuantity ?? null,
       observations: order?.observations ?? null
     }),
-    [order]
+    [order, invoiceRef, invoiceItem, suppliers]
   )
 
   const schema = useMemo(() => createSchema(quoteDate), [quoteDate])
@@ -85,21 +108,34 @@ export const useFormHandler = (
     return (suppliers ?? []).filter((s) => seller.supplierIds.includes(s.id))
   }, [watchedSellerId, suppliers, sellers])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     reset(defaultValues)
   }, [defaultValues, reset])
 
   const onSubmit = handleSubmit((data) => {
     if (!quoteId || !quoteItem) return
 
-    order
-      ? updateOrder({ ...order, ...data })
-      : createOrder({
+    if (order) {
+      updateOrder({ ...order, ...data })
+    } else if (invoiceRef) {
+      createOrderWithInvoiceLink({
+        order: {
           ...data,
           quoteId,
           quoteItemId: quoteItem.id,
-          invoiceId: null
-        })
+          invoiceId: invoiceRef.invoice.id
+        },
+        invoice: invoiceRef.invoice,
+        itemNumber: invoiceRef.itemNumber
+      })
+    } else {
+      createOrder({
+        ...data,
+        quoteId,
+        quoteItemId: quoteItem.id,
+        invoiceId: null
+      })
+    }
 
     setSuccessCallbacks([handleClose, () => setFormOrder(null)])
   })
@@ -118,6 +154,7 @@ export const useFormHandler = (
     sellers: filteredSellers,
     selectableProducts: products ?? [],
     selectedProduct,
-    lastOrder
+    lastOrder,
+    invoiceItem
   }
 }

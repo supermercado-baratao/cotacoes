@@ -52,10 +52,10 @@ type TAppStore = {
   setOrdersByProductId: (orders: TOrder[]) => void
   createOrder: (order: TCreateData<TOrder>) => void
   createOrdersBatch: (orders: TCreateData<TOrder>[]) => void
-  importNfsWithOrders: (data: {
-    nfes: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>
-    quoteId: string
-    orders: TCreateData<TOrder>[]
+  createOrderWithInvoiceLink: (data: {
+    order: TCreateData<TOrder>
+    invoice: TInvoice
+    itemNumber: number
   }) => void
   updateOrder: (order: TUpdateData<TOrder>) => void
   deleteOrder: (id: string) => void
@@ -120,7 +120,7 @@ export const useAppStore = create<TAppStore>((set) => ({
   setOrdersByProductId: (orders) => set({ ordersByProductId: orders }),
   createOrder: () => {},
   createOrdersBatch: () => {},
-  importNfsWithOrders: () => {},
+  createOrderWithInvoiceLink: () => {},
   updateOrder: () => {},
   deleteOrder: () => {},
 

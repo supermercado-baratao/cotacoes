@@ -35,6 +35,12 @@ export const createSchema = (minDate: string) =>
       .string()
       .min(1, 'Informe a embalagem')
       .max(MAX_DESCRIPTION_LENGTH),
+    packingQuantity: z
+      .number()
+      .int('Deve ser número inteiro')
+      .positive('Deve ser positivo')
+      .max(MAX_NUMERIC_VALUE)
+      .nullable(),
     observations: z.string().max(MAX_OBSERVATIONS_LENGTH).nullable()
   }) satisfies z.ZodType<TOrderFormData>
 

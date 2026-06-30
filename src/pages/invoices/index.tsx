@@ -19,7 +19,7 @@ export const Invoices = () => {
     <>
       <PageHeader
         title="Notas de Entrada"
-        buttonLabel="Importar Nota"
+        buttonLabel="Importar Notas"
         searchPlaceholder="Buscar por NF ou fornecedor..."
         search={search}
         setSearch={setSearch}

@@ -1,14 +1,16 @@
 import { Drawer } from '@mui/material'
+import { useState } from 'react'
 
 import { DeleteDialog } from '@/components'
 import { useDeleteHandler, useFormState } from '@/hooks'
-import type { TOrder, TQuoteItem } from '@/models'
+import type { TInvoice, TOrder, TQuoteItem } from '@/models'
 import { useAppStore } from '@/stores'
 
 import type { TQuoteRow } from '../../../utils'
 import { OrderForm } from '../../order-form'
 import { Content } from './content'
 import { Header } from './header'
+import { NfSuggestions } from './nf-suggestions'
 import * as S from './style'
 
 type TOrdersDrawerProps = {
@@ -27,6 +29,11 @@ export const OrdersDrawer = ({ row, handleClose }: TOrdersDrawerProps) => {
     handleFormOpen: handleOrderFormOpen,
     handleFormClose: handleOrderFormClose
   } = useFormState<TOrder>()
+
+  const [invoiceRef, setInvoiceRef] = useState<{
+    invoice: TInvoice
+    itemNumber: number
+  } | null>(null)
 
   const {
     itemToDelete: orderToDelete,
@@ -48,6 +55,16 @@ export const OrdersDrawer = ({ row, handleClose }: TOrdersDrawerProps) => {
       }
     : null
 
+  const handleSelectInvoiceItem = (invoice: TInvoice, itemNumber: number) => {
+    setInvoiceRef({ invoice, itemNumber })
+    handleOrderFormOpen(null)
+  }
+
+  const handleOrderFormCloseWithReset = () => {
+    handleOrderFormClose()
+    setInvoiceRef(null)
+  }
+
   return (
     <>
       <Drawer
@@ -66,6 +83,12 @@ export const OrdersDrawer = ({ row, handleClose }: TOrdersDrawerProps) => {
           handleCloseDrawer={handleClose}
           handleOrderFormOpen={handleOrderFormOpen}
         />
+        {quoteItem && (
+          <NfSuggestions
+            quoteItem={quoteItem}
+            onSelectItem={handleSelectInvoiceItem}
+          />
+        )}
         <Content
           itemOrders={itemOrders}
           products={products ?? []}
@@ -80,7 +103,8 @@ export const OrdersDrawer = ({ row, handleClose }: TOrdersDrawerProps) => {
         quoteItem={quoteItem}
         order={formOrder}
         setFormOrder={setFormOrder}
-        handleClose={handleOrderFormClose}
+        invoiceRef={invoiceRef}
+        handleClose={handleOrderFormCloseWithReset}
       />
       <DeleteDialog
         open={!!orderToDelete}
