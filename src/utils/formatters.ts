@@ -1,5 +1,7 @@
 import IMask from 'imask'
 
+import { CNPJ_LENGTH } from '@/constants'
+
 const numericMaskOpts = {
   mask: Number,
   scale: 2,
@@ -29,6 +31,9 @@ const phonePipe = IMask.createPipe(
 )
 
 export const formatCNPJ = (cnpj: string): string => cnpjPipe(cnpj)
+
+export const normalizeCnpj = (cnpj: string): string =>
+  cnpj.replace(/\D/g, '').padStart(CNPJ_LENGTH, '0')
 
 export const formatPhone = (phone: string): string =>
   phone ? phonePipe(phone) : ''

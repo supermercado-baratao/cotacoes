@@ -2,6 +2,7 @@ import * as xlsx from 'xlsx'
 
 import type { TFamily, TImportData, TProduct, TSupplier } from '@/models'
 import type { TCreateDataWithId } from '@/types'
+import { normalizeCnpj } from '@/utils'
 
 type TRawRow = {
   // produto
@@ -79,7 +80,7 @@ const mapSupplier = (row: TRawRow): TCreateDataWithId<TSupplier> => ({
   id: row.id_fornecedor,
   tradeName: row.nomefantasia,
   legalName: row.razaosocial,
-  cnpj: row.cnpj,
+  cnpj: normalizeCnpj(row.cnpj),
   email: row.email || null,
   phone: row.telefone || null,
   observations: null,
