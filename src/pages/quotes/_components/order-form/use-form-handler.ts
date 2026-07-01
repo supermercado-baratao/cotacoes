@@ -5,6 +5,7 @@ import { useForm, useWatch } from 'react-hook-form'
 
 import type { TInvoice, TOrder, TQuoteItem } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
+import { findSupplierByCnpj } from '@/utils'
 
 import { useProductHistory } from '../use-product-history'
 import { createSchema, type TSchema } from './schema'
@@ -50,11 +51,10 @@ export const useFormHandler = (
       productId: order?.productId ?? invoiceItem?.productId ?? '',
       supplierId: (() => {
         if (order?.supplierId) return order.supplierId
-        if (invoiceRef?.invoice.supplierId) return invoiceRef.invoice.supplierId
-        const cnpj = invoiceRef?.invoice.supplierCnpj
-        if (!cnpj || !suppliers?.length) return ''
+        if (!invoiceRef) return ''
         return (
-          suppliers.find((s) => s.cnpj.replace(/\D/g, '') === cnpj)?.id ?? ''
+          findSupplierByCnpj(invoiceRef.invoice.supplierCnpj, suppliers ?? [])
+            ?.id ?? ''
         )
       })(),
       sellerId: order?.sellerId ?? null,

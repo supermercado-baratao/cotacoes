@@ -31,7 +31,6 @@ export type TInvoice = {
   emissionDate: string
   supplierCnpj: string
   supplierName: string
-  supplierId: string | null
   destinationCnpj: string
   totalValue: number
   items: TInvoiceItem[]

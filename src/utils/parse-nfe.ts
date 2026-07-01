@@ -2,8 +2,7 @@ import type {
   TInvoice,
   TInvoiceItem,
   TInvoiceItemMatchStatus,
-  TProduct,
-  TSupplier
+  TProduct
 } from '@/models'
 
 const get = (root: Document | Element, tag: string): string =>
@@ -70,8 +69,7 @@ export type TParsedNfe = Omit<TInvoice, 'createdAt' | 'updatedAt'>
 
 export const parseNfe = (
   xmlString: string,
-  products: TProduct[],
-  suppliers: TSupplier[]
+  products: TProduct[]
 ): TParsedNfe => {
   const doc = new DOMParser().parseFromString(xmlString, 'text/xml')
 
@@ -90,11 +88,6 @@ export const parseNfe = (
 
   const supplierName = get(doc, 'xFant') || get(doc, 'xNome')
 
-  const supplierByCnpj = new Map(
-    suppliers.map((s) => [normalizeCnpj(s.cnpj), s])
-  )
-  const supplierId = supplierByCnpj.get(supplierCnpj)?.id ?? null
-
   const barcodeMap = buildBarcodeMap(products)
 
   return {
@@ -105,7 +98,6 @@ export const parseNfe = (
     emissionDate: get(doc, 'dhEmi'),
     supplierCnpj,
     supplierName,
-    supplierId,
     destinationCnpj,
     totalValue: Number(get(doc, 'vNF')),
     items: parseItems(doc, barcodeMap),

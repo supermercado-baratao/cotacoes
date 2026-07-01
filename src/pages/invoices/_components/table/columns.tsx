@@ -1,3 +1,4 @@
+import { CheckCircle, Warning } from '@mui/icons-material'
 import { Chip, Typography } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
@@ -24,7 +25,9 @@ const statusColor: Record<
   divergent: 'error'
 }
 
-export const columns: GridColDef<TInvoice>[] = [
+export type TInvoiceRow = TInvoice & { isSupplierRegistered: boolean }
+
+export const columns: GridColDef<TInvoiceRow>[] = [
   {
     field: 'number',
     headerName: 'Nº NF',
@@ -43,6 +46,28 @@ export const columns: GridColDef<TInvoice>[] = [
     valueFormatter: (value: string) => value.toUpperCase()
   },
   {
+    field: 'isSupplierRegistered',
+    headerName: 'Cadastro',
+    width: 150,
+    renderCell: (params) =>
+      params.value ? (
+        <Chip
+          icon={<CheckCircle />}
+          label="Cadastrado"
+          color="success"
+          size="small"
+          variant="outlined"
+        />
+      ) : (
+        <Chip
+          icon={<Warning />}
+          label="Não cadastrado"
+          color="warning"
+          size="small"
+        />
+      )
+  },
+  {
     field: 'emissionDate',
     headerName: 'Emissão',
     width: 110,
@@ -58,18 +83,18 @@ export const columns: GridColDef<TInvoice>[] = [
     field: 'items',
     headerName: 'Pendências',
     width: 110,
-    sortable: false,
     valueGetter: (value: TInvoiceItem[]) =>
       value.filter((i) => i.matchStatus === 'unmatched_product').length,
     renderCell: (params) => {
       const count = params.value as number
+      const total = params.row.items.length
       if (count === 0)
         return (
           <Typography variant="body2" color="text.disabled">
             —
           </Typography>
         )
-      return <Chip label={count} color="error" size="small" />
+      return <Chip label={`${count}/${total}`} color="error" size="small" />
     }
   },
   {

@@ -20,7 +20,7 @@ import dayjs from 'dayjs'
 import { useMemo, useRef, useState, useTransition } from 'react'
 
 import { Modal } from '@/components'
-import { formatCurrency, formatNumericValue } from '@/utils'
+import { findSupplierByCnpj, formatCurrency, formatNumericValue } from '@/utils'
 
 import { useImportDialogHandler } from './use-import-dialog-handler'
 
@@ -34,6 +34,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
     parsedNfes,
     parseErrors,
     products,
+    suppliers,
     handleFilesChange,
     handleRemoveNfe,
     handleRemoveError,
@@ -119,6 +120,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
         const matchedCount = nfe.items.filter((i) => i.productId).length
         const totalCount = nfe.items.length
         const isExpanded = expandedKeys.has(nfe.accessKey)
+        const supplier = findSupplierByCnpj(nfe.supplierCnpj, suppliers)
 
         const chipColor =
           matchedCount === 0
@@ -139,7 +141,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
                 <Typography variant="body2" color="text.secondary">
                   {(nfe.supplierName || nfe.supplierCnpj).toUpperCase()}
                 </Typography>
-                {!nfe.supplierId && (
+                {!supplier && (
                   <Typography variant="body2" color="warning.main">
                     Fornecedor não encontrado (CNPJ: {nfe.supplierCnpj})
                   </Typography>

@@ -5,31 +5,45 @@ import {
   type GridRowParams
 } from '@mui/x-data-grid'
 import { ptBR } from '@mui/x-data-grid/locales'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
 import { DeleteDialog } from '@/components'
 import { useDeleteHandler } from '@/hooks'
 import type { TInvoice } from '@/models'
 import { useAppStore } from '@/stores'
+import { findSupplierByCnpj } from '@/utils'
 
-import { columns } from './columns'
+import { columns, type TInvoiceRow } from './columns'
 
 type TProps = {
   invoices: TInvoice[]
 }
 
 export const Table = ({ invoices }: TProps) => {
-  const { deleteInvoice } = useAppStore()
+  const { suppliers, deleteInvoice } = useAppStore()
   const navigate = useNavigate()
+
+  const rows = useMemo(
+    (): TInvoiceRow[] =>
+      invoices.map((invoice) => ({
+        ...invoice,
+        isSupplierRegistered: !!findSupplierByCnpj(
+          invoice.supplierCnpj,
+          suppliers ?? []
+        )
+      })),
+    [invoices, suppliers]
+  )
 
   const {
     itemToDelete,
     handleDelete,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm
-  } = useDeleteHandler<TInvoice>((item) => deleteInvoice(item.id))
+  } = useDeleteHandler<TInvoiceRow>((item) => deleteInvoice(item.id))
 
-  const handleRowClick = (params: GridRowParams<TInvoice>) => {
+  const handleRowClick = (params: GridRowParams<TInvoiceRow>) => {
     navigate(`/invoices/${params.row.id}`)
   }
 
@@ -38,7 +52,7 @@ export const Table = ({ invoices }: TProps) => {
     type: 'actions' as const,
     headerName: 'Ações',
     width: 80,
-    getActions: ({ row }: { row: TInvoice }) => [
+    getActions: ({ row }: { row: TInvoiceRow }) => [
       <GridActionsCellItem
         key="delete"
         icon={<Delete />}
@@ -55,7 +69,7 @@ export const Table = ({ invoices }: TProps) => {
     <>
       <DataGrid
         columns={[...columns, actionColumn]}
-        rows={invoices}
+        rows={rows}
         onRowClick={handleRowClick}
         pageSizeOptions={[25, 50, 100]}
         initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}

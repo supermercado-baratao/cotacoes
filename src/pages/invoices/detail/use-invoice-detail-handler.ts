@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router'
 
 import type { TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
 import { useAppStore } from '@/stores'
+import { findSupplierByCnpj } from '@/utils'
 
 export type TInvoiceItemRow = TInvoiceItem & {
   orderQuantity: number | null
@@ -14,8 +15,14 @@ export const useInvoiceDetailHandler = () => {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { invoices, products, ordersByQuoteId, setQuoteId, updateInvoice } =
-    useAppStore()
+  const {
+    invoices,
+    products,
+    suppliers,
+    ordersByQuoteId,
+    setQuoteId,
+    updateInvoice
+  } = useAppStore()
 
   const invoice = useMemo(
     () => invoices?.find((inv) => inv.id === id) ?? null,
@@ -29,12 +36,17 @@ export const useInvoiceDetailHandler = () => {
     [products]
   )
 
-  const ordersForSupplier = useMemo(
+  const supplier = useMemo(
     () =>
-      (ordersByQuoteId ?? []).filter(
-        (o) => o.supplierId === invoice?.supplierId
-      ),
-    [ordersByQuoteId, invoice?.supplierId]
+      invoice
+        ? findSupplierByCnpj(invoice.supplierCnpj, suppliers ?? [])
+        : null,
+    [invoice, suppliers]
+  )
+
+  const ordersForSupplier = useMemo(
+    () => (ordersByQuoteId ?? []).filter((o) => o.supplierId === supplier?.id),
+    [ordersByQuoteId, supplier?.id]
   )
 
   const itemsWithDivergences = useMemo((): TInvoiceItemRow[] => {

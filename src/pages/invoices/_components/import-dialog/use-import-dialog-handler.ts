@@ -24,7 +24,7 @@ export const useImportDialogHandler = (handleClose: () => void) => {
     for (const file of Array.from(files)) {
       try {
         const xml = await file.text()
-        const result = parseNfe(xml, products ?? [], suppliers ?? [])
+        const result = parseNfe(xml, products ?? [])
         newNfes.push(result)
       } catch (e) {
         newErrors.push({ filename: file.name, message: (e as Error).message })
@@ -56,6 +56,7 @@ export const useImportDialogHandler = (handleClose: () => void) => {
     parsedNfes,
     parseErrors,
     products: products ?? [],
+    suppliers: suppliers ?? [],
     handleFilesChange,
     handleRemoveNfe,
     handleRemoveError,
