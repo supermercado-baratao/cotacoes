@@ -111,7 +111,13 @@ export const useQuotesHandler = () => {
 
   const quoteRows =
     quote && suppliers
-      ? getQuoteRows(quote, ordersByQuoteId || [], suppliers)
+      ? getQuoteRows(
+          quote,
+          ordersByQuoteId || [],
+          suppliers,
+          products || [],
+          families || []
+        )
       : []
 
   useEffect(() => {

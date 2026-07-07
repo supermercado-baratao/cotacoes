@@ -1,6 +1,13 @@
 import dayjs from 'dayjs'
 
-import type { TOrder, TPriceRef, TQuote, TSupplier } from '@/models'
+import type {
+  TFamily,
+  TOrder,
+  TPriceRef,
+  TProduct,
+  TQuote,
+  TSupplier
+} from '@/models'
 
 export const getAvailableYears = (quotes: TQuote[]) => {
   const years = Array.from(
@@ -77,14 +84,31 @@ export type TQuoteRow = {
   orderCount: number
   salePrice: number | null
   priceRef: TPriceRef
+  referenceDescription: string | null
   orderPrices: number[]
   supplierNames: string[]
+}
+
+const getReferenceDescription = (
+  priceRef: TPriceRef,
+  products: TProduct[],
+  families: TFamily[]
+): string | null => {
+  if (priceRef?.type === 'product') {
+    return products.find((p) => p.id === priceRef.id)?.description ?? null
+  }
+  if (priceRef?.type === 'family') {
+    return families.find((f) => f.id === priceRef.id)?.description ?? null
+  }
+  return null
 }
 
 export const getQuoteRows = (
   quote: TQuote,
   orders: TOrder[],
-  suppliers: TSupplier[]
+  suppliers: TSupplier[],
+  products: TProduct[],
+  families: TFamily[]
 ): TQuoteRow[] =>
   quote.items.map((item) => {
     const itemOrders = orders.filter((o) => o.quoteItemId === item.id)
@@ -106,6 +130,11 @@ export const getQuoteRows = (
       orderCount: itemOrders.length,
       salePrice: item.salePrice,
       priceRef: item.priceRef,
+      referenceDescription: getReferenceDescription(
+        item.priceRef,
+        products,
+        families
+      ),
       orderPrices,
       supplierNames
     }

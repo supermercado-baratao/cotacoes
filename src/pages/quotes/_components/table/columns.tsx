@@ -1,3 +1,4 @@
+import { Category, Inventory2 } from '@mui/icons-material'
 import { Box, Divider } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { Fragment } from 'react'
@@ -21,6 +22,19 @@ const joinWithDivider = (items: string[]) =>
     '—'
   )
 
+const renderReference = ({ row }: GridRenderCellParams<TQuoteRow>) => {
+  const ReferenceIcon = row.priceRef?.type === 'product' ? Inventory2 : Category
+
+  const label = row.referenceDescription?.toUpperCase() ?? '—'
+
+  return (
+    <Box sx={S.Reference}>
+      <ReferenceIcon fontSize="small" color="action" />
+      {label}
+    </Box>
+  )
+}
+
 export const columns: GridColDef<TQuoteRow>[] = [
   {
     field: 'description',
@@ -32,20 +46,24 @@ export const columns: GridColDef<TQuoteRow>[] = [
   {
     field: 'orderCount',
     headerName: 'Pedidos',
-    width: 90,
     type: 'number'
   },
   {
     field: 'salePrice',
     headerName: 'Venda',
-    width: 120,
     valueFormatter: (value: number | null) =>
       value != null ? formatCurrency(value) : '—'
   },
   {
+    field: 'referenceDescription',
+    headerName: 'Referência de venda',
+    minWidth: 180,
+    flex: 1,
+    renderCell: renderReference
+  },
+  {
     field: 'orderPrices',
     headerName: 'Custo',
-    width: 180,
     renderCell: ({ value }: GridRenderCellParams<TQuoteRow, number[]>) =>
       joinWithDivider((value ?? []).map(formatCurrency))
   },

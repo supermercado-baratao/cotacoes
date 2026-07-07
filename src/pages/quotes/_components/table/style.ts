@@ -9,3 +9,9 @@ export const Divider: SxProps<Theme> = {
   top: '50%',
   transform: 'translateY(-50%)'
 }
+
+export const Reference: SxProps<Theme> = {
+  display: 'flex',
+  gap: 1,
+  alignItems: 'center'
+}
