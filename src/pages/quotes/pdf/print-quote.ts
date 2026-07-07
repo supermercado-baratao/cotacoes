@@ -3,45 +3,51 @@ import { createElement, type ReactElement } from 'react'
 
 import type { TFamily, TProduct, TQuote } from '@/models'
 
-import { QuotePDF, type TPdfGroup, type TPdfItem } from './quote-pdf'
-
-const resolveCategory = (product: TProduct): string => product.section
+import {
+  QuotePDF,
+  type TPdfDepartment,
+  type TPdfGroup,
+  type TPdfItem,
+  type TPdfSection
+} from './quote-pdf'
 
 type TRawItem = Omit<TPdfItem, 'index'>
 
-const buildGroups = (
+const resolveProduct = (
+  priceRef: TQuote['items'][number]['priceRef'],
+  products: TProduct[]
+): TProduct | null => {
+  if (priceRef?.type === 'product') {
+    return products.find((p) => p.id === priceRef.id) ?? null
+  }
+  if (priceRef?.type === 'family') {
+    return products.find((p) => p.familyId === priceRef.id) ?? null
+  }
+  return null
+}
+
+const buildDepartments = (
   quote: TQuote,
   products: TProduct[],
   families: TFamily[]
-): TPdfGroup[] => {
-  const groupMap = new Map<string, { label: string; items: TRawItem[] }>()
+): TPdfDepartment[] => {
+  type TGroupBucket = { label: string; items: TRawItem[] }
+  const departmentMap = new Map<
+    string,
+    Map<string, Map<string, TGroupBucket>>
+  >()
   const uncategorized: TRawItem[] = []
 
   for (const item of quote.items) {
     const ref = item.priceRef
-    let categoryKey = ''
-    let categoryLabel = ''
     let refDescription: string | null = null
 
     if (ref?.type === 'product') {
-      const product = products.find((p) => p.id === ref.id)
-      if (product) {
-        const category = resolveCategory(product)
-        categoryKey = category
-        categoryLabel = category
-        refDescription = product.description
-      }
+      refDescription =
+        products.find((p) => p.id === ref.id)?.description ?? null
     } else if (ref?.type === 'family') {
-      const family = families.find((f) => f.id === ref.id)
-      if (family) {
-        refDescription = family.description
-      }
-      const productOfFamily = products.find((p) => p.familyId === ref.id)
-      if (productOfFamily) {
-        const category = resolveCategory(productOfFamily)
-        categoryKey = category
-        categoryLabel = category
-      }
+      refDescription =
+        families.find((f) => f.id === ref.id)?.description ?? null
     }
 
     const entry: TRawItem = {
@@ -50,37 +56,66 @@ const buildGroups = (
       salePrice: item.salePrice
     }
 
-    if (!categoryKey) {
+    const product = resolveProduct(ref, products)
+    if (!product) {
       uncategorized.push(entry)
       continue
     }
 
-    if (!groupMap.has(categoryKey)) {
-      groupMap.set(categoryKey, { label: categoryLabel, items: [] })
-    }
-    groupMap.get(categoryKey)!.items.push(entry)
+    const { department, section, group } = product
+    if (!departmentMap.has(department)) departmentMap.set(department, new Map())
+    const sectionMap = departmentMap.get(department)!
+
+    if (!sectionMap.has(section)) sectionMap.set(section, new Map())
+    const groupMap = sectionMap.get(section)!
+
+    if (!groupMap.has(group)) groupMap.set(group, { label: group, items: [] })
+    groupMap.get(group)!.items.push(entry)
   }
 
   const byLabel = (a: string, b: string) => a.localeCompare(b, 'pt-BR')
   const byDesc = (a: TRawItem, b: TRawItem) =>
     a.description.localeCompare(b.description, 'pt-BR')
 
-  const sorted = [...groupMap.values()]
-    .sort((a, b) => byLabel(a.label, b.label))
-    .map((g) => ({ ...g, items: [...g.items].sort(byDesc) }))
+  let index = 1
+  const withIndex = (items: TRawItem[]): TPdfItem[] =>
+    [...items]
+      .sort(byDesc)
+      .map((item) => ({ ...item, index: index++ }) satisfies TPdfItem)
+
+  const departments: TPdfDepartment[] = [...departmentMap.entries()]
+    .sort(([a], [b]) => byLabel(a, b))
+    .map(
+      ([departmentLabel, sectionMap]): TPdfDepartment => ({
+        label: departmentLabel,
+        sections: [...sectionMap.entries()]
+          .sort(([a], [b]) => byLabel(a, b))
+          .map(
+            ([sectionLabel, groupMap]): TPdfSection => ({
+              label: sectionLabel,
+              groups: [...groupMap.values()]
+                .sort((a, b) => byLabel(a.label, b.label))
+                .map(
+                  (g): TPdfGroup => ({
+                    label: g.label,
+                    items: withIndex(g.items)
+                  })
+                )
+            })
+          )
+      })
+    )
 
   if (uncategorized.length > 0) {
-    sorted.push({
+    departments.push({
       label: 'Sem categoria',
-      items: [...uncategorized].sort(byDesc)
+      sections: [
+        { label: '', groups: [{ label: '', items: withIndex(uncategorized) }] }
+      ]
     })
   }
 
-  let index = 1
-  return sorted.map((g) => ({
-    ...g,
-    items: g.items.map((item) => ({ ...item, index: index++ }))
-  }))
+  return departments
 }
 
 export const printQuote = async (
@@ -88,11 +123,11 @@ export const printQuote = async (
   products: TProduct[],
   families: TFamily[]
 ): Promise<void> => {
-  const groups = buildGroups(quote, products, families)
+  const departments = buildDepartments(quote, products, families)
   const element = createElement(QuotePDF, {
     date: quote.date,
     totalItems: quote.items.length,
-    groups
+    departments
   }) as unknown as ReactElement<DocumentProps>
   const blob = await pdf(element).toBlob()
   const url = URL.createObjectURL(blob)

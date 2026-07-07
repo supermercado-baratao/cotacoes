@@ -39,6 +39,36 @@ export const S = StyleSheet.create({
     color: '#888888',
     marginTop: 2
   },
+  department: {
+    marginBottom: 20
+  },
+  departmentHeader: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#111111',
+    borderBottomStyle: 'solid',
+    paddingBottom: 6,
+    marginBottom: 12
+  },
+  departmentLabel: {
+    fontFamily: 'Helvetica-Bold',
+    fontSize: 14,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: '#111111'
+  },
+  section: {
+    marginBottom: 12
+  },
+  sectionHeader: {
+    marginBottom: 8
+  },
+  sectionLabel: {
+    fontFamily: 'Helvetica-Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    color: '#555555'
+  },
   group: {
     marginBottom: 16
   },

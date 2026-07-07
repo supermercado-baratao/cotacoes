@@ -19,10 +19,20 @@ export type TPdfGroup = {
   items: TPdfItem[]
 }
 
+export type TPdfSection = {
+  label: string
+  groups: TPdfGroup[]
+}
+
+export type TPdfDepartment = {
+  label: string
+  sections: TPdfSection[]
+}
+
 type TProps = {
   date: string
   totalItems: number
-  groups: TPdfGroup[]
+  departments: TPdfDepartment[]
 }
 
 type TRowProps = {
@@ -63,9 +73,11 @@ type TGroupProps = {
 const Group = ({ group }: TGroupProps) => (
   <View style={S.group}>
     <View wrap={false}>
-      <View style={S.groupHeader}>
-        <Text style={S.groupLabel}>{group.label}</Text>
-      </View>
+      {group.label ? (
+        <View style={S.groupHeader}>
+          <Text style={S.groupLabel}>{group.label}</Text>
+        </View>
+      ) : null}
       <View style={S.tableHead}>
         <View style={[S.thCell, { width: COL_NUM }]}>
           <Text style={S.thText}>Nº</Text>
@@ -87,7 +99,40 @@ const Group = ({ group }: TGroupProps) => (
   </View>
 )
 
-export const QuotePDF = ({ date, totalItems, groups }: TProps) => {
+type TSectionProps = {
+  section: TPdfSection
+}
+
+const Section = ({ section }: TSectionProps) => (
+  <View style={S.section}>
+    {section.label ? (
+      <View style={S.sectionHeader}>
+        <Text style={S.sectionLabel}>{section.label}</Text>
+      </View>
+    ) : null}
+    {section.groups.map((group) => (
+      <Group key={group.label} group={group} />
+    ))}
+  </View>
+)
+
+type TDepartmentProps = {
+  department: TPdfDepartment
+  break?: boolean
+}
+
+const Department = ({ department, break: pageBreak }: TDepartmentProps) => (
+  <View style={S.department} break={pageBreak}>
+    <View style={S.departmentHeader}>
+      <Text style={S.departmentLabel}>{department.label}</Text>
+    </View>
+    {department.sections.map((section) => (
+      <Section key={section.label} section={section} />
+    ))}
+  </View>
+)
+
+export const QuotePDF = ({ date, totalItems, departments }: TProps) => {
   const itemsLabel = `${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`
 
   return (
@@ -109,8 +154,12 @@ export const QuotePDF = ({ date, totalItems, groups }: TProps) => {
             />
           </View>
         </View>
-        {groups.map((group) => (
-          <Group key={group.label} group={group} />
+        {departments.map((department, i) => (
+          <Department
+            key={department.label}
+            department={department}
+            break={i > 0}
+          />
         ))}
       </Page>
     </Document>
