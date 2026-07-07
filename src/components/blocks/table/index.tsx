@@ -67,6 +67,7 @@ export const Table = <T extends GridValidRowModel>({
         localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
         sx={S.Grid}
         disableRowSelectionOnClick
+        autosizeOnMount
         {...props}
       />
     </div>

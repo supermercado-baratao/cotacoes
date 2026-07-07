@@ -52,7 +52,6 @@ export const Table = ({ quote, rows }: TTableProps) => {
       field: 'actions',
       type: 'actions',
       headerName: 'Ações',
-      width: 120,
       getActions: ({ row }) => [
         <GridActionsCellItem
           key="sale-price"

@@ -30,13 +30,11 @@ export type TInvoiceRow = TInvoice & { isSupplierRegistered: boolean }
 export const columns: GridColDef<TInvoiceRow>[] = [
   {
     field: 'number',
-    headerName: 'Nº NF',
-    width: 90
+    headerName: 'Nº NF'
   },
   {
     field: 'series',
-    headerName: 'Série',
-    width: 70
+    headerName: 'Série'
   },
   {
     field: 'supplierName',
@@ -48,7 +46,6 @@ export const columns: GridColDef<TInvoiceRow>[] = [
   {
     field: 'isSupplierRegistered',
     headerName: 'Cadastro',
-    width: 150,
     renderCell: (params) =>
       params.value ? (
         <Chip
@@ -70,19 +67,16 @@ export const columns: GridColDef<TInvoiceRow>[] = [
   {
     field: 'emissionDate',
     headerName: 'Emissão',
-    width: 110,
     valueFormatter: (value: string) => dayjs(value).format('DD/MM/YYYY')
   },
   {
     field: 'totalValue',
     headerName: 'Total NF',
-    width: 130,
     valueFormatter: (value: number) => formatCurrency(value)
   },
   {
     field: 'items',
     headerName: 'Pendências',
-    width: 110,
     valueGetter: (value: TInvoiceItem[]) =>
       value.filter((i) => i.matchStatus === 'unmatched_product').length,
     renderCell: (params) => {
@@ -100,7 +94,6 @@ export const columns: GridColDef<TInvoiceRow>[] = [
   {
     field: 'verificationStatus',
     headerName: 'Status',
-    width: 130,
     renderCell: (params) => (
       <Chip
         label={statusLabel[params.value as TInvoiceVerificationStatus]}

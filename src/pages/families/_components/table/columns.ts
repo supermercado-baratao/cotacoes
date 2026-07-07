@@ -5,8 +5,7 @@ import type { TFamily } from '@/models'
 export const columns: GridColDef<TFamily>[] = [
   {
     field: 'id',
-    headerName: 'Cód. VR',
-    width: 90
+    headerName: 'Cód. VR'
   },
   {
     field: 'description',

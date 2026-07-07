@@ -1,8 +1,8 @@
 import { Chip, Typography } from '@mui/material'
-import { DataGrid, type GridColDef } from '@mui/x-data-grid'
-import { ptBR } from '@mui/x-data-grid/locales'
+import type { GridColDef } from '@mui/x-data-grid'
 import { useMemo } from 'react'
 
+import { Table as _Table } from '@/components'
 import type { TInvoiceItemMatchStatus } from '@/models'
 import { formatCurrency, formatNumericValue } from '@/utils'
 
@@ -24,7 +24,7 @@ type TProps = {
 export const ItemsTable = ({ items }: TProps) => {
   const columns = useMemo<GridColDef<TInvoiceItemRow>[]>(
     () => [
-      { field: 'itemNumber', headerName: 'Nº', width: 60 },
+      { field: 'itemNumber', headerName: 'Nº' },
       {
         field: 'description',
         headerName: 'Descrição NF',
@@ -32,24 +32,21 @@ export const ItemsTable = ({ items }: TProps) => {
         minWidth: 200,
         valueFormatter: (value: string) => value.toUpperCase()
       },
-      { field: 'barcode', headerName: 'Cód. Barras', width: 130 },
-      { field: 'unit', headerName: 'UN', width: 70 },
+      { field: 'barcode', headerName: 'Cód. Barras' },
+      { field: 'unit', headerName: 'UN' },
       {
         field: 'quantity',
         headerName: 'Qtd NF',
-        width: 90,
         valueFormatter: (value: number) => formatNumericValue(value)
       },
       {
         field: 'unitPrice',
         headerName: 'Preço NF',
-        width: 120,
         valueFormatter: (value: number) => formatCurrency(value)
       },
       {
         field: 'productDescription',
         headerName: 'Produto',
-        width: 200,
         renderCell: (params) =>
           params.value ? (
             <Typography variant="body2">
@@ -64,7 +61,6 @@ export const ItemsTable = ({ items }: TProps) => {
       {
         field: 'orderQuantity',
         headerName: 'Qtd Pedido',
-        width: 110,
         renderCell: (params) =>
           params.value !== null ? (
             <Typography variant="body2">
@@ -79,7 +75,6 @@ export const ItemsTable = ({ items }: TProps) => {
       {
         field: 'orderPrice',
         headerName: 'Preço Pedido',
-        width: 130,
         renderCell: (params) =>
           params.value !== null ? (
             <Typography variant="body2">
@@ -94,7 +89,6 @@ export const ItemsTable = ({ items }: TProps) => {
       {
         field: 'priceDivergence',
         headerName: 'Dif. Preço',
-        width: 120,
         renderCell: (params) => {
           if (params.value === null)
             return (
@@ -119,7 +113,6 @@ export const ItemsTable = ({ items }: TProps) => {
       {
         field: 'quantityDivergence',
         headerName: 'Dif. Qtd',
-        width: 90,
         renderCell: (params) => {
           if (params.value === null)
             return (
@@ -143,7 +136,6 @@ export const ItemsTable = ({ items }: TProps) => {
       {
         field: 'matchStatus',
         headerName: 'Status',
-        width: 140,
         renderCell: (params) => {
           const config =
             matchStatusConfig[params.value as TInvoiceItemMatchStatus]
@@ -155,15 +147,10 @@ export const ItemsTable = ({ items }: TProps) => {
   )
 
   return (
-    <DataGrid
+    <_Table
       columns={columns}
-      rows={items}
+      items={items}
       getRowId={(row) => row.itemNumber}
-      pageSizeOptions={[25, 50, 100]}
-      initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
-      localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
-      disableRowSelectionOnClick
-      sx={{ textAlign: 'center' }}
     />
   )
 }

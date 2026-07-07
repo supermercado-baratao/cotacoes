@@ -1,14 +1,9 @@
 import { Delete } from '@mui/icons-material'
-import {
-  DataGrid,
-  GridActionsCellItem,
-  type GridRowParams
-} from '@mui/x-data-grid'
-import { ptBR } from '@mui/x-data-grid/locales'
+import { GridActionsCellItem, type GridRowParams } from '@mui/x-data-grid'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
-import { DeleteDialog } from '@/components'
+import { DeleteDialog, Table as _Table } from '@/components'
 import { useDeleteHandler } from '@/hooks'
 import type { TInvoice } from '@/models'
 import { useAppStore } from '@/stores'
@@ -51,7 +46,6 @@ export const Table = ({ invoices }: TProps) => {
     field: 'actions',
     type: 'actions' as const,
     headerName: 'Ações',
-    width: 80,
     getActions: ({ row }: { row: TInvoiceRow }) => [
       <GridActionsCellItem
         key="delete"
@@ -67,14 +61,10 @@ export const Table = ({ invoices }: TProps) => {
 
   return (
     <>
-      <DataGrid
+      <_Table
         columns={[...columns, actionColumn]}
-        rows={rows}
+        items={rows}
         onRowClick={handleRowClick}
-        pageSizeOptions={[25, 50, 100]}
-        initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
-        localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
-        disableRowSelectionOnClick
         sx={{ textAlign: 'center', cursor: 'pointer' }}
       />
       <DeleteDialog

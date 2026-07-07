@@ -16,7 +16,7 @@ export const Table = ({
   handleSelectionChange
 }: TTableProps) => {
   const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID (VR)', width: 100 },
+    { field: 'id', headerName: 'ID (VR)' },
     {
       field: 'description',
       headerName: 'Descrição',
@@ -24,13 +24,12 @@ export const Table = ({
       flex: 1,
       valueFormatter: (value: string) => value.toUpperCase()
     },
-    { field: 'department', headerName: 'Departamento', width: 150 },
-    { field: 'section', headerName: 'Seção', width: 150 },
-    { field: 'group', headerName: 'Grupo', width: 150 },
+    { field: 'department', headerName: 'Departamento' },
+    { field: 'section', headerName: 'Seção' },
+    { field: 'group', headerName: 'Grupo' },
     {
       field: 'familyId',
       headerName: 'Família',
-      width: 200,
       valueGetter: (_value, row) => {
         if (!row.familyId) return '—'
         const family = importData.families.find((f) => f.id === row.familyId)
@@ -45,20 +44,17 @@ export const Table = ({
     {
       field: 'price',
       headerName: 'Preço Venda',
-      width: 120,
       valueFormatter: (value: number) => formatCurrency(value)
     },
     {
       field: 'stock',
       headerName: 'Estoque',
-      width: 100,
       valueFormatter: (value: number | null) =>
         value != null ? formatNumericValue(value) : '—'
     },
     {
       field: 'barcodes',
       headerName: 'Embalagens',
-      width: 260,
       valueGetter: (value: string[], row) =>
         (value ?? [])
           .map(
@@ -70,7 +66,6 @@ export const Table = ({
     {
       field: 'vrCreatedAt',
       headerName: 'Cadastro VR',
-      width: 120,
       valueFormatter: (value: string | null) =>
         value ? new Date(value).toLocaleDateString('pt-BR') : '—'
     }
