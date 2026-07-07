@@ -1,8 +1,6 @@
 import type { TFamily, TProduct, TQuoteItem } from '@/models'
 
-import type { TAiSuggestion } from '../../infra/gemini'
-
-const DEV_DELAY_MS = 30_000
+import type { TAiSuggestion } from './gemini'
 
 const normalize = (s: string): string[] =>
   s
@@ -17,7 +15,7 @@ const overlap = (a: string[], b: string[]): number => {
   return a.filter((w) => bSet.has(w)).length
 }
 
-const buildSuggestions = (
+export const suggestPriceReferencesLocally = (
   items: TQuoteItem[],
   products: TProduct[],
   families: TFamily[]
@@ -64,15 +62,4 @@ const buildSuggestions = (
 
     return { itemId: item.id, type: 'product', id: bestProductId }
   })
-}
-
-export const mockSuggestPriceReferences = async (
-  items: TQuoteItem[],
-  products: TProduct[],
-  families: TFamily[]
-): Promise<TAiSuggestion[]> => {
-  if (import.meta.env.MODE !== 'test') {
-    await new Promise((resolve) => setTimeout(resolve, DEV_DELAY_MS))
-  }
-  return buildSuggestions(items, products, families)
 }

@@ -29,6 +29,7 @@ export const useAiReference = (
   )
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [isAiUnavailable, setIsAiUnavailable] = useState(false)
   const [editingItem, setEditingItem] = useState<TQuoteItem | null>(null)
   const [editingSuggestion, setEditingSuggestion] =
     useState<TAiSuggestion | null>(null)
@@ -44,6 +45,7 @@ export const useAiReference = (
       analysisStarted.current = false
       void (async () => {
         setError(null)
+        setIsAiUnavailable(false)
       })()
       return
     }
@@ -85,6 +87,7 @@ export const useAiReference = (
       setIsAnalyzing(true)
       setElapsedSeconds(0)
       setError(null)
+      setIsAiUnavailable(false)
       setStatusMessage(PROGRESS_MESSAGES[0])
 
       let step = 1
@@ -111,12 +114,13 @@ export const useAiReference = (
       }, 1000)
 
       try {
-        const suggestions = await suggestPriceReferences(
+        const { suggestions, isFallback } = await suggestPriceReferences(
           unreferencedItems,
           products,
           families
         )
         if (!cancelled) {
+          setIsAiUnavailable(isFallback)
           setAiSuggestions(quote.id, suggestions)
           setRows(
             buildRows({ items: quote.items, suggestions, products, families })
@@ -124,9 +128,7 @@ export const useAiReference = (
         }
       } catch {
         if (!cancelled)
-          setError(
-            'Erro ao consultar a IA. Verifique as credenciais e tente novamente.'
-          )
+          setError('Erro inesperado ao gerar sugestões. Tente novamente.')
       } finally {
         if (msgTimeout) clearTimeout(msgTimeout)
         if (elapsedInterval) clearInterval(elapsedInterval)
@@ -220,6 +222,7 @@ export const useAiReference = (
     statusMessage,
     elapsedSeconds,
     error,
+    isAiUnavailable,
     acceptedCount,
     editingItem,
     editingSuggestion,

@@ -43,6 +43,7 @@ export const AiReferenceModal = ({
     statusMessage,
     elapsedSeconds,
     error,
+    isAiUnavailable,
     acceptedCount,
     editingItem,
     editingSuggestion,
@@ -87,6 +88,13 @@ export const AiReferenceModal = ({
             }
           >
             {error}
+          </Alert>
+        )}
+
+        {!error && !isAnalyzing && isAiUnavailable && (
+          <Alert severity="warning" sx={{ mt: 1 }}>
+            Não foi possível conectar à IA. As sugestões abaixo foram geradas
+            localmente por correspondência de texto.
           </Alert>
         )}
 
