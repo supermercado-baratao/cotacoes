@@ -113,7 +113,7 @@ Mais confiável. Falha quando o produto não tem EAN cadastrado (pesáveis, aço
 
 ### Itens sem match
 
-Sinalizados como **"produto não identificado"** para revisão manual. Não são descartados — pode ser produto novo não importado ainda.
+Sinalizados como **"produto não cadastrado"** para revisão manual. Não são descartados — pode ser produto novo não importado ainda.
 
 ---
 
@@ -133,4 +133,4 @@ Após o matching dos itens, comparar:
 2. **Preço divergente** — cotação em R$ A, NF chegou R$ B
 3. **Item a mais na NF** — produto na NF que não estava no pedido
 4. **Item faltando na NF** — produto no pedido que não veio na NF
-5. **Produto não identificado** — item da NF sem match com nenhum produto do app
+5. **Produto não cadastrado** — item da NF sem match com nenhum produto do app

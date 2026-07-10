@@ -159,7 +159,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
                   }}
                 >
                   <Chip
-                    label={`${matchedCount}/${totalCount} produtos identificados`}
+                    label={`${matchedCount}/${totalCount} produtos cadastrados`}
                     color={chipColor}
                     size="small"
                   />
@@ -236,7 +236,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
                             </Typography>
                           ) : (
                             <Typography variant="body2" color="error.main">
-                              Não identificado
+                              Não cadastrado
                             </Typography>
                           )}
                         </TableCell>
