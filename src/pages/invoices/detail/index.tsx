@@ -50,14 +50,11 @@ export const InvoiceDetail = () => {
 
   const summary = {
     total: itemsWithDivergences.length,
-    matched: itemsWithDivergences.filter((i) => i.matchStatus === 'matched')
+    registered: itemsWithDivergences.filter((i) => i.productId !== null).length,
+    unmatchedProduct: itemsWithDivergences.filter((i) => i.productId === null)
       .length,
-    unmatchedProduct: itemsWithDivergences.filter(
-      (i) => i.matchStatus === 'unmatched_product'
-    ).length,
-    unmatchedOrder: itemsWithDivergences.filter(
-      (i) => i.matchStatus === 'unmatched_order'
-    ).length,
+    unmatchedOrder: itemsWithDivergences.filter((i) => i.orderId === null)
+      .length,
     withDivergence: itemsWithDivergences.filter(
       (i) => i.priceDivergence !== null && i.priceDivergence !== 0
     ).length,
@@ -131,13 +128,13 @@ export const InvoiceDetail = () => {
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
           <Chip
-            label={`${summary.matched}/${summary.total} identificados`}
+            label={`${summary.registered} cadastrados`}
             color="success"
             size="small"
           />
           {summary.unmatchedProduct > 0 && (
             <Chip
-              label={`${summary.unmatchedProduct} sem produto`}
+              label={`${summary.unmatchedProduct} sem cadastro`}
               color="error"
               size="small"
             />

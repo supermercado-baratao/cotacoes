@@ -1,5 +1,5 @@
 import { CheckCircle, Warning } from '@mui/icons-material'
-import { Chip, Typography } from '@mui/material'
+import { Chip } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 
@@ -24,6 +24,14 @@ const statusColor: Record<
   approved: 'success',
   divergent: 'error'
 }
+
+const renderRatioChip = (count: number, total: number) => (
+  <Chip
+    label={`${count}/${total}`}
+    color={count === total ? 'success' : count === 0 ? 'error' : 'warning'}
+    size="small"
+  />
+)
 
 export type TInvoiceRow = TInvoice & { isSupplierRegistered: boolean }
 
@@ -76,20 +84,19 @@ export const columns: GridColDef<TInvoiceRow>[] = [
   },
   {
     field: 'items',
-    headerName: 'Pendências',
+    headerName: 'Cadastro dos Itens',
     valueGetter: (value: TInvoiceItem[]) =>
-      value.filter((i) => i.matchStatus === 'unmatched_product').length,
-    renderCell: (params) => {
-      const count = params.value as number
-      const total = params.row.items.length
-      if (count === 0)
-        return (
-          <Typography variant="body2" color="text.disabled">
-            —
-          </Typography>
-        )
-      return <Chip label={`${count}/${total}`} color="error" size="small" />
-    }
+      value.filter((i) => i.productId !== null).length,
+    renderCell: (params) =>
+      renderRatioChip(params.value as number, params.row.items.length)
+  },
+  {
+    field: 'linkedOrders',
+    headerName: 'Pedidos',
+    valueGetter: (_value, row) =>
+      row.items.filter((i) => i.orderId !== null).length,
+    renderCell: (params) =>
+      renderRatioChip(params.value as number, params.row.items.length)
   },
   {
     field: 'verificationStatus',
