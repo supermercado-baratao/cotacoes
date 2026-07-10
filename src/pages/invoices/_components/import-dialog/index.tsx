@@ -78,6 +78,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
     <Modal
       isOpened={isOpened}
       title="Importar Notas Fiscais"
+      maxWidth={1200}
       handleClose={handleCloseAndReset}
     >
       <input

@@ -13,7 +13,7 @@ import * as S from './style'
 export type TModalProps = {
   isOpened: boolean
   title: string | { component: ReactNode }
-
+  maxWidth?: number | string
   children: ReactNode
   handleClose(): void
 }
@@ -21,12 +21,13 @@ export type TModalProps = {
 export const Modal = ({
   isOpened,
   title,
+  maxWidth = 800,
   children,
   handleClose
 }: TModalProps) => {
   return (
     <MuiModal sx={S.Wrapper} open={isOpened} onClose={handleClose}>
-      <Paper sx={S.Paper}>
+      <Paper sx={{ ...S.Paper, maxWidth }}>
         <Box sx={S.Header}>
           {typeof title === 'string' ? (
             <Typography component="h2" variant="h5">
