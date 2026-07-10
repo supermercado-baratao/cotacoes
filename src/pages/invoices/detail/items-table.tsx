@@ -49,62 +49,29 @@ export const ItemsTable = ({ items }: TProps) => {
         field: 'productDescription',
         headerName: 'Produto',
         renderCell: (params) =>
-          params.value ? (
-            <Typography variant="body2">
-              {params.value.toUpperCase()}
-            </Typography>
-          ) : (
-            <Typography variant="body2" color="error.main">
-              Não cadastrado
-            </Typography>
-          )
+          params.value ? params.value.toUpperCase() : 'Não cadastrado'
       },
       {
         field: 'orderQuantity',
         headerName: 'Qtd Pedido',
         renderCell: (params) =>
-          params.value !== null ? (
-            <Typography variant="body2">
-              {formatNumericValue(params.value)}
-            </Typography>
-          ) : (
-            <Typography variant="body2" color="text.disabled">
-              —
-            </Typography>
-          )
+          params.value !== null ? formatNumericValue(params.value) : '—'
       },
       {
         field: 'orderPrice',
         headerName: 'Preço Pedido',
         renderCell: (params) =>
-          params.value !== null ? (
-            <Typography variant="body2">
-              {formatCurrency(params.value)}
-            </Typography>
-          ) : (
-            <Typography variant="body2" color="text.disabled">
-              —
-            </Typography>
-          )
+          params.value !== null ? formatCurrency(params.value) : '—'
       },
       {
         field: 'priceDivergence',
         headerName: 'Dif. Preço',
         renderCell: (params) => {
-          if (params.value === null)
-            return (
-              <Typography variant="body2" color="text.disabled">
-                —
-              </Typography>
-            )
+          if (params.value === null) return '—'
           const diff = params.value as number
-          if (diff === 0)
-            return <Typography variant="body2">R$ 0,00</Typography>
+          if (diff === 0) return 'R$ 0,00'
           return (
-            <Typography
-              variant="body2"
-              color={diff > 0 ? 'error.main' : 'warning.main'}
-            >
+            <Typography color={diff > 0 ? 'error.main' : 'warning.main'}>
               {diff > 0 ? '+' : ''}
               {formatCurrency(diff)}
             </Typography>
@@ -115,14 +82,9 @@ export const ItemsTable = ({ items }: TProps) => {
         field: 'quantityDivergence',
         headerName: 'Dif. Qtd',
         renderCell: (params) => {
-          if (params.value === null)
-            return (
-              <Typography variant="body2" color="text.disabled">
-                —
-              </Typography>
-            )
+          if (params.value === null) return '—'
           const diff = params.value as number
-          if (diff === 0) return <Typography variant="body2">0</Typography>
+          if (diff === 0) return '0'
           return (
             <Typography
               variant="body2"
