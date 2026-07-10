@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
-import type { TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
-import { useAppStore } from '@/stores'
+import { useDeleteHandler } from '@/hooks'
+import type { TInvoice, TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
+import { useAppStore, useCallbackStore } from '@/stores'
 import { findSupplierByCnpj } from '@/utils'
 
 export type TInvoiceItemRow = TInvoiceItem & {
@@ -21,8 +22,10 @@ export const useInvoiceDetailHandler = () => {
     suppliers,
     ordersByQuoteId,
     setQuoteId,
-    updateInvoice
+    updateInvoice,
+    deleteInvoice
   } = useAppStore()
+  const { setSuccessCallbacks } = useCallbackStore()
 
   const invoice = useMemo(
     () => invoices?.find((inv) => inv.id === id) ?? null,
@@ -93,15 +96,29 @@ export const useInvoiceDetailHandler = () => {
 
   const handleBack = () => navigate('/invoices')
 
+  const {
+    itemToDelete,
+    handleDelete,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm
+  } = useDeleteHandler<TInvoice>((item) => {
+    setSuccessCallbacks([handleBack])
+    deleteInvoice(item.id)
+  })
+
   return {
     invoice,
     isFetching,
     products: products ?? [],
     itemsWithDivergences,
     productMap,
+    itemToDelete,
     handleQuoteChange,
     handleApprove,
     handleMarkDivergent,
+    handleDelete,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm,
     handleBack
   }
 }

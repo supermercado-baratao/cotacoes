@@ -1,4 +1,4 @@
-import { ArrowBack, CheckCircle, Warning } from '@mui/icons-material'
+import { ArrowBack, CheckCircle, Delete, Warning } from '@mui/icons-material'
 import {
   Box,
   Button,
@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import dayjs from 'dayjs'
 
+import { DeleteDialog } from '@/components'
 import type { TInvoiceVerificationStatus } from '@/models'
 import { formatCNPJ, formatCurrency } from '@/utils'
 
@@ -36,8 +37,12 @@ export const InvoiceDetail = () => {
     invoice,
     isFetching,
     itemsWithDivergences,
+    itemToDelete,
     handleApprove,
     handleMarkDivergent,
+    handleDelete,
+    handleDeleteDialogClose,
+    handleDeleteDialogConfirm,
     handleBack
   } = useInvoiceDetailHandler()
 
@@ -158,6 +163,14 @@ export const InvoiceDetail = () => {
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <Button
           variant="outlined"
+          color="error"
+          startIcon={<Delete />}
+          onClick={() => handleDelete(invoice)}
+        >
+          Excluir nota
+        </Button>
+        <Button
+          variant="outlined"
           color="warning"
           startIcon={<Warning />}
           onClick={handleMarkDivergent}
@@ -175,6 +188,14 @@ export const InvoiceDetail = () => {
           Aprovar nota
         </Button>
       </Box>
+
+      <DeleteDialog
+        open={!!itemToDelete}
+        title="Excluir Nota"
+        item={`NF nº ${itemToDelete?.number ?? ''}`}
+        handleConfirm={handleDeleteDialogConfirm}
+        handleClose={handleDeleteDialogClose}
+      />
     </Box>
   )
 }
