@@ -199,6 +199,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
                       <TableCell>Nº</TableCell>
                       <TableCell>Descrição NF</TableCell>
                       <TableCell>Cód. Barras</TableCell>
+                      <TableCell>Cód. Embalagem</TableCell>
                       <TableCell align="right">Qtd</TableCell>
                       <TableCell align="right">Preço</TableCell>
                       <TableCell>Produto</TableCell>
@@ -219,6 +220,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
                           {item.description.toUpperCase()}
                         </TableCell>
                         <TableCell>{item.barcode ?? '—'}</TableCell>
+                        <TableCell>{item.packageBarcode ?? '—'}</TableCell>
                         <TableCell align="right">
                           {formatNumericValue(item.quantity)}
                         </TableCell>

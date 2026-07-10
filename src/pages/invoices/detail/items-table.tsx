@@ -33,6 +33,7 @@ export const ItemsTable = ({ items }: TProps) => {
         valueFormatter: (value: string) => value.toUpperCase()
       },
       { field: 'barcode', headerName: 'Cód. Barras' },
+      { field: 'packageBarcode', headerName: 'Cód. Embalagem' },
       { field: 'unit', headerName: 'UN' },
       {
         field: 'quantity',
@@ -54,7 +55,7 @@ export const ItemsTable = ({ items }: TProps) => {
             </Typography>
           ) : (
             <Typography variant="body2" color="error.main">
-              Não identificado
+              Não cadastrado
             </Typography>
           )
       },

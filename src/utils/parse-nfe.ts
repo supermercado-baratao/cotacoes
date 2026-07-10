@@ -40,8 +40,8 @@ const parseItems = (
     const xProd = get(prod, 'xProd')
 
     const product =
-      (cEAN && barcodeMap.get(cEAN)) ||
       (cEANTrib && barcodeMap.get(cEANTrib)) ||
+      (cEAN && barcodeMap.get(cEAN)) ||
       null
 
     const matchStatus: TInvoiceItemMatchStatus = product
@@ -51,7 +51,8 @@ const parseItems = (
     return {
       itemNumber: i + 1,
       supplierProductCode: cProd,
-      barcode: cEAN,
+      barcode: cEANTrib,
+      packageBarcode: cEAN,
       description: xProd,
       unit: get(prod, 'uCom'),
       quantity: Number(get(prod, 'qCom')),
