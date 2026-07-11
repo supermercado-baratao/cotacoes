@@ -7,6 +7,7 @@ import type {
   TQuote,
   TQuoteItem
 } from '@/models'
+import { isLikelyMatch } from '@/utils'
 
 export type TInvoiceSuggestion = {
   invoice: TInvoice
@@ -16,31 +17,6 @@ export type TInvoiceSuggestion = {
 export type TNfSuggestionsResult = {
   likely: TInvoiceSuggestion[]
   other: TInvoiceSuggestion[]
-}
-
-export const isLikelyMatch = (
-  item: TInvoiceItem,
-  quoteItem: TQuoteItem,
-  productMap: Map<string, TProduct>
-): boolean => {
-  if (!item.productId) return false
-  const product = productMap.get(item.productId)
-
-  if (quoteItem.priceRef?.type === 'product') {
-    if (item.productId === quoteItem.priceRef.id) return true
-    const refProduct = productMap.get(quoteItem.priceRef.id)
-    return (
-      !!product?.familyId &&
-      !!refProduct?.familyId &&
-      product.familyId === refProduct.familyId
-    )
-  }
-
-  if (quoteItem.priceRef?.type === 'family') {
-    return product?.familyId === quoteItem.priceRef.id
-  }
-
-  return false
 }
 
 export const getInvoiceSuggestions = (

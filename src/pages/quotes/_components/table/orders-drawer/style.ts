@@ -84,3 +84,64 @@ export const ObservationsText: SxProps<Theme> = {
   alignSelf: 'center',
   mr: 0.5
 }
+
+export const SuggestionsWrapper: SxProps<Theme> = {
+  px: 2.5,
+  py: 2,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 1.5,
+  maxHeight: 360,
+  overflowY: 'auto'
+}
+
+export const InvoiceGroupTitle: SxProps<Theme> = {
+  fontWeight: 600,
+  display: 'block',
+  mb: 0.5
+}
+
+export const InvoiceGroupList: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 0.5
+}
+
+export const SuggestionItem = (likely: boolean): SxProps<Theme> => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 1,
+  px: 1.5,
+  py: 0.75,
+  borderRadius: 1,
+  border: '1px solid',
+  borderColor: likely ? 'success.main' : 'divider',
+  '&:hover': { bgcolor: 'action.hover' }
+})
+
+export const SuggestionItemHeader: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 0.75
+}
+
+export const LikelyChip: SxProps<Theme> = {
+  height: 16,
+  flexShrink: 0,
+  '& .MuiChip-label': { px: 0.75, fontSize: '0.625rem' }
+}
+
+export const OtherNotesLink: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 0.25,
+  textDecoration: 'none'
+}
+
+export const OtherNotesList: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 1.5,
+  mt: 1
+}

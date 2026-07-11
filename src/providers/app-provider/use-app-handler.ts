@@ -4,11 +4,11 @@ import { useShallow } from 'zustand/shallow'
 
 import { useAppStore } from '@/stores'
 
-import { useCreateOrderWithInvoiceLinkMutation } from './use-create-order-with-invoice-link-mutation'
 import { useDataFetch } from './use-data-fetch'
 import { useFamilyMutation } from './use-family-mutation'
 import { useImportMutation } from './use-import-mutation'
 import { useInvoiceMutation } from './use-invoice-mutation'
+import { useInvoiceOrderLinkMutation } from './use-invoice-order-link-mutation'
 import { useOrderMutation } from './use-order-mutation'
 import { useProductMutation } from './use-product-mutation'
 import { useQuoteMutation } from './use-quote-mutation'
@@ -59,7 +59,8 @@ export const useAppHandler = () => {
     useOrderMutation()
   const { createInvoice, createInvoicesBatch, updateInvoice, deleteInvoice } =
     useInvoiceMutation()
-  const { createOrderWithInvoiceLink } = useCreateOrderWithInvoiceLinkMutation()
+  const { createOrderWithInvoiceLink, createOrdersBatchWithInvoiceLink } =
+    useInvoiceOrderLinkMutation()
 
   const isFetching = useIsFetching()
   const isMutating = useIsMutating()
@@ -117,6 +118,7 @@ export const useAppHandler = () => {
       createOrder,
       createOrdersBatch,
       createOrderWithInvoiceLink,
+      createOrdersBatchWithInvoiceLink,
       updateOrder,
       deleteOrder,
       importData,
@@ -144,6 +146,7 @@ export const useAppHandler = () => {
     createOrder,
     createOrdersBatch,
     createOrderWithInvoiceLink,
+    createOrdersBatchWithInvoiceLink,
     updateOrder,
     deleteOrder,
     importData,

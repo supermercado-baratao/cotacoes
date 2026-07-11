@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import dayjs from 'dayjs'
+import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
 import { useDeleteHandler } from '@/hooks'
@@ -20,6 +21,8 @@ export const useInvoiceDetailHandler = () => {
     invoices,
     products,
     suppliers,
+    quotes,
+    quoteId,
     ordersByQuoteId,
     setQuoteId,
     updateInvoice,
@@ -33,6 +36,26 @@ export const useInvoiceDetailHandler = () => {
   )
 
   const isFetching = invoices === null
+
+  const sortedQuotes = useMemo(
+    () => [...(quotes ?? [])].sort((a, b) => b.date.localeCompare(a.date)),
+    [quotes]
+  )
+
+  const selectedQuote = useMemo(
+    () => sortedQuotes.find((q) => q.id === quoteId) ?? null,
+    [sortedQuotes, quoteId]
+  )
+
+  const hasAutoSelectedQuote = useRef(false)
+
+  useEffect(() => {
+    if (hasAutoSelectedQuote.current || !invoice || !sortedQuotes.length) return
+    hasAutoSelectedQuote.current = true
+    const invoiceDate = dayjs(invoice.emissionDate).format('YYYY-MM-DD')
+    const bestGuess = sortedQuotes.find((q) => q.date <= invoiceDate)
+    if (bestGuess) setQuoteId(bestGuess.id)
+  }, [invoice, sortedQuotes, setQuoteId])
 
   const productMap = useMemo(
     () => new Map(products?.map((p) => [p.id, p]) ?? []),
@@ -110,6 +133,9 @@ export const useInvoiceDetailHandler = () => {
     invoice,
     isFetching,
     products: products ?? [],
+    quotes: sortedQuotes,
+    selectedQuoteId: quoteId,
+    selectedQuote,
     itemsWithDivergences,
     productMap,
     itemToDelete,

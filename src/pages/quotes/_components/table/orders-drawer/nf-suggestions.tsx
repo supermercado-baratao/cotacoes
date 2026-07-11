@@ -13,13 +13,13 @@ import { useMemo, useState } from 'react'
 
 import type { TInvoice, TInvoiceItem, TProduct, TQuoteItem } from '@/models'
 import { useAppStore } from '@/stores'
-import { formatCurrency, formatNumericValue } from '@/utils'
+import { formatCurrency, formatNumericValue, isLikelyMatch } from '@/utils'
 
 import {
   getInvoiceSuggestions,
-  isLikelyMatch,
   type TInvoiceSuggestion
 } from './nf-suggestions-utils'
+import * as S from './style'
 
 type TNfSuggestionsProps = {
   quoteItem: TQuoteItem
@@ -54,32 +54,18 @@ const InvoiceGroup = ({
       <Typography
         variant="caption"
         color="text.secondary"
-        sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}
+        sx={S.InvoiceGroupTitle}
       >
         NF {invoice.number} · {invoice.supplierName.toUpperCase()} ·{' '}
         {dayjs(invoice.emissionDate).format('DD/MM/YYYY')}
       </Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Box sx={S.InvoiceGroupList}>
         {sortedItems.map((item) => {
           const likely = isLikelyMatch(item, quoteItem, productMap)
           return (
-            <Box
-              key={item.itemNumber}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 1,
-                px: 1.5,
-                py: 0.75,
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: likely ? 'success.main' : 'divider',
-                '&:hover': { bgcolor: 'action.hover' }
-              }}
-            >
+            <Box key={item.itemNumber} sx={S.SuggestionItem(likely)}>
               <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Box sx={S.SuggestionItemHeader}>
                   <Typography variant="body2" noWrap>
                     {item.description.toUpperCase()}
                   </Typography>
@@ -89,11 +75,7 @@ const InvoiceGroup = ({
                       size="small"
                       color="success"
                       variant="outlined"
-                      sx={{
-                        height: 16,
-                        flexShrink: 0,
-                        '& .MuiChip-label': { px: 0.75, fontSize: '0.625rem' }
-                      }}
+                      sx={S.LikelyChip}
                     />
                   )}
                 </Box>
@@ -163,17 +145,7 @@ export const NfSuggestions = ({
 
   return (
     <>
-      <Box
-        sx={{
-          px: 2.5,
-          py: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1.5,
-          maxHeight: 360,
-          overflowY: 'auto'
-        }}
-      >
+      <Box sx={S.SuggestionsWrapper}>
         <Typography variant="subtitle2" color="text.secondary">
           Sugestões de NF
         </Typography>
@@ -201,12 +173,7 @@ export const NfSuggestions = ({
               variant="caption"
               color="text.secondary"
               onClick={() => setOtherOpen((v) => !v)}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.25,
-                textDecoration: 'none'
-              }}
+              sx={S.OtherNotesLink}
             >
               <ReceiptLong fontSize="inherit" sx={{ mr: 0.25 }} />
               Outras notas ({other.length})
@@ -217,14 +184,7 @@ export const NfSuggestions = ({
               )}
             </Link>
             <Collapse in={otherOpen}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.5,
-                  mt: 1
-                }}
-              >
+              <Box sx={S.OtherNotesList}>
                 {other.map((s) => (
                   <InvoiceGroup
                     key={s.invoice.id}

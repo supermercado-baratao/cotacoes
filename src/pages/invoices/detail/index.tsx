@@ -1,20 +1,33 @@
-import { ArrowBack, CheckCircle, Delete, Warning } from '@mui/icons-material'
+import {
+  ArrowBack,
+  CheckCircle,
+  Delete,
+  Link as LinkIcon,
+  Warning
+} from '@mui/icons-material'
 import {
   Box,
   Button,
   Chip,
+  FormControl,
   Grid,
   IconButton,
+  MenuItem,
   Paper,
+  Select,
+  Tooltip,
   Typography
 } from '@mui/material'
 import dayjs from 'dayjs'
+import { useState } from 'react'
 
 import { DeleteDialog } from '@/components'
 import type { TInvoiceVerificationStatus } from '@/models'
 import { formatCNPJ, formatCurrency } from '@/utils'
 
 import { ItemsTable } from './items-table'
+import { LinkOrdersDialog } from './link-orders-dialog'
+import * as S from './style'
 import { useInvoiceDetailHandler } from './use-invoice-detail-handler'
 
 const statusLabel: Record<TInvoiceVerificationStatus, string> = {
@@ -37,7 +50,11 @@ export const InvoiceDetail = () => {
     invoice,
     isFetching,
     itemsWithDivergences,
+    quotes,
+    selectedQuoteId,
+    selectedQuote,
     itemToDelete,
+    handleQuoteChange,
     handleApprove,
     handleMarkDivergent,
     handleDelete,
@@ -45,6 +62,8 @@ export const InvoiceDetail = () => {
     handleDeleteDialogConfirm,
     handleBack
   } = useInvoiceDetailHandler()
+
+  const [isLinkOrdersOpen, setIsLinkOrdersOpen] = useState(false)
 
   if (isFetching || !invoice) return null
 
@@ -69,7 +88,7 @@ export const InvoiceDetail = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 1 }}>
+      <Box sx={S.HeaderRow}>
         <IconButton onClick={handleBack} size="small">
           <ArrowBack />
         </IconButton>
@@ -111,6 +130,27 @@ export const InvoiceDetail = () => {
             </Typography>
             <Typography>{formatCurrency(invoice.totalValue)}</Typography>
           </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Typography variant="body2" color="text.secondary">
+              Cotação
+            </Typography>
+            <FormControl size="small" fullWidth>
+              <Select
+                displayEmpty
+                value={selectedQuoteId ?? ''}
+                onChange={(e) => handleQuoteChange(e.target.value || null)}
+              >
+                <MenuItem value="">
+                  <em>Nenhuma</em>
+                </MenuItem>
+                {quotes.map((quote) => (
+                  <MenuItem key={quote.id} value={quote.id}>
+                    {dayjs(quote.date).format('DD/MM/YYYY')}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
           <Grid size={{ xs: 12, sm: 12 }}>
             <Typography variant="body2" color="text.secondary">
               Chave de Acesso
@@ -123,10 +163,31 @@ export const InvoiceDetail = () => {
       </Paper>
 
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 1.5 }}>
-          Itens da nota ({summary.total})
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+        <Box sx={S.ItemsHeader}>
+          <Typography variant="h6">Itens da nota ({summary.total})</Typography>
+          <Tooltip
+            title={
+              !selectedQuote
+                ? 'Selecione uma cotação para vincular pedidos'
+                : summary.unmatchedOrder === 0
+                  ? 'Todos os itens já estão vinculados a um pedido'
+                  : ''
+            }
+          >
+            <span>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<LinkIcon />}
+                disabled={!selectedQuote || summary.unmatchedOrder === 0}
+                onClick={() => setIsLinkOrdersOpen(true)}
+              >
+                Vincular pedidos
+              </Button>
+            </span>
+          </Tooltip>
+        </Box>
+        <Box sx={S.ChipRow}>
           <Chip
             label={`${summary.registered} cadastrados`}
             color="success"
@@ -157,7 +218,7 @@ export const InvoiceDetail = () => {
         <ItemsTable items={itemsWithDivergences} />
       </Paper>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+      <Box sx={S.Actions}>
         <Button
           variant="outlined"
           color="error"
@@ -192,6 +253,13 @@ export const InvoiceDetail = () => {
         item={`NF nº ${itemToDelete?.number ?? ''}`}
         handleConfirm={handleDeleteDialogConfirm}
         handleClose={handleDeleteDialogClose}
+      />
+
+      <LinkOrdersDialog
+        isOpened={isLinkOrdersOpen}
+        invoice={invoice}
+        quote={selectedQuote}
+        handleClose={() => setIsLinkOrdersOpen(false)}
       />
     </Box>
   )

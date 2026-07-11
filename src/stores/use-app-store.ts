@@ -57,6 +57,10 @@ type TAppStore = {
     invoice: TInvoice
     itemNumber: number
   }) => void
+  createOrdersBatchWithInvoiceLink: (data: {
+    invoice: TInvoice
+    matches: Array<{ itemNumber: number; order: TCreateData<TOrder> }>
+  }) => void
   updateOrder: (order: TUpdateData<TOrder>) => void
   deleteOrder: (id: string) => void
 
@@ -121,6 +125,7 @@ export const useAppStore = create<TAppStore>((set) => ({
   createOrder: () => {},
   createOrdersBatch: () => {},
   createOrderWithInvoiceLink: () => {},
+  createOrdersBatchWithInvoiceLink: () => {},
   updateOrder: () => {},
   deleteOrder: () => {},
 
