@@ -103,6 +103,12 @@ export const MessageBoxContent: SxProps<Theme> = {
   alignItems: 'center'
 }
 
+export const SpinnerIcon: SxProps<Theme> = {
+  flexShrink: 0,
+  mt: 0.25,
+  color: 'primary.main'
+}
+
 export const MessageAccent = (isProgress: boolean): SxProps<Theme> => ({
   width: 4,
   flexShrink: 0,

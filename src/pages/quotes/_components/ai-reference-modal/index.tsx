@@ -108,7 +108,7 @@ export const AiReferenceModal = ({
                     <CircularProgress
                       size={18}
                       thickness={4.5}
-                      sx={{ flexShrink: 0, mt: 0.25, color: 'primary.main' }}
+                      sx={S.SpinnerIcon}
                     />
                   ) : (
                     <TipsAndUpdates

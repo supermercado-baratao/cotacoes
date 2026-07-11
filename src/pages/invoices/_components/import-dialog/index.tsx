@@ -22,6 +22,7 @@ import { useMemo, useRef, useState, useTransition } from 'react'
 import { Modal } from '@/components'
 import { findSupplierByCnpj, formatCurrency, formatNumericValue } from '@/utils'
 
+import * as S from './style'
 import { useImportDialogHandler } from './use-import-dialog-handler'
 
 type TImportDialogProps = {
@@ -132,9 +133,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
 
         return (
           <Paper key={nfe.accessKey} variant="outlined" sx={{ mb: 1 }}>
-            <Box
-              sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, p: 2 }}
-            >
+            <Box sx={S.NfeHeader}>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                   NF nº {nfe.number} — Série {nfe.series}
@@ -151,14 +150,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
                   {dayjs(nfe.emissionDate).format('DD/MM/YYYY')} •{' '}
                   {formatCurrency(nfe.totalValue)}
                 </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    mt: 0.5
-                  }}
-                >
+                <Box sx={S.ChipRow}>
                   <Chip
                     label={`${matchedCount}/${totalCount} produtos cadastrados`}
                     color={chipColor}
@@ -210,14 +202,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
                     {nfe.items.map((item) => (
                       <TableRow key={item.itemNumber}>
                         <TableCell>{item.itemNumber}</TableCell>
-                        <TableCell
-                          sx={{
-                            maxWidth: 200,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                          }}
-                        >
+                        <TableCell sx={S.ItemDescriptionCell}>
                           {item.description.toUpperCase()}
                         </TableCell>
                         <TableCell>{item.barcode ?? '—'}</TableCell>
@@ -251,7 +236,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
         )
       })}
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+      <Box sx={S.Actions}>
         <Button onClick={handleCloseAndReset}>Cancelar</Button>
         <Button
           variant="contained"
