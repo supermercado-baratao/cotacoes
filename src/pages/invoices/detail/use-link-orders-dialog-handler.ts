@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TInvoice, TInvoiceItem, TOrder, TQuote } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
-import { findBestQuoteItemMatch, findSupplierByCnpj } from '@/utils'
+import { findSupplierByCnpj } from '@/utils'
+
+import { findBestQuoteItemMatch } from '../utils'
 
 export type TLinkOrderRow = {
   item: TInvoiceItem

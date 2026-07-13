@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
 import { useAppStore, useCallbackStore } from '@/stores'
-import { parseNfe, type TParsedNfe } from '@/utils'
+
+import { parseNfe, type TParsedNfe } from '../../utils'
 
 type TParseError = { filename: string; message: string }
 

@@ -24,11 +24,3 @@ export const isLikelyMatch = (
 
   return false
 }
-
-export const findBestQuoteItemMatch = (
-  item: TInvoiceItem,
-  quoteItems: TQuoteItem[],
-  productMap: Map<string, TProduct>
-): TQuoteItem | null =>
-  quoteItems.find((quoteItem) => isLikelyMatch(item, quoteItem, productMap)) ??
-  null
