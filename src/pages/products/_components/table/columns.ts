@@ -16,21 +16,6 @@ export const columns: GridColDef<TProduct>[] = [
     valueFormatter: (value: string) => value.toUpperCase()
   },
   {
-    field: 'department',
-    headerName: 'Departamento',
-    valueFormatter: (value: string | null) => value?.toUpperCase() ?? '—'
-  },
-  {
-    field: 'section',
-    headerName: 'Seção',
-    valueFormatter: (value: string | null) => value?.toUpperCase() ?? '—'
-  },
-  {
-    field: 'group',
-    headerName: 'Grupo',
-    valueFormatter: (value: string | null) => value?.toUpperCase() ?? '—'
-  },
-  {
     field: 'price',
     headerName: 'Preço',
     valueFormatter: (value: number | null) => formatCurrency(value ?? 0)
@@ -41,7 +26,6 @@ export const columns: GridColDef<TProduct>[] = [
     valueFormatter: (value: number | null) =>
       value != null ? `${value.toFixed(1)}%` : '—'
   },
-
   {
     field: 'stock',
     headerName: 'Estoque',
@@ -58,6 +42,21 @@ export const columns: GridColDef<TProduct>[] = [
             `${barcode}${row.packTypes?.[i] ? ` (${row.packTypes[i]})` : ''}`
         )
         .join(' | ') || '—'
+  },
+  {
+    field: 'department',
+    headerName: 'Departamento',
+    valueFormatter: (value: string | null) => value?.toUpperCase() ?? '—'
+  },
+  {
+    field: 'section',
+    headerName: 'Seção',
+    valueFormatter: (value: string | null) => value?.toUpperCase() ?? '—'
+  },
+  {
+    field: 'group',
+    headerName: 'Grupo',
+    valueFormatter: (value: string | null) => value?.toUpperCase() ?? '—'
   },
   {
     field: 'vrCreatedAt',
