@@ -1,6 +1,8 @@
+import { Tab, Tabs } from '@mui/material'
+
 import { DataView, FamilyForm, PageHeader, ProductForm } from '@/components'
 
-import { Table } from './_components'
+import { Table, UnmatchedTable } from './_components'
 import { useProductsHandler } from './use-products-handler'
 
 export const Products = () => {
@@ -16,7 +18,14 @@ export const Products = () => {
     formProduct,
     setFormProduct,
     quickCreateFamily,
-    setQuickCreateFamily
+    setQuickCreateFamily,
+    activeTab,
+    setActiveTab,
+    unmatchedItems,
+    isFetchingUnmatched,
+    hasUnmatchedItems,
+    productDraft,
+    handleCreateFromUnmatchedItem
   } = useProductsHandler()
 
   return (
@@ -29,16 +38,41 @@ export const Products = () => {
         setSearch={setSearch}
         handleFormOpen={handleFormOpen}
       />
-      <DataView
-        isFetching={isFetching}
-        isEmpty={!hasProducts}
-        emptyMessage="Você ainda não tem nenhum produto. Cadastre um para começar!"
+      <Tabs
+        value={activeTab}
+        onChange={(_e, value) => setActiveTab(value)}
+        sx={{ mb: 2 }}
       >
-        <Table products={filteredProducts ?? []} handleEdit={handleFormOpen} />
-      </DataView>
+        <Tab label="Cadastrados" value="registered" />
+        <Tab label="Sem Cadastro" value="unmatched" />
+      </Tabs>
+      {activeTab === 'registered' ? (
+        <DataView
+          isFetching={isFetching}
+          isEmpty={!hasProducts}
+          emptyMessage="Você ainda não tem nenhum produto. Cadastre um para começar!"
+        >
+          <Table
+            products={filteredProducts ?? []}
+            handleEdit={handleFormOpen}
+          />
+        </DataView>
+      ) : (
+        <DataView
+          isFetching={isFetchingUnmatched}
+          isEmpty={!hasUnmatchedItems}
+          emptyMessage="Nenhum produto sem cadastro encontrado nas notas importadas."
+        >
+          <UnmatchedTable
+            items={unmatchedItems}
+            handleCreateProduct={handleCreateFromUnmatchedItem}
+          />
+        </DataView>
+      )}
       <ProductForm
         isOpened={isFormOpen}
         product={formProduct}
+        draft={productDraft}
         setFormProduct={setFormProduct}
         handleClose={handleFormClose}
         setQuickCreateFamily={setQuickCreateFamily}

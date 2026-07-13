@@ -237,6 +237,7 @@ export const OrderForm = ({
       <ProductForm
         isOpened={quickCreateProduct}
         product={null}
+        draft={null}
         setFormProduct={() => {}}
         handleClose={() => setQuickCreateProduct(false)}
         setQuickCreateFamily={setQuickCreateFamily}

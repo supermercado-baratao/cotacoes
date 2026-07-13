@@ -87,6 +87,7 @@ export const Quotes = () => {
       <ProductForm
         isOpened={isProductFormOpen}
         product={formProduct}
+        draft={null}
         setFormProduct={setFormProduct}
         handleClose={handleProductFormClose}
         setQuickCreateFamily={setQuickCreateFamily}

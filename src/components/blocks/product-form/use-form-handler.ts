@@ -7,8 +7,15 @@ import { useAppStore, useCallbackStore } from '@/stores'
 
 import { schema, type TSchema } from './schema'
 
+export type TProductDraft = {
+  description: string
+  barcode: string
+  price: number
+}
+
 export const useFormHandler = (
   product: TProduct | null,
+  draft: TProductDraft | null,
   setFormProduct: (product: TProduct | null) => void,
   handleClose: () => void
 ) => {
@@ -16,11 +23,12 @@ export const useFormHandler = (
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(() => {
-    const barcodes = product?.barcodes ?? []
+    const barcodes =
+      product?.barcodes ?? (draft?.barcode ? [draft.barcode] : [])
     return {
       id: product?.id ?? '',
-      description: product?.description ?? '',
-      price: product?.price ?? 0,
+      description: product?.description ?? draft?.description ?? '',
+      price: product?.price ?? draft?.price ?? 0,
       tax: product?.tax ?? null,
       margin: product?.margin ?? null,
       stock: product?.stock ?? 0,
@@ -36,7 +44,7 @@ export const useFormHandler = (
       observations: product?.observations ?? null,
       familyId: product?.familyId ?? null
     }
-  }, [product])
+  }, [product, draft])
 
   const {
     register,

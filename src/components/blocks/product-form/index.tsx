@@ -24,10 +24,13 @@ import type { TProduct } from '@/models'
 import { selectOnFocus } from '@/utils'
 
 import * as S from './style'
-import { useFormHandler } from './use-form-handler'
+import { type TProductDraft, useFormHandler } from './use-form-handler'
+
+export type { TProductDraft }
 
 type TProductFormProps = {
   product: TProduct | null
+  draft: TProductDraft | null
   setFormProduct: (product: TProduct | null) => void
   setQuickCreateFamily: (open: boolean) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
@@ -37,12 +40,14 @@ const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
 export const ProductForm = ({
   isOpened,
   product,
+  draft,
   handleClose,
   setFormProduct,
   setQuickCreateFamily
 }: TProductFormProps) => {
   const { register, onSubmit, errors, control, families } = useFormHandler(
     product,
+    draft,
     setFormProduct,
     handleClose
   )
