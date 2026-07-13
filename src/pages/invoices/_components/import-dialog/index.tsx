@@ -22,6 +22,7 @@ import { useMemo, useRef, useState, useTransition } from 'react'
 import { Modal } from '@/components'
 import { findSupplierByCnpj, formatCurrency, formatNumericValue } from '@/utils'
 
+import { DuplicateNfes } from './duplicate-nfes'
 import * as S from './style'
 import { useImportDialogHandler } from './use-import-dialog-handler'
 
@@ -33,11 +34,13 @@ type TImportDialogProps = {
 export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
   const {
     parsedNfes,
+    duplicateNfes,
     parseErrors,
     products,
     suppliers,
     handleFilesChange,
     handleRemoveNfe,
+    handleRemoveDuplicate,
     handleRemoveError,
     handleReset,
     handleImport
@@ -117,6 +120,11 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
           <strong>{err.filename}:</strong> {err.message}
         </Alert>
       ))}
+
+      <DuplicateNfes
+        duplicateNfes={duplicateNfes}
+        handleRemoveDuplicate={handleRemoveDuplicate}
+      />
 
       {parsedNfes.map((nfe) => {
         const matchedCount = nfe.items.filter((i) => i.productId).length
