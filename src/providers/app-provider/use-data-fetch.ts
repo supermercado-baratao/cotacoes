@@ -8,6 +8,7 @@ import {
   productModel,
   quoteModel,
   sellerModel,
+  settingsModel,
   supplierModel
 } from '@/models'
 import { useAlertStore, useAppStore, useAuthStore } from '@/stores'
@@ -51,6 +52,11 @@ export const useDataFetch = () => {
         queryKey: ['invoices'],
         queryFn: invoiceModel.findMany,
         enabled: !!user
+      },
+      {
+        queryKey: ['settings'],
+        queryFn: settingsModel.find,
+        enabled: !!user
       }
     ]
   })
@@ -63,7 +69,8 @@ export const useDataFetch = () => {
     { data: quotes },
     { data: ordersByQuoteId },
     { data: ordersByProductId },
-    { data: invoices }
+    { data: invoices },
+    { data: settings }
   ] = queries
 
   const isError = queries.some((query) => query.isError)
@@ -86,6 +93,7 @@ export const useDataFetch = () => {
     quotes,
     ordersByQuoteId,
     ordersByProductId,
-    invoices
+    invoices,
+    settings
   }
 }

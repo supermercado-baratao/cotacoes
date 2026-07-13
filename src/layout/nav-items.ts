@@ -6,6 +6,7 @@ import {
   People,
   ReceiptLong,
   RequestQuote,
+  Settings,
   type SvgIconComponent,
   UploadFile
 } from '@mui/icons-material'
@@ -24,5 +25,6 @@ export const navItems: TNavItem[] = [
   { label: 'Fornecedores', path: '/suppliers', icon: Business },
   { label: 'Vendedores', path: '/sellers', icon: People },
   { label: 'Famílias', path: '/families', icon: Category },
-  { label: 'Importação', path: '/import', icon: UploadFile }
+  { label: 'Importação', path: '/import', icon: UploadFile },
+  { label: 'Configurações', path: '/settings', icon: Settings }
 ]

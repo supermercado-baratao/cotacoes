@@ -13,6 +13,7 @@ import {
   Products,
   Quotes,
   Sellers,
+  Settings,
   Signin,
   Signup,
   Suppliers,
@@ -60,6 +61,7 @@ export const Router = () => (
         <Route path="/import" element={<Import />} />
         <Route path="/invoices" element={<Invoices />} />
         <Route path="/invoices/:id" element={<InvoiceDetail />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
     </Route>
     <Route path="*" element={<NotFound />} />

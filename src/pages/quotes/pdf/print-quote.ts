@@ -29,7 +29,8 @@ const resolveProduct = (
 const buildDepartments = (
   quote: TQuote,
   products: TProduct[],
-  families: TFamily[]
+  families: TFamily[],
+  departmentOrder: string[]
 ): TPdfDepartment[] => {
   type TGroupBucket = { label: string; items: TRawItem[] }
   const departmentMap = new Map<
@@ -76,6 +77,14 @@ const buildDepartments = (
   const byLabel = (a: string, b: string) => a.localeCompare(b, 'pt-BR')
   const byDesc = (a: TRawItem, b: TRawItem) =>
     a.description.localeCompare(b.description, 'pt-BR')
+  const byDepartmentOrder = (a: string, b: string) => {
+    const ia = departmentOrder.indexOf(a)
+    const ib = departmentOrder.indexOf(b)
+    if (ia === -1 && ib === -1) return byLabel(a, b)
+    if (ia === -1) return 1
+    if (ib === -1) return -1
+    return ia - ib
+  }
 
   let index = 1
   const withIndex = (items: TRawItem[]): TPdfItem[] =>
@@ -84,7 +93,7 @@ const buildDepartments = (
       .map((item) => ({ ...item, index: index++ }) satisfies TPdfItem)
 
   const departments: TPdfDepartment[] = [...departmentMap.entries()]
-    .sort(([a], [b]) => byLabel(a, b))
+    .sort(([a], [b]) => byDepartmentOrder(a, b))
     .map(
       ([departmentLabel, sectionMap]): TPdfDepartment => ({
         label: departmentLabel,
@@ -121,9 +130,15 @@ const buildDepartments = (
 export const printQuote = async (
   quote: TQuote,
   products: TProduct[],
-  families: TFamily[]
+  families: TFamily[],
+  departmentOrder: string[]
 ): Promise<void> => {
-  const departments = buildDepartments(quote, products, families)
+  const departments = buildDepartments(
+    quote,
+    products,
+    families,
+    departmentOrder
+  )
   const element = createElement(QuotePDF, {
     date: quote.date,
     totalItems: quote.items.length,

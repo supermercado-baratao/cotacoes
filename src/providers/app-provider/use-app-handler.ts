@@ -13,6 +13,7 @@ import { useOrderMutation } from './use-order-mutation'
 import { useProductMutation } from './use-product-mutation'
 import { useQuoteMutation } from './use-quote-mutation'
 import { useSellerMutation } from './use-seller-mutation'
+import { useSettingsMutation } from './use-settings-mutation'
 import { useSupplierMutation } from './use-supplier-mutation'
 
 export const useAppHandler = () => {
@@ -24,7 +25,8 @@ export const useAppHandler = () => {
     setQuotes,
     setOrdersByQuoteId,
     setOrdersByProductId,
-    setInvoices
+    setInvoices,
+    setSettings
   } = useAppStore(
     useShallow((state) => ({
       setProducts: state.setProducts,
@@ -34,7 +36,8 @@ export const useAppHandler = () => {
       setQuotes: state.setQuotes,
       setOrdersByQuoteId: state.setOrdersByQuoteId,
       setOrdersByProductId: state.setOrdersByProductId,
-      setInvoices: state.setInvoices
+      setInvoices: state.setInvoices,
+      setSettings: state.setSettings
     }))
   )
 
@@ -46,7 +49,8 @@ export const useAppHandler = () => {
     quotes,
     ordersByQuoteId,
     ordersByProductId,
-    invoices
+    invoices,
+    settings
   } = useDataFetch()
   const { createProduct, updateProduct, deleteProduct } = useProductMutation()
   const { importData } = useImportMutation()
@@ -61,6 +65,7 @@ export const useAppHandler = () => {
     useInvoiceMutation()
   const { createOrderWithInvoiceLink, createOrdersBatchWithInvoiceLink } =
     useInvoiceOrderLinkMutation()
+  const { updateSettings } = useSettingsMutation()
 
   const isFetching = useIsFetching()
   const isMutating = useIsMutating()
@@ -99,6 +104,10 @@ export const useAppHandler = () => {
   }, [invoices, setInvoices])
 
   useEffect(() => {
+    if (settings !== undefined) setSettings(settings)
+  }, [settings, setSettings])
+
+  useEffect(() => {
     useAppStore.setState({
       createProduct,
       updateProduct,
@@ -125,7 +134,8 @@ export const useAppHandler = () => {
       createInvoice,
       createInvoicesBatch,
       updateInvoice,
-      deleteInvoice
+      deleteInvoice,
+      updateSettings
     })
   }, [
     createProduct,
@@ -153,7 +163,8 @@ export const useAppHandler = () => {
     createInvoice,
     createInvoicesBatch,
     updateInvoice,
-    deleteInvoice
+    deleteInvoice,
+    updateSettings
   ])
 
   return { isLoading }

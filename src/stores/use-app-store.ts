@@ -9,6 +9,7 @@ import type {
   TProduct,
   TQuote,
   TSeller,
+  TSettings,
   TSupplier
 } from '@/models'
 import type { TCreateData, TCreateDataWithId, TUpdateData } from '@/types'
@@ -79,6 +80,10 @@ type TAppStore = {
   ) => void
   updateInvoice: (invoice: TUpdateData<TInvoice>) => void
   deleteInvoice: (id: string) => void
+
+  settings: TSettings | null
+  setSettings: (settings: TSettings | null) => void
+  updateSettings: (data: TCreateData<TSettings>) => void
 }
 
 export const useAppStore = create<TAppStore>((set) => ({
@@ -141,5 +146,9 @@ export const useAppStore = create<TAppStore>((set) => ({
   createInvoice: () => {},
   createInvoicesBatch: () => {},
   updateInvoice: () => {},
-  deleteInvoice: () => {}
+  deleteInvoice: () => {},
+
+  settings: null,
+  setSettings: (settings) => set({ settings }),
+  updateSettings: () => {}
 }))

@@ -22,6 +22,7 @@ export const useQuotesHandler = () => {
     suppliers,
     products,
     families,
+    settings,
     setQuoteId,
     deleteQuote
   } = useAppStore()
@@ -100,7 +101,12 @@ export const useQuotesHandler = () => {
     setIsPrinting(true)
     await new Promise((resolve) => setTimeout(resolve, 0))
     try {
-      await printQuote(quote, products, families)
+      await printQuote(
+        quote,
+        products,
+        families,
+        settings?.pdfDepartmentOrder ?? []
+      )
     } finally {
       setIsPrinting(false)
     }
