@@ -34,6 +34,18 @@ const normalizeBarcode = (raw: string): string | null =>
 
 const normalizeCnpj = (cnpj: string): string => cnpj.replace(/\D/g, '')
 
+export const calcUnitBarcode = (packingBarcode: string) => {
+  const array = packingBarcode.slice(1, -1).split('')
+  const sum = array.reduce(
+    (total, number, i) =>
+      total + (i % 2 === 0 ? Number(number) * 1 : Number(number) * 3),
+    0
+  )
+  const lastDigit = ((Math.floor(sum / 10) + 1) * 10 - sum) % 10
+  const bar = array.join('') + lastDigit
+  return bar
+}
+
 const buildBarcodeMap = (products: TProduct[]): Map<string, TProduct> => {
   const barcodeMap = new Map<string, TProduct>()
   for (const product of products) {
@@ -55,9 +67,15 @@ const parseItems = (
     const cProd = get(prod, 'cProd')
     const xProd = get(prod, 'xProd')
 
+    const calculatedBarcode =
+      cEAN && cEAN.length === 14 ? calcUnitBarcode(cEAN) : null
+
+    const isDuplicatedPackaging = !!cEAN && cEAN === cEANTrib
+
     const product =
       (cEANTrib && barcodeMap.get(cEANTrib)) ||
       (cEAN && barcodeMap.get(cEAN)) ||
+      (calculatedBarcode && barcodeMap.get(calculatedBarcode)) ||
       null
 
     const matchStatus: TInvoiceItemMatchStatus = product
@@ -67,7 +85,8 @@ const parseItems = (
     return {
       itemNumber: i + 1,
       supplierProductCode: cProd,
-      barcode: cEANTrib,
+      barcode: isDuplicatedPackaging ? calculatedBarcode : cEANTrib,
+      calculatedBarcode,
       packageBarcode: cEAN,
       description: xProd,
       unit: get(prod, 'uCom'),

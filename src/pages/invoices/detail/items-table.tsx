@@ -32,7 +32,18 @@ export const ItemsTable = ({ items }: TProps) => {
         minWidth: 200,
         valueFormatter: (value: string) => value.toUpperCase()
       },
-      { field: 'barcode', headerName: 'Cód. Barras' },
+      {
+        field: 'barcode',
+        headerName: 'Cód. Barras',
+        renderCell: (params) =>
+          params.value
+            ? `${params.value}${
+                params.row.calculatedBarcode === params.value
+                  ? ' (calculado)'
+                  : ''
+              }`
+            : '—'
+      },
       { field: 'packageBarcode', headerName: 'Cód. Embalagem' },
       { field: 'unit', headerName: 'UN' },
       {

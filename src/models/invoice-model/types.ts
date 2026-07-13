@@ -11,6 +11,7 @@ export type TInvoiceItem = {
   itemNumber: number
   supplierProductCode: string
   barcode: string | null
+  calculatedBarcode: string | null
   packageBarcode: string | null
   description: string
   unit: string

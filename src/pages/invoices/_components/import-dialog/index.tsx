@@ -205,7 +205,15 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
                         <TableCell sx={S.ItemDescriptionCell}>
                           {item.description.toUpperCase()}
                         </TableCell>
-                        <TableCell>{item.barcode ?? '—'}</TableCell>
+                        <TableCell>
+                          {item.barcode
+                            ? `${item.barcode}${
+                                item.calculatedBarcode === item.barcode
+                                  ? ' (calculado)'
+                                  : ''
+                              }`
+                            : '—'}
+                        </TableCell>
                         <TableCell>{item.packageBarcode ?? '—'}</TableCell>
                         <TableCell align="right">
                           {formatNumericValue(item.quantity)}
