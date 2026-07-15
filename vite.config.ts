@@ -9,7 +9,10 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
+  plugins: [
+    react(),
+    ...(process.env.VITEST ? [] : [babel({ presets: [reactCompilerPreset()] })])
+  ],
   test: {
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts']
