@@ -1,21 +1,25 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { invoiceModel, type TInvoice } from '@/models'
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { useAlertStore, useAppStore, useCallbackStore } from '@/stores'
+
+import {
+  addInvoicesToCache,
+  removeInvoiceFromCache,
+  upsertInvoiceInCache
+} from './invoice-cache'
 
 export const useInvoiceMutation = () => {
   const { alert } = useAlertStore()
   const { handleSuccessCallbacks, handleErrorCallbacks } = useCallbackStore()
+  const invoiceDateRange = useAppStore((state) => state.invoiceDateRange)
 
   const queryClient = useQueryClient()
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ['invoices'] })
-
   const { mutate: createInvoice } = useMutation({
     mutationFn: invoiceModel.create,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (invoice) => {
+      upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
       alert({ severity: 'success', title: 'Nota importada com sucesso!' })
       handleSuccessCallbacks()
     },
@@ -36,7 +40,7 @@ export const useInvoiceMutation = () => {
     mutationFn: (data: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>) =>
       invoiceModel.createMany(data),
     onSuccess: (invoices) => {
-      invalidate()
+      addInvoicesToCache(queryClient, invoices, invoiceDateRange)
       const n = invoices.length
       alert({
         severity: 'success',
@@ -52,8 +56,8 @@ export const useInvoiceMutation = () => {
 
   const { mutate: updateInvoice } = useMutation({
     mutationFn: invoiceModel.update,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (invoice) => {
+      upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
       alert({ severity: 'success', title: 'Nota atualizada com sucesso!' })
       handleSuccessCallbacks()
     },
@@ -65,8 +69,8 @@ export const useInvoiceMutation = () => {
 
   const { mutate: deleteInvoice } = useMutation({
     mutationFn: invoiceModel.deleteUniqueById,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (id) => {
+      removeInvoiceFromCache(queryClient, id, invoiceDateRange)
       alert({ severity: 'success', title: 'Nota excluída com sucesso!' })
       handleSuccessCallbacks()
     },

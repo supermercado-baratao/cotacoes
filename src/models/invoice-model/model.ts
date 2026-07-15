@@ -1,7 +1,10 @@
+import dayjs from 'dayjs'
+import { where } from 'firebase/firestore'
+
 import { database, getUserPath } from '@/infra'
 import type { TUpdateData } from '@/types'
 
-import type { TInvoice } from './types'
+import type { TInvoice, TInvoiceDateRange } from './types'
 
 const createMany = (
   data: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>
@@ -25,8 +28,21 @@ const create = async (
   })
 }
 
-const findMany = (): Promise<TInvoice[]> =>
-  database.findMany<TInvoice>({ path: getUserPath('invoices') })
+const findMany = ({
+  startDate,
+  endDate
+}: TInvoiceDateRange): Promise<TInvoice[]> =>
+  database.findMany<TInvoice>({
+    path: getUserPath('invoices'),
+    queryConstraints: [
+      where('emissionDate', '>=', startDate),
+      where(
+        'emissionDate',
+        '<',
+        dayjs(endDate).add(1, 'day').format('YYYY-MM-DD')
+      )
+    ]
+  })
 
 const update = (data: TUpdateData<TInvoice>): Promise<TInvoice> =>
   database.update({ path: getUserPath('invoices'), data })

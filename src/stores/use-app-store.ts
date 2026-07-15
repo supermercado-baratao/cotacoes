@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { create } from 'zustand'
 
 import type { TAiSuggestion } from '@/infra'
@@ -5,6 +6,7 @@ import type {
   TFamily,
   TImportData,
   TInvoice,
+  TInvoiceDateRange,
   TOrder,
   TProduct,
   TQuote,
@@ -13,6 +15,15 @@ import type {
   TSupplier
 } from '@/models'
 import type { TCreateData, TCreateDataWithId, TUpdateData } from '@/types'
+
+const DEFAULT_INVOICE_LOOKBACK_DAYS = 90
+
+const defaultInvoiceDateRange = (): TInvoiceDateRange => ({
+  startDate: dayjs()
+    .subtract(DEFAULT_INVOICE_LOOKBACK_DAYS, 'day')
+    .format('YYYY-MM-DD'),
+  endDate: dayjs().format('YYYY-MM-DD')
+})
 
 type TAppStore = {
   aiSuggestions: Record<string, TAiSuggestion[]>
@@ -63,7 +74,7 @@ type TAppStore = {
     matches: Array<{ itemNumber: number; order: TCreateData<TOrder> }>
   }) => void
   updateOrder: (order: TUpdateData<TOrder>) => void
-  deleteOrder: (id: string) => void
+  deleteOrder: (order: TOrder) => void
 
   quoteId: string | null
   setQuoteId: (id: string | null) => void
@@ -74,6 +85,8 @@ type TAppStore = {
 
   invoices: TInvoice[] | null
   setInvoices: (invoices: TInvoice[]) => void
+  invoiceDateRange: TInvoiceDateRange
+  setInvoiceDateRange: (range: TInvoiceDateRange) => void
   createInvoice: (invoice: Omit<TInvoice, 'createdAt' | 'updatedAt'>) => void
   createInvoicesBatch: (
     invoices: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>
@@ -143,6 +156,8 @@ export const useAppStore = create<TAppStore>((set) => ({
 
   invoices: null,
   setInvoices: (invoices) => set({ invoices }),
+  invoiceDateRange: defaultInvoiceDateRange(),
+  setInvoiceDateRange: (range) => set({ invoiceDateRange: range }),
   createInvoice: () => {},
   createInvoicesBatch: () => {},
   updateInvoice: () => {},

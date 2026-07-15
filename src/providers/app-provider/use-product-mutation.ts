@@ -3,19 +3,20 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { productModel } from '@/models'
 import { useAlertStore, useCallbackStore } from '@/stores'
 
+import { removeFromArrayCache, upsertInArrayCache } from './query-cache'
+
+const QUERY_KEY = ['products']
+
 export const useProductMutation = () => {
   const { alert } = useAlertStore()
   const { handleSuccessCallbacks, handleErrorCallbacks } = useCallbackStore()
 
   const queryClient = useQueryClient()
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ['products'] })
-
   const { mutate: createProduct } = useMutation({
     mutationFn: productModel.create,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (product) => {
+      upsertInArrayCache(queryClient, QUERY_KEY, product)
       alert({ severity: 'success', title: 'Produto criado com sucesso!' })
       handleSuccessCallbacks()
     },
@@ -27,8 +28,8 @@ export const useProductMutation = () => {
 
   const { mutate: updateProduct } = useMutation({
     mutationFn: productModel.update,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (product) => {
+      upsertInArrayCache(queryClient, QUERY_KEY, product)
       alert({ severity: 'success', title: 'Produto atualizado com sucesso!' })
       handleSuccessCallbacks()
     },
@@ -40,8 +41,8 @@ export const useProductMutation = () => {
 
   const { mutate: deleteProduct } = useMutation({
     mutationFn: productModel.deleteUniqueById,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (id) => {
+      removeFromArrayCache(queryClient, QUERY_KEY, id)
       alert({ severity: 'success', title: 'Produto excluído com sucesso!' })
       handleSuccessCallbacks()
     },

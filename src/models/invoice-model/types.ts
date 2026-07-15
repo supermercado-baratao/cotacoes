@@ -1,5 +1,10 @@
 import { Timestamp } from 'firebase/firestore'
 
+export type TInvoiceDateRange = {
+  startDate: string
+  endDate: string
+}
+
 export type TInvoiceVerificationStatus = 'pending' | 'approved' | 'divergent'
 
 export type TInvoiceItemMatchStatus =

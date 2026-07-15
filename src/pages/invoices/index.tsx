@@ -1,6 +1,10 @@
+import { Search } from '@mui/icons-material'
+import { Box, Button, TextField } from '@mui/material'
+
 import { DataView, PageHeader } from '@/components'
 
 import { ImportDialog, Table } from './_components'
+import * as S from './style'
 import { useInvoicesHandler } from './use-invoices-handler'
 
 export const Invoices = () => {
@@ -12,7 +16,13 @@ export const Invoices = () => {
     filteredInvoices,
     isImportOpen,
     handleImportOpen,
-    handleImportClose
+    handleImportClose,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    canSearchDateRange,
+    handleDateRangeSearch
   } = useInvoicesHandler()
 
   return (
@@ -25,6 +35,34 @@ export const Invoices = () => {
         setSearch={setSearch}
         handleFormOpen={handleImportOpen}
       />
+      <Box sx={S.DateRangeWrapper}>
+        <TextField
+          label="De"
+          type="date"
+          size="small"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          sx={S.DateField}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+        <TextField
+          label="Até"
+          type="date"
+          size="small"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          sx={S.DateField}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+        <Button
+          variant="outlined"
+          startIcon={<Search />}
+          disabled={!canSearchDateRange}
+          onClick={handleDateRangeSearch}
+        >
+          Buscar
+        </Button>
+      </Box>
       <DataView
         isFetching={isFetching}
         isEmpty={!hasInvoices}

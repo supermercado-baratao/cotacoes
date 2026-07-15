@@ -5,14 +5,23 @@ import { useAppStore } from '@/stores'
 import { filterInvoices } from './utils'
 
 export const useInvoicesHandler = () => {
-  const { invoices } = useAppStore()
+  const { invoices, invoiceDateRange, setInvoiceDateRange } = useAppStore()
 
   const [search, setSearch] = useState('')
   const [isImportOpen, setIsImportOpen] = useState(false)
+  const [startDate, setStartDate] = useState(invoiceDateRange.startDate)
+  const [endDate, setEndDate] = useState(invoiceDateRange.endDate)
 
   const handleImportOpen = () => setIsImportOpen(true)
 
   const handleImportClose = () => setIsImportOpen(false)
+
+  const canSearchDateRange = !!startDate && !!endDate && startDate <= endDate
+
+  const handleDateRangeSearch = () => {
+    if (!canSearchDateRange) return
+    setInvoiceDateRange({ startDate, endDate })
+  }
 
   const filteredInvoices = useMemo(
     () => (invoices ? filterInvoices(search, invoices) : null),
@@ -30,6 +39,12 @@ export const useInvoicesHandler = () => {
     filteredInvoices,
     isImportOpen,
     handleImportOpen,
-    handleImportClose
+    handleImportClose,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    canSearchDateRange,
+    handleDateRangeSearch
   }
 }

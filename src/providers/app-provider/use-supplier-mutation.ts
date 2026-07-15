@@ -3,19 +3,20 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supplierModel } from '@/models'
 import { useAlertStore, useCallbackStore } from '@/stores'
 
+import { removeFromArrayCache, upsertInArrayCache } from './query-cache'
+
+const QUERY_KEY = ['suppliers']
+
 export const useSupplierMutation = () => {
   const { alert } = useAlertStore()
   const { handleSuccessCallbacks, handleErrorCallbacks } = useCallbackStore()
 
   const queryClient = useQueryClient()
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ['suppliers'] })
-
   const { mutate: createSupplier } = useMutation({
     mutationFn: supplierModel.create,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (supplier) => {
+      upsertInArrayCache(queryClient, QUERY_KEY, supplier)
       alert({ severity: 'success', title: 'Fornecedor criado com sucesso!' })
       handleSuccessCallbacks()
     },
@@ -27,8 +28,8 @@ export const useSupplierMutation = () => {
 
   const { mutate: updateSupplier } = useMutation({
     mutationFn: supplierModel.update,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (supplier) => {
+      upsertInArrayCache(queryClient, QUERY_KEY, supplier)
       alert({
         severity: 'success',
         title: 'Fornecedor atualizado com sucesso!'
@@ -43,8 +44,8 @@ export const useSupplierMutation = () => {
 
   const { mutate: deleteSupplier } = useMutation({
     mutationFn: supplierModel.deleteUniqueById,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (id) => {
+      removeFromArrayCache(queryClient, QUERY_KEY, id)
       alert({ severity: 'success', title: 'Fornecedor excluído com sucesso!' })
       handleSuccessCallbacks()
     },

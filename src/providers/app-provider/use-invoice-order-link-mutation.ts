@@ -7,8 +7,11 @@ import {
   type TInvoiceItemMatchStatus,
   type TOrder
 } from '@/models'
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { useAlertStore, useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
+
+import { upsertInvoiceInCache } from './invoice-cache'
+import { upsertOrderInCache } from './order-cache'
 
 type TPayload = {
   order: TCreateData<TOrder>
@@ -24,12 +27,8 @@ type TBatchPayload = {
 export const useInvoiceOrderLinkMutation = () => {
   const { alert } = useAlertStore()
   const { handleSuccessCallbacks, handleErrorCallbacks } = useCallbackStore()
+  const invoiceDateRange = useAppStore((state) => state.invoiceDateRange)
   const queryClient = useQueryClient()
-
-  const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['orders'] })
-    queryClient.invalidateQueries({ queryKey: ['invoices'] })
-  }
 
   const { mutate: createOrderWithInvoiceLink } = useMutation({
     mutationFn: async ({ order, invoice, itemNumber }: TPayload) => {
@@ -45,11 +44,15 @@ export const useInvoiceOrderLinkMutation = () => {
             }
           : item
       )
-      await invoiceModel.update({ ...invoice, items: updatedItems })
-      return createdOrder
+      const updatedInvoice = await invoiceModel.update({
+        ...invoice,
+        items: updatedItems
+      })
+      return { order: createdOrder, invoice: updatedInvoice }
     },
-    onSuccess: () => {
-      invalidate()
+    onSuccess: ({ order, invoice }) => {
+      upsertOrderInCache(queryClient, order)
+      upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
       alert({ severity: 'success', title: 'Pedido criado com sucesso!' })
       handleSuccessCallbacks()
     },
@@ -81,11 +84,15 @@ export const useInvoiceOrderLinkMutation = () => {
           quantityDivergence: item.quantity - match.order.quantity
         }
       })
-      await invoiceModel.update({ ...invoice, items: updatedItems })
-      return createdOrders
+      const updatedInvoice = await invoiceModel.update({
+        ...invoice,
+        items: updatedItems
+      })
+      return { orders: createdOrders, invoice: updatedInvoice }
     },
-    onSuccess: (orders) => {
-      invalidate()
+    onSuccess: ({ orders, invoice }) => {
+      orders.forEach((order) => upsertOrderInCache(queryClient, order))
+      upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
       const n = orders.length
       alert({
         severity: 'success',

@@ -5,20 +5,19 @@ import { orderModel } from '@/models'
 import { useAlertStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
 
+import { removeOrderFromCache, upsertOrderInCache } from './order-cache'
+
 export const useOrderMutation = () => {
   const { alert } = useAlertStore()
   const { handleSuccessCallbacks, handleErrorCallbacks } = useCallbackStore()
 
   const queryClient = useQueryClient()
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ['orders'] })
-
   const { mutate: createOrdersBatch } = useMutation({
     mutationFn: (orders: TCreateData<TOrder>[]) =>
       orderModel.createMany(orders),
     onSuccess: (orders) => {
-      invalidate()
+      orders.forEach((order) => upsertOrderInCache(queryClient, order))
       const n = orders.length
       alert({
         severity: 'success',
@@ -34,8 +33,8 @@ export const useOrderMutation = () => {
 
   const { mutate: createOrder } = useMutation({
     mutationFn: orderModel.create,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (order) => {
+      upsertOrderInCache(queryClient, order)
       alert({ severity: 'success', title: 'Pedido criado com sucesso!' })
       handleSuccessCallbacks()
     },
@@ -47,8 +46,8 @@ export const useOrderMutation = () => {
 
   const { mutate: updateOrder } = useMutation({
     mutationFn: orderModel.update,
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (order) => {
+      upsertOrderInCache(queryClient, order)
       alert({ severity: 'success', title: 'Pedido atualizado com sucesso!' })
       handleSuccessCallbacks()
     },
@@ -59,9 +58,9 @@ export const useOrderMutation = () => {
   })
 
   const { mutate: deleteOrder } = useMutation({
-    mutationFn: orderModel.deleteUniqueById,
-    onSuccess: () => {
-      invalidate()
+    mutationFn: (order: TOrder) => orderModel.deleteUniqueById(order.id),
+    onSuccess: (_, order) => {
+      removeOrderFromCache(queryClient, order)
       alert({ severity: 'success', title: 'Pedido excluído com sucesso!' })
       handleSuccessCallbacks()
     },

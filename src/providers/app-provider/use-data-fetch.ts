@@ -17,6 +17,7 @@ export const useDataFetch = () => {
   const { alert } = useAlertStore()
   const quoteId = useAppStore((state) => state.quoteId)
   const historyProductId = useAppStore((state) => state.historyProductId)
+  const invoiceDateRange = useAppStore((state) => state.invoiceDateRange)
   const user = useAuthStore((state) => state.user)
 
   const queries = useQueries({
@@ -49,8 +50,12 @@ export const useDataFetch = () => {
         enabled: !!historyProductId && !!user
       },
       {
-        queryKey: ['invoices'],
-        queryFn: invoiceModel.findMany,
+        queryKey: [
+          'invoices',
+          invoiceDateRange.startDate,
+          invoiceDateRange.endDate
+        ],
+        queryFn: () => invoiceModel.findMany(invoiceDateRange),
         enabled: !!user
       },
       {

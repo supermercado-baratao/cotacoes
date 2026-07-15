@@ -40,7 +40,7 @@ export const OrdersDrawer = ({ row, handleClose }: TOrdersDrawerProps) => {
     handleDelete: handleDeleteOrder,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm
-  } = useDeleteHandler<TOrder>((order) => deleteOrder(order.id))
+  } = useDeleteHandler<TOrder>(deleteOrder)
 
   const itemOrders = (ordersByQuoteId ?? []).filter(
     (o) => o.quoteItemId === row?.id
