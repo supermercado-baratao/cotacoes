@@ -38,17 +38,17 @@ describe('Import flow', () => {
       expect(screen.getByText('import-data.xlsx')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('100 produtos')).toBeInTheDocument()
-    expect(screen.getByText('57 famílias')).toBeInTheDocument()
-    expect(screen.getByText('43 fornecedores')).toBeInTheDocument()
+    expect(screen.getByText('495 produtos')).toBeInTheDocument()
+    expect(screen.getByText('232 famílias')).toBeInTheDocument()
+    expect(screen.getByText('78 fornecedores')).toBeInTheDocument()
     expect(screen.getByText('207826')).toBeInTheDocument()
     expect(screen.getByText('PUDIM BRETZKE 50G CHOCOLATE')).toBeInTheDocument()
     expect(screen.getByText('R$ 3,15')).toBeInTheDocument()
     expect(screen.getByText('PUDIM BRETZKE 50G')).toBeInTheDocument()
-    expect(screen.getByText('100 linhas selecionadas')).toBeInTheDocument()
+    expect(screen.getByText('495 linhas selecionadas')).toBeInTheDocument()
 
     await userEvent.click(
-      screen.getByRole('button', { name: 'Importar 100 produtos' })
+      screen.getByRole('button', { name: 'Importar 495 produtos' })
     )
 
     await waitFor(
@@ -65,9 +65,9 @@ describe('Import flow', () => {
 
     await waitFor(
       () => {
-        expect(useAppStore.getState().products).toHaveLength(100)
-        expect(useAppStore.getState().families).toHaveLength(57)
-        expect(useAppStore.getState().suppliers).toHaveLength(43)
+        expect(useAppStore.getState().products).toHaveLength(495)
+        expect(useAppStore.getState().families).toHaveLength(232)
+        expect(useAppStore.getState().suppliers).toHaveLength(78)
       },
       { timeout: 10000 }
     )

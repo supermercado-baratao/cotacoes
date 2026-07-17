@@ -8,6 +8,10 @@ import {
 } from 'firebase/auth'
 
 import { auth } from '@/infra'
+import { importModel } from '@/models'
+import { getData } from '@/pages/import/utils'
+
+import { readMockFile } from './_utils/read-mock-file'
 
 const PROJECT_ID = import.meta.env.VITE_PROJECT_ID as string
 
@@ -81,12 +85,20 @@ const createUser = async (
   return createdUser
 }
 
+const populateDatabase = async (): Promise<void> => {
+  const buffer = await readMockFile('import-data.xlsx')
+  const file = new File([new Uint8Array(buffer)], 'import-data.xlsx')
+  const data = await getData(file)
+  await importModel.import(data)
+}
+
 const orchestrator = {
   clearAuthUsers,
   clearFirestoreData,
   clearEmulatorData,
   verifyEmail,
-  createUser
+  createUser,
+  populateDatabase
 }
 
 export default orchestrator
