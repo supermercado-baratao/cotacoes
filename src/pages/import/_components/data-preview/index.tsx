@@ -1,5 +1,6 @@
 import type { TImportData } from '@/models'
 
+import type { TProductImportStatus } from '../../utils'
 import { Header } from './header'
 import { Table } from './table'
 
@@ -8,6 +9,7 @@ type TDataPreviewProps = {
   importData: TImportData
   selectedIds: string[]
   handleSelectionChange: (ids: string[]) => void
+  productStatuses: Map<string, TProductImportStatus>
   handleFileRemove: () => void
 }
 
@@ -16,6 +18,7 @@ export const DataPreview = ({
   importData,
   selectedIds,
   handleSelectionChange,
+  productStatuses,
   handleFileRemove
 }: TDataPreviewProps) => {
   return (
@@ -23,13 +26,14 @@ export const DataPreview = ({
       <Header
         fileName={fileName}
         importData={importData}
-        selectedIds={selectedIds}
+        productStatuses={productStatuses}
         handleRemove={handleFileRemove}
       />
       <Table
         importData={importData}
         selectedIds={selectedIds}
         handleSelectionChange={handleSelectionChange}
+        productStatuses={productStatuses}
       />
     </>
   )

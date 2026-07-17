@@ -1,8 +1,16 @@
 import * as xlsx from 'xlsx'
 
-import type { TFamily, TImportData, TProduct, TSupplier } from '@/models'
+import {
+  type TFamily,
+  type TImportData,
+  type TProduct,
+  type TSupplier,
+  UPSERT_MANY_UPDATABLE_FIELDS
+} from '@/models'
 import type { TCreateDataWithId } from '@/types'
 import { normalizeCnpj } from '@/utils'
+
+export type TProductImportStatus = 'new' | 'changed' | 'unchanged'
 
 type TRawRow = {
   // produto
@@ -86,6 +94,25 @@ const mapSupplier = (row: TRawRow): TCreateDataWithId<TSupplier> => ({
   observations: null,
   vrCreatedAt: row.datacadastro_fornecedor
 })
+
+const isEqualValue = (a: unknown, b: unknown): boolean => {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((v, i) => v === b[i])
+  }
+  return a === b
+}
+
+export const getProductImportStatus = (
+  incoming: TCreateDataWithId<TProduct>,
+  existingById: Map<string, TProduct>
+): TProductImportStatus => {
+  const existing = existingById.get(incoming.id)
+  if (!existing) return 'new'
+  const hasChanges = UPSERT_MANY_UPDATABLE_FIELDS.some(
+    (field) => !isEqualValue(incoming[field], existing[field])
+  )
+  return hasChanges ? 'changed' : 'unchanged'
+}
 
 export const getData = async (file: File): Promise<TImportData> => {
   const raw = await parseXlsx(file)

@@ -1,21 +1,53 @@
+import { Chip } from '@mui/material'
 import { type GridColDef } from '@mui/x-data-grid'
 
 import { Table as DataTable } from '@/components'
 import type { TImportData } from '@/models'
 import { formatCurrency, formatNumericValue } from '@/utils'
 
+import type { TProductImportStatus } from '../../utils'
+
 type TTableProps = {
   importData: TImportData
   selectedIds: string[]
   handleSelectionChange: (ids: string[]) => void
+  productStatuses: Map<string, TProductImportStatus>
+}
+
+const STATUS_LABEL: Record<TProductImportStatus, string> = {
+  new: 'Novo',
+  changed: 'Alterado',
+  unchanged: 'Sem alteração'
+}
+
+const STATUS_COLOR: Record<
+  TProductImportStatus,
+  'success' | 'warning' | 'default'
+> = {
+  new: 'success',
+  changed: 'warning',
+  unchanged: 'default'
 }
 
 export const Table = ({
   importData,
   selectedIds,
-  handleSelectionChange
+  handleSelectionChange,
+  productStatuses
 }: TTableProps) => {
   const columns: GridColDef[] = [
+    {
+      field: 'status',
+      headerName: 'Status',
+      valueGetter: (_value, row) => productStatuses.get(row.id) ?? 'new',
+      renderCell: ({ value }: { value: TProductImportStatus }) => (
+        <Chip
+          label={STATUS_LABEL[value]}
+          color={STATUS_COLOR[value]}
+          size="small"
+        />
+      )
+    },
     { field: 'id', headerName: 'ID (VR)' },
     {
       field: 'description',

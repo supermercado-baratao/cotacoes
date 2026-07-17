@@ -13,6 +13,7 @@ export const Import = () => {
     importData,
     selectedIds,
     setSelectedIds,
+    productStatuses,
     handleImportClick
   } = useImportHandler()
   return (
@@ -33,6 +34,7 @@ export const Import = () => {
               importData={importData}
               selectedIds={selectedIds}
               handleSelectionChange={setSelectedIds}
+              productStatuses={productStatuses}
               handleFileRemove={handleFileRemove}
             />
           )}

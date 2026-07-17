@@ -3,6 +3,21 @@ import type { TCreateDataWithId, TUpdateData } from '@/types'
 
 import { type TProduct } from './types'
 
+export const UPSERT_MANY_UPDATABLE_FIELDS: Array<
+  keyof TCreateDataWithId<TProduct>
+> = [
+  'description',
+  'price',
+  'familyId',
+  'barcodes',
+  'packTypes',
+  'department',
+  'section',
+  'group',
+  'stock',
+  'vrCreatedAt'
+]
+
 const create = (data: TCreateDataWithId<TProduct>): Promise<TProduct> =>
   database.createWithId({
     path: getUserPath('products'),
@@ -19,18 +34,7 @@ const upsertMany = (data: TCreateDataWithId<TProduct>[]): Promise<void> =>
   database.upsertManyWithIds<TProduct>({
     path: getUserPath('products'),
     data,
-    updateFields: [
-      'description',
-      'price',
-      'familyId',
-      'barcodes',
-      'packTypes',
-      'department',
-      'section',
-      'group',
-      'stock',
-      'vrCreatedAt'
-    ]
+    updateFields: UPSERT_MANY_UPDATABLE_FIELDS
   })
 
 const findMany = (): Promise<TProduct[]> =>

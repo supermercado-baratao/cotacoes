@@ -13,6 +13,19 @@ beforeAll(async () => {
   useAuthStore.getState().setUser(user)
 })
 
+const uploadFile = async (
+  container: HTMLElement,
+  event: ReturnType<typeof userEvent.setup>,
+  filename: string
+) => {
+  const buffer = await readMockFile(filename)
+  const file = new File([new Uint8Array(buffer)], filename)
+  const input = container.querySelector(
+    'input[type="file"]'
+  ) as HTMLInputElement
+  await event.upload(input, file)
+}
+
 describe('Import flow', () => {
   test('For empty database', async () => {
     const event = userEvent.setup()
@@ -26,13 +39,7 @@ describe('Import flow', () => {
       ).toBeInTheDocument()
     })
 
-    const buffer = await readMockFile('import-data.xlsx')
-    const file = new File([new Uint8Array(buffer)], 'import-data.xlsx')
-
-    const input = container.querySelector(
-      'input[type="file"]'
-    ) as HTMLInputElement
-    await event.upload(input, file)
+    await uploadFile(container, event, 'import-data.xlsx')
 
     await waitFor(() => {
       expect(screen.getByText('import-data.xlsx')).toBeInTheDocument()
@@ -72,4 +79,57 @@ describe('Import flow', () => {
       { timeout: 10000 }
     )
   }, 20000)
+
+  test('Reimporting a file only selects changed products', async () => {
+    const event = userEvent.setup()
+
+    const { App } = createApp('/import')
+    const { container } = render(<App />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Selecionar arquivo' })
+      ).toBeInTheDocument()
+    })
+
+    await uploadFile(container, event, 'edited-import-data.xlsx')
+
+    await waitFor(() => {
+      expect(screen.getByText('edited-import-data.xlsx')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('10 produtos')).toBeInTheDocument()
+    expect(screen.getByText('5 famílias')).toBeInTheDocument()
+    expect(screen.getByText('8 fornecedores')).toBeInTheDocument()
+    expect(screen.getByText('7 sem alterações')).toBeInTheDocument()
+    expect(screen.getByText('3 linhas selecionadas')).toBeInTheDocument()
+    expect(screen.getAllByText('Alterado')).toHaveLength(3)
+    expect(screen.getAllByText('Sem alteração')).toHaveLength(7)
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Importar 3 produtos' })
+    )
+
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText('Dados importados com sucesso!')
+        ).toBeInTheDocument()
+      },
+      { timeout: 10000 }
+    )
+
+    await waitFor(
+      () => {
+        const products = useAppStore.getState().products ?? []
+        expect(products).toHaveLength(495)
+        expect(products.find((p) => p.id === '217823')?.price).toBeCloseTo(
+          17.98
+        )
+        expect(products.find((p) => p.id === '218301')?.price).toBeCloseTo(3.15)
+        expect(products.find((p) => p.id === '210524')?.price).toBeCloseTo(9.85)
+      },
+      { timeout: 10000 }
+    )
+  }, 40000)
 })
