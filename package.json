@@ -13,7 +13,7 @@
     "test:watch": "vitest --no-file-parallelism",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "eslint:check": "eslint .",
+    "eslint:check": "tsc -b --noEmit && eslint .",
     "eslint:fix": "eslint . --fix",
     "generate": "plop --plopfile generators/plopfile.js",
     "prepare": "husky"
