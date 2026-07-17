@@ -40,13 +40,16 @@ export const Table = ({
       field: 'status',
       headerName: 'Status',
       valueGetter: (_value, row) => productStatuses.get(row.id) ?? 'new',
-      renderCell: ({ value }: { value: TProductImportStatus }) => (
-        <Chip
-          label={STATUS_LABEL[value]}
-          color={STATUS_COLOR[value]}
-          size="small"
-        />
-      )
+      renderCell: ({ value }) => {
+        const status = (value ?? 'new') as TProductImportStatus
+        return (
+          <Chip
+            label={STATUS_LABEL[status]}
+            color={STATUS_COLOR[status]}
+            size="small"
+          />
+        )
+      }
     },
     { field: 'id', headerName: 'ID (VR)' },
     {
