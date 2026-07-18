@@ -11,11 +11,13 @@ import {
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 
+import { SearchInput } from '@/components'
 import type { TInvoice, TInvoiceItem, TProduct, TQuoteItem } from '@/models'
 import { useAppStore } from '@/stores'
 import { formatCurrency, formatNumericValue, isLikelyMatch } from '@/utils'
 
 import {
+  filterSuggestionsBySearch,
   getInvoiceSuggestions,
   type TInvoiceSuggestion
 } from './nf-suggestions-utils'
@@ -106,6 +108,7 @@ export const NfSuggestions = ({
 }: TNfSuggestionsProps) => {
   const { invoices, products, quotes, quoteId } = useAppStore()
   const [otherOpen, setOtherOpen] = useState(false)
+  const [search, setSearch] = useState('')
 
   const quote = useMemo(
     () => quotes?.find((q) => q.id === quoteId) ?? null,
@@ -136,8 +139,13 @@ export const NfSuggestions = ({
   }, [quoteItem, invoices, products, quote, nextQuoteDate])
 
   if (!suggestions) return null
-  const { likely, other } = suggestions
-  if (!likely.length && !other.length) return null
+
+  const trimmedSearch = search.trim()
+  const isSearching = !!trimmedSearch
+  const hasCandidates =
+    suggestions.likely.length > 0 || suggestions.other.length > 0
+  const { likely, other } = filterSuggestionsBySearch(search, suggestions)
+  const hasResults = likely.length > 0 || other.length > 0
 
   const handleSelect = (invoice: TInvoice, item: TInvoiceItem) => {
     onSelectItem(invoice, item.itemNumber)
@@ -149,43 +157,17 @@ export const NfSuggestions = ({
         <Typography variant="subtitle2" color="text.secondary">
           Sugestões de NF
         </Typography>
+        <SearchInput
+          placeholder="Buscar por descrição ou código de barras..."
+          value={search}
+          onValueChange={setSearch}
+          sx={S.SuggestionsSearchInput}
+        />
 
-        {likely.length > 0 ? (
-          likely.map((s) => (
-            <InvoiceGroup
-              key={s.invoice.id}
-              suggestion={s}
-              quoteItem={quoteItem}
-              productMap={productMap}
-              onSelectItem={handleSelect}
-            />
-          ))
-        ) : (
-          <Typography variant="caption" color="text.disabled">
-            Nenhuma nota com correspondência de família ou produto.
-          </Typography>
-        )}
-
-        {other.length > 0 && (
-          <Box>
-            <Link
-              component="button"
-              variant="caption"
-              color="text.secondary"
-              onClick={() => setOtherOpen((v) => !v)}
-              sx={S.OtherNotesLink}
-            >
-              <ReceiptLong fontSize="inherit" sx={{ mr: 0.25 }} />
-              Outras notas ({other.length})
-              {otherOpen ? (
-                <ExpandLess fontSize="inherit" />
-              ) : (
-                <ExpandMore fontSize="inherit" />
-              )}
-            </Link>
-            <Collapse in={otherOpen}>
-              <Box sx={S.OtherNotesList}>
-                {other.map((s) => (
+        {hasCandidates ? (
+          <Box sx={S.SuggestionsList}>
+            {likely.length > 0
+              ? likely.map((s) => (
                   <InvoiceGroup
                     key={s.invoice.id}
                     suggestion={s}
@@ -193,10 +175,57 @@ export const NfSuggestions = ({
                     productMap={productMap}
                     onSelectItem={handleSelect}
                   />
-                ))}
+                ))
+              : !isSearching && (
+                  <Typography variant="caption" color="text.disabled">
+                    Nenhuma nota com correspondência de família ou produto.
+                  </Typography>
+                )}
+
+            {other.length > 0 && (
+              <Box>
+                <Link
+                  component="button"
+                  variant="caption"
+                  color="text.secondary"
+                  onClick={() => setOtherOpen((v) => !v)}
+                  sx={S.OtherNotesLink}
+                >
+                  <ReceiptLong fontSize="inherit" sx={{ mr: 0.25 }} />
+                  Outras notas ({other.length})
+                  {isSearching || otherOpen ? (
+                    <ExpandLess fontSize="inherit" />
+                  ) : (
+                    <ExpandMore fontSize="inherit" />
+                  )}
+                </Link>
+                <Collapse in={isSearching || otherOpen}>
+                  <Box sx={S.OtherNotesList}>
+                    {other.map((s) => (
+                      <InvoiceGroup
+                        key={s.invoice.id}
+                        suggestion={s}
+                        quoteItem={quoteItem}
+                        productMap={productMap}
+                        onSelectItem={handleSelect}
+                      />
+                    ))}
+                  </Box>
+                </Collapse>
               </Box>
-            </Collapse>
+            )}
+
+            {isSearching && !hasResults && (
+              <Typography variant="caption" color="text.disabled">
+                Nenhum item encontrado para &quot;{trimmedSearch}&quot;.
+              </Typography>
+            )}
           </Box>
+        ) : (
+          <Typography variant="caption" color="text.disabled">
+            Nenhuma nota disponível para vincular a este item no período da
+            cotação.
+          </Typography>
         )}
       </Box>
       <Divider />

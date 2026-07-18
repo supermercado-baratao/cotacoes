@@ -11,7 +11,20 @@ export const filterInvoices = (
   search: string,
   invoices: TInvoice[]
 ): TInvoice[] =>
-  invoices.filter((inv) => matchesSearch(search, inv.number, inv.supplierName))
+  invoices.filter(
+    (inv) =>
+      matchesSearch(search, inv.number, inv.supplierName) ||
+      inv.items.some((item) =>
+        matchesSearch(
+          search,
+          item.description,
+          item.barcode,
+          item.calculatedBarcode,
+          item.packageBarcode,
+          item.supplierProductCode
+        )
+      )
+  )
 
 export const findBestQuoteItemMatch = (
   item: TInvoiceItem,

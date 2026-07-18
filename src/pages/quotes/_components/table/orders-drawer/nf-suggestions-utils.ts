@@ -7,7 +7,7 @@ import type {
   TQuote,
   TQuoteItem
 } from '@/models'
-import { isLikelyMatch } from '@/utils'
+import { isLikelyMatch, matchesSearch } from '@/utils'
 
 export type TInvoiceSuggestion = {
   invoice: TInvoice
@@ -53,4 +53,34 @@ export const getInvoiceSuggestions = (
   }
 
   return { likely, other }
+}
+
+const matchesItemSearch = (search: string, item: TInvoiceItem): boolean =>
+  matchesSearch(
+    search,
+    item.description,
+    item.barcode,
+    item.calculatedBarcode,
+    item.packageBarcode,
+    item.supplierProductCode
+  )
+
+export const filterSuggestionsBySearch = (
+  search: string,
+  suggestions: TNfSuggestionsResult
+): TNfSuggestionsResult => {
+  const filterGroup = (list: TInvoiceSuggestion[]): TInvoiceSuggestion[] =>
+    list
+      .map((s) => ({
+        ...s,
+        unlinkedItems: s.unlinkedItems.filter((item) =>
+          matchesItemSearch(search, item)
+        )
+      }))
+      .filter((s) => s.unlinkedItems.length > 0)
+
+  return {
+    likely: filterGroup(suggestions.likely),
+    other: filterGroup(suggestions.other)
+  }
 }

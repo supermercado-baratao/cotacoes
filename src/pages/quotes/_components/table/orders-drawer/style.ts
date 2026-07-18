@@ -90,6 +90,17 @@ export const SuggestionsWrapper: SxProps<Theme> = {
   py: 2,
   display: 'flex',
   flexDirection: 'column',
+  gap: 1.5
+}
+
+export const SuggestionsSearchInput: SxProps<Theme> = {
+  width: '100%',
+  maxWidth: 'none'
+}
+
+export const SuggestionsList: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
   gap: 1.5,
   maxHeight: 360,
   overflowY: 'auto'
