@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import type { TProductDraft } from '@/components'
 import type { TInvoice, TInvoiceItem, TOrder, TQuote } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
@@ -10,6 +11,7 @@ import { findBestQuoteItemMatch } from '../utils'
 
 export type TLinkOrderRow = {
   item: TInvoiceItem
+  productId: string | null
   quoteItemId: string
 }
 
@@ -24,10 +26,20 @@ export const useLinkOrdersDialogHandler = (
   const { setSuccessCallbacks } = useCallbackStore()
 
   const [overrides, setOverrides] = useState<Record<number, string>>({})
+  const [productOverrides, setProductOverrides] = useState<
+    Record<number, string>
+  >({})
+  const [quickCreateDraft, setQuickCreateDraft] =
+    useState<TProductDraft | null>(null)
+  const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false)
+  const [quickCreateFamily, setQuickCreateFamily] = useState(false)
   const wasOpenRef = useRef(false)
 
   useEffect(() => {
-    if (isOpened && !wasOpenRef.current) setOverrides({})
+    if (isOpened && !wasOpenRef.current) {
+      setOverrides({})
+      setProductOverrides({})
+    }
     wasOpenRef.current = isOpened
   }, [isOpened])
 
@@ -42,8 +54,7 @@ export const useLinkOrdersDialogHandler = (
   )
 
   const unlinkedItems = useMemo(
-    () =>
-      invoice.items.filter((i) => i.productId !== null && i.orderId === null),
+    () => invoice.items.filter((i) => i.orderId === null),
     [invoice.items]
   )
 
@@ -55,39 +66,56 @@ export const useLinkOrdersDialogHandler = (
           : null
         return {
           item,
+          productId:
+            item.productId ?? productOverrides[item.itemNumber] ?? null,
           quoteItemId: overrides[item.itemNumber] ?? bestMatch?.id ?? ''
         }
       }),
-    [unlinkedItems, quote, productMap, overrides]
+    [unlinkedItems, quote, productMap, overrides, productOverrides]
   )
 
   const handleRowQuoteItemChange = (itemNumber: number, quoteItemId: string) =>
     setOverrides((prev) => ({ ...prev, [itemNumber]: quoteItemId }))
 
-  const selectedCount = rows.filter((r) => r.quoteItemId !== '').length
+  const handleRowProductChange = (itemNumber: number, productId: string) =>
+    setProductOverrides((prev) => ({ ...prev, [itemNumber]: productId }))
+
+  const handleQuickCreateProduct = (item: TInvoiceItem) => {
+    setQuickCreateDraft({
+      description: item.description,
+      barcode: item.barcode ?? item.calculatedBarcode ?? '',
+      price: item.unitPrice
+    })
+    setIsQuickCreateOpen(true)
+  }
+
+  const handleQuickCreateClose = () => setIsQuickCreateOpen(false)
+
+  const isRowReady = (row: TLinkOrderRow) =>
+    row.productId !== null && row.quoteItemId !== ''
+
+  const selectedCount = rows.filter(isRowReady).length
 
   const handleConfirm = () => {
     if (!quote || !supplier || selectedCount === 0) return
 
-    const matches = rows
-      .filter((r) => r.quoteItemId !== '')
-      .map((r) => ({
-        itemNumber: r.item.itemNumber,
-        order: {
-          quoteId: quote.id,
-          quoteItemId: r.quoteItemId,
-          productId: r.item.productId!,
-          invoiceId: invoice.id,
-          price: r.item.unitPrice,
-          quantity: r.item.quantity,
-          packing: r.item.unit,
-          packingQuantity: null,
-          supplierId: supplier.id,
-          sellerId: null,
-          date: dayjs(invoice.emissionDate).format('YYYY-MM-DD'),
-          observations: null
-        } as TCreateData<TOrder>
-      }))
+    const matches = rows.filter(isRowReady).map((r) => ({
+      itemNumber: r.item.itemNumber,
+      order: {
+        quoteId: quote.id,
+        quoteItemId: r.quoteItemId,
+        productId: r.productId!,
+        invoiceId: invoice.id,
+        price: r.item.unitPrice,
+        quantity: r.item.quantity,
+        packing: r.item.unit,
+        packingQuantity: null,
+        supplierId: supplier.id,
+        sellerId: null,
+        date: dayjs(invoice.emissionDate).format('YYYY-MM-DD'),
+        observations: null
+      } as TCreateData<TOrder>
+    }))
 
     setSuccessCallbacks([handleClose])
     createOrdersBatchWithInvoiceLink({ invoice, matches })
@@ -96,9 +124,17 @@ export const useLinkOrdersDialogHandler = (
   return {
     quote,
     supplier,
+    products: products ?? [],
     rows,
     selectedCount,
     handleRowQuoteItemChange,
+    handleRowProductChange,
+    handleQuickCreateProduct,
+    quickCreateDraft,
+    isQuickCreateOpen,
+    handleQuickCreateClose,
+    quickCreateFamily,
+    setQuickCreateFamily,
     handleConfirm
   }
 }

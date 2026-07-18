@@ -37,6 +37,7 @@ export const useInvoiceOrderLinkMutation = () => {
         item.itemNumber === itemNumber
           ? {
               ...item,
+              productId: order.productId,
               orderId: createdOrder.id,
               matchStatus: 'matched' as TInvoiceItemMatchStatus,
               priceDivergence: item.unitPrice - order.price,
@@ -78,6 +79,7 @@ export const useInvoiceOrderLinkMutation = () => {
         if (!match) return item
         return {
           ...item,
+          productId: match.order.productId,
           orderId: match.createdOrder.id,
           matchStatus: 'matched' as TInvoiceItemMatchStatus,
           priceDivergence: item.unitPrice - match.order.price,
