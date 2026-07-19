@@ -4,6 +4,7 @@ import { suggestPriceReferences, type TAiSuggestion } from '@/infra'
 import type { TQuote, TQuoteItem } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
+import { getFamilyReferencePrice } from '../../utils'
 import {
   PROGRESS_MESSAGE_INTERVAL_MS,
   PROGRESS_MESSAGES,
@@ -193,7 +194,7 @@ export const useAiReference = (
       const salePrice =
         type === 'product'
           ? ((products ?? []).find((p) => p.id === id)?.price ?? null)
-          : ((products ?? []).find((p) => p.familyId === id)?.price ?? null)
+          : getFamilyReferencePrice(products ?? [], id)
       return { ...item, salePrice, priceRef: { type, id } }
     })
     setSuccessCallbacks([handleClose])
