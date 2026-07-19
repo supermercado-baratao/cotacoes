@@ -57,10 +57,15 @@ export const Table = <T extends GridValidRowModel>({
     }
   }, [handleEdit, handleDelete])
 
+  const allColumns = useMemo(
+    () => (actionColumn ? [...columns, actionColumn] : columns),
+    [columns, actionColumn]
+  )
+
   return (
     <div>
       <DataGrid
-        columns={actionColumn ? [...columns, actionColumn] : columns}
+        columns={allColumns}
         rows={items}
         pageSizeOptions={[25, 50, 100]}
         initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
