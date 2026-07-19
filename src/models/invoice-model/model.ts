@@ -1,18 +1,40 @@
 import dayjs from 'dayjs'
-import { where } from 'firebase/firestore'
+import { documentId, where } from 'firebase/firestore'
 
 import { database, getUserPath } from '@/infra'
 import type { TUpdateData } from '@/types'
 
 import type { TInvoice, TInvoiceDateRange } from './types'
 
-const createMany = (
+const IN_QUERY_CHUNK_SIZE = 30
+
+const findExistingIds = async (ids: string[]): Promise<Set<string>> => {
+  const chunks: string[][] = []
+  for (let i = 0; i < ids.length; i += IN_QUERY_CHUNK_SIZE) {
+    chunks.push(ids.slice(i, i + IN_QUERY_CHUNK_SIZE))
+  }
+  const results = await Promise.all(
+    chunks.map((chunkIds) =>
+      database.findMany<TInvoice>({
+        path: getUserPath('invoices'),
+        queryConstraints: [where(documentId(), 'in', chunkIds)]
+      })
+    )
+  )
+  return new Set(results.flat().map((invoice) => invoice.id))
+}
+
+const createMany = async (
   data: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>
-): Promise<TInvoice[]> =>
-  database.createManyWithIds<TInvoice>({
+): Promise<TInvoice[]> => {
+  const existingIds = await findExistingIds(data.map((item) => item.id))
+  const newData = data.filter((item) => !existingIds.has(item.id))
+  if (!newData.length) return []
+  return database.createManyWithIds<TInvoice>({
     path: getUserPath('invoices'),
-    data
+    data: newData
   })
+}
 
 const create = async (
   data: Omit<TInvoice, 'createdAt' | 'updatedAt'>
