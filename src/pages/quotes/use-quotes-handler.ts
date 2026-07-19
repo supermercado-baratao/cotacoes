@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useDeleteHandler, useFormState } from '@/hooks'
 import type { TProduct, TQuote } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
+import { matchesSearch } from '@/utils'
 
 import { printQuote } from './pdf/print-quote'
 import {
@@ -137,11 +138,9 @@ export const useQuotesHandler = () => {
   const isFetching = quotes === null
   const hasQuoteRows = !!quoteRows.length
 
-  const filteredRows = search
-    ? quoteRows.filter((row) =>
-        row.description.toLowerCase().includes(search.toLowerCase())
-      )
-    : quoteRows
+  const filteredRows = quoteRows.filter((row) =>
+    matchesSearch(search, row.description)
+  )
 
   return {
     isFetching,
