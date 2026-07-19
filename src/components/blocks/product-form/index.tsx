@@ -140,7 +140,9 @@ export const ProductForm = ({
             slotProps={{ htmlInput: { step: 0.001, max: MAX_NUMERIC_VALUE } }}
           />
           <TextField
-            {...register('tax', { valueAsNumber: true })}
+            {...register('tax', {
+              setValueAs: (value) => (value === '' ? null : Number(value))
+            })}
             label="Imposto"
             type="number"
             error={!!errors.tax}
@@ -153,7 +155,9 @@ export const ProductForm = ({
             }}
           />
           <TextField
-            {...register('margin', { valueAsNumber: true })}
+            {...register('margin', {
+              setValueAs: (value) => (value === '' ? null : Number(value))
+            })}
             label="Margem Padrão"
             type="number"
             error={!!errors.margin}
