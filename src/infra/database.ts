@@ -2,6 +2,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  documentId,
   getDoc,
   getDocs,
   query,
@@ -10,6 +11,7 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
+  where,
   writeBatch
 } from 'firebase/firestore'
 
@@ -81,15 +83,49 @@ const createWithId = async <T>({
 }
 
 const BATCH_CHUNK_SIZE = 500
+const IN_QUERY_CHUNK_SIZE = 30
+
+const chunk = <T>(items: T[], size: number): T[][] => {
+  const chunks: T[][] = []
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size))
+  }
+  return chunks
+}
+
+const findExistingIds = async ({
+  ids,
+  path
+}: {
+  ids: string[]
+  path: string
+}): Promise<Set<string>> => {
+  const results = await Promise.all(
+    chunk(ids, IN_QUERY_CHUNK_SIZE).map(async (idsChunk) => {
+      const q = query(
+        collection(firestore, path),
+        where(documentId(), 'in', idsChunk)
+      )
+      const { docs } = await getDocs(q)
+      return docs.map((docSnap) => docSnap.id)
+    })
+  )
+  return new Set(results.flat())
+}
 
 const commitInChunks = async (
-  items: Array<{ id: string; ref: ReturnType<typeof doc>; data: object }>,
-  options?: Parameters<ReturnType<typeof writeBatch>['set']>[2]
+  items: Array<{
+    id: string
+    ref: ReturnType<typeof doc>
+    data: object
+    options?: Parameters<ReturnType<typeof writeBatch>['set']>[2]
+  }>,
+  defaultOptions?: Parameters<ReturnType<typeof writeBatch>['set']>[2]
 ) => {
   for (let i = 0; i < items.length; i += BATCH_CHUNK_SIZE) {
     const batch = writeBatch(firestore)
-    items.slice(i, i + BATCH_CHUNK_SIZE).forEach(({ ref, data }) => {
-      batch.set(ref, data, options ?? {})
+    items.slice(i, i + BATCH_CHUNK_SIZE).forEach(({ ref, data, options }) => {
+      batch.set(ref, data, options ?? defaultOptions ?? {})
     })
     await batch.commit()
   }
@@ -129,15 +165,34 @@ const upsertManyWithIds = async <T>({
   data: Array<TCreateData<T> & { id: string }>
   path: string
   updateFields: string[]
-}): Promise<void> =>
-  commitInChunks(
-    data.map((item) => ({
-      id: item.id,
-      ref: doc(firestore, path, item.id),
-      data: { ...item, updatedAt: serverTimestamp() }
-    })),
-    { mergeFields: [...updateFields, 'updatedAt'] }
+}): Promise<void> => {
+  const existingIds = await findExistingIds({
+    ids: data.map((item) => item.id),
+    path
+  })
+
+  await commitInChunks(
+    data.map((item) => {
+      const isNew = !existingIds.has(item.id)
+      return {
+        id: item.id,
+        ref: doc(firestore, path, item.id),
+        data: {
+          ...item,
+          ...(isNew ? { createdAt: serverTimestamp() } : {}),
+          updatedAt: serverTimestamp()
+        },
+        options: {
+          mergeFields: [
+            ...updateFields,
+            'updatedAt',
+            ...(isNew ? ['createdAt'] : [])
+          ]
+        }
+      }
+    })
   )
+}
 
 const createMany = async <T>({
   data,
