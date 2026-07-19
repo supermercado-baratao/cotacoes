@@ -6,6 +6,7 @@ import type { TUpdateData } from '@/types'
 
 import type { TInvoice, TInvoiceDateRange } from './types'
 
+const PATH = 'invoices'
 const IN_QUERY_CHUNK_SIZE = 30
 
 const findExistingIds = async (ids: string[]): Promise<Set<string>> => {
@@ -16,7 +17,7 @@ const findExistingIds = async (ids: string[]): Promise<Set<string>> => {
   const results = await Promise.all(
     chunks.map((chunkIds) =>
       database.findMany<TInvoice>({
-        path: getUserPath('invoices'),
+        path: getUserPath(PATH),
         queryConstraints: [where(documentId(), 'in', chunkIds)]
       })
     )
@@ -31,7 +32,7 @@ const createMany = async (
   const newData = data.filter((item) => !existingIds.has(item.id))
   if (!newData.length) return []
   return database.createManyWithIds<TInvoice>({
-    path: getUserPath('invoices'),
+    path: getUserPath(PATH),
     data: newData
   })
 }
@@ -41,12 +42,12 @@ const create = async (
 ): Promise<TInvoice> => {
   const existing = await database.findUniqueById<TInvoice>({
     id: data.id,
-    path: getUserPath('invoices')
+    path: getUserPath(PATH)
   })
   if (existing) throw new Error('Nota fiscal já importada anteriormente')
   return database.createWithId<TInvoice>({
     data,
-    path: getUserPath('invoices')
+    path: getUserPath(PATH)
   })
 }
 
@@ -55,7 +56,7 @@ const findMany = ({
   endDate
 }: TInvoiceDateRange): Promise<TInvoice[]> =>
   database.findMany<TInvoice>({
-    path: getUserPath('invoices'),
+    path: getUserPath(PATH),
     queryConstraints: [
       where('emissionDate', '>=', startDate),
       where(
@@ -67,10 +68,10 @@ const findMany = ({
   })
 
 const update = (data: TUpdateData<TInvoice>): Promise<TInvoice> =>
-  database.update({ path: getUserPath('invoices'), data })
+  database.update({ path: getUserPath(PATH), data })
 
 const deleteUniqueById = (id: string): Promise<string> =>
-  database.deleteUniqueById({ path: getUserPath('invoices'), id })
+  database.deleteUniqueById({ path: getUserPath(PATH), id })
 
 export const invoiceModel = {
   create,

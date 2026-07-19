@@ -3,9 +3,11 @@ import type { TCreateDataWithId, TUpdateData } from '@/types'
 
 import { type TSupplier } from './types'
 
+const PATH = 'suppliers'
+
 const create = (data: TCreateDataWithId<TSupplier>): Promise<TSupplier> =>
   database.createWithId({
-    path: getUserPath('suppliers'),
+    path: getUserPath(PATH),
     data
   })
 
@@ -13,13 +15,13 @@ const createMany = (
   data: TCreateDataWithId<TSupplier>[]
 ): Promise<TSupplier[]> =>
   database.createManyWithIds<TSupplier>({
-    path: getUserPath('suppliers'),
+    path: getUserPath(PATH),
     data
   })
 
 const upsertMany = (data: TCreateDataWithId<TSupplier>[]): Promise<void> =>
   database.upsertManyWithIds<TSupplier>({
-    path: getUserPath('suppliers'),
+    path: getUserPath(PATH),
     data,
     updateFields: [
       'id',
@@ -32,13 +34,13 @@ const upsertMany = (data: TCreateDataWithId<TSupplier>[]): Promise<void> =>
   })
 
 const findMany = (): Promise<TSupplier[]> =>
-  database.findMany({ path: getUserPath('suppliers') })
+  database.findMany({ path: getUserPath(PATH) })
 
 const update = (data: TUpdateData<TSupplier>): Promise<TSupplier> =>
-  database.update({ path: getUserPath('suppliers'), data })
+  database.update({ path: getUserPath(PATH), data })
 
 const deleteUniqueById = (id: string): Promise<string> =>
-  database.deleteUniqueById({ path: getUserPath('suppliers'), id })
+  database.deleteUniqueById({ path: getUserPath(PATH), id })
 
 export const supplierModel = {
   create,
