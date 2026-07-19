@@ -3,7 +3,14 @@ import dayjs from 'dayjs'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
-import type { TInvoice, TOrder, TProduct, TQuoteItem } from '@/models'
+import type {
+  TInvoice,
+  TOrder,
+  TProduct,
+  TQuoteItem,
+  TSeller,
+  TSupplier
+} from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import { findSupplierByCnpj } from '@/utils'
 
@@ -156,6 +163,20 @@ export const useFormHandler = (
     })
   }
 
+  const handleSupplierCreated = (supplier: TSupplier) => {
+    setValue('supplierId', supplier.id, {
+      shouldValidate: true,
+      shouldDirty: true
+    })
+  }
+
+  const handleSellerCreated = (seller: TSeller) => {
+    setValue('sellerId', seller.id, {
+      shouldValidate: true,
+      shouldDirty: true
+    })
+  }
+
   return {
     register,
     onSubmit,
@@ -167,6 +188,8 @@ export const useFormHandler = (
     selectedProduct,
     lastOrder,
     invoiceItem,
-    handleProductCreated
+    handleProductCreated,
+    handleSupplierCreated,
+    handleSellerCreated
   }
 }

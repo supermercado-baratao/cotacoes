@@ -39,13 +39,19 @@ type TAppStore = {
 
   suppliers: TSupplier[] | null
   setSuppliers: (suppliers: TSupplier[]) => void
-  createSupplier: (supplier: TCreateDataWithId<TSupplier>) => void
+  createSupplier: (
+    supplier: TCreateDataWithId<TSupplier>,
+    options?: { onSuccess?: (supplier: TSupplier) => void }
+  ) => void
   updateSupplier: (supplier: TUpdateData<TSupplier>) => void
   deleteSupplier: (id: string) => void
 
   sellers: TSeller[] | null
   setSellers: (sellers: TSeller[]) => void
-  createSeller: (seller: TCreateData<TSeller>) => void
+  createSeller: (
+    seller: TCreateData<TSeller>,
+    options?: { onSuccess?: (seller: TSeller) => void }
+  ) => void
   updateSeller: (seller: TUpdateData<TSeller>) => void
   deleteSeller: (id: string) => void
 
