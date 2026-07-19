@@ -28,6 +28,33 @@ export class InternalServerError extends Error {
   }
 }
 
+export class ConflictError extends Error {
+  public action: string
+  public statusCode: number
+
+  constructor({
+    cause,
+    message,
+    action
+  }: ErrorOptions & { message?: string; action?: string }) {
+    super(message || 'Este recurso já existe no sistema.', {
+      cause
+    })
+    this.name = 'ConflictError'
+    this.action = action || 'Verifique se o recurso já não foi cadastrado.'
+    this.statusCode = 409
+  }
+
+  toJSON(): TErrorReturn {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      statusCode: this.statusCode
+    }
+  }
+}
+
 export class NotFoundError extends Error {
   public action: string
   public statusCode: number

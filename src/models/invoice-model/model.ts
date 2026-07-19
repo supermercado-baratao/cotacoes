@@ -1,7 +1,14 @@
 import dayjs from 'dayjs'
-import { documentId, where } from 'firebase/firestore'
+import {
+  doc,
+  documentId,
+  runTransaction,
+  serverTimestamp,
+  Timestamp,
+  where
+} from 'firebase/firestore'
 
-import { database, getUserPath } from '@/infra'
+import { ConflictError, database, firestore, getUserPath } from '@/infra'
 import type { TUpdateData } from '@/types'
 
 import type { TInvoice, TInvoiceDateRange } from './types'
@@ -40,15 +47,24 @@ const createMany = async (
 const create = async (
   data: Omit<TInvoice, 'createdAt' | 'updatedAt'>
 ): Promise<TInvoice> => {
-  const existing = await database.findUniqueById<TInvoice>({
-    id: data.id,
-    path: getUserPath(PATH)
+  const now = Timestamp.now()
+  const ref = doc(firestore, getUserPath(PATH), data.id)
+
+  await runTransaction(firestore, async (transaction) => {
+    const existing = await transaction.get(ref)
+    if (existing.exists()) {
+      throw new ConflictError({
+        message: 'Nota fiscal já importada anteriormente'
+      })
+    }
+    transaction.set(ref, {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    })
   })
-  if (existing) throw new Error('Nota fiscal já importada anteriormente')
-  return database.createWithId<TInvoice>({
-    data,
-    path: getUserPath(PATH)
-  })
+
+  return { ...data, createdAt: now, updatedAt: now } as TInvoice
 }
 
 const findMany = ({

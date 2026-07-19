@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { ConflictError } from '@/infra'
 import { invoiceModel, type TInvoice } from '@/models'
 import { useAlertStore, useAppStore, useCallbackStore } from '@/stores'
 
@@ -24,8 +25,7 @@ export const useInvoiceMutation = () => {
       handleSuccessCallbacks()
     },
     onError: (error: Error) => {
-      const isDuplicate =
-        error.message === 'Nota fiscal já importada anteriormente'
+      const isDuplicate = error instanceof ConflictError
       alert({
         severity: 'error',
         title: isDuplicate
