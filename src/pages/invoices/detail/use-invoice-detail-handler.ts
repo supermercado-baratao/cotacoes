@@ -78,9 +78,8 @@ export const useInvoiceDetailHandler = () => {
   const itemsWithDivergences = useMemo((): TInvoiceItemRow[] => {
     if (!invoice) return []
     return invoice.items.map((item) => {
-      const order = item.productId
-        ? (ordersForSupplier.find((o) => o.productId === item.productId) ??
-          null)
+      const order = item.orderId
+        ? (ordersForSupplier.find((o) => o.id === item.orderId) ?? null)
         : null
 
       const matchStatus: TInvoiceItemMatchStatus = !item.productId
