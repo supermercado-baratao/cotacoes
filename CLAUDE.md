@@ -11,22 +11,30 @@ Aplicação web para gerenciamento de cotações e controle de pedidos para supe
 ```bash
 pnpm dev              # iniciar servidor de desenvolvimento
 pnpm build            # build de produção (tsc + vite build)
-pnpm test             # executar testes uma vez
-pnpm test:watch       # executar testes em modo watch
+pnpm test             # executar testes unitários/integração (Vitest) uma vez
+pnpm test:watch       # executar testes Vitest em modo watch
+pnpm test:e2e         # executar testes e2e (Playwright)
 pnpm eslint:check     # verificar lint
 pnpm eslint:fix       # corrigir problemas de lint automaticamente
 pnpm prettier:fix     # formatar código
 pnpm generate         # gerar novo componente via plop
-pnpm emulators:start  # iniciar emuladores do Firebase (Auth + Firestore), necessário para pnpm test
+pnpm emulators:start  # iniciar emuladores do Firebase (Auth + Firestore), necessário apenas para pnpm test:e2e
 ```
 
 Para executar um único arquivo de teste:
 
 ```bash
-pnpm vitest run src/tests/app.test.tsx
+pnpm vitest run src/tests/quote-flow.test.tsx
 ```
 
-Os testes dependem dos emuladores do Firebase (Auth na porta `9099`, Firestore na `8080`). Sem eles rodando, os testes falham com `ECONNREFUSED` / `auth/network-request-failed`. Inicie os emuladores em background antes de rodar `pnpm test` (ou antes de dar `git push`, ver seção de git hooks abaixo):
+### Estratégia de testes
+
+O projeto usa duas suítes com responsabilidades distintas:
+
+- **Vitest** (`src/tests/*.test.tsx`) — testes rápidos e determinísticos, sem depender de rede ou emuladores. `src/infra/database.ts` e o SDK `firebase/auth`/`firebase/firestore` são mockados (ver `src/tests/_mocks/`) com um fake in-memory que persiste dados entre chamadas dentro do mesmo arquivo de teste, permitindo fluxos completos de UI (criar → editar → excluir) sem I/O real. Cada arquivo de teste é um roteiro sequencial (estado acumulado entre `test()`s via `beforeAll`), cobrindo tanto o caminho de sucesso quanto cenários de erro (ex: `databaseMock.create.mockRejectedValueOnce(...)`). Não precisa dos emuladores rodando.
+- **Playwright** (`e2e/*.spec.ts`) — poucos cenários de ponta a ponta, em browser real, contra os emuladores reais do Firebase (cadastro de conta, verificação de e-mail, import de xlsx, import de notas, criação de cotação e vínculo de pedidos). Precisa dos emuladores rodando e do `.env` preenchido. Roda separado do `pnpm test`/hook `pre-push` (mais lento), tipicamente manual ou em CI.
+
+O hook `pre-push` roda `pnpm test` (Vitest), que **não** precisa dos emuladores. Só inicie-os quando for rodar `pnpm test:e2e`:
 
 ```bash
 pnpm emulators:start > /tmp/emulators.log 2>&1 &
@@ -378,13 +386,12 @@ O projeto está em uso real — **não se trabalha mais diretamente na `main`**.
 
 - **`pre-commit`** — roda `lint-staged`.
 - **`commit-msg`** — reescreve automaticamente prefixos simples (`feat:`, `fix:`, etc.) para a versão com emoji e valida com `commitlint`. Pode-se commitar usando o prefixo sem emoji (ex: `git commit -m "feat: add x"`) que o hook adiciona o emoji.
-- **`pre-push`** — roda `pnpm tsc -b --noEmit && pnpm test`. Como os testes dependem dos emuladores do Firebase, **garanta que estão rodando antes de dar push** (ver seção Comandos), senão o push é bloqueado com falha de teste.
+- **`pre-push`** — roda `pnpm tsc -b --noEmit && pnpm test`. Os testes (Vitest) são mockados e não dependem dos emuladores do Firebase.
 
 ### Abrindo o merge request
 
-1. Suba os emuladores do Firebase em background (necessário para o hook `pre-push` passar).
-2. `git push -u origin <branch>`
-3. `glab mr create --source-branch <branch> --target-branch main --title "..." --description "..."`
+1. `git push -u origin <branch>`
+2. `glab mr create --source-branch <branch> --target-branch main --title "..." --description "..."`
    - Título segue a convenção de commits (prefixo + emoji, imperativo, minúsculo).
    - Descrição resume as mudanças — se for um review com múltiplos achados, agrupe por severidade/categoria — e referencia a issue com `Issue: #<número>`.
-4. Reporte a URL da MR ao usuário ao final.
+3. Reporte a URL da MR ao usuário ao final.

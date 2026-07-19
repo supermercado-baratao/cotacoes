@@ -3,3 +3,6 @@ dist
 .env
 .env.development
 *.log
+test-results
+playwright-report
+blob-report
