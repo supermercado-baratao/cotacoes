@@ -72,7 +72,10 @@ export const useFormHandler = (
     [order, invoiceRef, invoiceItem, suppliers]
   )
 
-  const schema = useMemo(() => createSchema(quoteDate), [quoteDate])
+  const schema = useMemo(
+    () => createSchema(invoiceRef ? '' : quoteDate),
+    [quoteDate, invoiceRef]
+  )
 
   const {
     register,
