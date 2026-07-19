@@ -1,8 +1,12 @@
 import { create } from 'zustand'
 
+type TCallbackEntry = {
+  success: (() => void)[]
+  error: (() => void)[]
+}
+
 type TCallbackStore = {
-  successCallbacks: (() => void)[]
-  errorCallbacks: (() => void)[]
+  queue: TCallbackEntry[]
   setSuccessCallbacks: (callbacks: (() => void)[]) => void
   setErrorCallbacks: (callbacks: (() => void)[]) => void
   handleSuccessCallbacks: () => void
@@ -10,16 +14,27 @@ type TCallbackStore = {
 }
 
 export const useCallbackStore = create<TCallbackStore>()((set, get) => ({
-  successCallbacks: [],
-  errorCallbacks: [],
-  setSuccessCallbacks: (callbacks) => set({ successCallbacks: callbacks }),
-  setErrorCallbacks: (callbacks) => set({ errorCallbacks: callbacks }),
+  queue: [],
+  setSuccessCallbacks: (callbacks) =>
+    set((state) => ({
+      queue: [...state.queue, { success: callbacks, error: [] }]
+    })),
+  setErrorCallbacks: (callbacks) =>
+    set((state) => {
+      const lastIndex = state.queue.length - 1
+      if (lastIndex < 0) return { queue: [{ success: [], error: callbacks }] }
+      const queue = [...state.queue]
+      queue[lastIndex] = { ...queue[lastIndex], error: callbacks }
+      return { queue }
+    }),
   handleSuccessCallbacks: () => {
-    get().successCallbacks.forEach((cb) => cb())
-    set({ successCallbacks: [] })
+    const [entry, ...rest] = get().queue
+    entry?.success.forEach((cb) => cb())
+    set({ queue: rest })
   },
   handleErrorCallbacks: () => {
-    get().errorCallbacks.forEach((cb) => cb())
-    set({ errorCallbacks: [] })
+    const [entry, ...rest] = get().queue
+    entry?.error.forEach((cb) => cb())
+    set({ queue: rest })
   }
 }))
