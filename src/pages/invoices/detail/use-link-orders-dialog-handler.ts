@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { TProductDraft } from '@/components'
-import type { TInvoice, TInvoiceItem, TOrder, TQuote } from '@/models'
+import type { TInvoice, TInvoiceItem, TOrder, TProduct, TQuote } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
 import { findSupplierByCnpj } from '@/utils'
@@ -32,6 +32,9 @@ export const useLinkOrdersDialogHandler = (
   const [quickCreateDraft, setQuickCreateDraft] =
     useState<TProductDraft | null>(null)
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false)
+  const [quickCreateItemNumber, setQuickCreateItemNumber] = useState<
+    number | null
+  >(null)
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
   const wasOpenRef = useRef(false)
 
@@ -86,10 +89,18 @@ export const useLinkOrdersDialogHandler = (
       barcode: item.barcode ?? item.calculatedBarcode ?? '',
       price: item.unitPrice
     })
+    setQuickCreateItemNumber(item.itemNumber)
     setIsQuickCreateOpen(true)
   }
 
   const handleQuickCreateClose = () => setIsQuickCreateOpen(false)
+
+  const handleProductCreated = (product: TProduct) => {
+    if (quickCreateItemNumber !== null) {
+      handleRowProductChange(quickCreateItemNumber, product.id)
+    }
+    setIsQuickCreateOpen(false)
+  }
 
   const isRowReady = (row: TLinkOrderRow) =>
     row.productId !== null && row.quoteItemId !== ''
@@ -133,6 +144,7 @@ export const useLinkOrdersDialogHandler = (
     quickCreateDraft,
     isQuickCreateOpen,
     handleQuickCreateClose,
+    handleProductCreated,
     quickCreateFamily,
     setQuickCreateFamily,
     handleConfirm

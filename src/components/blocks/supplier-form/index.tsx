@@ -19,18 +19,21 @@ import { useFormHandler } from './use-form-handler'
 type TSupplierFormProps = {
   supplier: TSupplier | null
   setFormSupplier: (supplier: TSupplier | null) => void
+  onCreated?: (supplier: TSupplier) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 export const SupplierForm = ({
   isOpened,
   supplier,
   handleClose,
-  setFormSupplier
+  setFormSupplier,
+  onCreated
 }: TSupplierFormProps) => {
   const { register, onSubmit, errors, control } = useFormHandler(
     supplier,
     setFormSupplier,
-    handleClose
+    handleClose,
+    onCreated
   )
 
   const isEditing = !!supplier

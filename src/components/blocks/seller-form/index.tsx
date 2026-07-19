@@ -12,6 +12,7 @@ type TSellerFormProps = {
   seller: TSeller | null
   setFormSeller: (seller: TSeller | null) => void
   setQuickCreateSupplier?: (value: boolean) => void
+  onCreated?: (seller: TSeller) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 export const SellerForm = ({
@@ -19,12 +20,14 @@ export const SellerForm = ({
   seller,
   handleClose,
   setFormSeller,
-  setQuickCreateSupplier
+  setQuickCreateSupplier,
+  onCreated
 }: TSellerFormProps) => {
   const { control, register, onSubmit, errors, suppliers } = useFormHandler(
     seller,
     setFormSeller,
-    handleClose
+    handleClose,
+    onCreated
   )
 
   const title = seller ? 'Editar Vendedor' : 'Novo Vendedor'

@@ -17,7 +17,8 @@ export const useFormHandler = (
   product: TProduct | null,
   draft: TProductDraft | null,
   setFormProduct: (product: TProduct | null) => void,
-  handleClose: () => void
+  handleClose: () => void,
+  onCreated?: (product: TProduct) => void
 ) => {
   const { createProduct, updateProduct, families } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
@@ -70,7 +71,10 @@ export const useFormHandler = (
           barcodes,
           packTypes
         })
-      : createProduct({ ...rest, barcodes, packTypes, vrCreatedAt: '' })
+      : createProduct(
+          { ...rest, barcodes, packTypes, vrCreatedAt: '' },
+          onCreated ? { onSuccess: onCreated } : undefined
+        )
 
     setSuccessCallbacks([handleClose, () => setFormProduct(null)])
   })

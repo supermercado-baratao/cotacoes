@@ -10,7 +10,8 @@ import { schema, type TSchema } from './schema'
 export const useFormHandler = (
   seller: TSeller | null,
   setFormSeller: (seller: TSeller | null) => void,
-  handleClose: () => void
+  handleClose: () => void,
+  onCreated?: (seller: TSeller) => void
 ) => {
   const { createSeller, updateSeller, suppliers } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
@@ -45,8 +46,8 @@ export const useFormHandler = (
       updateSeller({ ...seller, ...data })
       return
     }
-    setSuccessCallbacks([handleClose, () => reset(defaultValues)])
-    createSeller(data)
+    setSuccessCallbacks([handleClose, () => setFormSeller(null)])
+    createSeller(data, onCreated ? { onSuccess: onCreated } : undefined)
   })
 
   return {

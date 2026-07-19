@@ -3,7 +3,14 @@ import dayjs from 'dayjs'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
-import type { TInvoice, TOrder, TQuoteItem } from '@/models'
+import type {
+  TInvoice,
+  TOrder,
+  TProduct,
+  TQuoteItem,
+  TSeller,
+  TSupplier
+} from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import { findSupplierByCnpj } from '@/utils'
 
@@ -72,13 +79,17 @@ export const useFormHandler = (
     [order, invoiceRef, invoiceItem, suppliers]
   )
 
-  const schema = useMemo(() => createSchema(quoteDate), [quoteDate])
+  const schema = useMemo(
+    () => createSchema(invoiceRef ? '' : quoteDate),
+    [quoteDate, invoiceRef]
+  )
 
   const {
     register,
     handleSubmit,
     reset,
     control,
+    setValue,
     formState: { errors }
   } = useForm<TSchema>({ resolver: zodResolver(schema), defaultValues })
 
@@ -145,6 +156,27 @@ export const useFormHandler = (
     [watchedProductId, products]
   )
 
+  const handleProductCreated = (product: TProduct) => {
+    setValue('productId', product.id, {
+      shouldValidate: true,
+      shouldDirty: true
+    })
+  }
+
+  const handleSupplierCreated = (supplier: TSupplier) => {
+    setValue('supplierId', supplier.id, {
+      shouldValidate: true,
+      shouldDirty: true
+    })
+  }
+
+  const handleSellerCreated = (seller: TSeller) => {
+    setValue('sellerId', seller.id, {
+      shouldValidate: true,
+      shouldDirty: true
+    })
+  }
+
   return {
     register,
     onSubmit,
@@ -155,6 +187,9 @@ export const useFormHandler = (
     selectableProducts: products ?? [],
     selectedProduct,
     lastOrder,
-    invoiceItem
+    invoiceItem,
+    handleProductCreated,
+    handleSupplierCreated,
+    handleSellerCreated
   }
 }

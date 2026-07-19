@@ -1,6 +1,8 @@
 import type { TAiSuggestion } from '@/infra'
 import type { TFamily, TProduct, TQuote, TQuoteItem } from '@/models'
 
+import { getFamilyReferencePrice } from '../../utils'
+
 export type TSuggestionRow = {
   item: TQuoteItem
   suggestion: TAiSuggestion
@@ -25,7 +27,7 @@ const getRefPrice = (s: TAiSuggestion, products: TProduct[]): number | null => {
   if (s.type === 'product' && s.id)
     return products.find((p) => p.id === s.id)?.price ?? null
   if (s.type === 'family' && s.id)
-    return products.find((p) => p.familyId === s.id)?.price ?? null
+    return getFamilyReferencePrice(products, s.id)
   return null
 }
 

@@ -33,6 +33,7 @@ type TProductFormProps = {
   draft: TProductDraft | null
   setFormProduct: (product: TProduct | null) => void
   setQuickCreateFamily: (open: boolean) => void
+  onCreated?: (product: TProduct) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
@@ -43,13 +44,15 @@ export const ProductForm = ({
   draft,
   handleClose,
   setFormProduct,
-  setQuickCreateFamily
+  setQuickCreateFamily,
+  onCreated
 }: TProductFormProps) => {
   const { register, onSubmit, errors, control, families } = useFormHandler(
     product,
     draft,
     setFormProduct,
-    handleClose
+    handleClose,
+    onCreated
   )
 
   const { fields, append, remove } = useFieldArray({
@@ -140,7 +143,9 @@ export const ProductForm = ({
             slotProps={{ htmlInput: { step: 0.001, max: MAX_NUMERIC_VALUE } }}
           />
           <TextField
-            {...register('tax', { valueAsNumber: true })}
+            {...register('tax', {
+              setValueAs: (value) => (value === '' ? null : Number(value))
+            })}
             label="Imposto"
             type="number"
             error={!!errors.tax}
@@ -153,7 +158,9 @@ export const ProductForm = ({
             }}
           />
           <TextField
-            {...register('margin', { valueAsNumber: true })}
+            {...register('margin', {
+              setValueAs: (value) => (value === '' ? null : Number(value))
+            })}
             label="Margem Padrão"
             type="number"
             error={!!errors.margin}

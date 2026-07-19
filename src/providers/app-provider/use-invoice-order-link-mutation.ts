@@ -45,17 +45,34 @@ export const useInvoiceOrderLinkMutation = () => {
             }
           : item
       )
-      const updatedInvoice = await invoiceModel.update({
-        ...invoice,
-        items: updatedItems
-      })
-      return { order: createdOrder, invoice: updatedInvoice }
+      try {
+        const updatedInvoice = await invoiceModel.update({
+          ...invoice,
+          items: updatedItems
+        })
+        return {
+          order: createdOrder,
+          invoice: updatedInvoice,
+          linked: true as const
+        }
+      } catch {
+        return { order: createdOrder, invoice: null, linked: false as const }
+      }
     },
-    onSuccess: ({ order, invoice }) => {
+    onSuccess: ({ order, invoice, linked }) => {
       upsertOrderInCache(queryClient, order)
-      upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
-      alert({ severity: 'success', title: 'Pedido criado com sucesso!' })
-      handleSuccessCallbacks()
+      if (linked && invoice) {
+        upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
+        alert({ severity: 'success', title: 'Pedido criado com sucesso!' })
+        handleSuccessCallbacks()
+        return
+      }
+      alert({
+        severity: 'error',
+        title:
+          'Pedido criado, mas não foi possível vinculá-lo à nota. Tente vincular novamente.'
+      })
+      handleErrorCallbacks()
     },
     onError: () => {
       alert({ severity: 'error', title: 'Erro ao criar pedido' })
@@ -86,21 +103,37 @@ export const useInvoiceOrderLinkMutation = () => {
           quantityDivergence: item.quantity - match.order.quantity
         }
       })
-      const updatedInvoice = await invoiceModel.update({
-        ...invoice,
-        items: updatedItems
-      })
-      return { orders: createdOrders, invoice: updatedInvoice }
+      try {
+        const updatedInvoice = await invoiceModel.update({
+          ...invoice,
+          items: updatedItems
+        })
+        return {
+          orders: createdOrders,
+          invoice: updatedInvoice,
+          linked: true as const
+        }
+      } catch {
+        return { orders: createdOrders, invoice: null, linked: false as const }
+      }
     },
-    onSuccess: ({ orders, invoice }) => {
+    onSuccess: ({ orders, invoice, linked }) => {
       orders.forEach((order) => upsertOrderInCache(queryClient, order))
-      upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
       const n = orders.length
+      if (linked && invoice) {
+        upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
+        alert({
+          severity: 'success',
+          title: `${n} ${n === 1 ? 'pedido vinculado' : 'pedidos vinculados'} com sucesso!`
+        })
+        handleSuccessCallbacks()
+        return
+      }
       alert({
-        severity: 'success',
-        title: `${n} ${n === 1 ? 'pedido vinculado' : 'pedidos vinculados'} com sucesso!`
+        severity: 'error',
+        title: `${n} ${n === 1 ? 'pedido criado' : 'pedidos criados'}, mas não foi possível vinculá-los à nota. Tente vincular novamente.`
       })
-      handleSuccessCallbacks()
+      handleErrorCallbacks()
     },
     onError: () => {
       alert({ severity: 'error', title: 'Erro ao vincular pedidos' })

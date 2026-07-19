@@ -46,6 +46,7 @@ export const LinkOrdersDialog = ({
     quickCreateDraft,
     isQuickCreateOpen,
     handleQuickCreateClose,
+    handleProductCreated,
     quickCreateFamily,
     setQuickCreateFamily,
     handleConfirm
@@ -191,6 +192,7 @@ export const LinkOrdersDialog = ({
         setFormProduct={() => {}}
         handleClose={handleQuickCreateClose}
         setQuickCreateFamily={setQuickCreateFamily}
+        onCreated={handleProductCreated}
       />
       <FamilyForm
         isOpened={quickCreateFamily}

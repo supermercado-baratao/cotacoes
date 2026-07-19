@@ -3,16 +3,18 @@ import type { TCreateData, TUpdateData } from '@/types'
 
 import { type TSeller } from './types'
 
+const PATH = 'sellers'
+
 const create = (data: TCreateData<TSeller>): Promise<TSeller> =>
-  database.create({ path: getUserPath('sellers'), data })
+  database.create({ path: getUserPath(PATH), data })
 
 const findMany = (): Promise<TSeller[]> =>
-  database.findMany({ path: getUserPath('sellers') })
+  database.findMany({ path: getUserPath(PATH) })
 
 const update = (data: TUpdateData<TSeller>): Promise<TSeller> =>
-  database.update({ path: getUserPath('sellers'), data })
+  database.update({ path: getUserPath(PATH), data })
 
 const deleteUniqueById = (id: string): Promise<string> =>
-  database.deleteUniqueById({ path: getUserPath('sellers'), id })
+  database.deleteUniqueById({ path: getUserPath(PATH), id })
 
 export const sellerModel = { create, findMany, update, deleteUniqueById }

@@ -6,6 +6,7 @@ import type { TAiSuggestion } from '@/infra'
 import type { TPriceRef, TQuote, TQuoteItem } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 
+import { getFamilyReferencePrice } from '../../../utils'
 import { schema, type TSchema } from './schema'
 
 const getDefaultValues = (
@@ -55,8 +56,8 @@ export const useFormHandler = (
       quoteItem.priceRef.id === watchedFamilyId
     )
       return
-    const product = (products ?? []).find((p) => p.familyId === watchedFamilyId)
-    if (product != null) setValue('salePrice', product.price)
+    const price = getFamilyReferencePrice(products ?? [], watchedFamilyId)
+    if (price != null) setValue('salePrice', price)
     setValue('productId', null)
   }, [watchedFamilyId, products, setValue, quoteItem])
 
@@ -97,7 +98,7 @@ export const useFormHandler = (
     const currentPrice =
       ref.type === 'product'
         ? ((products ?? []).find((p) => p.id === ref.id)?.price ?? null)
-        : ((products ?? []).find((p) => p.familyId === ref.id)?.price ?? null)
+        : getFamilyReferencePrice(products ?? [], ref.id)
     if (currentPrice == null) return null
     return { quotedPrice, currentPrice }
   })()
