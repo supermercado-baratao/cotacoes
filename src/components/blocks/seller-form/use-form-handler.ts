@@ -45,7 +45,7 @@ export const useFormHandler = (
       updateSeller({ ...seller, ...data })
       return
     }
-    setSuccessCallbacks([handleClose, () => reset(defaultValues)])
+    setSuccessCallbacks([handleClose, () => setFormSeller(null)])
     createSeller(data)
   })
 
