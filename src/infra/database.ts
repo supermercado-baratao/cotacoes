@@ -48,6 +48,11 @@ const findMany = async <T>({
   return data as T[]
 }
 
+const writeTimestamps = () => ({
+  createdAt: serverTimestamp(),
+  updatedAt: serverTimestamp()
+})
+
 const create = async <T>({
   data,
   path
@@ -57,12 +62,7 @@ const create = async <T>({
 }): Promise<T> => {
   const docRef = doc(collection(firestore, path))
   const now = Timestamp.now()
-  await setDoc(docRef, {
-    ...data,
-    id: docRef.id,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  })
+  await setDoc(docRef, { ...data, id: docRef.id, ...writeTimestamps() })
   return { ...data, id: docRef.id, createdAt: now, updatedAt: now } as T
 }
 
@@ -74,11 +74,7 @@ const createWithId = async <T>({
   path: string
 }): Promise<T> => {
   const now = Timestamp.now()
-  await setDoc(doc(firestore, path, data.id), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  })
+  await setDoc(doc(firestore, path, data.id), { ...data, ...writeTimestamps() })
   return { ...data, createdAt: now, updatedAt: now } as T
 }
 
@@ -143,11 +139,7 @@ const createManyWithIds = async <T>({
     data.map((item) => ({
       id: item.id,
       ref: doc(firestore, path, item.id),
-      data: {
-        ...item,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }
+      data: { ...item, ...writeTimestamps() }
     }))
   )
   return data.map((item) => ({
@@ -207,12 +199,7 @@ const createMany = async <T>({
     data.map((item, i) => ({
       id: ids[i],
       ref: doc(firestore, path, ids[i]),
-      data: {
-        ...item,
-        id: ids[i],
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }
+      data: { ...item, id: ids[i], ...writeTimestamps() }
     }))
   )
   return data.map((item, i) => ({
