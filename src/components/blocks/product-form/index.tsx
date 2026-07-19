@@ -33,6 +33,7 @@ type TProductFormProps = {
   draft: TProductDraft | null
   setFormProduct: (product: TProduct | null) => void
   setQuickCreateFamily: (open: boolean) => void
+  onCreated?: (product: TProduct) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
@@ -43,13 +44,15 @@ export const ProductForm = ({
   draft,
   handleClose,
   setFormProduct,
-  setQuickCreateFamily
+  setQuickCreateFamily,
+  onCreated
 }: TProductFormProps) => {
   const { register, onSubmit, errors, control, families } = useFormHandler(
     product,
     draft,
     setFormProduct,
-    handleClose
+    handleClose,
+    onCreated
   )
 
   const { fields, append, remove } = useFieldArray({

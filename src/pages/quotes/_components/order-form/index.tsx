@@ -46,7 +46,8 @@ export const OrderForm = ({
     selectableProducts,
     selectedProduct,
     lastOrder,
-    invoiceItem
+    invoiceItem,
+    handleProductCreated
   } = useFormHandler(quoteItem, order, setFormOrder, handleClose, invoiceRef)
 
   const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
@@ -241,6 +242,10 @@ export const OrderForm = ({
         setFormProduct={() => {}}
         handleClose={() => setQuickCreateProduct(false)}
         setQuickCreateFamily={setQuickCreateFamily}
+        onCreated={(product) => {
+          handleProductCreated(product)
+          setQuickCreateProduct(false)
+        }}
       />
       <FamilyForm
         isOpened={quickCreateFamily}

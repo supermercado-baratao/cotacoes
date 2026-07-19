@@ -30,7 +30,10 @@ type TAppStore = {
   setAiSuggestions: (quoteId: string, suggestions: TAiSuggestion[]) => void
   products: TProduct[] | null
   setProducts: (products: TProduct[]) => void
-  createProduct: (product: TCreateDataWithId<TProduct>) => void
+  createProduct: (
+    product: TCreateDataWithId<TProduct>,
+    options?: { onSuccess?: (product: TProduct) => void }
+  ) => void
   updateProduct: (product: TUpdateData<TProduct>) => void
   deleteProduct: (id: string) => void
 
