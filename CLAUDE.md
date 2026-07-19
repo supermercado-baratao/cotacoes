@@ -17,12 +17,19 @@ pnpm eslint:check     # verificar lint
 pnpm eslint:fix       # corrigir problemas de lint automaticamente
 pnpm prettier:fix     # formatar código
 pnpm generate         # gerar novo componente via plop
+pnpm emulators:start  # iniciar emuladores do Firebase (Auth + Firestore), necessário para pnpm test
 ```
 
 Para executar um único arquivo de teste:
 
 ```bash
 pnpm vitest run src/tests/app.test.tsx
+```
+
+Os testes dependem dos emuladores do Firebase (Auth na porta `9099`, Firestore na `8080`). Sem eles rodando, os testes falham com `ECONNREFUSED` / `auth/network-request-failed`. Inicie os emuladores em background antes de rodar `pnpm test` (ou antes de dar `git push`, ver seção de git hooks abaixo):
+
+```bash
+pnpm emulators:start > /tmp/emulators.log 2>&1 &
 ```
 
 ## Configuração do ambiente
@@ -350,3 +357,34 @@ Exemplo:
 
 Issue: #1
 ```
+
+## Fluxo de trabalho: issues, branches e merge requests
+
+O projeto está em uso real — **não se trabalha mais diretamente na `main`**. Todo trabalho segue: issue → branch → commits → merge request.
+
+### Issues
+
+- Gerenciadas no GitLab via `glab` (CLI autenticado localmente).
+- Antes de iniciar um trabalho não trivial, verifique se já existe uma issue correspondente (`glab issue list --all`); se não existir, crie uma (`glab issue create --title "..." --description "..."`).
+- Branches e merge requests devem referenciar a issue relacionada.
+
+### Branches
+
+- Formato: **`<prefixo>/<titulo>#<issue>`** — o prefixo é o mesmo usado nos commits, sem emoji: `init, feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert`.
+- Exemplos: `feat/relatorio-pedidos#10`, `fix/invoice-race-condition#12`.
+- Para um esforço amplo de escopo único (ex: um code review cobrindo múltiplas áreas do projeto), prefira uma única branch para todo o trabalho a várias branches por achado — evita overhead de múltiplas MRs pequenas quando o resultado é logicamente uma única entrega.
+
+### Git hooks (husky)
+
+- **`pre-commit`** — roda `lint-staged`.
+- **`commit-msg`** — reescreve automaticamente prefixos simples (`feat:`, `fix:`, etc.) para a versão com emoji e valida com `commitlint`. Pode-se commitar usando o prefixo sem emoji (ex: `git commit -m "feat: add x"`) que o hook adiciona o emoji.
+- **`pre-push`** — roda `pnpm tsc -b --noEmit && pnpm test`. Como os testes dependem dos emuladores do Firebase, **garanta que estão rodando antes de dar push** (ver seção Comandos), senão o push é bloqueado com falha de teste.
+
+### Abrindo o merge request
+
+1. Suba os emuladores do Firebase em background (necessário para o hook `pre-push` passar).
+2. `git push -u origin <branch>`
+3. `glab mr create --source-branch <branch> --target-branch main --title "..." --description "..."`
+   - Título segue a convenção de commits (prefixo + emoji, imperativo, minúsculo).
+   - Descrição resume as mudanças — se for um review com múltiplos achados, agrupe por severidade/categoria — e referencia a issue com `Issue: #<número>`.
+4. Reporte a URL da MR ao usuário ao final.
