@@ -1,17 +1,25 @@
+import { faker } from '@faker-js/faker'
 import retry from 'async-retry'
 import { initializeApp } from 'firebase/app'
-import { applyActionCode, connectAuthEmulator, getAuth } from 'firebase/auth'
+import {
+  applyActionCode,
+  connectAuthEmulator,
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendEmailVerification,
+  updateProfile
+} from 'firebase/auth'
 
 const PROJECT_ID = process.env.VITE_PROJECT_ID!
 
 const app = initializeApp(
   { apiKey: 'test-api-key', projectId: PROJECT_ID },
-  'e2e-helper'
+  'playwright-orchestrator'
 )
 const auth = getAuth(app)
 connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true })
 
-export const clearEmulatorData = async (): Promise<void> => {
+export const clearData = async (): Promise<void> => {
   await Promise.all([
     fetch(`http://localhost:9099/emulator/v1/projects/${PROJECT_ID}/accounts`, {
       method: 'DELETE'
@@ -47,3 +55,23 @@ export const verifyEmail = (email: string): Promise<void> =>
 
     await applyActionCode(auth, oobCode)
   })
+
+/** Cria e verifica um usuário direto via SDK, sem passar pela UI de cadastro */
+export const createUser = async (): Promise<{
+  name: string
+  email: string
+  password: string
+}> => {
+  const name = faker.person.fullName()
+  const email = faker.internet.email()
+  const password = faker.internet.password()
+
+  const { user } = await createUserWithEmailAndPassword(auth, email, password)
+  await Promise.all([
+    sendEmailVerification(user),
+    updateProfile(user, { displayName: name })
+  ])
+  await verifyEmail(email)
+
+  return { name, email, password }
+}
