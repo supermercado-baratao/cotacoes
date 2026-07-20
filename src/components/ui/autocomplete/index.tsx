@@ -1,4 +1,4 @@
-import { Add } from '@mui/icons-material'
+import { Add, Edit } from '@mui/icons-material'
 import {
   Autocomplete as MuiAutocomplete,
   Box,
@@ -32,6 +32,8 @@ type TAutocompleteProps<TOption, TFieldValues extends FieldValues> = {
   disableCloseOnSelect?: boolean
   handleAddClick?: () => void
   addLabel?: string
+  handleEditClick?: (option: TOption) => void
+  editLabel?: string
   sx?: SxProps<Theme>
 }
 
@@ -48,52 +50,79 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
   disableCloseOnSelect,
   handleAddClick,
   addLabel,
+  handleEditClick,
+  editLabel,
   sx
 }: TAutocompleteProps<TOption, TFieldValues>) => (
   <Box sx={[S.Wrapper, sx] as SxProps<Theme>}>
     <Controller
       name={name}
       control={control}
-      render={({ field }) => (
-        <MuiAutocomplete
-          sx={S.Inner}
-          multiple={multiple as true}
-          disableCloseOnSelect={disableCloseOnSelect}
-          options={options}
-          getOptionLabel={getOptionLabel}
-          filterOptions={(opts, { inputValue }) =>
-            opts.filter((o) => matchesSearch(inputValue, getOptionLabel(o)))
-          }
-          isOptionEqualToValue={(opt, val) =>
-            getOptionValue(opt) === getOptionValue(val)
-          }
-          value={
-            (multiple
-              ? options.filter((o) =>
-                  (field.value as string[]).includes(getOptionValue(o))
-                )
-              : (options.find((o) => getOptionValue(o) === field.value) ??
-                null)) as unknown as TOption[]
-          }
-          onChange={(_, selected) => {
-            if (multiple) {
-              field.onChange((selected as TOption[]).map(getOptionValue))
-            } else {
-              field.onChange(
-                selected ? getOptionValue(selected as TOption) : null
-              )
-            }
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label={label}
-              error={error}
-              helperText={helperText}
+      render={({ field }) => {
+        const selectedOption = multiple
+          ? null
+          : (options.find((o) => getOptionValue(o) === field.value) ?? null)
+
+        return (
+          <>
+            <MuiAutocomplete
+              sx={S.Inner}
+              multiple={multiple as true}
+              disableCloseOnSelect={disableCloseOnSelect}
+              options={options}
+              getOptionLabel={getOptionLabel}
+              filterOptions={(opts, { inputValue }) =>
+                opts.filter((o) => matchesSearch(inputValue, getOptionLabel(o)))
+              }
+              isOptionEqualToValue={(opt, val) =>
+                getOptionValue(opt) === getOptionValue(val)
+              }
+              value={
+                (multiple
+                  ? options.filter((o) =>
+                      (field.value as string[]).includes(getOptionValue(o))
+                    )
+                  : selectedOption) as unknown as TOption[]
+              }
+              onChange={(_, selected) => {
+                if (multiple) {
+                  field.onChange((selected as TOption[]).map(getOptionValue))
+                } else {
+                  field.onChange(
+                    selected ? getOptionValue(selected as TOption) : null
+                  )
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={label}
+                  error={error}
+                  helperText={helperText}
+                  onDoubleClick={() => {
+                    if (selectedOption && handleEditClick) {
+                      handleEditClick(selectedOption)
+                    }
+                  }}
+                />
+              )}
             />
-          )}
-        />
-      )}
+            {handleEditClick && selectedOption && (
+              <Tooltip title={editLabel}>
+                <Button
+                  variant="contained"
+                  color="inherit"
+                  onClick={() => handleEditClick(selectedOption)}
+                  size="small"
+                  sx={S.AddButton}
+                >
+                  <Edit />
+                </Button>
+              </Tooltip>
+            )}
+          </>
+        )
+      }}
     />
     {handleAddClick && (
       <Tooltip title={addLabel}>

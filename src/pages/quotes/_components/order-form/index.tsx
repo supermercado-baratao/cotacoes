@@ -13,7 +13,7 @@ import {
   type TModalProps
 } from '@/components'
 import { MAX_NUMERIC_VALUE, MAX_OBSERVATIONS_LENGTH } from '@/constants'
-import type { TInvoice, TOrder, TQuoteItem } from '@/models'
+import type { TInvoice, TOrder, TProduct, TQuoteItem } from '@/models'
 import { formatCurrency, formatNumericValue, selectOnFocus } from '@/utils'
 
 import * as S from './style'
@@ -56,6 +56,7 @@ export const OrderForm = ({
   const [quickCreateSeller, setQuickCreateSeller] = useState(false)
   const [quickCreateProduct, setQuickCreateProduct] = useState(false)
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
+  const [productToEdit, setProductToEdit] = useState<TProduct | null>(null)
 
   const title = order ? 'Editar Pedido' : 'Novo Pedido'
 
@@ -94,6 +95,8 @@ export const OrderForm = ({
             helperText={errors.productId?.message}
             addLabel="Novo Produto"
             handleAddClick={() => setQuickCreateProduct(true)}
+            editLabel="Editar Produto"
+            handleEditClick={(product) => setProductToEdit(product)}
             sx={S.FullWidth}
           />
           {selectedProduct?.price != null && (
@@ -246,11 +249,14 @@ export const OrderForm = ({
         }}
       />
       <ProductForm
-        isOpened={quickCreateProduct}
-        product={null}
+        isOpened={quickCreateProduct || !!productToEdit}
+        product={productToEdit}
         draft={null}
         setFormProduct={() => {}}
-        handleClose={() => setQuickCreateProduct(false)}
+        handleClose={() => {
+          setQuickCreateProduct(false)
+          setProductToEdit(null)
+        }}
         setQuickCreateFamily={setQuickCreateFamily}
         onCreated={(product) => {
           handleProductCreated(product)
