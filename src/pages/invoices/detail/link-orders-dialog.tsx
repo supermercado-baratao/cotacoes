@@ -22,6 +22,8 @@ import { formatCurrency, formatNumericValue, matchesSearch } from '@/utils'
 
 import { useLinkOrdersDialogHandler } from './use-link-orders-dialog-handler'
 
+const NEW_ITEM_VALUE = '__new_item__'
+
 type TLinkOrdersDialogProps = {
   isOpened: boolean
   invoice: TInvoice
@@ -41,6 +43,7 @@ export const LinkOrdersDialog = ({
     rows,
     selectedCount,
     handleRowQuoteItemChange,
+    handleAddQuoteItem,
     handleRowProductChange,
     handleQuickCreateProduct,
     quickCreateDraft,
@@ -148,12 +151,19 @@ export const LinkOrdersDialog = ({
                           fullWidth
                           displayEmpty
                           value={quoteItemId}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            if (e.target.value === NEW_ITEM_VALUE) {
+                              handleAddQuoteItem(
+                                item.itemNumber,
+                                item.description
+                              )
+                              return
+                            }
                             handleRowQuoteItemChange(
                               item.itemNumber,
                               e.target.value
                             )
-                          }
+                          }}
                         >
                           <MenuItem value="">
                             <em>Não vincular</em>
@@ -167,6 +177,9 @@ export const LinkOrdersDialog = ({
                                 {quoteItem.description.toUpperCase()}
                               </MenuItem>
                             ))}
+                          <MenuItem value={NEW_ITEM_VALUE}>
+                            + Adicionar item à cotação
+                          </MenuItem>
                         </Select>
                       </TableCell>
                     </TableRow>

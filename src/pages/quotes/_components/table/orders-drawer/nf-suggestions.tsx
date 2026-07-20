@@ -16,6 +16,7 @@ import type { TInvoice, TInvoiceItem, TProduct, TQuoteItem } from '@/models'
 import { useAppStore } from '@/stores'
 import { formatCurrency, formatNumericValue, isLikelyMatch } from '@/utils'
 
+import { getNextQuoteDate } from '../../../utils'
 import {
   filterSuggestionsBySearch,
   getInvoiceSuggestions,
@@ -115,12 +116,11 @@ export const NfSuggestions = ({
     [quotes, quoteId]
   )
 
-  const nextQuoteDate = useMemo((): string | null => {
-    if (!quotes || !quote) return null
-    const sorted = [...quotes].sort((a, b) => a.date.localeCompare(b.date))
-    const idx = sorted.findIndex((q) => q.id === quote.id)
-    return sorted[idx + 1]?.date ?? null
-  }, [quotes, quote])
+  const nextQuoteDate = useMemo(
+    (): string | null =>
+      quotes && quote ? getNextQuoteDate(quotes, quote) : null,
+    [quotes, quote]
+  )
 
   const productMap = useMemo(
     () => new Map((products ?? []).map((p) => [p.id, p])),

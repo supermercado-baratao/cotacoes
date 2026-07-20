@@ -2,7 +2,14 @@ import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { TProductDraft } from '@/components'
-import type { TInvoice, TInvoiceItem, TOrder, TProduct, TQuote } from '@/models'
+import type {
+  TInvoice,
+  TInvoiceItem,
+  TOrder,
+  TProduct,
+  TQuote,
+  TQuoteItem
+} from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
 import { findSupplierByCnpj } from '@/utils'
@@ -21,7 +28,7 @@ export const useLinkOrdersDialogHandler = (
   quote: TQuote | null,
   handleClose: () => void
 ) => {
-  const { products, suppliers, createOrdersBatchWithInvoiceLink } =
+  const { products, suppliers, updateQuote, createOrdersBatchWithInvoiceLink } =
     useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
@@ -79,6 +86,18 @@ export const useLinkOrdersDialogHandler = (
 
   const handleRowQuoteItemChange = (itemNumber: number, quoteItemId: string) =>
     setOverrides((prev) => ({ ...prev, [itemNumber]: quoteItemId }))
+
+  const handleAddQuoteItem = (itemNumber: number, description: string) => {
+    if (!quote) return
+    const newItem: TQuoteItem = {
+      id: crypto.randomUUID(),
+      description: description.trim(),
+      salePrice: null,
+      priceRef: null
+    }
+    updateQuote({ ...quote, items: [...quote.items, newItem] })
+    setOverrides((prev) => ({ ...prev, [itemNumber]: newItem.id }))
+  }
 
   const handleRowProductChange = (itemNumber: number, productId: string) =>
     setProductOverrides((prev) => ({ ...prev, [itemNumber]: productId }))
@@ -139,6 +158,7 @@ export const useLinkOrdersDialogHandler = (
     rows,
     selectedCount,
     handleRowQuoteItemChange,
+    handleAddQuoteItem,
     handleRowProductChange,
     handleQuickCreateProduct,
     quickCreateDraft,

@@ -11,7 +11,10 @@ import {
   getAvailableDays,
   getAvailableMonths,
   getAvailableYears,
+  getNextQuoteDate,
   getNumberOfSuppliers,
+  getPendingInvoicesForQuote,
+  getQuoteInvoiceDateRange,
   getQuoteRows,
   getSelectedQuote
 } from './utils'
@@ -24,6 +27,9 @@ export const useQuotesHandler = () => {
     products,
     families,
     settings,
+    invoices,
+    invoiceDateRange,
+    setInvoiceDateRange,
     setQuoteId,
     deleteQuote,
     quotesSelectedDate,
@@ -141,6 +147,25 @@ export const useQuotesHandler = () => {
     setQuoteId(quote?.id ?? null)
   }, [quote, setQuoteId])
 
+  const nextQuoteDate = quote ? getNextQuoteDate(quotes ?? [], quote) : null
+
+  useEffect(() => {
+    if (!quote) return
+    const range = getQuoteInvoiceDateRange(quote, nextQuoteDate)
+    if (
+      range.startDate === invoiceDateRange.startDate &&
+      range.endDate === invoiceDateRange.endDate
+    ) {
+      return
+    }
+    setInvoiceDateRange(range)
+  }, [quote, nextQuoteDate, invoiceDateRange, setInvoiceDateRange])
+
+  const pendingInvoices =
+    quote && invoices
+      ? getPendingInvoicesForQuote(invoices, quote, nextQuoteDate)
+      : []
+
   const onYearChange = (year: number) => setYear(year)
   const onMonthChange = (month: number) => setMonth(month)
   const onDayChange = (day: number) => setDay(day)
@@ -186,6 +211,7 @@ export const useQuotesHandler = () => {
     handlePrint,
     isPrinting,
     numberOfSuppliers,
+    pendingInvoices,
     handleSuccess,
     quoteToDelete,
     handleDeleteQuote,
