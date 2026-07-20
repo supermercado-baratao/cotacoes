@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 process.loadEnvFile('.env')
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: './src/tests/playwright',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

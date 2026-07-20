@@ -7,10 +7,10 @@ import { useAppStore } from '@/stores'
 import { createApp } from './_mocks/App'
 import { databaseMock } from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
-import { signInFakeUser } from './_utils/seed-app'
+import { createUser } from './orchestrator'
 
 beforeAll(() => {
-  signInFakeUser()
+  createUser()
 })
 
 const uploadFile = async (

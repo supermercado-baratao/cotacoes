@@ -13,15 +13,15 @@ import { useAppStore } from '@/stores'
 import { createApp } from './_mocks/App'
 import { databaseMock } from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
-import { populateDatabaseFromFixture, signInFakeUser } from './_utils/seed-app'
+import { createUser, populateDatabase } from './orchestrator'
 
 const QUOTE_DATE = '2026-02-01'
 
 let shortageList: string[] = []
 
 beforeAll(async () => {
-  signInFakeUser()
-  await populateDatabaseFromFixture()
+  createUser()
+  await populateDatabase()
 
   const buffer = await readMockFile('quote-items.txt')
   shortageList = buffer

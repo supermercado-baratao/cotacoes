@@ -3,9 +3,9 @@ import path from 'node:path'
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 
-import { clearEmulatorData, verifyEmail } from './utils/emulator'
+import { clearData, verifyEmail } from './orchestrator'
 
-const FIXTURES = path.join(import.meta.dirname, '../src/tests/_mocks')
+const FIXTURES = path.join(import.meta.dirname, '../vitest/_mocks')
 const INVOICE_XML = path.join(
   FIXTURES,
   'xmls/NFe29260632053743000116550020000001081299331431.xml'
@@ -14,7 +14,7 @@ const INVOICE_XML = path.join(
 test.describe.configure({ mode: 'serial' })
 
 test.beforeAll(async () => {
-  await clearEmulatorData()
+  await clearData()
 })
 
 test('Fluxo completo: cadastro, import, notas, cotação e vínculo de pedido', async ({

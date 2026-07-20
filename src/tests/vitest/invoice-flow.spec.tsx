@@ -8,14 +8,14 @@ import { useAppStore } from '@/stores'
 import { createApp } from './_mocks/App'
 import { databaseMock } from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
-import { populateDatabaseFromFixture, signInFakeUser } from './_utils/seed-app'
+import { createUser, populateDatabase } from './orchestrator'
 
 const INVOICE_XML = 'NFe29260632053743000116550020000001081299331431.xml'
 const QUOTE_ITEM_ID = crypto.randomUUID()
 
 beforeAll(async () => {
-  signInFakeUser()
-  await populateDatabaseFromFixture()
+  createUser()
+  await populateDatabase()
 
   await quoteModel.create({
     items: [
