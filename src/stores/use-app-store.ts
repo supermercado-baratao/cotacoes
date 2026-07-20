@@ -25,6 +25,12 @@ const defaultInvoiceDateRange = (): TInvoiceDateRange => ({
   endDate: dayjs().format('YYYY-MM-DD')
 })
 
+export type TQuotesSelectedDate = {
+  year: number
+  month: number
+  day: number
+}
+
 type TAppStore = {
   aiSuggestions: Record<string, TAiSuggestion[]>
   setAiSuggestions: (quoteId: string, suggestions: TAiSuggestion[]) => void
@@ -89,6 +95,8 @@ type TAppStore = {
   setQuoteId: (id: string | null) => void
   historyProductId: string | null
   setHistoryProductId: (id: string | null) => void
+  quotesSelectedDate: TQuotesSelectedDate | null
+  setQuotesSelectedDate: (date: TQuotesSelectedDate | null) => void
 
   importData: (data: TImportData) => void
 
@@ -160,6 +168,8 @@ export const useAppStore = create<TAppStore>((set) => ({
   setQuoteId: (id) => set({ quoteId: id }),
   historyProductId: null,
   setHistoryProductId: (id) => set({ historyProductId: id }),
+  quotesSelectedDate: null,
+  setQuotesSelectedDate: (date) => set({ quotesSelectedDate: date }),
 
   importData: () => {},
 

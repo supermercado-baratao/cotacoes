@@ -25,23 +25,29 @@ export const useQuotesHandler = () => {
     families,
     settings,
     setQuoteId,
-    deleteQuote
+    deleteQuote,
+    quotesSelectedDate,
+    setQuotesSelectedDate
   } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const availableYears = getAvailableYears(quotes || [])
-  const [year, setYear] = useState(availableYears[0])
+  const [year, setYear] = useState(
+    quotesSelectedDate?.year ?? availableYears[0]
+  )
 
   const availableMonths = getAvailableMonths(quotes || [], year)
-  const [month, setMonth] = useState(availableMonths[0])
+  const [month, setMonth] = useState(
+    quotesSelectedDate?.month ?? availableMonths[0]
+  )
 
   const availableDays = getAvailableDays(quotes || [], year, month)
-  const [day, setDay] = useState(availableDays[0])
+  const [day, setDay] = useState(quotesSelectedDate?.day ?? availableDays[0])
 
   const initialized = useRef(false)
 
   useEffect(() => {
-    if (initialized.current || !quotes?.length) return
+    if (initialized.current || !quotes?.length || quotesSelectedDate) return
     initialized.current = true
     const latest = [...quotes].sort((a, b) =>
       dayjs(b.date).diff(dayjs(a.date))
@@ -49,7 +55,11 @@ export const useQuotesHandler = () => {
     setYear(dayjs(latest.date).year())
     setMonth(dayjs(latest.date).month() + 1)
     setDay(dayjs(latest.date).date())
-  }, [quotes])
+  }, [quotes, quotesSelectedDate])
+
+  useEffect(() => {
+    setQuotesSelectedDate({ year, month, day })
+  }, [year, month, day, setQuotesSelectedDate])
 
   const {
     formItem: formQuote,
