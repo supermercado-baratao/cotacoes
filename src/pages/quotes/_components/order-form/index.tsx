@@ -49,7 +49,8 @@ export const OrderForm = ({
     invoiceItem,
     handleProductCreated,
     handleSupplierCreated,
-    handleSellerCreated
+    handleSellerCreated,
+    handlePackingQuantityChange
   } = useFormHandler(quoteItem, order, setFormOrder, handleClose, invoiceRef)
 
   const [quickCreateSupplier, setQuickCreateSupplier] = useState(false)
@@ -133,7 +134,8 @@ export const OrderForm = ({
               setValueAs: (v) =>
                 v === '' || v === null || v === undefined
                   ? undefined
-                  : parseInt(v, 10)
+                  : parseInt(v, 10),
+              onChange: handlePackingQuantityChange
             })}
             label="Qtd. Embalagem"
             type="number"

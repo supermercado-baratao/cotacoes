@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
-import { useEffect, useLayoutEffect, useMemo } from 'react'
+import { type ChangeEvent, useEffect, useLayoutEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import type {
@@ -16,6 +16,7 @@ import { findSupplierByCnpj } from '@/utils'
 
 import { useProductHistory } from '../use-product-history'
 import { createSchema, type TSchema } from './schema'
+import { getUnitPriceFromPackingPrice } from './utils'
 
 type TInvoiceRef = { invoice: TInvoice; itemNumber: number }
 
@@ -35,6 +36,7 @@ export const useFormHandler = (
     products,
     quotes,
     quoteId,
+    invoices,
     setHistoryProductId
   } = useAppStore()
 
@@ -73,7 +75,7 @@ export const useFormHandler = (
       price: order?.price ?? invoiceItem?.unitPrice ?? undefined,
       quantity: order?.quantity ?? invoiceItem?.quantity ?? undefined,
       packing: order?.packing ?? invoiceItem?.unit ?? '',
-      packingQuantity: order?.packingQuantity ?? undefined,
+      packingQuantity: order?.packingQuantity ?? 1,
       observations: order?.observations ?? null
     }),
     [order, invoiceRef, invoiceItem, suppliers]
@@ -96,6 +98,26 @@ export const useFormHandler = (
   const watchedProductId = useWatch({ control, name: 'productId' })
   const watchedSupplierId = useWatch({ control, name: 'supplierId' })
   const watchedSellerId = useWatch({ control, name: 'sellerId' })
+
+  const linkedInvoiceItem = useMemo(() => {
+    if (invoiceItem) return invoiceItem
+    if (!order?.invoiceId) return null
+    const invoice = invoices?.find((i) => i.id === order.invoiceId)
+    return invoice?.items.find((i) => i.orderId === order.id) ?? null
+  }, [invoiceItem, order, invoices])
+
+  const invoiceUnitPrice = linkedInvoiceItem?.unitPrice ?? null
+
+  const handlePackingQuantityChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (invoiceUnitPrice == null) return
+    const raw = e.target.value
+    const packingQuantity = raw === '' ? 1 : Math.max(1, parseInt(raw, 10) || 1)
+    setValue(
+      'price',
+      getUnitPriceFromPackingPrice(invoiceUnitPrice, packingQuantity),
+      { shouldValidate: true, shouldDirty: true }
+    )
+  }
 
   useEffect(() => {
     setHistoryProductId(watchedProductId || null)
@@ -190,6 +212,7 @@ export const useFormHandler = (
     invoiceItem,
     handleProductCreated,
     handleSupplierCreated,
-    handleSellerCreated
+    handleSellerCreated,
+    handlePackingQuantityChange
   }
 }
