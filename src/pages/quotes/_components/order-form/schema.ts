@@ -39,8 +39,7 @@ export const createSchema = (minDate: string) =>
       .number()
       .int('Deve ser número inteiro')
       .positive('Deve ser positivo')
-      .max(MAX_NUMERIC_VALUE)
-      .nullable(),
+      .max(MAX_NUMERIC_VALUE),
     observations: z.string().max(MAX_OBSERVATIONS_LENGTH).nullable()
   }) satisfies z.ZodType<TOrderFormData>
 

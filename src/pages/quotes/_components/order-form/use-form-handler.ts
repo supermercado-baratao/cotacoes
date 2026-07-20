@@ -73,7 +73,7 @@ export const useFormHandler = (
       price: order?.price ?? invoiceItem?.unitPrice ?? undefined,
       quantity: order?.quantity ?? invoiceItem?.quantity ?? undefined,
       packing: order?.packing ?? invoiceItem?.unit ?? '',
-      packingQuantity: order?.packingQuantity ?? null,
+      packingQuantity: order?.packingQuantity ?? undefined,
       observations: order?.observations ?? null
     }),
     [order, invoiceRef, invoiceItem, suppliers]

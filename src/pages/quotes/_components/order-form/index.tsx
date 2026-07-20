@@ -132,7 +132,7 @@ export const OrderForm = ({
             {...register('packingQuantity', {
               setValueAs: (v) =>
                 v === '' || v === null || v === undefined
-                  ? null
+                  ? undefined
                   : parseInt(v, 10)
             })}
             label="Qtd. Embalagem"
