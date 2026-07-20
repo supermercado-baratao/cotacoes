@@ -102,7 +102,10 @@ export const useQuotesHandler = () => {
       )[0]
       setSuccessCallbacks([() => handleSuccess(latest.date)])
     }
-    deleteQuote(quote.id)
+    const ordersToDelete = (ordersByQuoteId ?? []).filter(
+      (o) => o.quoteId === quote.id
+    )
+    deleteQuote(quote.id, ordersToDelete)
   })
 
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)

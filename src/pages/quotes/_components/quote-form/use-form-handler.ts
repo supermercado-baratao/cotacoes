@@ -14,7 +14,7 @@ export const useFormHandler = (
   handleClose: () => void,
   handleSuccess: (date: string) => void
 ) => {
-  const { createQuote, updateQuote } = useAppStore()
+  const { createQuote, updateQuote, ordersByQuoteId } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const defaultValues: TSchema = useMemo(
@@ -61,12 +61,22 @@ export const useFormHandler = (
   const onSubmit = handleSubmit(({ lines, ...rest }) => {
     const items = parseItems(lines, quote?.items ?? [])
     if (quote) {
+      const removedItemIds = new Set(
+        quote.items
+          .filter((old) => !items.some((i) => i.id === old.id))
+          .map((old) => old.id)
+      )
+      const ordersToDelete = removedItemIds.size
+        ? (ordersByQuoteId ?? []).filter((o) =>
+            removedItemIds.has(o.quoteItemId)
+          )
+        : []
       setSuccessCallbacks([
         handleClose,
         () => setFormQuote(null),
         () => handleSuccess(rest.date)
       ])
-      updateQuote({ ...quote, ...rest, items })
+      updateQuote({ ...quote, ...rest, items }, ordersToDelete)
       return
     }
     setSuccessCallbacks([

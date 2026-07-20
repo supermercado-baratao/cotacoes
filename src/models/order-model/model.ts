@@ -31,11 +31,15 @@ const update = (data: TUpdateData<TOrder>): Promise<TOrder> =>
 const deleteUniqueById = (id: string): Promise<string> =>
   database.deleteUniqueById({ path: getUserPath(PATH), id })
 
+const deleteMany = (ids: string[]): Promise<string[]> =>
+  database.deleteMany({ path: getUserPath(PATH), ids })
+
 export const orderModel = {
   create,
   createMany,
   findManyByQuoteId,
   findManyByProductId,
   update,
-  deleteUniqueById
+  deleteUniqueById,
+  deleteMany
 }

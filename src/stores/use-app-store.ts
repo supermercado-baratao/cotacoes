@@ -70,8 +70,8 @@ type TAppStore = {
   quotes: TQuote[] | null
   setQuotes: (quotes: TQuote[]) => void
   createQuote: (quote: TCreateData<TQuote>) => void
-  updateQuote: (quote: TUpdateData<TQuote>) => void
-  deleteQuote: (id: string) => void
+  updateQuote: (quote: TUpdateData<TQuote>, ordersToDelete?: TOrder[]) => void
+  deleteQuote: (id: string, ordersToDelete?: TOrder[]) => void
 
   ordersByQuoteId: TOrder[] | null
   setOrdersByQuoteId: (orders: TOrder[]) => void

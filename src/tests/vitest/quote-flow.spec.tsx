@@ -6,16 +6,47 @@ import {
   within
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Timestamp } from 'firebase/firestore'
 import { beforeAll, describe, expect, test } from 'vitest'
 
+import type { TOrder } from '@/models'
 import { useAppStore } from '@/stores'
 
 import { createApp } from './_mocks/App'
-import { databaseMock } from './_mocks/database'
+import {
+  databaseMock,
+  getSeededCollection,
+  seedCollection
+} from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
 import { createUser, populateDatabase } from './orchestrator'
 
 const QUOTE_DATE = '2026-02-01'
+
+const seedOrderForQuoteItem = (
+  quoteId: string,
+  quoteItemId: string
+): TOrder => {
+  const order: TOrder = {
+    id: crypto.randomUUID(),
+    quoteId,
+    quoteItemId,
+    productId: '207826',
+    invoiceId: null,
+    price: 10,
+    quantity: 1,
+    packing: 'UN',
+    packingQuantity: null,
+    supplierId: 'fake-supplier-id',
+    sellerId: null,
+    date: QUOTE_DATE,
+    observations: null,
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now()
+  }
+  seedCollection('orders', [order])
+  return order
+}
 
 let shortageList: string[] = []
 
@@ -215,13 +246,34 @@ describe('Quote flow', () => {
     })
   }, 30000)
 
-  test('Removes an item from the quote', async () => {
+  test('Removes an item from the quote and deletes its linked orders', async () => {
     const event = userEvent.setup()
+
+    const quoteBefore = (useAppStore.getState().quotes ?? []).find(
+      (q) => q.date === QUOTE_DATE
+    )!
+    const itemToRemove = quoteBefore.items.find(
+      (i) => i.description === 'POLVILHO AZEDO'
+    )!
+    const orphanOrder = seedOrderForQuoteItem(quoteBefore.id, itemToRemove.id)
+    const unrelatedOrder = seedOrderForQuoteItem(
+      quoteBefore.id,
+      quoteBefore.items.find((i) => i.description !== 'POLVILHO AZEDO')!.id
+    )
+
     const { App } = createApp('/quotes')
     render(<App />)
 
     await waitFor(() => {
       expect(screen.getByText('POLVILHO AZEDO')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      expect(
+        (useAppStore.getState().ordersByQuoteId ?? []).some(
+          (o) => o.id === orphanOrder.id
+        )
+      ).toBe(true)
     })
 
     await event.click(getRowAction('POLVILHO AZEDO', 'Excluir'))
@@ -231,7 +283,9 @@ describe('Quote flow', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText('Cotação atualizada com sucesso!')
+        screen.getByText(
+          'Cotação atualizada com sucesso! 1 pedido órfão foi excluído junto.'
+        )
       ).toBeInTheDocument()
     })
 
@@ -243,6 +297,12 @@ describe('Quote flow', () => {
       expect(
         quote?.items.find((i) => i.description === 'POLVILHO AZEDO')
       ).toBeUndefined()
+    })
+
+    await waitFor(() => {
+      const orders = getSeededCollection('orders')
+      expect(orders.find((o) => o.id === orphanOrder.id)).toBeUndefined()
+      expect(orders.find((o) => o.id === unrelatedOrder.id)).toBeDefined()
     })
 
     expect(screen.queryByText('POLVILHO AZEDO')).not.toBeInTheDocument()
@@ -276,13 +336,34 @@ describe('Quote flow', () => {
     ).toHaveLength(29)
   }, 30000)
 
-  test('Deletes the whole quote', async () => {
+  test('Deletes the whole quote and its linked orders', async () => {
     const event = userEvent.setup()
+
+    const quoteBefore = (useAppStore.getState().quotes ?? []).find(
+      (q) => q.date === QUOTE_DATE
+    )!
+    const orphanOrderA = seedOrderForQuoteItem(
+      quoteBefore.id,
+      quoteBefore.items[0].id
+    )
+    const orphanOrderB = seedOrderForQuoteItem(
+      quoteBefore.id,
+      quoteBefore.items[1].id
+    )
+
     const { App } = createApp('/quotes')
     render(<App />)
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      expect(
+        (useAppStore.getState().ordersByQuoteId ?? []).some(
+          (o) => o.id === orphanOrderA.id
+        )
+      ).toBe(true)
     })
 
     await event.click(getHeaderAction('Excluir'))
@@ -292,12 +373,18 @@ describe('Quote flow', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText('Cotação excluída com sucesso!')
+        screen.getByText(/^Cotação excluída com sucesso! \d+ pedidos? órfãos? /)
       ).toBeInTheDocument()
     })
 
     await waitFor(() => {
       expect(useAppStore.getState().quotes).toHaveLength(0)
+    })
+
+    await waitFor(() => {
+      const orders = getSeededCollection('orders')
+      expect(orders.find((o) => o.id === orphanOrderA.id)).toBeUndefined()
+      expect(orders.find((o) => o.id === orphanOrderB.id)).toBeUndefined()
     })
 
     expect(
