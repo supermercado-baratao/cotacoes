@@ -3,19 +3,19 @@ import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, test } from 'vitest'
 
 import { quoteModel } from '@/models'
-import { useAppStore, useAuthStore } from '@/stores'
+import { useAppStore } from '@/stores'
 
 import { createApp } from './_mocks/App'
+import { databaseMock } from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
-import orchestrator from './orchestrator'
+import { createUser, populateDatabase } from './orchestrator'
 
 const INVOICE_XML = 'NFe29260632053743000116550020000001081299331431.xml'
 const QUOTE_ITEM_ID = crypto.randomUUID()
 
 beforeAll(async () => {
-  const user = await orchestrator.createUser()
-  useAuthStore.getState().setUser(user)
-  await orchestrator.populateDatabase()
+  createUser()
+  await populateDatabase()
 
   await quoteModel.create({
     items: [
@@ -219,4 +219,35 @@ describe('Invoice flow', () => {
       expect(screen.getByText('1/21')).toBeInTheDocument()
     })
   }, 30000)
+
+  test('Mostra erro quando falha ao importar a nota', async () => {
+    const event = userEvent.setup()
+    const { App } = createApp('/invoices')
+    render(<App />)
+
+    await openImportDialog(event)
+
+    const otherXml = 'NFe32260605997742000408550000055770841777496431.xml'
+    databaseMock.createManyWithIds.mockRejectedValueOnce(
+      new Error('network error')
+    )
+
+    await uploadXml(event, otherXml)
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Importar 1 nota' })
+      ).toBeInTheDocument()
+    })
+    await event.click(screen.getByRole('button', { name: 'Importar 1 nota' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Erro ao importar notas')).toBeInTheDocument()
+    })
+
+    expect(
+      (useAppStore.getState().invoices ?? []).find(
+        (inv) => inv.number === '108'
+      )
+    ).toBeDefined()
+  }, 20000)
 })

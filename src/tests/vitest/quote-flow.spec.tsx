@@ -8,20 +8,20 @@ import {
 import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, test } from 'vitest'
 
-import { useAppStore, useAuthStore } from '@/stores'
+import { useAppStore } from '@/stores'
 
 import { createApp } from './_mocks/App'
+import { databaseMock } from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
-import orchestrator from './orchestrator'
+import { createUser, populateDatabase } from './orchestrator'
 
 const QUOTE_DATE = '2026-02-01'
 
 let shortageList: string[] = []
 
 beforeAll(async () => {
-  const user = await orchestrator.createUser()
-  useAuthStore.getState().setUser(user)
-  await orchestrator.populateDatabase()
+  createUser()
+  await populateDatabase()
 
   const buffer = await readMockFile('quote-items.txt')
   shortageList = buffer
@@ -248,6 +248,34 @@ describe('Quote flow', () => {
     expect(screen.queryByText('POLVILHO AZEDO')).not.toBeInTheDocument()
   }, 30000)
 
+  test('Shows an error and keeps the quote when updating it fails', async () => {
+    const event = userEvent.setup()
+    const { App } = createApp('/quotes')
+    render(<App />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument()
+    })
+
+    databaseMock.update.mockRejectedValueOnce(new Error('network error'))
+
+    await event.click(getHeaderAction('Editar'))
+    await screen.findByLabelText('Data')
+    setLines([...shortageList, 'ITEM QUE NAO DEVE SER SALVO'].join('\n'))
+
+    await event.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Erro ao atualizar cotação')).toBeInTheDocument()
+    })
+
+    expect(screen.getByLabelText('Data')).toBeInTheDocument()
+    expect(
+      (useAppStore.getState().quotes ?? []).find((q) => q.date === QUOTE_DATE)
+        ?.items
+    ).toHaveLength(29)
+  }, 30000)
+
   test('Deletes the whole quote', async () => {
     const event = userEvent.setup()
     const { App } = createApp('/quotes')
@@ -277,5 +305,38 @@ describe('Quote flow', () => {
         'Nenhum item nesta cotação. Crie uma cotação ou adicione itens!'
       )
     ).toBeInTheDocument()
+  }, 30000)
+
+  test('Shows an error and keeps the quote when deleting it fails', async () => {
+    const event = userEvent.setup()
+    const { App } = createApp('/quotes')
+    render(<App />)
+
+    await event.click(screen.getByRole('button', { name: 'Nova Cotação' }))
+    await screen.findByLabelText('Data')
+    setDate('Data', '2026-03-01')
+    setLines('ITEM PARA TESTE DE ERRO')
+    await event.click(screen.getByRole('button', { name: 'Salvar' }))
+    await waitFor(() => {
+      expect(
+        screen.getByText('Cotação criada com sucesso!')
+      ).toBeInTheDocument()
+    })
+
+    databaseMock.deleteUniqueById.mockRejectedValueOnce(
+      new Error('network error')
+    )
+
+    await event.click(getHeaderAction('Excluir'))
+    const dialog = await screen.findByRole('dialog')
+    await event.click(within(dialog).getByRole('button', { name: 'Excluir' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Erro ao excluir cotação')).toBeInTheDocument()
+    })
+
+    expect(
+      (useAppStore.getState().quotes ?? []).find((q) => q.date === '2026-03-01')
+    ).toBeDefined()
   }, 30000)
 })

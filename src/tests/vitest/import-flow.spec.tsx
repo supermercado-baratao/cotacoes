@@ -2,15 +2,15 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, test } from 'vitest'
 
-import { useAppStore, useAuthStore } from '@/stores'
+import { useAppStore } from '@/stores'
 
 import { createApp } from './_mocks/App'
+import { databaseMock } from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
-import orchestrator from './orchestrator'
+import { createUser } from './orchestrator'
 
-beforeAll(async () => {
-  const user = await orchestrator.createUser()
-  useAuthStore.getState().setUser(user)
+beforeAll(() => {
+  createUser()
 })
 
 const uploadFile = async (
@@ -132,4 +132,39 @@ describe('Import flow', () => {
       { timeout: 10000 }
     )
   }, 40000)
+
+  test('Shows an error and keeps previous data when the import fails', async () => {
+    const event = userEvent.setup()
+
+    const { App } = createApp('/import')
+    const { container } = render(<App />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Selecionar arquivo' })
+      ).toBeInTheDocument()
+    })
+
+    await uploadFile(container, event, 'import-data.xlsx')
+
+    await waitFor(() => {
+      expect(screen.getByText('import-data.xlsx')).toBeInTheDocument()
+    })
+
+    databaseMock.upsertManyWithIds.mockRejectedValueOnce(
+      new Error('network error')
+    )
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Importar 3 produtos' })
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Erro ao importar dados')).toBeInTheDocument()
+    })
+
+    const products = useAppStore.getState().products ?? []
+    expect(products).toHaveLength(495)
+    expect(products.find((p) => p.id === '217823')?.price).toBeCloseTo(17.98)
+  }, 20000)
 })
