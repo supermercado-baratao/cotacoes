@@ -1,3 +1,7 @@
+import { WarningAmber } from '@mui/icons-material'
+import { Alert, Button } from '@mui/material'
+import { useNavigate } from 'react-router'
+
 import {
   DataView,
   DeleteDialog,
@@ -7,6 +11,7 @@ import {
 } from '@/components'
 
 import { AiReferenceModal, Form, Header, Table } from './_components'
+import * as S from './style'
 import { useQuotesHandler } from './use-quotes-handler'
 
 export const Quotes = () => {
@@ -42,12 +47,23 @@ export const Quotes = () => {
     isPrinting,
     search,
     setSearch,
+    pendingInvoices,
     quoteToDelete,
     handleDeleteQuote,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm,
     handleSuccess
   } = useQuotesHandler()
+
+  const navigate = useNavigate()
+
+  const handleReviewPendingInvoices = () => {
+    if (pendingInvoices.length === 1) {
+      navigate(`/invoices/${pendingInvoices[0].id}`)
+      return
+    }
+    navigate('/invoices')
+  }
 
   return (
     <>
@@ -70,6 +86,26 @@ export const Quotes = () => {
         search={search}
         setSearch={setSearch}
       />
+      {quote && pendingInvoices.length > 0 && (
+        <Alert
+          severity="warning"
+          icon={<WarningAmber />}
+          sx={S.PendingInvoicesAlert}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleReviewPendingInvoices}
+            >
+              Revisar
+            </Button>
+          }
+        >
+          {pendingInvoices.length === 1
+            ? '1 nota fiscal pendente de aprovação nesta cotação'
+            : `${pendingInvoices.length} notas fiscais pendentes de aprovação nesta cotação`}
+        </Alert>
+      )}
       <DataView
         isFetching={isFetching}
         isEmpty={!hasQuoteRows}

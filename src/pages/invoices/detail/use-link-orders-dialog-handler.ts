@@ -2,7 +2,14 @@ import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { TProductDraft } from '@/components'
-import type { TInvoice, TInvoiceItem, TOrder, TProduct, TQuote } from '@/models'
+import type {
+  TInvoice,
+  TInvoiceItem,
+  TOrder,
+  TProduct,
+  TQuote,
+  TQuoteItem
+} from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
 import { findSupplierByCnpj } from '@/utils'
@@ -15,13 +22,19 @@ export type TLinkOrderRow = {
   quoteItemId: string
 }
 
+export type TAddQuoteItemDraft = {
+  itemNumber: number
+  description: string
+  productId: string | null
+}
+
 export const useLinkOrdersDialogHandler = (
   isOpened: boolean,
   invoice: TInvoice,
   quote: TQuote | null,
   handleClose: () => void
 ) => {
-  const { products, suppliers, createOrdersBatchWithInvoiceLink } =
+  const { products, suppliers, updateQuote, createOrdersBatchWithInvoiceLink } =
     useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
@@ -36,6 +49,8 @@ export const useLinkOrdersDialogHandler = (
     number | null
   >(null)
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
+  const [addQuoteItemDraft, setAddQuoteItemDraft] =
+    useState<TAddQuoteItemDraft | null>(null)
   const wasOpenRef = useRef(false)
 
   useEffect(() => {
@@ -79,6 +94,43 @@ export const useLinkOrdersDialogHandler = (
 
   const handleRowQuoteItemChange = (itemNumber: number, quoteItemId: string) =>
     setOverrides((prev) => ({ ...prev, [itemNumber]: quoteItemId }))
+
+  const handleOpenAddQuoteItem = (row: TLinkOrderRow) =>
+    setAddQuoteItemDraft({
+      itemNumber: row.item.itemNumber,
+      description: row.item.description,
+      productId: row.productId
+    })
+
+  const handleAddQuoteItemDialogClose = () => setAddQuoteItemDraft(null)
+
+  const handleConfirmAddQuoteItem = (description: string) => {
+    if (!quote || !addQuoteItemDraft) return
+    const trimmedDescription = description.trim()
+    if (!trimmedDescription) return
+
+    const product = addQuoteItemDraft.productId
+      ? (productMap.get(addQuoteItemDraft.productId) ?? null)
+      : null
+    const priceRef: TQuoteItem['priceRef'] = product?.familyId
+      ? { type: 'family', id: product.familyId }
+      : product
+        ? { type: 'product', id: product.id }
+        : null
+
+    const newItem: TQuoteItem = {
+      id: crypto.randomUUID(),
+      description: trimmedDescription,
+      salePrice: null,
+      priceRef
+    }
+    updateQuote({ ...quote, items: [...quote.items, newItem] })
+    setOverrides((prev) => ({
+      ...prev,
+      [addQuoteItemDraft.itemNumber]: newItem.id
+    }))
+    setAddQuoteItemDraft(null)
+  }
 
   const handleRowProductChange = (itemNumber: number, productId: string) =>
     setProductOverrides((prev) => ({ ...prev, [itemNumber]: productId }))
@@ -139,6 +191,10 @@ export const useLinkOrdersDialogHandler = (
     rows,
     selectedCount,
     handleRowQuoteItemChange,
+    handleOpenAddQuoteItem,
+    addQuoteItemDraft,
+    handleAddQuoteItemDialogClose,
+    handleConfirmAddQuoteItem,
     handleRowProductChange,
     handleQuickCreateProduct,
     quickCreateDraft,

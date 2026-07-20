@@ -18,18 +18,24 @@ type TTableProps = {
 }
 
 export const Table = ({ quote, rows }: TTableProps) => {
-  const { updateQuote } = useAppStore()
+  const { updateQuote, ordersByQuoteId } = useAppStore()
   const [drawerRow, setDrawerRow] = useState<TQuoteRow | null>(null)
   const [salePriceItem, setSalePriceItem] = useState<TQuoteItem | null>(null)
 
   const removeFromQuote = useCallback(
     (row: TQuoteRow) => {
-      updateQuote({
-        ...quote,
-        items: quote.items.filter((i) => i.id !== row.id)
-      })
+      const ordersToDelete = (ordersByQuoteId ?? []).filter(
+        (o) => o.quoteItemId === row.id
+      )
+      updateQuote(
+        {
+          ...quote,
+          items: quote.items.filter((i) => i.id !== row.id)
+        },
+        ordersToDelete
+      )
     },
-    [quote, updateQuote]
+    [quote, updateQuote, ordersByQuoteId]
   )
 
   const {

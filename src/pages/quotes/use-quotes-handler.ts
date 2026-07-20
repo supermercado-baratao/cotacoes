@@ -11,7 +11,10 @@ import {
   getAvailableDays,
   getAvailableMonths,
   getAvailableYears,
+  getNextQuoteDate,
   getNumberOfSuppliers,
+  getPendingInvoicesForQuote,
+  getQuoteInvoiceDateRange,
   getQuoteRows,
   getSelectedQuote
 } from './utils'
@@ -24,24 +27,33 @@ export const useQuotesHandler = () => {
     products,
     families,
     settings,
+    invoices,
+    invoiceDateRange,
+    setInvoiceDateRange,
     setQuoteId,
-    deleteQuote
+    deleteQuote,
+    quotesSelectedDate,
+    setQuotesSelectedDate
   } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const availableYears = getAvailableYears(quotes || [])
-  const [year, setYear] = useState(availableYears[0])
+  const [year, setYear] = useState(
+    quotesSelectedDate?.year ?? availableYears[0]
+  )
 
   const availableMonths = getAvailableMonths(quotes || [], year)
-  const [month, setMonth] = useState(availableMonths[0])
+  const [month, setMonth] = useState(
+    quotesSelectedDate?.month ?? availableMonths[0]
+  )
 
   const availableDays = getAvailableDays(quotes || [], year, month)
-  const [day, setDay] = useState(availableDays[0])
+  const [day, setDay] = useState(quotesSelectedDate?.day ?? availableDays[0])
 
   const initialized = useRef(false)
 
   useEffect(() => {
-    if (initialized.current || !quotes?.length) return
+    if (initialized.current || !quotes?.length || quotesSelectedDate) return
     initialized.current = true
     const latest = [...quotes].sort((a, b) =>
       dayjs(b.date).diff(dayjs(a.date))
@@ -49,7 +61,11 @@ export const useQuotesHandler = () => {
     setYear(dayjs(latest.date).year())
     setMonth(dayjs(latest.date).month() + 1)
     setDay(dayjs(latest.date).date())
-  }, [quotes])
+  }, [quotes, quotesSelectedDate])
+
+  useEffect(() => {
+    setQuotesSelectedDate({ year, month, day })
+  }, [year, month, day, setQuotesSelectedDate])
 
   const {
     formItem: formQuote,
@@ -86,7 +102,10 @@ export const useQuotesHandler = () => {
       )[0]
       setSuccessCallbacks([() => handleSuccess(latest.date)])
     }
-    deleteQuote(quote.id)
+    const ordersToDelete = (ordersByQuoteId ?? []).filter(
+      (o) => o.quoteId === quote.id
+    )
+    deleteQuote(quote.id, ordersToDelete)
   })
 
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
@@ -130,6 +149,25 @@ export const useQuotesHandler = () => {
   useEffect(() => {
     setQuoteId(quote?.id ?? null)
   }, [quote, setQuoteId])
+
+  const nextQuoteDate = quote ? getNextQuoteDate(quotes ?? [], quote) : null
+
+  useEffect(() => {
+    if (!quote) return
+    const range = getQuoteInvoiceDateRange(quote, nextQuoteDate)
+    if (
+      range.startDate === invoiceDateRange.startDate &&
+      range.endDate === invoiceDateRange.endDate
+    ) {
+      return
+    }
+    setInvoiceDateRange(range)
+  }, [quote, nextQuoteDate, invoiceDateRange, setInvoiceDateRange])
+
+  const pendingInvoices =
+    quote && invoices
+      ? getPendingInvoicesForQuote(invoices, quote, nextQuoteDate)
+      : []
 
   const onYearChange = (year: number) => setYear(year)
   const onMonthChange = (month: number) => setMonth(month)
@@ -176,6 +214,7 @@ export const useQuotesHandler = () => {
     handlePrint,
     isPrinting,
     numberOfSuppliers,
+    pendingInvoices,
     handleSuccess,
     quoteToDelete,
     handleDeleteQuote,

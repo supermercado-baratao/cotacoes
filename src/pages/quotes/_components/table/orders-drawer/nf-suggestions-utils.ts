@@ -1,5 +1,3 @@
-import dayjs from 'dayjs'
-
 import type {
   TInvoice,
   TInvoiceItem,
@@ -8,6 +6,8 @@ import type {
   TQuoteItem
 } from '@/models'
 import { isLikelyMatch, matchesSearch } from '@/utils'
+
+import { isInvoiceInQuoteWindow } from '../../../utils'
 
 export type TInvoiceSuggestion = {
   invoice: TInvoice
@@ -31,11 +31,7 @@ export const getInvoiceSuggestions = (
   const other: TInvoiceSuggestion[] = []
 
   for (const invoice of invoices) {
-    const invoiceDate = dayjs(invoice.emissionDate).format('YYYY-MM-DD')
-    const inRange =
-      invoiceDate >= quote.date &&
-      (nextQuoteDate === null || invoiceDate < nextQuoteDate)
-    if (!inRange) continue
+    if (!isInvoiceInQuoteWindow(invoice, quote, nextQuoteDate)) continue
 
     const unlinkedItems = invoice.items.filter((item) => item.orderId === null)
     if (!unlinkedItems.length) continue

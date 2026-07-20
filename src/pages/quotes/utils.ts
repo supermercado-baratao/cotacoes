@@ -2,12 +2,56 @@ import dayjs from 'dayjs'
 
 import type {
   TFamily,
+  TInvoice,
+  TInvoiceDateRange,
   TOrder,
   TPriceRef,
   TProduct,
   TQuote,
   TSupplier
 } from '@/models'
+
+export const getNextQuoteDate = (
+  quotes: TQuote[],
+  quote: TQuote
+): string | null => {
+  const sorted = [...quotes].sort((a, b) => a.date.localeCompare(b.date))
+  const idx = sorted.findIndex((q) => q.id === quote.id)
+  return sorted[idx + 1]?.date ?? null
+}
+
+export const isInvoiceInQuoteWindow = (
+  invoice: TInvoice,
+  quote: TQuote,
+  nextQuoteDate: string | null
+): boolean => {
+  const invoiceDate = dayjs(invoice.emissionDate).format('YYYY-MM-DD')
+  return (
+    invoiceDate >= quote.date &&
+    (nextQuoteDate === null || invoiceDate < nextQuoteDate)
+  )
+}
+
+export const getQuoteInvoiceDateRange = (
+  quote: TQuote,
+  nextQuoteDate: string | null
+): TInvoiceDateRange => ({
+  startDate: quote.date,
+  endDate: nextQuoteDate
+    ? dayjs(nextQuoteDate).subtract(1, 'day').format('YYYY-MM-DD')
+    : dayjs().format('YYYY-MM-DD')
+})
+
+export const getPendingInvoicesForQuote = (
+  invoices: TInvoice[],
+  quote: TQuote,
+  nextQuoteDate: string | null
+): TInvoice[] =>
+  invoices.filter(
+    (invoice) =>
+      isInvoiceInQuoteWindow(invoice, quote, nextQuoteDate) &&
+      invoice.verificationStatus === 'pending'
+  )
 
 export const getAvailableYears = (quotes: TQuote[]) => {
   const years = Array.from(
