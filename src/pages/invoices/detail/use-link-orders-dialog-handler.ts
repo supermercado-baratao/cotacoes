@@ -22,6 +22,12 @@ export type TLinkOrderRow = {
   quoteItemId: string
 }
 
+export type TAddQuoteItemDraft = {
+  itemNumber: number
+  description: string
+  productId: string | null
+}
+
 export const useLinkOrdersDialogHandler = (
   isOpened: boolean,
   invoice: TInvoice,
@@ -43,6 +49,8 @@ export const useLinkOrdersDialogHandler = (
     number | null
   >(null)
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
+  const [addQuoteItemDraft, setAddQuoteItemDraft] =
+    useState<TAddQuoteItemDraft | null>(null)
   const wasOpenRef = useRef(false)
 
   useEffect(() => {
@@ -87,16 +95,41 @@ export const useLinkOrdersDialogHandler = (
   const handleRowQuoteItemChange = (itemNumber: number, quoteItemId: string) =>
     setOverrides((prev) => ({ ...prev, [itemNumber]: quoteItemId }))
 
-  const handleAddQuoteItem = (itemNumber: number, description: string) => {
-    if (!quote) return
+  const handleOpenAddQuoteItem = (row: TLinkOrderRow) =>
+    setAddQuoteItemDraft({
+      itemNumber: row.item.itemNumber,
+      description: row.item.description,
+      productId: row.productId
+    })
+
+  const handleAddQuoteItemDialogClose = () => setAddQuoteItemDraft(null)
+
+  const handleConfirmAddQuoteItem = (description: string) => {
+    if (!quote || !addQuoteItemDraft) return
+    const trimmedDescription = description.trim()
+    if (!trimmedDescription) return
+
+    const product = addQuoteItemDraft.productId
+      ? (productMap.get(addQuoteItemDraft.productId) ?? null)
+      : null
+    const priceRef: TQuoteItem['priceRef'] = product?.familyId
+      ? { type: 'family', id: product.familyId }
+      : product
+        ? { type: 'product', id: product.id }
+        : null
+
     const newItem: TQuoteItem = {
       id: crypto.randomUUID(),
-      description: description.trim(),
+      description: trimmedDescription,
       salePrice: null,
-      priceRef: null
+      priceRef
     }
     updateQuote({ ...quote, items: [...quote.items, newItem] })
-    setOverrides((prev) => ({ ...prev, [itemNumber]: newItem.id }))
+    setOverrides((prev) => ({
+      ...prev,
+      [addQuoteItemDraft.itemNumber]: newItem.id
+    }))
+    setAddQuoteItemDraft(null)
   }
 
   const handleRowProductChange = (itemNumber: number, productId: string) =>
@@ -158,7 +191,10 @@ export const useLinkOrdersDialogHandler = (
     rows,
     selectedCount,
     handleRowQuoteItemChange,
-    handleAddQuoteItem,
+    handleOpenAddQuoteItem,
+    addQuoteItemDraft,
+    handleAddQuoteItemDialogClose,
+    handleConfirmAddQuoteItem,
     handleRowProductChange,
     handleQuickCreateProduct,
     quickCreateDraft,
