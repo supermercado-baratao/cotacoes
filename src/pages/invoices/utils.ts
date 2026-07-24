@@ -34,6 +34,88 @@ export const findBestQuoteItemMatch = (
   quoteItems.find((quoteItem) => isLikelyMatch(item, quoteItem, productMap)) ??
   null
 
+export type TLinkOrderRow = {
+  item: TInvoiceItem
+  productId: string | null
+  quoteItemId: string
+}
+
+export type TBatchGroup = {
+  quoteItemId: string
+  packing: string
+  rows: TLinkOrderRow[]
+  outliers: TLinkOrderRow[]
+}
+
+export type TGroupedRows = {
+  batchGroups: TBatchGroup[]
+  individualRows: TLinkOrderRow[]
+}
+
+/**
+ * Groups invoice rows that are ready to link into batches that can be
+ * confirmed together: same quote item, referenced by family (so more than
+ * one product can legitimately share it), and consistent packing across the
+ * rows. Rows whose packing diverges from the group's majority are never
+ * silently merged in — they're returned in `individualRows` instead.
+ */
+export const groupInvoiceItemsForBatch = (
+  readyRows: TLinkOrderRow[],
+  quoteItems: TQuoteItem[]
+): TGroupedRows => {
+  const quoteItemMap = new Map(quoteItems.map((qi) => [qi.id, qi]))
+
+  const rowsByQuoteItemId = new Map<string, TLinkOrderRow[]>()
+  for (const row of readyRows) {
+    const group = rowsByQuoteItemId.get(row.quoteItemId) ?? []
+    group.push(row)
+    rowsByQuoteItemId.set(row.quoteItemId, group)
+  }
+
+  const batchGroups: TBatchGroup[] = []
+  const individualRows: TLinkOrderRow[] = []
+
+  for (const [quoteItemId, rows] of rowsByQuoteItemId) {
+    const isFamilyRef =
+      quoteItemMap.get(quoteItemId)?.priceRef?.type === 'family'
+    if (!isFamilyRef || rows.length < 2) {
+      individualRows.push(...rows)
+      continue
+    }
+
+    const rowsByPacking = new Map<string, TLinkOrderRow[]>()
+    for (const row of rows) {
+      const bucket = rowsByPacking.get(row.item.unit) ?? []
+      bucket.push(row)
+      rowsByPacking.set(row.item.unit, bucket)
+    }
+
+    let majorityPacking: string | null = null
+    let majorityRows: TLinkOrderRow[] = []
+    for (const [packing, bucket] of rowsByPacking) {
+      if (bucket.length > majorityRows.length) {
+        majorityPacking = packing
+        majorityRows = bucket
+      }
+    }
+
+    if (majorityPacking !== null && majorityRows.length >= 2) {
+      const outliers = rows.filter((row) => row.item.unit !== majorityPacking)
+      batchGroups.push({
+        quoteItemId,
+        packing: majorityPacking,
+        rows: majorityRows,
+        outliers
+      })
+      individualRows.push(...outliers)
+    } else {
+      individualRows.push(...rows)
+    }
+  }
+
+  return { batchGroups, individualRows }
+}
+
 const get = (root: Document | Element, tag: string): string =>
   Array.from(root.getElementsByTagName(tag))[0]?.textContent?.trim() ?? ''
 

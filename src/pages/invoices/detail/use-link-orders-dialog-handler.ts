@@ -1,26 +1,22 @@
-import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { TProductDraft } from '@/components'
 import type {
   TInvoice,
   TInvoiceItem,
-  TOrder,
   TProduct,
   TQuote,
   TQuoteItem
 } from '@/models'
-import { useAppStore, useCallbackStore } from '@/stores'
-import type { TCreateData } from '@/types'
+import { useAppStore } from '@/stores'
 import { findSupplierByCnpj } from '@/utils'
 
-import { findBestQuoteItemMatch } from '../utils'
-
-export type TLinkOrderRow = {
-  item: TInvoiceItem
-  productId: string | null
-  quoteItemId: string
-}
+import {
+  findBestQuoteItemMatch,
+  groupInvoiceItemsForBatch,
+  type TBatchGroup,
+  type TLinkOrderRow
+} from '../utils'
 
 export type TAddQuoteItemDraft = {
   itemNumber: number
@@ -28,15 +24,17 @@ export type TAddQuoteItemDraft = {
   productId: string | null
 }
 
+export type TQueueItem =
+  | { type: 'batch'; group: TBatchGroup }
+  | { type: 'individual'; row: TLinkOrderRow }
+
 export const useLinkOrdersDialogHandler = (
   isOpened: boolean,
   invoice: TInvoice,
   quote: TQuote | null,
   handleClose: () => void
 ) => {
-  const { products, suppliers, updateQuote, createOrdersBatchWithInvoiceLink } =
-    useAppStore()
-  const { setSuccessCallbacks } = useCallbackStore()
+  const { products, suppliers, updateQuote } = useAppStore()
 
   const [overrides, setOverrides] = useState<Record<number, string>>({})
   const [productOverrides, setProductOverrides] = useState<
@@ -51,12 +49,14 @@ export const useLinkOrdersDialogHandler = (
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
   const [addQuoteItemDraft, setAddQuoteItemDraft] =
     useState<TAddQuoteItemDraft | null>(null)
+  const [queue, setQueue] = useState<TQueueItem[]>([])
   const wasOpenRef = useRef(false)
 
   useEffect(() => {
     if (isOpened && !wasOpenRef.current) {
       setOverrides({})
       setProductOverrides({})
+      setQueue([])
     }
     wasOpenRef.current = isOpened
   }, [isOpened])
@@ -162,27 +162,33 @@ export const useLinkOrdersDialogHandler = (
   const handleConfirm = () => {
     if (!quote || !supplier || selectedCount === 0) return
 
-    const matches = rows.filter(isRowReady).map((r) => ({
-      itemNumber: r.item.itemNumber,
-      order: {
-        quoteId: quote.id,
-        quoteItemId: r.quoteItemId,
-        productId: r.productId!,
-        invoiceId: invoice.id,
-        price: r.item.unitPrice,
-        quantity: r.item.quantity,
-        packing: r.item.unit,
-        packingQuantity: null,
-        supplierId: supplier.id,
-        sellerId: null,
-        date: dayjs(invoice.emissionDate).format('YYYY-MM-DD'),
-        observations: null
-      } as TCreateData<TOrder>
-    }))
+    const { batchGroups, individualRows } = groupInvoiceItemsForBatch(
+      rows.filter(isRowReady),
+      quote.items
+    )
 
-    setSuccessCallbacks([handleClose])
-    createOrdersBatchWithInvoiceLink({ invoice, matches })
+    setQueue([
+      ...batchGroups.map((group): TQueueItem => ({ type: 'batch', group })),
+      ...individualRows.map((row): TQueueItem => ({ type: 'individual', row }))
+    ])
   }
+
+  const advanceQueue = () => {
+    const remaining = queue.slice(1)
+    setQueue(remaining)
+    if (remaining.length === 0) handleClose()
+  }
+
+  const currentQueueItem = queue[0] ?? null
+
+  const currentQuoteItem = useMemo(() => {
+    if (!currentQueueItem || !quote) return null
+    const quoteItemId =
+      currentQueueItem.type === 'batch'
+        ? currentQueueItem.group.quoteItemId
+        : currentQueueItem.row.quoteItemId
+    return quote.items.find((qi) => qi.id === quoteItemId) ?? null
+  }, [currentQueueItem, quote])
 
   return {
     quote,
@@ -203,6 +209,9 @@ export const useLinkOrdersDialogHandler = (
     handleProductCreated,
     quickCreateFamily,
     setQuickCreateFamily,
-    handleConfirm
+    handleConfirm,
+    currentQueueItem,
+    currentQuoteItem,
+    advanceQueue
   }
 }

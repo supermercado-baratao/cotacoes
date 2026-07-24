@@ -16,11 +16,12 @@ import {
   Typography
 } from '@mui/material'
 
-import { FamilyForm, Modal, ProductForm } from '@/components'
+import { FamilyForm, Modal, OrderForm, ProductForm } from '@/components'
 import type { TInvoice, TProduct, TQuote } from '@/models'
 import { formatCurrency, formatNumericValue, matchesSearch } from '@/utils'
 
 import { AddQuoteItemDialog } from './add-quote-item-dialog'
+import { BatchConfirmDialog } from './batch-confirm-dialog'
 import { useLinkOrdersDialogHandler } from './use-link-orders-dialog-handler'
 
 const NEW_ITEM_VALUE = '__new_item__'
@@ -56,7 +57,10 @@ export const LinkOrdersDialog = ({
     handleProductCreated,
     quickCreateFamily,
     setQuickCreateFamily,
-    handleConfirm
+    handleConfirm,
+    currentQueueItem,
+    currentQuoteItem,
+    advanceQueue
   } = useLinkOrdersDialogHandler(isOpened, invoice, quote, handleClose)
 
   const productMap = new Map(products.map((p) => [p.id, p]))
@@ -230,6 +234,32 @@ export const LinkOrdersDialog = ({
         handleClose={handleAddQuoteItemDialogClose}
         handleConfirm={handleConfirmAddQuoteItem}
       />
+      {quote && supplier && currentQueueItem?.type === 'batch' && (
+        <BatchConfirmDialog
+          key={currentQueueItem.group.quoteItemId}
+          isOpened
+          group={currentQueueItem.group}
+          quoteItem={currentQuoteItem}
+          invoice={invoice}
+          quote={quote}
+          supplier={supplier}
+          handleClose={advanceQueue}
+        />
+      )}
+      {quote && currentQueueItem?.type === 'individual' && (
+        <OrderForm
+          key={currentQueueItem.row.item.itemNumber}
+          isOpened
+          quoteItem={currentQuoteItem}
+          order={null}
+          setFormOrder={() => {}}
+          invoiceRef={{
+            invoice,
+            itemNumber: currentQueueItem.row.item.itemNumber
+          }}
+          handleClose={advanceQueue}
+        />
+      )}
     </>
   )
 }
