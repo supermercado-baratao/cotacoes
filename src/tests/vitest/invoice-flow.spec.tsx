@@ -1,18 +1,20 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Timestamp } from 'firebase/firestore'
 import { beforeAll, describe, expect, test } from 'vitest'
 
-import { quoteModel } from '@/models'
+import { quoteModel, type TInvoice } from '@/models'
 import { useAppStore } from '@/stores'
 
 import { createApp } from './_mocks/App'
-import { databaseMock } from './_mocks/database'
+import { databaseMock, seedCollection } from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
 import { createUser, populateDatabase } from './orchestrator'
 
 const QUOTE_DIR = 'quotes/quote-3-2026-06-01-2026-07-09'
 const INVOICE_XML = 'NFe29260632053743000116550020000001081299331431.xml'
 const QUOTE_ITEM_ID = crypto.randomUUID()
+const FAMILY_QUOTE_ITEM_ID = crypto.randomUUID()
 
 beforeAll(async () => {
   createUser()
@@ -25,6 +27,12 @@ beforeAll(async () => {
         description: 'PIMENTA DO REINO',
         salePrice: null,
         priceRef: { type: 'product', id: '210049' }
+      },
+      {
+        id: FAMILY_QUOTE_ITEM_ID,
+        description: 'SANDALIA HAVAIANAS COLOR',
+        salePrice: null,
+        priceRef: { type: 'family', id: '67' }
       }
     ],
     orders: [],
@@ -33,6 +41,34 @@ beforeAll(async () => {
     observations: null
   })
 })
+
+const seedBatchInvoice = (
+  number: string,
+  items: TInvoice['items']
+): TInvoice => {
+  const existingInvoice = (useAppStore.getState().invoices ?? []).find(
+    (inv) => inv.number === '108'
+  )!
+
+  const invoice: TInvoice = {
+    id: crypto.randomUUID(),
+    accessKey: `batch-${number}`,
+    number,
+    series: '1',
+    emissionDate: '2026-06-20T10:00:00-03:00',
+    supplierCnpj: existingInvoice.supplierCnpj,
+    supplierName: existingInvoice.supplierName,
+    destinationCnpj: existingInvoice.destinationCnpj,
+    totalValue: items.reduce((sum, i) => sum + i.totalPrice, 0),
+    items,
+    verificationStatus: 'pending',
+    quoteId: null,
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now()
+  }
+  seedCollection('invoices', [invoice])
+  return invoice
+}
 
 const getFileInput = (): HTMLInputElement =>
   document.querySelector('input[type="file"]') as HTMLInputElement
@@ -193,10 +229,20 @@ describe('Invoice flow', () => {
       within(dialog).getByRole('button', { name: 'Confirmar (1)' })
     )
 
+    const orderFormHeading = await screen.findByRole('heading', {
+      name: 'Novo Pedido'
+    })
+    const orderFormDialog = orderFormHeading.closest(
+      '.MuiPaper-root'
+    ) as HTMLElement
+    within(orderFormDialog).getByText('PIMENTA DO REINO')
+
+    await event.click(
+      within(orderFormDialog).getByRole('button', { name: 'Salvar' })
+    )
+
     await waitFor(() => {
-      expect(
-        screen.getByText('1 pedido vinculado com sucesso!')
-      ).toBeInTheDocument()
+      expect(screen.getByText('Pedido criado com sucesso!')).toBeInTheDocument()
     })
 
     await waitFor(() => {
@@ -218,6 +264,228 @@ describe('Invoice flow', () => {
 
     await waitFor(() => {
       expect(screen.getByText('1/21')).toBeInTheDocument()
+    })
+  }, 30000)
+
+  test('Confirma pedidos em lote para itens da mesma família com embalagem igual', async () => {
+    const event = userEvent.setup()
+
+    seedBatchInvoice('9001', [
+      {
+        itemNumber: 1,
+        supplierProductCode: 'A1',
+        barcode: null,
+        calculatedBarcode: null,
+        packageBarcode: null,
+        description: 'SAND HAVAIANAS COLOR 43 44 BRANCO',
+        unit: 'UN',
+        quantity: 2,
+        unitPrice: 18.58,
+        totalPrice: 37.16,
+        productId: '204682',
+        orderId: null,
+        matchStatus: 'matched',
+        priceDivergence: null,
+        quantityDivergence: null
+      },
+      {
+        itemNumber: 2,
+        supplierProductCode: 'A2',
+        barcode: null,
+        calculatedBarcode: null,
+        packageBarcode: null,
+        description: 'SAND HAVAIANAS COLOR 35 36 AZUL NAVAL',
+        unit: 'UN',
+        quantity: 3,
+        unitPrice: 18.58,
+        totalPrice: 55.74,
+        productId: '204364',
+        orderId: null,
+        matchStatus: 'matched',
+        priceDivergence: null,
+        quantityDivergence: null
+      }
+    ])
+
+    const { App } = createApp('/invoices')
+    render(<App />)
+
+    await waitFor(() => {
+      expect(screen.getByText('9001')).toBeInTheDocument()
+    })
+    await event.click(screen.getByText('9001'))
+
+    await waitFor(() => {
+      expect(screen.getByText('NF nº 9001 — Série 1')).toBeInTheDocument()
+    })
+
+    await event.click(screen.getByRole('button', { name: 'Vincular pedidos' }))
+
+    const dialogTitle = await screen.findByRole('heading', {
+      name: 'Vincular pedidos'
+    })
+    const dialog = dialogTitle.closest('.MuiPaper-root') as HTMLElement
+
+    await event.click(
+      within(dialog).getByRole('button', { name: 'Confirmar (2)' })
+    )
+
+    const batchHeading = await screen.findByRole('heading', {
+      name: 'Confirmar pedidos em lote'
+    })
+    const batchDialog = batchHeading.closest('.MuiPaper-root') as HTMLElement
+    within(batchDialog).getByText('SAND HAVAIANAS COLOR 43 44 BRANCO')
+    within(batchDialog).getByText('SAND HAVAIANAS COLOR 35 36 AZUL NAVAL')
+
+    await event.click(
+      within(batchDialog).getByRole('button', { name: 'Confirmar (2)' })
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('2 pedidos vinculados com sucesso!')
+      ).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      const orders = useAppStore.getState().ordersByQuoteId ?? []
+      const order1 = orders.find((o) => o.productId === '204682')
+      const order2 = orders.find((o) => o.productId === '204364')
+      expect(order1?.quoteItemId).toBe(FAMILY_QUOTE_ITEM_ID)
+      expect(order2?.quoteItemId).toBe(FAMILY_QUOTE_ITEM_ID)
+      expect(order1?.packing).toBe('UN')
+      expect(order2?.packing).toBe('UN')
+    })
+  }, 30000)
+
+  test('Separa itens com embalagem divergente do lote e confirma o restante individualmente', async () => {
+    const event = userEvent.setup()
+
+    seedBatchInvoice('9002', [
+      {
+        itemNumber: 1,
+        supplierProductCode: 'B1',
+        barcode: null,
+        calculatedBarcode: null,
+        packageBarcode: null,
+        description: 'SAND HAVAIANAS COLOR 41 42 PRETO',
+        unit: 'UN',
+        quantity: 1,
+        unitPrice: 18.58,
+        totalPrice: 18.58,
+        productId: '204360',
+        orderId: null,
+        matchStatus: 'matched',
+        priceDivergence: null,
+        quantityDivergence: null
+      },
+      {
+        itemNumber: 2,
+        supplierProductCode: 'B2',
+        barcode: null,
+        calculatedBarcode: null,
+        packageBarcode: null,
+        description: 'SAND HAVAIANAS COLOR 39 40 AZUL NAVAL',
+        unit: 'UN',
+        quantity: 1,
+        unitPrice: 18.58,
+        totalPrice: 18.58,
+        productId: '204380',
+        orderId: null,
+        matchStatus: 'matched',
+        priceDivergence: null,
+        quantityDivergence: null
+      },
+      {
+        itemNumber: 3,
+        supplierProductCode: 'B3',
+        barcode: null,
+        calculatedBarcode: null,
+        packageBarcode: null,
+        description: 'SAND HAVAIANAS COLOR 43 44 VERDE PATRIA FC',
+        unit: 'CX',
+        quantity: 6,
+        unitPrice: 18.58,
+        totalPrice: 111.48,
+        productId: '218055',
+        orderId: null,
+        matchStatus: 'matched',
+        priceDivergence: null,
+        quantityDivergence: null
+      }
+    ])
+
+    const { App } = createApp('/invoices')
+    render(<App />)
+
+    await waitFor(() => {
+      expect(screen.getByText('9002')).toBeInTheDocument()
+    })
+    await event.click(screen.getByText('9002'))
+
+    await waitFor(() => {
+      expect(screen.getByText('NF nº 9002 — Série 1')).toBeInTheDocument()
+    })
+
+    await event.click(screen.getByRole('button', { name: 'Vincular pedidos' }))
+
+    const dialogTitle = await screen.findByRole('heading', {
+      name: 'Vincular pedidos'
+    })
+    const dialog = dialogTitle.closest('.MuiPaper-root') as HTMLElement
+
+    await event.click(
+      within(dialog).getByRole('button', { name: 'Confirmar (3)' })
+    )
+
+    const batchHeading = await screen.findByRole('heading', {
+      name: 'Confirmar pedidos em lote'
+    })
+    const batchDialog = batchHeading.closest('.MuiPaper-root') as HTMLElement
+    within(batchDialog).getByText(
+      /ficou de fora deste lote|itens ficaram de fora deste lote/
+    )
+    within(batchDialog).getByText('SAND HAVAIANAS COLOR 41 42 PRETO')
+    within(batchDialog).getByText('SAND HAVAIANAS COLOR 39 40 AZUL NAVAL')
+
+    await event.click(
+      within(batchDialog).getByRole('button', { name: 'Confirmar (2)' })
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('2 pedidos vinculados com sucesso!')
+      ).toBeInTheDocument()
+    })
+
+    const orderFormHeading = await screen.findByRole('heading', {
+      name: 'Novo Pedido'
+    })
+    const orderFormDialog = orderFormHeading.closest(
+      '.MuiPaper-root'
+    ) as HTMLElement
+    within(orderFormDialog).getByText(
+      'SAND HAVAIANAS COLOR 43 44 VERDE PATRIA FC'
+    )
+
+    await event.click(
+      within(orderFormDialog).getByRole('button', { name: 'Salvar' })
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Pedido criado com sucesso!')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      const orders = useAppStore.getState().ordersByQuoteId ?? []
+      const uniformOrders = orders.filter((o) =>
+        ['204360', '204380'].includes(o.productId)
+      )
+      const outlierOrder = orders.find((o) => o.productId === '218055')
+      expect(uniformOrders).toHaveLength(2)
+      expect(uniformOrders.every((o) => o.packing === 'UN')).toBe(true)
+      expect(outlierOrder?.packing).toBe('CX')
+      expect(outlierOrder?.quoteItemId).toBe(FAMILY_QUOTE_ITEM_ID)
     })
   }, 30000)
 

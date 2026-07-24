@@ -167,14 +167,14 @@ test('Full flow', async ({ page }) => {
 
     await page.getByRole('button', { name: 'Importar Notas' }).click()
     await page.locator('input[type="file"]').setInputFiles(QUOTE_1_XMLS)
-    await page.getByRole('button', { name: 'Importar 8 notas' }).click()
+    await page.getByRole('button', { name: 'Importar 9 notas' }).click()
     await expect(
-      page.getByText('8 notas importadas com sucesso!')
+      page.getByText('9 notas importadas com sucesso!')
     ).toBeVisible()
   })
 
   await test.step('Link an invoice item to a quote order', async () => {
-    // First invoice
+    // First invoice: a single item, routes straight to the order form
     await page.getByText('8995473').click()
     await expect(page.getByText('NF nº 8995473 — Série 0')).toBeVisible()
 
@@ -184,11 +184,53 @@ test('Full flow', async ({ page }) => {
     ).toBeVisible()
 
     await page.getByRole('button', { name: 'Confirmar (1)' }).click()
-    await expect(
-      page.getByText('1 pedido vinculado com sucesso!')
-    ).toBeVisible()
+
+    const orderFormHeading = page.getByRole('heading', { name: 'Novo Pedido' })
+    await expect(orderFormHeading).toBeVisible()
+    await page.getByRole('button', { name: 'Salvar' }).click()
+
+    await expect(page.getByText('Pedido criado com sucesso!')).toBeVisible()
 
     await page.getByRole('button', { name: 'Aprovar nota' }).click()
     await expect(page.getByText('Nota atualizada com sucesso!')).toBeVisible()
+  })
+
+  await test.step('Confirm a batch of same-family invoice items', async () => {
+    await page.getByRole('button', { name: 'Notas de Entrada' }).click()
+    await expect(page).toHaveURL(/\/invoices/)
+
+    await page.getByText('9001').click()
+    await expect(page.getByText('NF nº 9001 — Série 1')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Vincular pedidos' }).click()
+    const linkDialogHeading = page.getByRole('heading', {
+      name: 'Vincular pedidos'
+    })
+    await expect(linkDialogHeading).toBeVisible()
+    const linkDialog = linkDialogHeading.locator(
+      'xpath=ancestor::div[contains(@class,"MuiPaper-root")][1]'
+    )
+
+    await linkDialog.getByRole('button', { name: /Confirmar \(\d+\)/ }).click()
+
+    const batchHeading = page.getByRole('heading', {
+      name: 'Confirmar pedidos em lote'
+    })
+    await expect(batchHeading).toBeVisible()
+    const batchDialog = batchHeading.locator(
+      'xpath=ancestor::div[contains(@class,"MuiPaper-root")][1]'
+    )
+    await expect(
+      batchDialog.getByText('SAND HAVAIANAS ELEGANCE 37 38 PRETO')
+    ).toBeVisible()
+    await expect(
+      batchDialog.getByText('SAND HAVAIANAS ELEGANCE 39 40 PRT BLOBBOM FC')
+    ).toBeVisible()
+
+    await batchDialog.getByRole('button', { name: /Confirmar \(\d+\)/ }).click()
+
+    await expect(
+      page.getByText(/pedidos? vinculados? com sucesso!/)
+    ).toBeVisible()
   })
 })
