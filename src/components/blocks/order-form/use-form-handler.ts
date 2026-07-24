@@ -14,8 +14,8 @@ import type {
 import { useAppStore, useCallbackStore } from '@/stores'
 import { findSupplierByCnpj } from '@/utils'
 
-import { useProductHistory } from '../use-product-history'
 import { createSchema, type TSchema } from './schema'
+import { useProductHistory } from './use-product-history'
 import { getUnitPriceFromPackingPrice } from './utils'
 
 type TInvoiceRef = { invoice: TInvoice; itemNumber: number }

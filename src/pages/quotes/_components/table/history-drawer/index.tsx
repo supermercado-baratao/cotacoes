@@ -13,9 +13,9 @@ import {
 } from '@mui/material'
 import dayjs from 'dayjs'
 
+import { useProductHistory } from '@/components'
 import { formatCurrency, formatNumericValue } from '@/utils'
 
-import { useProductHistory } from '../../use-product-history'
 import * as S from './style'
 
 type THistoryDrawerProps = {

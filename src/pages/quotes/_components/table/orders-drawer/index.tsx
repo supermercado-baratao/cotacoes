@@ -1,13 +1,12 @@
 import { Drawer } from '@mui/material'
 import { useState } from 'react'
 
-import { DeleteDialog } from '@/components'
+import { DeleteDialog, OrderForm } from '@/components'
 import { useDeleteHandler, useFormState } from '@/hooks'
 import type { TInvoice, TOrder, TQuoteItem } from '@/models'
 import { useAppStore } from '@/stores'
 
 import type { TQuoteRow } from '../../../utils'
-import { OrderForm } from '../../order-form'
 import { Content } from './content'
 import { Header } from './header'
 import { NfSuggestions } from './nf-suggestions'
