@@ -26,6 +26,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "vitest.setup.ts"],
-  "exclude": ["src/tests/playwright"]
+  "include": ["src", "vitest.setup.ts"]
 }
