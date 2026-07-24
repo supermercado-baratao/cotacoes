@@ -1,17 +1,18 @@
 import { defineConfig, devices } from '@playwright/test'
 
-process.loadEnvFile('.env')
+process.loadEnvFile()
 
 export default defineConfig({
   testDir: './src/tests/playwright',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
-  workers: 1,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  timeout: 60000,
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:5173',
-    trace: 'retain-on-failure'
+    trace: 'on-first-retry'
   },
   projects: [
     {
@@ -22,7 +23,6 @@ export default defineConfig({
   webServer: {
     command: 'pnpm dev',
     url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 30000
+    reuseExistingServer: !process.env.CI
   }
 })
