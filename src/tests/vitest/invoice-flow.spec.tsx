@@ -10,6 +10,7 @@ import { databaseMock } from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
 import { createUser, populateDatabase } from './orchestrator'
 
+const QUOTE_DIR = 'quotes/quote-3-2026-06-01-2026-07-09'
 const INVOICE_XML = 'NFe29260632053743000116550020000001081299331431.xml'
 const QUOTE_ITEM_ID = crypto.randomUUID()
 
@@ -40,7 +41,7 @@ const uploadXml = async (
   event: ReturnType<typeof userEvent.setup>,
   filename: string
 ) => {
-  const buffer = await readMockFile(`xmls/${filename}`)
+  const buffer = await readMockFile(`${QUOTE_DIR}/${filename}`)
   const file = new File([new Uint8Array(buffer)], filename)
   await event.upload(getFileInput(), file)
 }
