@@ -2,27 +2,22 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
 import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
-import { z } from 'zod'
+import type { z } from 'zod'
 
 import { createSchema } from '@/components/blocks/order-form/schema'
 import { getUnitPriceFromPackingPrice } from '@/components/blocks/order-form/utils'
-import { MAX_NUMERIC_VALUE } from '@/constants'
 import type { TInvoice, TOrder, TQuote, TSupplier } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
 
 import type { TBatchGroup } from '../../utils'
 
-const schema = createSchema('')
-  .pick({ sellerId: true, date: true, packing: true })
-  .extend({
-    packingQuantity: z
-      .number()
-      .int('Deve ser número inteiro')
-      .positive('Deve ser positivo')
-      .max(MAX_NUMERIC_VALUE)
-      .nullable()
-  })
+const schema = createSchema('').pick({
+  sellerId: true,
+  date: true,
+  packing: true,
+  packingQuantity: true
+})
 
 type TSchema = z.infer<typeof schema>
 
@@ -46,7 +41,7 @@ export const useFormHandler = (
       sellerId: null,
       date: dayjs(invoice.emissionDate).format('YYYY-MM-DD'),
       packing: group?.packing ?? '',
-      packingQuantity: null
+      packingQuantity: 1
     }),
     [invoice, group]
   )
@@ -89,12 +84,10 @@ export const useFormHandler = (
         quoteItemId: group.quoteItemId,
         productId: row.productId!,
         invoiceId: invoice.id,
-        price: data.packingQuantity
-          ? getUnitPriceFromPackingPrice(
-              row.item.unitPrice,
-              data.packingQuantity
-            )
-          : row.item.unitPrice,
+        price: getUnitPriceFromPackingPrice(
+          row.item.unitPrice,
+          data.packingQuantity
+        ),
         quantity: row.item.quantity,
         packing: data.packing,
         packingQuantity: data.packingQuantity,
