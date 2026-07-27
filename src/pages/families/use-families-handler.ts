@@ -17,6 +17,7 @@ export const useFamiliesHandler = () => {
   } = useFormState<TFamily>()
 
   const [search, setSearch] = useState('')
+  const [isImportOpen, setIsImportOpen] = useState(false)
 
   const filteredFamilies = useMemo(
     () => (families ? filterFamilies(search, families) : null),
@@ -36,6 +37,9 @@ export const useFamiliesHandler = () => {
     handleFormClose,
     isFormOpen,
     formFamily,
-    setFormFamily
+    setFormFamily,
+    isImportOpen,
+    handleImportOpen: () => setIsImportOpen(true),
+    handleImportClose: () => setIsImportOpen(false)
   }
 }

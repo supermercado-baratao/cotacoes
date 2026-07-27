@@ -1,5 +1,5 @@
+import { getData } from '@/components/blocks/catalog-import/utils'
 import { importModel } from '@/models'
-import { getData } from '@/pages/import/utils'
 
 import { resetDatabaseMock } from './_mocks/database'
 import {

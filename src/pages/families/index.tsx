@@ -1,4 +1,4 @@
-import { DataView, FamilyForm, PageHeader } from '@/components'
+import { CatalogImport, DataView, FamilyForm, PageHeader } from '@/components'
 
 import { Table } from './_components'
 import { useFamiliesHandler } from './use-families-handler'
@@ -15,7 +15,10 @@ export const Families = () => {
     handleFormClose,
     isFormOpen,
     setFormFamily,
-    formFamily
+    formFamily,
+    isImportOpen,
+    handleImportOpen,
+    handleImportClose
   } = useFamiliesHandler()
 
   return (
@@ -27,6 +30,7 @@ export const Families = () => {
         search={search}
         setSearch={setSearch}
         handleFormOpen={handleFormOpen}
+        handleImportOpen={handleImportOpen}
       />
       <DataView
         isFetching={isFetching}
@@ -41,6 +45,7 @@ export const Families = () => {
         setFormFamily={setFormFamily}
         handleClose={handleFormClose}
       />
+      <CatalogImport isOpened={isImportOpen} handleClose={handleImportClose} />
     </>
   )
 }

@@ -28,6 +28,7 @@ export const useProductsHandler = () => {
   const [quickCreateFamily, setQuickCreateFamily] = useState(false)
   const [activeTab, setActiveTab] = useState<TProductsTab>('registered')
   const [productDraft, setProductDraft] = useState<TProductDraft | null>(null)
+  const [isImportOpen, setIsImportOpen] = useState(false)
 
   const filteredProducts = useMemo(
     () => (products ? filterProducts(search, products) : null),
@@ -86,6 +87,9 @@ export const useProductsHandler = () => {
     isFetchingUnmatched,
     hasUnmatchedItems: !!unmatchedItems.length,
     productDraft,
-    handleCreateFromUnmatchedItem
+    handleCreateFromUnmatchedItem,
+    isImportOpen,
+    handleImportOpen: () => setIsImportOpen(true),
+    handleImportClose: () => setIsImportOpen(false)
   }
 }

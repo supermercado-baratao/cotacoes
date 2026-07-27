@@ -1,11 +1,18 @@
 import { CheckCircleOutlined } from '@mui/icons-material'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button } from '@mui/material'
+
+import { Modal, type TModalProps } from '@/components'
 
 import { DataPreview, DropZone, SqlQuery } from './_components'
 import * as S from './style'
 import { useImportHandler } from './use-import-handler'
 
-export const Import = () => {
+type TCatalogImportProps = Pick<TModalProps, 'isOpened' | 'handleClose'>
+
+export const CatalogImport = ({
+  isOpened,
+  handleClose
+}: TCatalogImportProps) => {
   const {
     file,
     handleFileSelect,
@@ -16,11 +23,19 @@ export const Import = () => {
     productStatuses,
     handleImportClick
   } = useImportHandler()
+
+  const handleModalClose = () => {
+    handleFileRemove()
+    handleClose()
+  }
+
   return (
-    <>
-      <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-        Importação
-      </Typography>
+    <Modal
+      title="Importar Catálogo"
+      isOpened={isOpened}
+      handleClose={handleModalClose}
+      maxWidth={1200}
+    >
       {!file ? (
         <>
           <SqlQuery />
@@ -54,6 +69,6 @@ export const Import = () => {
           </Box>
         </>
       )}
-    </>
+    </Modal>
   )
 }

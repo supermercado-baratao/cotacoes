@@ -1,6 +1,12 @@
 import { Tab, Tabs } from '@mui/material'
 
-import { DataView, FamilyForm, PageHeader, ProductForm } from '@/components'
+import {
+  CatalogImport,
+  DataView,
+  FamilyForm,
+  PageHeader,
+  ProductForm
+} from '@/components'
 
 import { Table, UnmatchedTable } from './_components'
 import { useProductsHandler } from './use-products-handler'
@@ -25,7 +31,10 @@ export const Products = () => {
     isFetchingUnmatched,
     hasUnmatchedItems,
     productDraft,
-    handleCreateFromUnmatchedItem
+    handleCreateFromUnmatchedItem,
+    isImportOpen,
+    handleImportOpen,
+    handleImportClose
   } = useProductsHandler()
 
   return (
@@ -37,6 +46,7 @@ export const Products = () => {
         search={search}
         setSearch={setSearch}
         handleFormOpen={handleFormOpen}
+        handleImportOpen={handleImportOpen}
       />
       <Tabs
         value={activeTab}
@@ -83,6 +93,7 @@ export const Products = () => {
         setFormFamily={() => {}}
         handleClose={() => setQuickCreateFamily(false)}
       />
+      <CatalogImport isOpened={isImportOpen} handleClose={handleImportClose} />
     </>
   )
 }
