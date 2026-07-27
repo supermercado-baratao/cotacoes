@@ -70,15 +70,6 @@ export const BatchConfirmDialog = ({
           </Alert>
         )}
         <TextField
-          {...register('date')}
-          label="Data"
-          type="date"
-          error={!!errors.date}
-          helperText={errors.date?.message}
-          sx={S.TwoCol}
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-        <TextField
           {...register('packing')}
           label="Embalagem"
           error={!!errors.packing}
@@ -89,9 +80,11 @@ export const BatchConfirmDialog = ({
         <TextField
           {...register('packingQuantity', {
             setValueAs: (v) =>
-              v === '' || v === null || v === undefined ? null : parseInt(v, 10)
+              v === '' || v === null || v === undefined
+                ? undefined
+                : parseInt(v, 10)
           })}
-          label="Qtd. Embalagem (opcional)"
+          label="Qtd. Embalagem"
           type="number"
           error={!!errors.packingQuantity}
           helperText={errors.packingQuantity?.message}
@@ -100,6 +93,15 @@ export const BatchConfirmDialog = ({
           slotProps={{
             htmlInput: { min: 1, max: MAX_NUMERIC_VALUE, step: 1 }
           }}
+        />
+        <TextField
+          {...register('date')}
+          label="Data"
+          type="date"
+          error={!!errors.date}
+          helperText={errors.date?.message}
+          sx={S.TwoCol}
+          slotProps={{ inputLabel: { shrink: true } }}
         />
         <Autocomplete
           name="sellerId"

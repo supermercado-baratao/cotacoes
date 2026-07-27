@@ -98,6 +98,7 @@ export const useFormHandler = (
   const watchedProductId = useWatch({ control, name: 'productId' })
   const watchedSupplierId = useWatch({ control, name: 'supplierId' })
   const watchedSellerId = useWatch({ control, name: 'sellerId' })
+  const watchedPrice = useWatch({ control, name: 'price' })
 
   const linkedInvoiceItem = useMemo(() => {
     if (invoiceItem) return invoiceItem
@@ -178,6 +179,12 @@ export const useFormHandler = (
     [watchedProductId, products]
   )
 
+  const margin = useMemo(() => {
+    const salePrice = selectedProduct?.price
+    if (!salePrice || !watchedPrice) return null
+    return ((salePrice - watchedPrice) / salePrice) * 100
+  }, [selectedProduct, watchedPrice])
+
   const handleProductCreated = (product: TProduct) => {
     setValue('productId', product.id, {
       shouldValidate: true,
@@ -208,6 +215,7 @@ export const useFormHandler = (
     sellers: filteredSellers,
     selectableProducts: products ?? [],
     selectedProduct,
+    margin,
     lastOrder,
     invoiceItem,
     handleProductCreated,

@@ -14,13 +14,12 @@ beforeAll(() => {
 })
 
 const uploadFile = async (
-  container: HTMLElement,
   event: ReturnType<typeof userEvent.setup>,
   filename: string
 ) => {
   const buffer = await readMockFile(filename)
   const file = new File([new Uint8Array(buffer)], filename)
-  const input = container.querySelector(
+  const input = document.body.querySelector(
     'input[type="file"]'
   ) as HTMLInputElement
   await event.upload(input, file)
@@ -30,8 +29,15 @@ describe('Import flow', () => {
   test('For empty database', async () => {
     const event = userEvent.setup()
 
-    const { App } = createApp('/import')
-    const { container } = render(<App />)
+    const { App } = createApp('/products')
+    render(<App />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Importar' })
+      ).toBeInTheDocument()
+    })
+    await userEvent.click(screen.getByRole('button', { name: 'Importar' }))
 
     await waitFor(() => {
       expect(
@@ -39,7 +45,7 @@ describe('Import flow', () => {
       ).toBeInTheDocument()
     })
 
-    await uploadFile(container, event, 'import-data.xlsx')
+    await uploadFile(event, 'import-data.xlsx')
 
     await waitFor(() => {
       expect(screen.getByText('import-data.xlsx')).toBeInTheDocument()
@@ -83,8 +89,15 @@ describe('Import flow', () => {
   test('Reimporting a file only selects changed products', async () => {
     const event = userEvent.setup()
 
-    const { App } = createApp('/import')
-    const { container } = render(<App />)
+    const { App } = createApp('/products')
+    render(<App />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Importar' })
+      ).toBeInTheDocument()
+    })
+    await userEvent.click(screen.getByRole('button', { name: 'Importar' }))
 
     await waitFor(() => {
       expect(
@@ -92,7 +105,7 @@ describe('Import flow', () => {
       ).toBeInTheDocument()
     })
 
-    await uploadFile(container, event, 'edited-import-data.xlsx')
+    await uploadFile(event, 'edited-import-data.xlsx')
 
     await waitFor(() => {
       expect(screen.getByText('edited-import-data.xlsx')).toBeInTheDocument()
@@ -136,8 +149,15 @@ describe('Import flow', () => {
   test('Shows an error and keeps previous data when the import fails', async () => {
     const event = userEvent.setup()
 
-    const { App } = createApp('/import')
-    const { container } = render(<App />)
+    const { App } = createApp('/products')
+    render(<App />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Importar' })
+      ).toBeInTheDocument()
+    })
+    await userEvent.click(screen.getByRole('button', { name: 'Importar' }))
 
     await waitFor(() => {
       expect(
@@ -145,7 +165,7 @@ describe('Import flow', () => {
       ).toBeInTheDocument()
     })
 
-    await uploadFile(container, event, 'import-data.xlsx')
+    await uploadFile(event, 'import-data.xlsx')
 
     await waitFor(() => {
       expect(screen.getByText('import-data.xlsx')).toBeInTheDocument()

@@ -100,9 +100,11 @@ test('Full flow', async ({ page }) => {
     await page.getByRole('button', { name: 'Entrar' }).click()
 
     await expect(page).toHaveURL(/\/dashboard/)
-    await page.getByRole('button', { name: 'Importação' }).click()
+    await page.getByRole('button', { name: 'Produtos' }).click()
 
-    await expect(page).toHaveURL(/\/import/)
+    await expect(page).toHaveURL(/\/products/)
+    await page.getByRole('button', { name: 'Importar' }).click()
+
     await page
       .locator('input[type="file"]')
       .setInputFiles(path.join(MOCKS_DIR, 'import-data.xlsx'))

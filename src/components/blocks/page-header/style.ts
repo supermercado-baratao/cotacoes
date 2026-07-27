@@ -8,3 +8,8 @@ export const Wrapper: SxProps<Theme> = {
   flexWrap: 'wrap',
   mb: 2
 }
+
+export const Actions: SxProps<Theme> = {
+  display: 'flex',
+  gap: 2
+}

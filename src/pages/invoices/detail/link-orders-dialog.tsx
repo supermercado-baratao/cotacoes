@@ -4,17 +4,20 @@ import {
   Autocomplete,
   Box,
   Button,
+  CircularProgress,
   MenuItem,
   Select,
   Table,
   TableBody,
   TableCell,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
   Tooltip,
   Typography
 } from '@mui/material'
+import { useEffect, useMemo, useState } from 'react'
 
 import { FamilyForm, Modal, OrderForm, ProductForm } from '@/components'
 import type { TInvoice, TProduct, TQuote } from '@/models'
@@ -22,7 +25,10 @@ import { formatCurrency, formatNumericValue, matchesSearch } from '@/utils'
 
 import { AddQuoteItemDialog } from './add-quote-item-dialog'
 import { BatchConfirmDialog } from './batch-confirm-dialog'
-import { useLinkOrdersDialogHandler } from './use-link-orders-dialog-handler'
+import {
+  ROWS_PER_PAGE,
+  useLinkOrdersDialogHandler
+} from './use-link-orders-dialog-handler'
 
 const NEW_ITEM_VALUE = '__new_item__'
 
@@ -43,6 +49,10 @@ export const LinkOrdersDialog = ({
     supplier,
     products,
     rows,
+    pagedRows,
+    page,
+    pageCount,
+    setPage,
     selectedCount,
     handleRowQuoteItemChange,
     handleOpenAddQuoteItem,
@@ -63,7 +73,33 @@ export const LinkOrdersDialog = ({
     advanceQueue
   } = useLinkOrdersDialogHandler(isOpened, invoice, quote, handleClose)
 
-  const productMap = new Map(products.map((p) => [p.id, p]))
+  const productMap = useMemo(
+    () => new Map(products.map((p) => [p.id, p])),
+    [products]
+  )
+
+  const quoteItemOptions = useMemo(
+    () =>
+      quote
+        ? [...quote.items].sort((a, b) =>
+            a.description.localeCompare(b.description)
+          )
+        : [],
+    [quote]
+  )
+
+  const [isContentReady, setIsContentReady] = useState(false)
+  const [prevIsOpened, setPrevIsOpened] = useState(isOpened)
+  if (isOpened !== prevIsOpened) {
+    setPrevIsOpened(isOpened)
+    if (!isOpened) setIsContentReady(false)
+  }
+
+  useEffect(() => {
+    if (!isOpened) return
+    const id = requestAnimationFrame(() => setIsContentReady(true))
+    return () => cancelAnimationFrame(id)
+  }, [isOpened])
 
   return (
     <>
@@ -89,101 +125,106 @@ export const LinkOrdersDialog = ({
               <Typography color="text.secondary">
                 Nenhum item pendente de vínculo com pedido nesta nota.
               </Typography>
+            ) : !isContentReady ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                <CircularProgress />
+              </Box>
             ) : (
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Descrição NF</TableCell>
-                    <TableCell align="right">Preço</TableCell>
-                    <TableCell align="right">Qtd</TableCell>
-                    <TableCell>Produto</TableCell>
-                    <TableCell>Item da cotação</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map((row) => {
-                    const { item, productId, quoteItemId } = row
-                    return (
-                      <TableRow key={item.itemNumber}>
-                        <TableCell>{item.description.toUpperCase()}</TableCell>
-                        <TableCell align="right">
-                          {formatCurrency(item.unitPrice)}
-                        </TableCell>
-                        <TableCell align="right">
-                          {formatNumericValue(item.quantity)}
-                        </TableCell>
-                        <TableCell>
-                          {item.productId !== null ? (
-                            (productMap
-                              .get(item.productId)
-                              ?.description.toUpperCase() ?? '—')
-                          ) : (
-                            <Box sx={{ display: 'flex', gap: 0.5 }}>
-                              <Autocomplete
-                                size="small"
-                                sx={{ flex: 1, minWidth: 200 }}
-                                options={products}
-                                getOptionLabel={(p) => p.description}
-                                filterOptions={(opts, { inputValue }) =>
-                                  opts.filter((o) =>
-                                    matchesSearch(inputValue, o.description)
-                                  )
-                                }
-                                isOptionEqualToValue={(o, v) => o.id === v.id}
-                                value={
-                                  (productId && productMap.get(productId)) ||
-                                  null
-                                }
-                                onChange={(_, selected: TProduct | null) =>
-                                  handleRowProductChange(
-                                    item.itemNumber,
-                                    selected?.id ?? ''
-                                  )
-                                }
-                                renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    placeholder="Produto"
-                                  />
-                                )}
-                              />
-                              <Tooltip title="Novo Produto">
-                                <Button
-                                  variant="outlined"
+              <>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Descrição NF</TableCell>
+                      <TableCell align="right">Preço</TableCell>
+                      <TableCell align="right">Qtd</TableCell>
+                      <TableCell>Produto</TableCell>
+                      <TableCell>Item da cotação</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {pagedRows.map((row) => {
+                      const { item, productId, quoteItemId } = row
+                      return (
+                        <TableRow key={item.itemNumber}>
+                          <TableCell>
+                            {item.description.toUpperCase()}
+                          </TableCell>
+                          <TableCell align="right">
+                            {formatCurrency(item.unitPrice)}
+                          </TableCell>
+                          <TableCell align="right">
+                            {formatNumericValue(item.quantity)}
+                          </TableCell>
+                          <TableCell>
+                            {item.productId !== null ? (
+                              (productMap
+                                .get(item.productId)
+                                ?.description.toUpperCase() ?? '—')
+                            ) : (
+                              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                <Autocomplete
                                   size="small"
-                                  onClick={() => handleQuickCreateProduct(item)}
-                                >
-                                  <Add fontSize="small" />
-                                </Button>
-                              </Tooltip>
-                            </Box>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            size="small"
-                            fullWidth
-                            displayEmpty
-                            value={quoteItemId}
-                            onChange={(e) => {
-                              if (e.target.value === NEW_ITEM_VALUE) {
-                                handleOpenAddQuoteItem(row)
-                                return
-                              }
-                              handleRowQuoteItemChange(
-                                item.itemNumber,
-                                e.target.value
-                              )
-                            }}
-                          >
-                            <MenuItem value="">
-                              <em>Não vincular</em>
-                            </MenuItem>
-                            {[...quote.items]
-                              .sort((a, b) =>
-                                a.description.localeCompare(b.description)
-                              )
-                              .map((quoteItem) => (
+                                  sx={{ flex: 1, minWidth: 200 }}
+                                  options={products}
+                                  getOptionLabel={(p) => p.description}
+                                  filterOptions={(opts, { inputValue }) =>
+                                    opts.filter((o) =>
+                                      matchesSearch(inputValue, o.description)
+                                    )
+                                  }
+                                  isOptionEqualToValue={(o, v) => o.id === v.id}
+                                  value={
+                                    (productId && productMap.get(productId)) ||
+                                    null
+                                  }
+                                  onChange={(_, selected: TProduct | null) =>
+                                    handleRowProductChange(
+                                      item.itemNumber,
+                                      selected?.id ?? ''
+                                    )
+                                  }
+                                  renderInput={(params) => (
+                                    <TextField
+                                      {...params}
+                                      placeholder="Produto"
+                                    />
+                                  )}
+                                />
+                                <Tooltip title="Novo Produto">
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() =>
+                                      handleQuickCreateProduct(item)
+                                    }
+                                  >
+                                    <Add fontSize="small" />
+                                  </Button>
+                                </Tooltip>
+                              </Box>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              size="small"
+                              fullWidth
+                              displayEmpty
+                              value={quoteItemId}
+                              onChange={(e) => {
+                                if (e.target.value === NEW_ITEM_VALUE) {
+                                  handleOpenAddQuoteItem(row)
+                                  return
+                                }
+                                handleRowQuoteItemChange(
+                                  item.itemNumber,
+                                  e.target.value
+                                )
+                              }}
+                            >
+                              <MenuItem value="">
+                                <em>Não vincular</em>
+                              </MenuItem>
+                              {quoteItemOptions.map((quoteItem) => (
                                 <MenuItem
                                   key={quoteItem.id}
                                   value={quoteItem.id}
@@ -191,16 +232,30 @@ export const LinkOrdersDialog = ({
                                   {quoteItem.description.toUpperCase()}
                                 </MenuItem>
                               ))}
-                            <MenuItem value={NEW_ITEM_VALUE}>
-                              + Adicionar item à cotação
-                            </MenuItem>
-                          </Select>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
+                              <MenuItem value={NEW_ITEM_VALUE}>
+                                + Adicionar item à cotação
+                              </MenuItem>
+                            </Select>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+                {pageCount > 1 && (
+                  <TablePagination
+                    component="div"
+                    count={rows.length}
+                    page={page}
+                    onPageChange={(_, newPage) => setPage(newPage)}
+                    rowsPerPage={ROWS_PER_PAGE}
+                    rowsPerPageOptions={[]}
+                    labelDisplayedRows={({ from, to, count }) =>
+                      `${from}–${to} de ${count}`
+                    }
+                  />
+                )}
+              </>
             )}
             <Button
               variant="contained"

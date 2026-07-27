@@ -1,4 +1,4 @@
-import { DataView, PageHeader, SupplierForm } from '@/components'
+import { CatalogImport, DataView, PageHeader, SupplierForm } from '@/components'
 
 import { Table } from './_components'
 import { useSuppliersHandler } from './use-suppliers-handler'
@@ -15,7 +15,10 @@ export const Suppliers = () => {
     handleFormClose,
     isFormOpen,
     setFormSupplier,
-    formSupplier
+    formSupplier,
+    isImportOpen,
+    handleImportOpen,
+    handleImportClose
   } = useSuppliersHandler()
 
   return (
@@ -27,6 +30,7 @@ export const Suppliers = () => {
         search={search}
         setSearch={setSearch}
         handleFormOpen={handleFormOpen}
+        handleImportOpen={handleImportOpen}
       />
       <DataView
         isFetching={isFetching}
@@ -44,6 +48,7 @@ export const Suppliers = () => {
         setFormSupplier={setFormSupplier}
         handleClose={handleFormClose}
       />
+      <CatalogImport isOpened={isImportOpen} handleClose={handleImportClose} />
     </>
   )
 }

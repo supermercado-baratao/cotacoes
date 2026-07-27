@@ -1,3 +1,4 @@
+export * from './blocks/catalog-import'
 export * from './blocks/data-view'
 export * from './blocks/family-form'
 export * from './blocks/order-form'

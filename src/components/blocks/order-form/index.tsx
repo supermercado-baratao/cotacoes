@@ -45,6 +45,7 @@ export const OrderForm = ({
     sellers,
     selectableProducts,
     selectedProduct,
+    margin,
     lastOrder,
     invoiceItem,
     handleProductCreated,
@@ -163,6 +164,12 @@ export const OrderForm = ({
             helperText={errors.date?.message}
             sx={S.ThreeCol}
             slotProps={{ inputLabel: { shrink: true } }}
+          />
+          <TextField
+            label="Margem"
+            value={margin != null ? `${formatNumericValue(margin)}%` : '—'}
+            sx={S.ThreeCol}
+            slotProps={{ input: { readOnly: true } }}
           />
           <Autocomplete
             name="supplierId"

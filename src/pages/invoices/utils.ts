@@ -30,9 +30,14 @@ export const findBestQuoteItemMatch = (
   item: TInvoiceItem,
   quoteItems: TQuoteItem[],
   productMap: Map<string, TProduct>
-): TQuoteItem | null =>
-  quoteItems.find((quoteItem) => isLikelyMatch(item, quoteItem, productMap)) ??
-  null
+): TQuoteItem | null => {
+  if (!item.productId) return null
+  return (
+    quoteItems.find((quoteItem) =>
+      isLikelyMatch(item, quoteItem, productMap)
+    ) ?? null
+  )
+}
 
 export type TLinkOrderRow = {
   item: TInvoiceItem

@@ -28,6 +28,8 @@ export type TQueueItem =
   | { type: 'batch'; group: TBatchGroup }
   | { type: 'individual'; row: TLinkOrderRow }
 
+export const ROWS_PER_PAGE = 25
+
 export const useLinkOrdersDialogHandler = (
   isOpened: boolean,
   invoice: TInvoice,
@@ -50,6 +52,7 @@ export const useLinkOrdersDialogHandler = (
   const [addQuoteItemDraft, setAddQuoteItemDraft] =
     useState<TAddQuoteItemDraft | null>(null)
   const [queue, setQueue] = useState<TQueueItem[]>([])
+  const [page, setPage] = useState(0)
   const wasOpenRef = useRef(false)
 
   useEffect(() => {
@@ -57,6 +60,7 @@ export const useLinkOrdersDialogHandler = (
       setOverrides({})
       setProductOverrides({})
       setQueue([])
+      setPage(0)
     }
     wasOpenRef.current = isOpened
   }, [isOpened])
@@ -90,6 +94,18 @@ export const useLinkOrdersDialogHandler = (
         }
       }),
     [unlinkedItems, quote, productMap, overrides, productOverrides]
+  )
+
+  const pageCount = Math.max(1, Math.ceil(rows.length / ROWS_PER_PAGE))
+  const currentPage = Math.min(page, pageCount - 1)
+
+  const pagedRows = useMemo(
+    () =>
+      rows.slice(
+        currentPage * ROWS_PER_PAGE,
+        currentPage * ROWS_PER_PAGE + ROWS_PER_PAGE
+      ),
+    [rows, currentPage]
   )
 
   const handleRowQuoteItemChange = (itemNumber: number, quoteItemId: string) =>
@@ -195,6 +211,10 @@ export const useLinkOrdersDialogHandler = (
     supplier,
     products: products ?? [],
     rows,
+    pagedRows,
+    page: currentPage,
+    pageCount,
+    setPage,
     selectedCount,
     handleRowQuoteItemChange,
     handleOpenAddQuoteItem,

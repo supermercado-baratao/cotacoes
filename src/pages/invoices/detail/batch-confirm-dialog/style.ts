@@ -8,7 +8,8 @@ export const ItemBanner: SxProps<Theme> = {
   bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
   px: 1.5,
   py: 1,
-  mb: 1
+  mb: 1,
+  gridColumn: { sm: '1 / -1' }
 }
 
 export const ItemLabel: SxProps<Theme> = {
