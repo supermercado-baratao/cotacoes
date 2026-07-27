@@ -222,7 +222,7 @@ describe('Invoice flow', () => {
       name: 'Vincular pedidos'
     })
     const dialog = dialogTitle.closest('.MuiPaper-root') as HTMLElement
-    within(dialog).getByText('PIMENTA DO REINO MOIDA 50G')
+    await within(dialog).findByText('PIMENTA DO REINO MOIDA 50G')
     within(dialog).getByText('PIMENTA DO REINO')
 
     await event.click(
