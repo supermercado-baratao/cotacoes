@@ -5,6 +5,7 @@ import {
   familyModel,
   invoiceModel,
   orderModel,
+  priceAdjustmentModel,
   productModel,
   quoteModel,
   sellerModel,
@@ -62,6 +63,11 @@ export const useDataFetch = () => {
         queryKey: ['settings'],
         queryFn: settingsModel.find,
         enabled: !!user
+      },
+      {
+        queryKey: ['price-adjustments'],
+        queryFn: priceAdjustmentModel.findMany,
+        enabled: !!user
       }
     ]
   })
@@ -75,7 +81,8 @@ export const useDataFetch = () => {
     { data: ordersByQuoteId },
     { data: ordersByProductId },
     { data: invoices },
-    { data: settings }
+    { data: settings },
+    { data: priceAdjustments }
   ] = queries
 
   const isError = queries.some((query) => query.isError)
@@ -99,6 +106,7 @@ export const useDataFetch = () => {
     ordersByQuoteId,
     ordersByProductId,
     invoices,
-    settings
+    settings,
+    priceAdjustments
   }
 }

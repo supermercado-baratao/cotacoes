@@ -8,6 +8,7 @@ import type {
   TInvoice,
   TInvoiceDateRange,
   TOrder,
+  TPriceAdjustment,
   TProduct,
   TQuote,
   TSeller,
@@ -41,6 +42,7 @@ type TAppStore = {
     options?: { onSuccess?: (product: TProduct) => void }
   ) => void
   updateProduct: (product: TUpdateData<TProduct>) => void
+  updateProductsBatch: (products: TUpdateData<TProduct[]>) => void
   deleteProduct: (id: string) => void
 
   suppliers: TSupplier[] | null
@@ -114,6 +116,12 @@ type TAppStore = {
   settings: TSettings | null
   setSettings: (settings: TSettings | null) => void
   updateSettings: (data: TCreateData<TSettings>) => void
+
+  priceAdjustments: TPriceAdjustment[] | null
+  setPriceAdjustments: (priceAdjustments: TPriceAdjustment[]) => void
+  replacePriceAdjustments: (
+    priceAdjustments: TCreateDataWithId<TPriceAdjustment[]>
+  ) => void
 }
 
 export const useAppStore = create<TAppStore>((set) => ({
@@ -127,6 +135,7 @@ export const useAppStore = create<TAppStore>((set) => ({
   setProducts: (products) => set({ products }),
   createProduct: () => {},
   updateProduct: () => {},
+  updateProductsBatch: () => {},
   deleteProduct: () => {},
 
   suppliers: null,
@@ -184,5 +193,9 @@ export const useAppStore = create<TAppStore>((set) => ({
 
   settings: null,
   setSettings: (settings) => set({ settings }),
-  updateSettings: () => {}
+  updateSettings: () => {},
+
+  priceAdjustments: null,
+  setPriceAdjustments: (priceAdjustments) => set({ priceAdjustments }),
+  replacePriceAdjustments: () => {}
 }))

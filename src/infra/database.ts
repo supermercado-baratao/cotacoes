@@ -236,14 +236,16 @@ const updateMany = async <T>({
   path: string
 }): Promise<T[]> => {
   const now = Timestamp.now()
-  const batch = writeBatch(firestore)
-  data.forEach((item) => {
-    batch.update(doc(firestore, path, item.id), {
-      ...item,
-      updatedAt: serverTimestamp()
+  for (let i = 0; i < data.length; i += BATCH_CHUNK_SIZE) {
+    const batch = writeBatch(firestore)
+    data.slice(i, i + BATCH_CHUNK_SIZE).forEach((item) => {
+      batch.update(doc(firestore, path, item.id), {
+        ...item,
+        updatedAt: serverTimestamp()
+      })
     })
-  })
-  await batch.commit()
+    await batch.commit()
+  }
   return data.map((item) => ({ ...item, updatedAt: now })) as T[]
 }
 
@@ -265,12 +267,13 @@ const deleteMany = async ({
   ids: string[]
   path: string
 }): Promise<string[]> => {
-  const batch = writeBatch(firestore)
-  ids.forEach((id) => {
-    const ref = doc(firestore, path, id)
-    batch.delete(ref)
-  })
-  await batch.commit()
+  for (let i = 0; i < ids.length; i += BATCH_CHUNK_SIZE) {
+    const batch = writeBatch(firestore)
+    ids.slice(i, i + BATCH_CHUNK_SIZE).forEach((id) => {
+      batch.delete(doc(firestore, path, id))
+    })
+    await batch.commit()
+  }
   return ids
 }
 
