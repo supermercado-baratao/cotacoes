@@ -45,6 +45,9 @@ const findMany = (): Promise<TProduct[]> =>
 const update = (data: TUpdateData<TProduct>): Promise<TProduct> =>
   database.update({ path: getUserPath(PATH), data })
 
+const updateMany = (data: TUpdateData<TProduct[]>): Promise<TProduct[]> =>
+  database.updateMany({ path: getUserPath(PATH), data })
+
 const deleteUniqueById = (id: string): Promise<string> =>
   database.deleteUniqueById({ path: getUserPath(PATH), id })
 
@@ -54,5 +57,6 @@ export const productModel = {
   upsertMany,
   findMany,
   update,
+  updateMany,
   deleteUniqueById
 }

@@ -10,6 +10,7 @@ import { useImportMutation } from './use-import-mutation'
 import { useInvoiceMutation } from './use-invoice-mutation'
 import { useInvoiceOrderLinkMutation } from './use-invoice-order-link-mutation'
 import { useOrderMutation } from './use-order-mutation'
+import { usePriceAdjustmentMutation } from './use-price-adjustment-mutation'
 import { useProductMutation } from './use-product-mutation'
 import { useQuoteMutation } from './use-quote-mutation'
 import { useSellerMutation } from './use-seller-mutation'
@@ -26,7 +27,8 @@ export const useAppHandler = () => {
     setOrdersByQuoteId,
     setOrdersByProductId,
     setInvoices,
-    setSettings
+    setSettings,
+    setPriceAdjustments
   } = useAppStore(
     useShallow((state) => ({
       setProducts: state.setProducts,
@@ -37,7 +39,8 @@ export const useAppHandler = () => {
       setOrdersByQuoteId: state.setOrdersByQuoteId,
       setOrdersByProductId: state.setOrdersByProductId,
       setInvoices: state.setInvoices,
-      setSettings: state.setSettings
+      setSettings: state.setSettings,
+      setPriceAdjustments: state.setPriceAdjustments
     }))
   )
 
@@ -50,9 +53,11 @@ export const useAppHandler = () => {
     ordersByQuoteId,
     ordersByProductId,
     invoices,
-    settings
+    settings,
+    priceAdjustments
   } = useDataFetch()
-  const { createProduct, updateProduct, deleteProduct } = useProductMutation()
+  const { createProduct, updateProduct, deleteProduct, updateProductsBatch } =
+    useProductMutation()
   const { importData } = useImportMutation()
   const { createSupplier, updateSupplier, deleteSupplier } =
     useSupplierMutation()
@@ -66,6 +71,7 @@ export const useAppHandler = () => {
   const { createOrderWithInvoiceLink, createOrdersBatchWithInvoiceLink } =
     useInvoiceOrderLinkMutation()
   const { updateSettings } = useSettingsMutation()
+  const { replacePriceAdjustments } = usePriceAdjustmentMutation()
 
   const isFetching = useIsFetching()
   const isMutating = useIsMutating()
@@ -108,9 +114,14 @@ export const useAppHandler = () => {
   }, [settings, setSettings])
 
   useEffect(() => {
+    if (priceAdjustments) setPriceAdjustments(priceAdjustments)
+  }, [priceAdjustments, setPriceAdjustments])
+
+  useEffect(() => {
     useAppStore.setState({
       createProduct,
       updateProduct,
+      updateProductsBatch,
       deleteProduct,
       createSupplier,
       updateSupplier,
@@ -135,11 +146,13 @@ export const useAppHandler = () => {
       createInvoicesBatch,
       updateInvoice,
       deleteInvoice,
-      updateSettings
+      updateSettings,
+      replacePriceAdjustments
     })
   }, [
     createProduct,
     updateProduct,
+    updateProductsBatch,
     deleteProduct,
     createSupplier,
     updateSupplier,
@@ -164,7 +177,8 @@ export const useAppHandler = () => {
     createInvoicesBatch,
     updateInvoice,
     deleteInvoice,
-    updateSettings
+    updateSettings,
+    replacePriceAdjustments
   ])
 
   return { isLoading }

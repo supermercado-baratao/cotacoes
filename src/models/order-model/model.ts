@@ -6,6 +6,7 @@ import type { TCreateData, TUpdateData } from '@/types'
 import type { TOrder } from './types'
 
 const PATH = 'orders'
+const IN_QUERY_CHUNK_SIZE = 30
 
 const create = (data: TCreateData<TOrder>): Promise<TOrder> =>
   database.create({ path: getUserPath(PATH), data })
@@ -25,6 +26,28 @@ const findManyByProductId = (productId: string): Promise<TOrder[]> =>
     queryConstraints: [where('productId', '==', productId)]
   })
 
+const findManyByProductIds = async (
+  productIds: string[]
+): Promise<TOrder[]> => {
+  const uniqueIds = [...new Set(productIds)]
+  if (!uniqueIds.length) return []
+
+  const chunks: string[][] = []
+  for (let i = 0; i < uniqueIds.length; i += IN_QUERY_CHUNK_SIZE) {
+    chunks.push(uniqueIds.slice(i, i + IN_QUERY_CHUNK_SIZE))
+  }
+
+  const results = await Promise.all(
+    chunks.map((chunkIds) =>
+      database.findMany<TOrder>({
+        path: getUserPath(PATH),
+        queryConstraints: [where('productId', 'in', chunkIds)]
+      })
+    )
+  )
+  return results.flat()
+}
+
 const update = (data: TUpdateData<TOrder>): Promise<TOrder> =>
   database.update({ path: getUserPath(PATH), data })
 
@@ -39,6 +62,7 @@ export const orderModel = {
   createMany,
   findManyByQuoteId,
   findManyByProductId,
+  findManyByProductIds,
   update,
   deleteUniqueById,
   deleteMany
