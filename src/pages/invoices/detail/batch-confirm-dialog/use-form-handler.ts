@@ -9,6 +9,7 @@ import { getUnitPriceFromPackingPrice } from '@/components/blocks/order-form/uti
 import type { TInvoice, TOrder, TQuote, TSupplier } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
+import { findGroupPackingDefault } from '@/utils'
 
 import type { TBatchGroup } from '../../utils'
 
@@ -28,7 +29,12 @@ export const useFormHandler = (
   supplier: TSupplier,
   handleClose: () => void
 ) => {
-  const { sellers, createOrdersBatchWithInvoiceLink } = useAppStore()
+  const {
+    sellers,
+    packingDefaults,
+    createOrdersBatchWithInvoiceLink,
+    upsertPackingDefault
+  } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const filteredSellers = useMemo(
@@ -36,14 +42,27 @@ export const useFormHandler = (
     [sellers, supplier.id]
   )
 
+  const productIds = useMemo(
+    () => (group?.rows ?? []).map((row) => row.productId!),
+    [group]
+  )
+
   const defaultValues: TSchema = useMemo(
     () => ({
       sellerId: null,
       date: dayjs(invoice.emissionDate).format('YYYY-MM-DD'),
       packing: group?.packing ?? '',
-      packingQuantity: 1
+      packingQuantity:
+        (group &&
+          findGroupPackingDefault(
+            packingDefaults ?? [],
+            supplier.id,
+            productIds,
+            group.packing
+          )) ??
+        1
     }),
-    [invoice, group]
+    [invoice, group, supplier.id, productIds, packingDefaults]
   )
 
   const {
@@ -97,6 +116,15 @@ export const useFormHandler = (
         observations: null
       } as TCreateData<TOrder>
     }))
+
+    ;[...new Set(productIds)].forEach((productId) =>
+      upsertPackingDefault({
+        supplierId: supplier.id,
+        productId,
+        packing: data.packing,
+        packingQuantity: data.packingQuantity
+      })
+    )
 
     setSuccessCallbacks([handleClose])
     createOrdersBatchWithInvoiceLink({ invoice, matches })
