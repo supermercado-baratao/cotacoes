@@ -2,10 +2,15 @@ import type {
   TInvoice,
   TInvoiceItem,
   TInvoiceItemMatchStatus,
+  TPackageBarcodeLink,
   TProduct,
   TQuoteItem
 } from '@/models'
-import { isLikelyMatch, matchesSearch } from '@/utils'
+import {
+  buildPackageBarcodeLinkMap,
+  isLikelyMatch,
+  matchesSearch
+} from '@/utils'
 
 export const filterInvoices = (
   search: string,
@@ -158,7 +163,8 @@ const buildBarcodeMap = (products: TProduct[]): Map<string, TProduct> => {
 
 const parseItems = (
   doc: Document,
-  barcodeMap: Map<string, TProduct>
+  barcodeMap: Map<string, TProduct>,
+  packageBarcodeLinkMap: Map<string, string>
 ): TInvoiceItem[] =>
   Array.from(doc.getElementsByTagName('det')).map((det, i) => {
     const prod = det.getElementsByTagName('prod')[0]
@@ -178,7 +184,10 @@ const parseItems = (
       (calculatedBarcode && barcodeMap.get(calculatedBarcode)) ||
       null
 
-    const matchStatus: TInvoiceItemMatchStatus = product
+    const linkedProductId = cEAN && packageBarcodeLinkMap.get(cEAN)
+    const productId = product?.id ?? linkedProductId ?? null
+
+    const matchStatus: TInvoiceItemMatchStatus = productId
       ? 'matched'
       : 'unmatched_product'
 
@@ -193,7 +202,7 @@ const parseItems = (
       quantity: Number(get(prod, 'qCom')),
       unitPrice: Number(get(prod, 'vUnCom')),
       totalPrice: Number(get(prod, 'vProd')),
-      productId: product?.id ?? null,
+      productId,
       orderId: null,
       matchStatus,
       priceDivergence: null,
@@ -205,7 +214,8 @@ export type TParsedNfe = Omit<TInvoice, 'createdAt' | 'updatedAt'>
 
 export const parseNfe = (
   xmlString: string,
-  products: TProduct[]
+  products: TProduct[],
+  packageBarcodeLinks: TPackageBarcodeLink[] = []
 ): TParsedNfe => {
   const doc = new DOMParser().parseFromString(xmlString, 'text/xml')
 
@@ -225,6 +235,7 @@ export const parseNfe = (
   const supplierName = get(doc, 'xFant') || get(doc, 'xNome')
 
   const barcodeMap = buildBarcodeMap(products)
+  const packageBarcodeLinkMap = buildPackageBarcodeLinkMap(packageBarcodeLinks)
 
   return {
     id: accessKey,
@@ -236,7 +247,7 @@ export const parseNfe = (
     supplierName,
     destinationCnpj,
     totalValue: Number(get(doc, 'vNF')),
-    items: parseItems(doc, barcodeMap),
+    items: parseItems(doc, barcodeMap, packageBarcodeLinkMap),
     verificationStatus: 'pending',
     quoteId: null
   }

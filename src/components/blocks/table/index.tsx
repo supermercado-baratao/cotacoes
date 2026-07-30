@@ -3,6 +3,7 @@ import {
   DataGrid,
   type DataGridProps,
   GridActionsCellItem,
+  type GridActionsCellItemProps,
   type GridColDef,
   type GridValidRowModel
 } from '@mui/x-data-grid'
@@ -16,6 +17,7 @@ type TTableProps<T extends GridValidRowModel> = {
   columns: GridColDef<T>[]
   handleEdit?: (item: T) => void
   handleDelete?: (item: T) => void
+  getExtraActions?: (item: T) => React.ReactElement<GridActionsCellItemProps>[]
 } & Omit<DataGridProps<T>, 'columns' | 'rows'>
 
 export const Table = <T extends GridValidRowModel>({
@@ -23,15 +25,16 @@ export const Table = <T extends GridValidRowModel>({
   columns,
   handleEdit,
   handleDelete,
+  getExtraActions,
   ...props
 }: TTableProps<T>) => {
   const actionColumn = useMemo(() => {
-    if (!handleEdit && !handleDelete) return null
+    if (!handleEdit && !handleDelete && !getExtraActions) return null
     return {
       field: 'actions',
       type: 'actions' as const,
       headerName: 'Ações',
-      width: 90,
+      width: getExtraActions ? 130 : 90,
       getActions: ({ row }: { row: T }) => [
         ...(handleEdit
           ? [
@@ -43,6 +46,7 @@ export const Table = <T extends GridValidRowModel>({
               />
             ]
           : []),
+        ...(getExtraActions ? getExtraActions(row) : []),
         ...(handleDelete
           ? [
               <GridActionsCellItem
@@ -55,7 +59,7 @@ export const Table = <T extends GridValidRowModel>({
           : [])
       ]
     }
-  }, [handleEdit, handleDelete])
+  }, [handleEdit, handleDelete, getExtraActions])
 
   const allColumns = useMemo(
     () => (actionColumn ? [...columns, actionColumn] : columns),

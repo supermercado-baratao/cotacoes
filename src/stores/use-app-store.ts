@@ -4,10 +4,13 @@ import { create } from 'zustand'
 import type { TAiSuggestion } from '@/infra'
 import type {
   TFamily,
+  TIgnoredProduct,
+  TIgnoredSupplier,
   TImportData,
   TInvoice,
   TInvoiceDateRange,
   TOrder,
+  TPackageBarcodeLink,
   TPriceAdjustment,
   TProduct,
   TQuote,
@@ -45,6 +48,17 @@ type TAppStore = {
   updateProductsBatch: (products: TUpdateData<TProduct[]>) => void
   deleteProduct: (id: string) => void
 
+  ignoredProducts: TIgnoredProduct[] | null
+  setIgnoredProducts: (ignoredProducts: TIgnoredProduct[]) => void
+  createIgnoredProduct: (data: TCreateDataWithId<TIgnoredProduct>) => void
+  deleteIgnoredProduct: (id: string) => void
+
+  packageBarcodeLinks: TPackageBarcodeLink[] | null
+  setPackageBarcodeLinks: (links: TPackageBarcodeLink[]) => void
+  createPackageBarcodeLink: (
+    data: TCreateDataWithId<TPackageBarcodeLink>
+  ) => void
+
   suppliers: TSupplier[] | null
   setSuppliers: (suppliers: TSupplier[]) => void
   createSupplier: (
@@ -53,6 +67,11 @@ type TAppStore = {
   ) => void
   updateSupplier: (supplier: TUpdateData<TSupplier>) => void
   deleteSupplier: (id: string) => void
+
+  ignoredSuppliers: TIgnoredSupplier[] | null
+  setIgnoredSuppliers: (ignoredSuppliers: TIgnoredSupplier[]) => void
+  createIgnoredSupplier: (data: TCreateDataWithId<TIgnoredSupplier>) => void
+  deleteIgnoredSupplier: (id: string) => void
 
   sellers: TSeller[] | null
   setSellers: (sellers: TSeller[]) => void
@@ -138,11 +157,25 @@ export const useAppStore = create<TAppStore>((set) => ({
   updateProductsBatch: () => {},
   deleteProduct: () => {},
 
+  ignoredProducts: null,
+  setIgnoredProducts: (ignoredProducts) => set({ ignoredProducts }),
+  createIgnoredProduct: () => {},
+  deleteIgnoredProduct: () => {},
+
+  packageBarcodeLinks: null,
+  setPackageBarcodeLinks: (packageBarcodeLinks) => set({ packageBarcodeLinks }),
+  createPackageBarcodeLink: () => {},
+
   suppliers: null,
   setSuppliers: (suppliers) => set({ suppliers }),
   createSupplier: () => {},
   updateSupplier: () => {},
   deleteSupplier: () => {},
+
+  ignoredSuppliers: null,
+  setIgnoredSuppliers: (ignoredSuppliers) => set({ ignoredSuppliers }),
+  createIgnoredSupplier: () => {},
+  deleteIgnoredSupplier: () => {},
 
   sellers: null,
   setSellers: (sellers) => set({ sellers }),

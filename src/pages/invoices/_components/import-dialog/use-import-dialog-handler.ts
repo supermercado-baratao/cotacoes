@@ -1,35 +1,57 @@
 import { useState } from 'react'
 
 import { useAppStore, useCallbackStore } from '@/stores'
+import {
+  findSupplierByCnpj,
+  isSupplierCnpjIgnored,
+  normalizeCnpj
+} from '@/utils'
 
 import { parseNfe, type TParsedNfe } from '../../utils'
 
 type TParseError = { filename: string; message: string }
 
 export const useImportDialogHandler = (handleClose: () => void) => {
-  const { invoices, products, suppliers, createInvoicesBatch } = useAppStore()
+  const {
+    invoices,
+    products,
+    suppliers,
+    ignoredSuppliers,
+    packageBarcodeLinks,
+    createInvoicesBatch,
+    createIgnoredSupplier
+  } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const [parsedNfes, setParsedNfes] = useState<TParsedNfe[]>([])
   const [duplicateNfes, setDuplicateNfes] = useState<TParsedNfe[]>([])
+  const [ignoredNfes, setIgnoredNfes] = useState<TParsedNfe[]>([])
   const [parseErrors, setParseErrors] = useState<TParseError[]>([])
 
   const handleReset = () => {
     setParsedNfes([])
     setDuplicateNfes([])
+    setIgnoredNfes([])
     setParseErrors([])
   }
 
   const handleFilesChange = async (files: FileList) => {
     const newNfes: TParsedNfe[] = []
     const newDuplicates: TParsedNfe[] = []
+    const newIgnored: TParsedNfe[] = []
     const newErrors: TParseError[] = []
     const existingAccessKeys = new Set((invoices ?? []).map((inv) => inv.id))
 
     for (const file of Array.from(files)) {
       try {
         const xml = await file.text()
-        const result = parseNfe(xml, products ?? [])
+        const result = parseNfe(xml, products ?? [], packageBarcodeLinks ?? [])
+        if (
+          isSupplierCnpjIgnored(result.supplierCnpj, ignoredSuppliers ?? [])
+        ) {
+          newIgnored.push(result)
+          continue
+        }
         if (existingAccessKeys.has(result.accessKey)) {
           newDuplicates.push(result)
           continue
@@ -51,6 +73,13 @@ export const useImportDialogHandler = (handleClose: () => void) => {
         ...newDuplicates.filter((n) => !existingKeys.has(n.accessKey))
       ]
     })
+    setIgnoredNfes((prev) => {
+      const existingKeys = new Set(prev.map((n) => n.accessKey))
+      return [
+        ...prev,
+        ...newIgnored.filter((n) => !existingKeys.has(n.accessKey))
+      ]
+    })
     setParseErrors((prev) => [...prev, ...newErrors])
   }
 
@@ -62,8 +91,33 @@ export const useImportDialogHandler = (handleClose: () => void) => {
     setDuplicateNfes((prev) => prev.filter((n) => n.accessKey !== accessKey))
   }
 
+  const handleRemoveIgnored = (accessKey: string) => {
+    setIgnoredNfes((prev) => prev.filter((n) => n.accessKey !== accessKey))
+  }
+
   const handleRemoveError = (index: number) => {
     setParseErrors((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleIgnoreSupplier = (nfe: TParsedNfe) => {
+    const name =
+      findSupplierByCnpj(nfe.supplierCnpj, suppliers ?? [])?.tradeName ??
+      nfe.supplierName
+    createIgnoredSupplier({
+      id: normalizeCnpj(nfe.supplierCnpj),
+      cnpj: nfe.supplierCnpj,
+      name
+    })
+
+    const movedNfes = parsedNfes.filter(
+      (n) => normalizeCnpj(n.supplierCnpj) === normalizeCnpj(nfe.supplierCnpj)
+    )
+    setParsedNfes((prev) =>
+      prev.filter(
+        (n) => normalizeCnpj(n.supplierCnpj) !== normalizeCnpj(nfe.supplierCnpj)
+      )
+    )
+    setIgnoredNfes((prev) => [...prev, ...movedNfes])
   }
 
   const handleImport = () => {
@@ -75,13 +129,16 @@ export const useImportDialogHandler = (handleClose: () => void) => {
   return {
     parsedNfes,
     duplicateNfes,
+    ignoredNfes,
     parseErrors,
     products: products ?? [],
     suppliers: suppliers ?? [],
     handleFilesChange,
     handleRemoveNfe,
     handleRemoveDuplicate,
+    handleRemoveIgnored,
     handleRemoveError,
+    handleIgnoreSupplier,
     handleReset,
     handleImport
   }

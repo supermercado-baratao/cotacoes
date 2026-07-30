@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router'
 import { useDeleteHandler } from '@/hooks'
 import type { TInvoice, TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
-import { findSupplierByCnpj } from '@/utils'
+import { buildPackageBarcodeLinkMap, findSupplierByCnpj } from '@/utils'
 
 export type TInvoiceItemRow = TInvoiceItem & {
   orderQuantity: number | null
@@ -24,6 +24,7 @@ export const useInvoiceDetailHandler = () => {
     quotes,
     quoteId,
     ordersByQuoteId,
+    packageBarcodeLinks,
     setQuoteId,
     updateInvoice,
     deleteInvoice
@@ -62,6 +63,11 @@ export const useInvoiceDetailHandler = () => {
     [products]
   )
 
+  const packageBarcodeLinkMap = useMemo(
+    () => buildPackageBarcodeLinkMap(packageBarcodeLinks ?? []),
+    [packageBarcodeLinks]
+  )
+
   const supplier = useMemo(
     () =>
       invoice
@@ -82,7 +88,13 @@ export const useInvoiceDetailHandler = () => {
         ? (ordersForSupplier.find((o) => o.id === item.orderId) ?? null)
         : null
 
-      const matchStatus: TInvoiceItemMatchStatus = !item.productId
+      const productId =
+        item.productId ??
+        (item.packageBarcode
+          ? (packageBarcodeLinkMap.get(item.packageBarcode) ?? null)
+          : null)
+
+      const matchStatus: TInvoiceItemMatchStatus = !productId
         ? 'unmatched_product'
         : !order
           ? 'unmatched_order'
@@ -90,17 +102,17 @@ export const useInvoiceDetailHandler = () => {
 
       return {
         ...item,
+        productId,
         matchStatus,
         orderId: order?.id ?? null,
         priceDivergence: order ? item.unitPrice - order.price : null,
         quantityDivergence: order ? item.quantity - order.quantity : null,
         orderQuantity: order?.quantity ?? null,
         orderPrice: order?.price ?? null,
-        productDescription:
-          productMap.get(item.productId ?? '')?.description ?? null
+        productDescription: productMap.get(productId ?? '')?.description ?? null
       }
     })
-  }, [invoice, ordersForSupplier, productMap])
+  }, [invoice, ordersForSupplier, productMap, packageBarcodeLinkMap])
 
   const handleQuoteChange = (quoteId: string | null) => {
     setQuoteId(quoteId)

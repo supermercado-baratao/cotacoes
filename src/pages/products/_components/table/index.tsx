@@ -1,3 +1,6 @@
+import { Block } from '@mui/icons-material'
+import { GridActionsCellItem } from '@mui/x-data-grid'
+
 import { DeleteDialog, Table as _Table } from '@/components'
 import { useDeleteHandler } from '@/hooks'
 import type { TProduct } from '@/models'
@@ -11,13 +14,20 @@ type TTableProps = {
 }
 
 export const Table = ({ products, handleEdit }: TTableProps) => {
-  const { deleteProduct } = useAppStore()
+  const { deleteProduct, createIgnoredProduct } = useAppStore()
   const {
     itemToDelete,
     handleDelete,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm
   } = useDeleteHandler<TProduct>((item) => deleteProduct(item.id))
+
+  const handleIgnore = (product: TProduct) =>
+    createIgnoredProduct({
+      id: product.id,
+      barcode: product.barcodes[0] ?? null,
+      description: product.description
+    })
 
   return (
     <>
@@ -26,6 +36,14 @@ export const Table = ({ products, handleEdit }: TTableProps) => {
         items={products}
         handleEdit={handleEdit}
         handleDelete={handleDelete}
+        getExtraActions={(product) => [
+          <GridActionsCellItem
+            key="ignore"
+            icon={<Block />}
+            label="Ignorar"
+            onClick={() => handleIgnore(product)}
+          />
+        ]}
       />
       <DeleteDialog
         open={!!itemToDelete}

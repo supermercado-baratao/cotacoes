@@ -1,4 +1,9 @@
-import { AddCircle, ReceiptLong } from '@mui/icons-material'
+import {
+  AddCircle,
+  Block,
+  Link as LinkIcon,
+  ReceiptLong
+} from '@mui/icons-material'
 import { GridActionsCellItem, type GridColDef } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 
@@ -6,7 +11,9 @@ import type { TUnmatchedProductItem } from '../../utils'
 
 export const buildColumns = (
   handleViewInvoice: (item: TUnmatchedProductItem) => void,
-  handleCreateProduct: (item: TUnmatchedProductItem) => void
+  handleCreateProduct: (item: TUnmatchedProductItem) => void,
+  handleIgnoreItem: (item: TUnmatchedProductItem) => void,
+  handleAssociateItem: (item: TUnmatchedProductItem) => void
 ): GridColDef<TUnmatchedProductItem>[] => [
   {
     field: 'description',
@@ -18,6 +25,11 @@ export const buildColumns = (
   {
     field: 'barcode',
     headerName: 'Cód. Barras',
+    valueFormatter: (value: string | null) => value ?? '—'
+  },
+  {
+    field: 'packageBarcode',
+    headerName: 'Cód. Embalagem',
     valueFormatter: (value: string | null) => value ?? '—'
   },
   {
@@ -39,7 +51,7 @@ export const buildColumns = (
     field: 'actions',
     type: 'actions',
     headerName: 'Ações',
-    width: 100,
+    width: 170,
     getActions: ({ row }) => [
       <GridActionsCellItem
         key="view-invoice"
@@ -52,6 +64,22 @@ export const buildColumns = (
         icon={<AddCircle />}
         label="Cadastrar"
         onClick={() => handleCreateProduct(row)}
+      />,
+      ...(row.packageBarcode
+        ? [
+            <GridActionsCellItem
+              key="associate-product"
+              icon={<LinkIcon />}
+              label="Associar a produto existente"
+              onClick={() => handleAssociateItem(row)}
+            />
+          ]
+        : []),
+      <GridActionsCellItem
+        key="ignore"
+        icon={<Block />}
+        label="Ignorar"
+        onClick={() => handleIgnoreItem(row)}
       />
     ]
   }

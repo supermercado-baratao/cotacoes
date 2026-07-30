@@ -8,18 +8,27 @@ import { buildColumns } from './columns'
 type TUnmatchedTableProps = {
   items: TUnmatchedProductItem[]
   handleCreateProduct: (item: TUnmatchedProductItem) => void
+  handleIgnoreItem: (item: TUnmatchedProductItem) => void
+  handleAssociateItem: (item: TUnmatchedProductItem) => void
 }
 
 export const UnmatchedTable = ({
   items,
-  handleCreateProduct
+  handleCreateProduct,
+  handleIgnoreItem,
+  handleAssociateItem
 }: TUnmatchedTableProps) => {
   const navigate = useNavigate()
 
   const handleViewInvoice = (item: TUnmatchedProductItem) =>
     navigate(`/invoices/${item.lastInvoiceId}`)
 
-  const columns = buildColumns(handleViewInvoice, handleCreateProduct)
+  const columns = buildColumns(
+    handleViewInvoice,
+    handleCreateProduct,
+    handleIgnoreItem,
+    handleAssociateItem
+  )
 
   return <_Table columns={columns} items={items} getRowId={(row) => row.key} />
 }
