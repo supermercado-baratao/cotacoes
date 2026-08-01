@@ -73,17 +73,7 @@ export const InvoiceDetail = () => {
     unmatchedProduct: itemsWithDivergences.filter((i) => i.productId === null)
       .length,
     unmatchedOrder: itemsWithDivergences.filter((i) => i.orderId === null)
-      .length,
-    withDivergence: itemsWithDivergences.filter(
-      (i) => i.priceDivergence !== null && i.priceDivergence !== 0
-    ).length,
-    totalDivergence: itemsWithDivergences.reduce(
-      (acc, i) =>
-        i.priceDivergence !== null && i.priceDivergence !== 0
-          ? acc + i.priceDivergence * i.quantity
-          : acc,
-      0
-    )
+      .length
   }
 
   return (
@@ -204,13 +194,6 @@ export const InvoiceDetail = () => {
             <Chip
               label={`${summary.unmatchedOrder} sem pedido`}
               color="warning"
-              size="small"
-            />
-          )}
-          {summary.withDivergence > 0 && (
-            <Chip
-              label={`${summary.withDivergence} divergência${summary.withDivergence !== 1 ? 's' : ''} de preço (${formatCurrency(summary.totalDivergence)})`}
-              color={summary.totalDivergence > 0 ? 'error' : 'warning'}
               size="small"
             />
           )}

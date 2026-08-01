@@ -1,4 +1,4 @@
-import { Chip, Typography } from '@mui/material'
+import { Chip } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import { useMemo } from 'react'
 
@@ -52,8 +52,19 @@ export const ItemsTable = ({ items }: TProps) => {
         valueFormatter: (value: number) => formatNumericValue(value)
       },
       {
+        field: 'orderPrice',
+        headerName: 'Valor Unit.',
+        valueGetter: (_value, row) => row.orderPrice ?? row.unitPrice,
+        valueFormatter: (value: number) => formatCurrency(value)
+      },
+      {
         field: 'unitPrice',
-        headerName: 'Preço NF',
+        headerName: 'Valor Emb.',
+        valueFormatter: (value: number) => formatCurrency(value)
+      },
+      {
+        field: 'totalPrice',
+        headerName: 'Valor Total',
         valueFormatter: (value: number) => formatCurrency(value)
       },
       {
@@ -61,51 +72,6 @@ export const ItemsTable = ({ items }: TProps) => {
         headerName: 'Produto',
         renderCell: (params) =>
           params.value ? params.value.toUpperCase() : 'Não cadastrado'
-      },
-      {
-        field: 'orderQuantity',
-        headerName: 'Qtd Pedido',
-        renderCell: (params) =>
-          params.value !== null ? formatNumericValue(params.value) : '—'
-      },
-      {
-        field: 'orderPrice',
-        headerName: 'Preço Pedido',
-        renderCell: (params) =>
-          params.value !== null ? formatCurrency(params.value) : '—'
-      },
-      {
-        field: 'priceDivergence',
-        headerName: 'Dif. Preço',
-        renderCell: (params) => {
-          if (params.value === null) return '—'
-          const diff = params.value as number
-          if (diff === 0) return 'R$ 0,00'
-          return (
-            <Typography color={diff > 0 ? 'error.main' : 'warning.main'}>
-              {diff > 0 ? '+' : ''}
-              {formatCurrency(diff)}
-            </Typography>
-          )
-        }
-      },
-      {
-        field: 'quantityDivergence',
-        headerName: 'Dif. Qtd',
-        renderCell: (params) => {
-          if (params.value === null) return '—'
-          const diff = params.value as number
-          if (diff === 0) return '0'
-          return (
-            <Typography
-              variant="body2"
-              color={diff > 0 ? 'error.main' : 'warning.main'}
-            >
-              {diff > 0 ? '+' : ''}
-              {formatNumericValue(diff)}
-            </Typography>
-          )
-        }
       },
       {
         field: 'matchStatus',
