@@ -26,6 +26,15 @@ export const RowContent: SxProps<Theme> = {
   minWidth: 0
 }
 
+export const RowCheckSlot: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 34,
+  height: 34,
+  flexShrink: 0
+}
+
 export const SuggestionLine: SxProps<Theme> = {
   display: 'flex',
   alignItems: 'center',
@@ -33,39 +42,29 @@ export const SuggestionLine: SxProps<Theme> = {
   mt: 0.25
 }
 
-export const ReferenceChip = (type: 'product' | 'family'): SxProps<Theme> => ({
+const REFERENCE_CHIP_PALETTE_KEY = {
+  product: 'primary',
+  family: 'secondary',
+  manual: 'success'
+} as const
+
+export const ReferenceChip = (
+  type: 'product' | 'family' | 'manual'
+): SxProps<Theme> => ({
   display: 'inline-flex',
   alignItems: 'center',
   px: 0.75,
   py: 0.25,
   borderRadius: 0.5,
   bgcolor: (theme) =>
-    alpha(
-      type === 'product'
-        ? theme.palette.primary.main
-        : theme.palette.secondary.main,
-      0.12
-    ),
-  color: type === 'product' ? 'primary.main' : 'secondary.main',
+    alpha(theme.palette[REFERENCE_CHIP_PALETTE_KEY[type]].main, 0.12),
+  color: `${REFERENCE_CHIP_PALETTE_KEY[type]}.main`,
   fontSize: '0.65rem',
   fontWeight: 700,
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
   lineHeight: 1
 })
-
-export const ReferencedBadge: SxProps<Theme> = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 0.5,
-  px: 0.75,
-  py: 0.25,
-  borderRadius: 0.5,
-  bgcolor: (theme) => alpha(theme.palette.success.main, 0.12),
-  color: 'success.main',
-  fontSize: '0.7rem',
-  fontWeight: 600
-}
 
 export const Actions: SxProps<Theme> = {
   display: 'flex',

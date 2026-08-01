@@ -156,7 +156,7 @@ export type TQuoteRow = {
   supplierNames: string[]
 }
 
-const getReferenceDescription = (
+export const getReferenceDescription = (
   priceRef: TPriceRef,
   products: TProduct[],
   families: TFamily[]

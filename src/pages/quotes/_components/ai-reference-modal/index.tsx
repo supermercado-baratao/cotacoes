@@ -158,18 +158,32 @@ export const AiReferenceModal = ({
         {!isAnalyzing && hasRows && !allReferenced && (
           <>
             <Box sx={S.List}>
-              {rows.map(({ item, suggestion, refName, refPrice, accepted }) => {
+              {rows.map((row) => {
+                const {
+                  item,
+                  suggestion,
+                  refName,
+                  refPrice,
+                  referenceLabel,
+                  accepted
+                } = row
                 const referenced = isAlreadyReferenced(item.id)
                 const hasSuggestion = suggestion.type !== null
 
                 return (
                   <Box key={item.id} sx={S.Row}>
-                    <Checkbox
-                      checked={!referenced && accepted && hasSuggestion}
-                      disabled={referenced || !hasSuggestion}
-                      onChange={() => toggleAccepted(item.id)}
-                      size="small"
-                    />
+                    {referenced ? (
+                      <Box sx={S.RowCheckSlot}>
+                        <CheckCircle color="success" fontSize="small" />
+                      </Box>
+                    ) : (
+                      <Checkbox
+                        checked={accepted && hasSuggestion}
+                        disabled={!hasSuggestion}
+                        onChange={() => toggleAccepted(item.id)}
+                        size="small"
+                      />
+                    )}
                     <Box sx={S.RowContent}>
                       <Typography
                         variant="body2"
@@ -179,11 +193,34 @@ export const AiReferenceModal = ({
                         {item.description}
                       </Typography>
                       <Box sx={S.SuggestionLine}>
-                        {referenced ? (
-                          <Box sx={S.ReferencedBadge}>
-                            <CheckCircle sx={{ fontSize: 12 }} />
-                            Referenciado
-                          </Box>
+                        {referenced && item.priceRef ? (
+                          <>
+                            <Box sx={S.ReferenceChip(item.priceRef.type)}>
+                              {item.priceRef.type === 'product'
+                                ? 'Produto'
+                                : item.priceRef.type === 'family'
+                                  ? 'Família'
+                                  : 'Manual'}
+                            </Box>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              noWrap
+                              title={referenceLabel ?? undefined}
+                              sx={{ flex: 1, minWidth: 0 }}
+                            >
+                              {referenceLabel}
+                            </Typography>
+                            {item.salePrice != null && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ flexShrink: 0 }}
+                              >
+                                {formatCurrency(item.salePrice)}
+                              </Typography>
+                            )}
+                          </>
                         ) : hasSuggestion && refName ? (
                           <>
                             <Box sx={S.ReferenceChip(suggestion.type!)}>
