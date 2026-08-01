@@ -12,7 +12,7 @@ import type {
   TSupplier
 } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
-import { findSupplierByCnpj } from '@/utils'
+import { findPackingDefault, findSupplierByCnpj } from '@/utils'
 
 import { createSchema, type TSchema } from './schema'
 import { useProductHistory } from './use-product-history'
@@ -37,6 +37,8 @@ export const useFormHandler = (
     quotes,
     quoteId,
     invoices,
+    packingDefaults,
+    upsertPackingDefault,
     setHistoryProductId
   } = useAppStore()
 
@@ -92,13 +94,14 @@ export const useFormHandler = (
     reset,
     control,
     setValue,
-    formState: { errors }
+    formState: { errors, dirtyFields }
   } = useForm<TSchema>({ resolver: zodResolver(schema), defaultValues })
 
   const watchedProductId = useWatch({ control, name: 'productId' })
   const watchedSupplierId = useWatch({ control, name: 'supplierId' })
   const watchedSellerId = useWatch({ control, name: 'sellerId' })
   const watchedPrice = useWatch({ control, name: 'price' })
+  const watchedPacking = useWatch({ control, name: 'packing' })
 
   const linkedInvoiceItem = useMemo(() => {
     if (invoiceItem) return invoiceItem
@@ -119,6 +122,26 @@ export const useFormHandler = (
       { shouldValidate: true, shouldDirty: true }
     )
   }
+
+  useEffect(() => {
+    if (order || dirtyFields.packingQuantity) return
+    if (!watchedProductId || !watchedSupplierId || !watchedPacking) return
+    const found = findPackingDefault(packingDefaults ?? [], {
+      supplierId: watchedSupplierId,
+      productId: watchedProductId,
+      packing: watchedPacking
+    })
+    if (!found) return
+    setValue('packingQuantity', found.packingQuantity, { shouldDirty: false })
+  }, [
+    order,
+    dirtyFields.packingQuantity,
+    watchedProductId,
+    watchedSupplierId,
+    watchedPacking,
+    packingDefaults,
+    setValue
+  ])
 
   useEffect(() => {
     setHistoryProductId(watchedProductId || null)
@@ -148,6 +171,13 @@ export const useFormHandler = (
 
   const onSubmit = handleSubmit((data) => {
     if (!quoteId || !quoteItem) return
+
+    upsertPackingDefault({
+      supplierId: data.supplierId,
+      productId: data.productId,
+      packing: data.packing,
+      packingQuantity: data.packingQuantity
+    })
 
     if (order) {
       updateOrder({ ...order, ...data })

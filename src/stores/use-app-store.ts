@@ -8,6 +8,7 @@ import type {
   TInvoice,
   TInvoiceDateRange,
   TOrder,
+  TPackingDefault,
   TPriceAdjustment,
   TProduct,
   TQuote,
@@ -93,6 +94,10 @@ type TAppStore = {
   updateOrder: (order: TUpdateData<TOrder>) => void
   deleteOrder: (order: TOrder) => void
 
+  packingDefaults: TPackingDefault[] | null
+  setPackingDefaults: (packingDefaults: TPackingDefault[]) => void
+  upsertPackingDefault: (data: TCreateData<TPackingDefault>) => void
+
   quoteId: string | null
   setQuoteId: (id: string | null) => void
   historyProductId: string | null
@@ -172,6 +177,10 @@ export const useAppStore = create<TAppStore>((set) => ({
   createOrdersBatchWithInvoiceLink: () => {},
   updateOrder: () => {},
   deleteOrder: () => {},
+
+  packingDefaults: null,
+  setPackingDefaults: (packingDefaults) => set({ packingDefaults }),
+  upsertPackingDefault: () => {},
 
   quoteId: null,
   setQuoteId: (id) => set({ quoteId: id }),
