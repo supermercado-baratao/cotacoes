@@ -53,6 +53,7 @@ type TCurrencyInputProps<T extends FieldValues> = {
 export const CurrencyInput = <T extends FieldValues>({
   name,
   control,
+  slotProps,
   ...textFieldProps
 }: TCurrencyInputProps<T>) => {
   return (
@@ -64,7 +65,9 @@ export const CurrencyInput = <T extends FieldValues>({
           {...field}
           {...textFieldProps}
           slotProps={{
+            ...slotProps,
             input: {
+              ...slotProps?.input,
               inputComponent:
                 CurrencyMask as unknown as ElementType<InputBaseComponentProps>,
               startAdornment: (

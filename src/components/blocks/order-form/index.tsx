@@ -61,6 +61,7 @@ export const OrderForm = ({
   const [productToEdit, setProductToEdit] = useState<TProduct | null>(null)
 
   const title = order ? 'Editar Pedido' : 'Novo Pedido'
+  const isLinking = !!invoiceRef
 
   return (
     <>
@@ -117,6 +118,7 @@ export const OrderForm = ({
             helperText={errors.price?.message}
             sx={S.ThreeCol}
             onFocus={selectOnFocus}
+            slotProps={{ input: { readOnly: isLinking } }}
           />
           <TextField
             {...register('quantity', { valueAsNumber: true })}
@@ -127,7 +129,8 @@ export const OrderForm = ({
             sx={S.TwoCol}
             onFocus={selectOnFocus}
             slotProps={{
-              htmlInput: { min: 1, max: MAX_NUMERIC_VALUE, step: 1 }
+              htmlInput: { min: 1, max: MAX_NUMERIC_VALUE, step: 1 },
+              input: { readOnly: isLinking }
             }}
           />
           <TextField
@@ -155,6 +158,7 @@ export const OrderForm = ({
             helperText={errors.packing?.message}
             sx={S.TwoCol}
             onFocus={selectOnFocus}
+            slotProps={{ input: { readOnly: isLinking } }}
           />
           <TextField
             {...register('date')}
@@ -181,7 +185,10 @@ export const OrderForm = ({
             error={!!errors.supplierId}
             helperText={errors.supplierId?.message}
             addLabel="Novo Fornecedor"
-            handleAddClick={() => setQuickCreateSupplier(true)}
+            handleAddClick={
+              isLinking ? undefined : () => setQuickCreateSupplier(true)
+            }
+            disabled={isLinking}
             sx={S.ThreeCol}
           />
           <Autocomplete
