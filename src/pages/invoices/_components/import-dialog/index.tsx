@@ -1,4 +1,10 @@
-import { Close, CloudUpload, ExpandLess, ExpandMore } from '@mui/icons-material'
+import {
+  Block,
+  Close,
+  CloudUpload,
+  ExpandLess,
+  ExpandMore
+} from '@mui/icons-material'
 import {
   Alert,
   Box,
@@ -14,6 +20,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Tooltip,
   Typography
 } from '@mui/material'
 import dayjs from 'dayjs'
@@ -23,6 +30,7 @@ import { Modal } from '@/components'
 import { findSupplierByCnpj, formatCurrency, formatNumericValue } from '@/utils'
 
 import { DuplicateNfes } from './duplicate-nfes'
+import { IgnoredSupplierNfes } from './ignored-supplier-nfes'
 import * as S from './style'
 import { useImportDialogHandler } from './use-import-dialog-handler'
 
@@ -35,13 +43,16 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
   const {
     parsedNfes,
     duplicateNfes,
+    ignoredNfes,
     parseErrors,
     products,
     suppliers,
     handleFilesChange,
     handleRemoveNfe,
     handleRemoveDuplicate,
+    handleRemoveIgnored,
     handleRemoveError,
+    handleIgnoreSupplier,
     handleReset,
     handleImport
   } = useImportDialogHandler(handleClose)
@@ -126,6 +137,11 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
         handleRemoveDuplicate={handleRemoveDuplicate}
       />
 
+      <IgnoredSupplierNfes
+        ignoredNfes={ignoredNfes}
+        handleRemoveIgnored={handleRemoveIgnored}
+      />
+
       {parsedNfes.map((nfe) => {
         const matchedCount = nfe.items.filter((i) => i.productId).length
         const totalCount = nfe.items.length
@@ -183,6 +199,14 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
                   </Button>
                 </Box>
               </Box>
+              <Tooltip title="Ignorar fornecedor permanentemente">
+                <IconButton
+                  size="small"
+                  onClick={() => handleIgnoreSupplier(nfe)}
+                >
+                  <Block fontSize="small" />
+                </IconButton>
+              </Tooltip>
               <IconButton
                 size="small"
                 onClick={() => handleRemoveNfe(nfe.accessKey)}

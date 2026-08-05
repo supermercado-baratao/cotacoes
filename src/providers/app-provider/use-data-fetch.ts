@@ -3,8 +3,11 @@ import { useEffect } from 'react'
 
 import {
   familyModel,
+  ignoredProductModel,
+  ignoredSupplierModel,
   invoiceModel,
   orderModel,
+  packageBarcodeLinkModel,
   packingDefaultModel,
   priceAdjustmentModel,
   productModel,
@@ -30,8 +33,23 @@ export const useDataFetch = () => {
         enabled: !!user
       },
       {
+        queryKey: ['ignored-products'],
+        queryFn: ignoredProductModel.findMany,
+        enabled: !!user
+      },
+      {
+        queryKey: ['package-barcode-links'],
+        queryFn: packageBarcodeLinkModel.findMany,
+        enabled: !!user
+      },
+      {
         queryKey: ['suppliers'],
         queryFn: supplierModel.findMany,
+        enabled: !!user
+      },
+      {
+        queryKey: ['ignored-suppliers'],
+        queryFn: ignoredSupplierModel.findMany,
         enabled: !!user
       },
       { queryKey: ['sellers'], queryFn: sellerModel.findMany, enabled: !!user },
@@ -80,7 +98,10 @@ export const useDataFetch = () => {
 
   const [
     { data: products },
+    { data: ignoredProducts },
+    { data: packageBarcodeLinks },
     { data: suppliers },
+    { data: ignoredSuppliers },
     { data: sellers },
     { data: families },
     { data: quotes },
@@ -106,7 +127,10 @@ export const useDataFetch = () => {
 
   return {
     products,
+    ignoredProducts,
+    packageBarcodeLinks,
     suppliers,
+    ignoredSuppliers,
     sellers,
     families,
     quotes,

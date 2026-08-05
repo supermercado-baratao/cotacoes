@@ -8,7 +8,12 @@ import {
   ProductForm
 } from '@/components'
 
-import { Table, UnmatchedTable } from './_components'
+import {
+  AssociateProductDialog,
+  IgnoredTable,
+  Table,
+  UnmatchedTable
+} from './_components'
 import { useProductsHandler } from './use-products-handler'
 
 export const Products = () => {
@@ -32,9 +37,18 @@ export const Products = () => {
     hasUnmatchedItems,
     productDraft,
     handleCreateFromUnmatchedItem,
+    handleIgnoreUnmatchedItem,
     isImportOpen,
     handleImportOpen,
-    handleImportClose
+    handleImportClose,
+    ignoredProducts,
+    isFetchingIgnored,
+    hasIgnoredProducts,
+    itemToAssociate,
+    handleAssociateOpen,
+    handleAssociateClose,
+    handleAssociateConfirm,
+    registeredProducts
   } = useProductsHandler()
 
   return (
@@ -55,6 +69,7 @@ export const Products = () => {
       >
         <Tab label="Cadastrados" value="registered" />
         <Tab label="Sem Cadastro" value="unmatched" />
+        <Tab label="Ignorados" value="ignored" />
       </Tabs>
       {activeTab === 'registered' ? (
         <DataView
@@ -67,7 +82,7 @@ export const Products = () => {
             handleEdit={handleFormOpen}
           />
         </DataView>
-      ) : (
+      ) : activeTab === 'unmatched' ? (
         <DataView
           isFetching={isFetchingUnmatched}
           isEmpty={!hasUnmatchedItems}
@@ -76,7 +91,17 @@ export const Products = () => {
           <UnmatchedTable
             items={unmatchedItems}
             handleCreateProduct={handleCreateFromUnmatchedItem}
+            handleIgnoreItem={handleIgnoreUnmatchedItem}
+            handleAssociateItem={handleAssociateOpen}
           />
+        </DataView>
+      ) : (
+        <DataView
+          isFetching={isFetchingIgnored}
+          isEmpty={!hasIgnoredProducts}
+          emptyMessage="Nenhum produto ignorado."
+        >
+          <IgnoredTable items={ignoredProducts} />
         </DataView>
       )}
       <ProductForm
@@ -94,6 +119,12 @@ export const Products = () => {
         handleClose={() => setQuickCreateFamily(false)}
       />
       <CatalogImport isOpened={isImportOpen} handleClose={handleImportClose} />
+      <AssociateProductDialog
+        item={itemToAssociate}
+        products={registeredProducts}
+        handleClose={handleAssociateClose}
+        handleConfirm={handleAssociateConfirm}
+      />
     </>
   )
 }

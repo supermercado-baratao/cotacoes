@@ -6,10 +6,13 @@ import { useAppStore } from '@/stores'
 
 import { useDataFetch } from './use-data-fetch'
 import { useFamilyMutation } from './use-family-mutation'
+import { useIgnoredProductMutation } from './use-ignored-product-mutation'
+import { useIgnoredSupplierMutation } from './use-ignored-supplier-mutation'
 import { useImportMutation } from './use-import-mutation'
 import { useInvoiceMutation } from './use-invoice-mutation'
 import { useInvoiceOrderLinkMutation } from './use-invoice-order-link-mutation'
 import { useOrderMutation } from './use-order-mutation'
+import { usePackageBarcodeLinkMutation } from './use-package-barcode-link-mutation'
 import { usePackingDefaultMutation } from './use-packing-default-mutation'
 import { usePriceAdjustmentMutation } from './use-price-adjustment-mutation'
 import { useProductMutation } from './use-product-mutation'
@@ -21,7 +24,10 @@ import { useSupplierMutation } from './use-supplier-mutation'
 export const useAppHandler = () => {
   const {
     setProducts,
+    setIgnoredProducts,
+    setPackageBarcodeLinks,
     setSuppliers,
+    setIgnoredSuppliers,
     setSellers,
     setFamilies,
     setQuotes,
@@ -34,7 +40,10 @@ export const useAppHandler = () => {
   } = useAppStore(
     useShallow((state) => ({
       setProducts: state.setProducts,
+      setIgnoredProducts: state.setIgnoredProducts,
+      setPackageBarcodeLinks: state.setPackageBarcodeLinks,
       setSuppliers: state.setSuppliers,
+      setIgnoredSuppliers: state.setIgnoredSuppliers,
       setSellers: state.setSellers,
       setFamilies: state.setFamilies,
       setQuotes: state.setQuotes,
@@ -49,7 +58,10 @@ export const useAppHandler = () => {
 
   const {
     products,
+    ignoredProducts,
+    packageBarcodeLinks,
     suppliers,
+    ignoredSuppliers,
     sellers,
     families,
     quotes,
@@ -63,8 +75,13 @@ export const useAppHandler = () => {
   const { createProduct, updateProduct, deleteProduct, updateProductsBatch } =
     useProductMutation()
   const { importData } = useImportMutation()
+  const { createIgnoredProduct, deleteIgnoredProduct } =
+    useIgnoredProductMutation()
+  const { createPackageBarcodeLink } = usePackageBarcodeLinkMutation()
   const { createSupplier, updateSupplier, deleteSupplier } =
     useSupplierMutation()
+  const { createIgnoredSupplier, deleteIgnoredSupplier } =
+    useIgnoredSupplierMutation()
   const { createSeller, updateSeller, deleteSeller } = useSellerMutation()
   const { createFamily, updateFamily, deleteFamily } = useFamilyMutation()
   const { createQuote, updateQuote, deleteQuote } = useQuoteMutation()
@@ -87,8 +104,20 @@ export const useAppHandler = () => {
   }, [products, setProducts])
 
   useEffect(() => {
+    if (ignoredProducts) setIgnoredProducts(ignoredProducts)
+  }, [ignoredProducts, setIgnoredProducts])
+
+  useEffect(() => {
+    if (packageBarcodeLinks) setPackageBarcodeLinks(packageBarcodeLinks)
+  }, [packageBarcodeLinks, setPackageBarcodeLinks])
+
+  useEffect(() => {
     if (suppliers) setSuppliers(suppliers)
   }, [suppliers, setSuppliers])
+
+  useEffect(() => {
+    if (ignoredSuppliers) setIgnoredSuppliers(ignoredSuppliers)
+  }, [ignoredSuppliers, setIgnoredSuppliers])
 
   useEffect(() => {
     if (sellers) setSellers(sellers)
@@ -132,9 +161,14 @@ export const useAppHandler = () => {
       updateProduct,
       updateProductsBatch,
       deleteProduct,
+      createIgnoredProduct,
+      deleteIgnoredProduct,
+      createPackageBarcodeLink,
       createSupplier,
       updateSupplier,
       deleteSupplier,
+      createIgnoredSupplier,
+      deleteIgnoredSupplier,
       createSeller,
       updateSeller,
       deleteSeller,
@@ -164,9 +198,14 @@ export const useAppHandler = () => {
     updateProduct,
     updateProductsBatch,
     deleteProduct,
+    createIgnoredProduct,
+    deleteIgnoredProduct,
+    createPackageBarcodeLink,
     createSupplier,
     updateSupplier,
     deleteSupplier,
+    createIgnoredSupplier,
+    deleteIgnoredSupplier,
     createSeller,
     updateSeller,
     deleteSeller,

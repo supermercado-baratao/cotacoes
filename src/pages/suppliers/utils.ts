@@ -1,4 +1,4 @@
-import { type TSupplier } from '@/models'
+import { type TIgnoredSupplier, type TSupplier } from '@/models'
 import { matchesSearch } from '@/utils'
 
 export const filterSuppliers = (search: string, suppliers: TSupplier[]) =>
@@ -10,4 +10,12 @@ export const filterSuppliers = (search: string, suppliers: TSupplier[]) =>
       s.cnpj,
       s.cnpj.replace(/\D/g, '')
     )
+  )
+
+export const filterIgnoredSuppliers = (
+  search: string,
+  ignoredSuppliers: TIgnoredSupplier[]
+) =>
+  ignoredSuppliers.filter((s) =>
+    matchesSearch(search, s.name, s.cnpj, s.cnpj.replace(/\D/g, ''))
   )
