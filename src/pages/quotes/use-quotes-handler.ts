@@ -50,10 +50,10 @@ export const useQuotesHandler = () => {
   const availableDays = getAvailableDays(quotes || [], year, month)
   const [day, setDay] = useState(quotesSelectedDate?.day ?? availableDays[0])
 
-  const initialized = useRef(false)
+  const initialized = useRef(!!quotesSelectedDate)
 
   useEffect(() => {
-    if (initialized.current || !quotes?.length || quotesSelectedDate) return
+    if (initialized.current || !quotes?.length) return
     initialized.current = true
     const latest = [...quotes].sort((a, b) =>
       dayjs(b.date).diff(dayjs(a.date))
@@ -61,11 +61,12 @@ export const useQuotesHandler = () => {
     setYear(dayjs(latest.date).year())
     setMonth(dayjs(latest.date).month() + 1)
     setDay(dayjs(latest.date).date())
-  }, [quotes, quotesSelectedDate])
+  }, [quotes])
 
   useEffect(() => {
+    if (quotes === null) return
     setQuotesSelectedDate({ year, month, day })
-  }, [year, month, day, setQuotesSelectedDate])
+  }, [quotes, year, month, day, setQuotesSelectedDate])
 
   const {
     formItem: formQuote,
