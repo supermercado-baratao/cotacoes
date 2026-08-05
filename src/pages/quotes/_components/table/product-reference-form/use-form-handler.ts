@@ -5,8 +5,8 @@ import { useForm, useWatch } from 'react-hook-form'
 import type { TAiSuggestion } from '@/infra'
 import type { TPriceRef, TQuote, TQuoteItem } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
+import { getFamilyReferencePrice } from '@/utils'
 
-import { getFamilyReferencePrice } from '../../../utils'
 import { schema, type TSchema } from './schema'
 
 const getDefaultValues = (

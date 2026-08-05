@@ -1,7 +1,8 @@
 import type { TAiSuggestion } from '@/infra'
 import type { TFamily, TPriceRef, TProduct, TQuote, TQuoteItem } from '@/models'
+import { getFamilyReferencePrice } from '@/utils'
 
-import { getFamilyReferencePrice, getReferenceDescription } from '../../utils'
+import { getReferenceDescription } from '../../utils'
 
 export type TSuggestionRow = {
   item: TQuoteItem

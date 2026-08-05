@@ -9,7 +9,7 @@ import type {
   TQuoteItem
 } from '@/models'
 import { useAppStore } from '@/stores'
-import { findSupplierByCnpj } from '@/utils'
+import { findSupplierByCnpj, getFamilyReferencePrice } from '@/utils'
 
 import {
   findBestQuoteItemMatch,
@@ -133,11 +133,15 @@ export const useLinkOrdersDialogHandler = (
       : product
         ? { type: 'product', id: product.id }
         : null
+    const salePrice =
+      priceRef?.type === 'family'
+        ? getFamilyReferencePrice(products ?? [], priceRef.id)
+        : (product?.price ?? null)
 
     const newItem: TQuoteItem = {
       id: crypto.randomUUID(),
       description: trimmedDescription,
-      salePrice: null,
+      salePrice,
       priceRef
     }
     updateQuote({ ...quote, items: [...quote.items, newItem] })

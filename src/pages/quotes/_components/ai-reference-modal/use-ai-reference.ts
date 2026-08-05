@@ -3,8 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { suggestPriceReferences, type TAiSuggestion } from '@/infra'
 import type { TQuote, TQuoteItem } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
+import { getFamilyReferencePrice } from '@/utils'
 
-import { getFamilyReferencePrice } from '../../utils'
 import {
   PROGRESS_MESSAGE_INTERVAL_MS,
   PROGRESS_MESSAGES,
