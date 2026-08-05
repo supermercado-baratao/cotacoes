@@ -13,6 +13,7 @@ import { useInvoiceMutation } from './use-invoice-mutation'
 import { useInvoiceOrderLinkMutation } from './use-invoice-order-link-mutation'
 import { useOrderMutation } from './use-order-mutation'
 import { usePackageBarcodeLinkMutation } from './use-package-barcode-link-mutation'
+import { usePackingDefaultMutation } from './use-packing-default-mutation'
 import { usePriceAdjustmentMutation } from './use-price-adjustment-mutation'
 import { useProductMutation } from './use-product-mutation'
 import { useQuoteMutation } from './use-quote-mutation'
@@ -33,6 +34,7 @@ export const useAppHandler = () => {
     setOrdersByQuoteId,
     setOrdersByProductId,
     setInvoices,
+    setPackingDefaults,
     setSettings,
     setPriceAdjustments
   } = useAppStore(
@@ -48,6 +50,7 @@ export const useAppHandler = () => {
       setOrdersByQuoteId: state.setOrdersByQuoteId,
       setOrdersByProductId: state.setOrdersByProductId,
       setInvoices: state.setInvoices,
+      setPackingDefaults: state.setPackingDefaults,
       setSettings: state.setSettings,
       setPriceAdjustments: state.setPriceAdjustments
     }))
@@ -65,6 +68,7 @@ export const useAppHandler = () => {
     ordersByQuoteId,
     ordersByProductId,
     invoices,
+    packingDefaults,
     settings,
     priceAdjustments
   } = useDataFetch()
@@ -87,6 +91,7 @@ export const useAppHandler = () => {
     useInvoiceMutation()
   const { createOrderWithInvoiceLink, createOrdersBatchWithInvoiceLink } =
     useInvoiceOrderLinkMutation()
+  const { upsertPackingDefault } = usePackingDefaultMutation()
   const { updateSettings } = useSettingsMutation()
   const { replacePriceAdjustments } = usePriceAdjustmentMutation()
 
@@ -139,6 +144,10 @@ export const useAppHandler = () => {
   }, [invoices, setInvoices])
 
   useEffect(() => {
+    if (packingDefaults) setPackingDefaults(packingDefaults)
+  }, [packingDefaults, setPackingDefaults])
+
+  useEffect(() => {
     if (settings !== undefined) setSettings(settings)
   }, [settings, setSettings])
 
@@ -175,6 +184,7 @@ export const useAppHandler = () => {
       createOrdersBatchWithInvoiceLink,
       updateOrder,
       deleteOrder,
+      upsertPackingDefault,
       importData,
       createInvoice,
       createInvoicesBatch,
@@ -211,6 +221,7 @@ export const useAppHandler = () => {
     createOrdersBatchWithInvoiceLink,
     updateOrder,
     deleteOrder,
+    upsertPackingDefault,
     importData,
     createInvoice,
     createInvoicesBatch,

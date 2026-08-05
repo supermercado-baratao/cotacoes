@@ -31,6 +31,10 @@ export const Wrapper: SxProps<Theme> = {
   gap: 2,
   '.MuiInputBase-input': {
     textTransform: 'uppercase'
+  },
+  '.MuiInputBase-input[readonly]': {
+    cursor: 'default',
+    color: 'text.secondary'
   }
 }
 
@@ -38,8 +42,20 @@ export const TwoCol: SxProps<Theme> = {
   gridColumn: { sm: 'span 2' }
 }
 
+export const TwoColRowStart: SxProps<Theme> = {
+  gridColumn: { sm: '1 / span 2' }
+}
+
 export const FullWidth: SxProps<Theme> = {
   gridColumn: { sm: '1 / -1' }
+}
+
+export const CellInput: SxProps<Theme> = {
+  minWidth: 96,
+  '.MuiInputBase-input': {
+    textAlign: 'right',
+    py: 0.5
+  }
 }
 
 export const Actions: SxProps<Theme> = {

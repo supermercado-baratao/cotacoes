@@ -1,13 +1,14 @@
 import type { TAiSuggestion } from '@/infra'
-import type { TFamily, TProduct, TQuote, TQuoteItem } from '@/models'
+import type { TFamily, TPriceRef, TProduct, TQuote, TQuoteItem } from '@/models'
 
-import { getFamilyReferencePrice } from '../../utils'
+import { getFamilyReferencePrice, getReferenceDescription } from '../../utils'
 
 export type TSuggestionRow = {
   item: TQuoteItem
   suggestion: TAiSuggestion
   refName: string | null
   refPrice: number | null
+  referenceLabel: string | null
   accepted: boolean
 }
 
@@ -31,6 +32,24 @@ const getRefPrice = (s: TAiSuggestion, products: TProduct[]): number | null => {
   return null
 }
 
+const getReferenceLabel = (
+  priceRef: TPriceRef,
+  products: TProduct[],
+  families: TFamily[]
+): string | null => {
+  if (!priceRef) return null
+  if (priceRef.type === 'manual') return 'Preço definido manualmente'
+  return (
+    getReferenceDescription(priceRef, products, families) ??
+    'Referência não encontrada'
+  )
+}
+
+const getRowOrder = (row: TSuggestionRow): number => {
+  if (row.item.priceRef !== null) return 2
+  return row.suggestion.type !== null ? 1 : 0
+}
+
 export const buildRows = ({
   items,
   suggestions,
@@ -41,8 +60,8 @@ export const buildRows = ({
   suggestions: TAiSuggestion[]
   products: TProduct[]
   families: TFamily[]
-}): TSuggestionRow[] =>
-  items.map((item) => {
+}): TSuggestionRow[] => {
+  const rows = items.map((item) => {
     const s = suggestions.find((s) => s.itemId === item.id) ?? {
       itemId: item.id,
       type: null,
@@ -53,9 +72,13 @@ export const buildRows = ({
       suggestion: s,
       refName: getRefName(s, products, families),
       refPrice: getRefPrice(s, products),
+      referenceLabel: getReferenceLabel(item.priceRef, products, families),
       accepted: s.type !== null
     }
   })
+
+  return rows.sort((a, b) => getRowOrder(a) - getRowOrder(b))
+}
 
 export const isAlreadyReferenced = (itemId: string, quote: TQuote) =>
   (quote.items.find((i) => i.id === itemId)?.priceRef ?? null) !== null

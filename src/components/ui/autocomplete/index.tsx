@@ -34,6 +34,7 @@ type TAutocompleteProps<TOption, TFieldValues extends FieldValues> = {
   addLabel?: string
   handleEditClick?: (option: TOption) => void
   editLabel?: string
+  disabled?: boolean
   sx?: SxProps<Theme>
 }
 
@@ -52,6 +53,7 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
   addLabel,
   handleEditClick,
   editLabel,
+  disabled,
   sx
 }: TAutocompleteProps<TOption, TFieldValues>) => (
   <Box sx={[S.Wrapper, sx] as SxProps<Theme>}>
@@ -67,6 +69,7 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
           <>
             <MuiAutocomplete
               sx={S.Inner}
+              disabled={disabled}
               multiple={multiple as true}
               disableCloseOnSelect={disableCloseOnSelect}
               options={options}

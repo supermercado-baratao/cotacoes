@@ -6,9 +6,10 @@ import type { z } from 'zod'
 
 import { createSchema } from '@/components/blocks/order-form/schema'
 import { getUnitPriceFromPackingPrice } from '@/components/blocks/order-form/utils'
-import type { TInvoice, TOrder, TQuote, TSupplier } from '@/models'
+import type { TInvoice, TOrder, TQuote, TSeller, TSupplier } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
+import { findGroupPackingDefault } from '@/utils'
 
 import type { TBatchGroup } from '../../utils'
 
@@ -16,7 +17,8 @@ const schema = createSchema('').pick({
   sellerId: true,
   date: true,
   packing: true,
-  packingQuantity: true
+  packingQuantity: true,
+  observations: true
 })
 
 type TSchema = z.infer<typeof schema>
@@ -28,7 +30,13 @@ export const useFormHandler = (
   supplier: TSupplier,
   handleClose: () => void
 ) => {
-  const { sellers, createOrdersBatchWithInvoiceLink } = useAppStore()
+  const {
+    sellers,
+    products,
+    packingDefaults,
+    createOrdersBatchWithInvoiceLink,
+    upsertPackingDefault
+  } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const filteredSellers = useMemo(
@@ -36,14 +44,28 @@ export const useFormHandler = (
     [sellers, supplier.id]
   )
 
+  const productIds = useMemo(
+    () => (group?.rows ?? []).map((row) => row.productId!),
+    [group]
+  )
+
   const defaultValues: TSchema = useMemo(
     () => ({
       sellerId: null,
       date: dayjs(invoice.emissionDate).format('YYYY-MM-DD'),
       packing: group?.packing ?? '',
-      packingQuantity: 1
+      packingQuantity:
+        (group &&
+          findGroupPackingDefault(
+            packingDefaults ?? [],
+            supplier.id,
+            productIds,
+            group.packing
+          )) ??
+        1,
+      observations: null
     }),
-    [invoice, group]
+    [invoice, group, supplier.id, productIds, packingDefaults]
   )
 
   const {
@@ -51,6 +73,7 @@ export const useFormHandler = (
     handleSubmit,
     reset,
     control,
+    setValue,
     formState: { errors }
   } = useForm<TSchema>({ resolver: zodResolver(schema), defaultValues })
 
@@ -62,16 +85,21 @@ export const useFormHandler = (
 
   const previewRows = useMemo(
     () =>
-      (group?.rows ?? []).map((row) => ({
-        row,
-        price: watchedPackingQuantity
+      (group?.rows ?? []).map((row) => {
+        const price = watchedPackingQuantity
           ? getUnitPriceFromPackingPrice(
               row.item.unitPrice,
               watchedPackingQuantity
             )
           : row.item.unitPrice
-      })),
-    [group, watchedPackingQuantity]
+        const salePrice =
+          products?.find((p) => p.id === row.productId)?.price ?? null
+        const margin =
+          salePrice && price ? ((salePrice - price) / salePrice) * 100 : null
+
+        return { row, price, salePrice, margin }
+      }),
+    [group, watchedPackingQuantity, products]
   )
 
   const onSubmit = handleSubmit((data) => {
@@ -94,13 +122,26 @@ export const useFormHandler = (
         supplierId: supplier.id,
         sellerId: data.sellerId,
         date: data.date,
-        observations: null
+        observations: data.observations
       } as TCreateData<TOrder>
     }))
+
+    ;[...new Set(productIds)].forEach((productId) =>
+      upsertPackingDefault({
+        supplierId: supplier.id,
+        productId,
+        packing: data.packing,
+        packingQuantity: data.packingQuantity
+      })
+    )
 
     setSuccessCallbacks([handleClose])
     createOrdersBatchWithInvoiceLink({ invoice, matches })
   })
+
+  const handleSellerCreated = (seller: TSeller) => {
+    setValue('sellerId', seller.id, { shouldValidate: true, shouldDirty: true })
+  }
 
   return {
     register,
@@ -108,6 +149,7 @@ export const useFormHandler = (
     errors,
     control,
     sellers: filteredSellers,
-    previewRows
+    previewRows,
+    handleSellerCreated
   }
 }

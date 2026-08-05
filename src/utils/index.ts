@@ -1,6 +1,7 @@
 export * from './formatters'
 export * from './input-handlers'
 export * from './package-barcode-links'
+export * from './packing-defaults'
 export * from './quote-item-match'
 export * from './search'
 export * from './suppliers'

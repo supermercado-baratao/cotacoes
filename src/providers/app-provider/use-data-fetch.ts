@@ -8,6 +8,7 @@ import {
   invoiceModel,
   orderModel,
   packageBarcodeLinkModel,
+  packingDefaultModel,
   priceAdjustmentModel,
   productModel,
   quoteModel,
@@ -78,6 +79,11 @@ export const useDataFetch = () => {
         enabled: !!user
       },
       {
+        queryKey: ['packing-defaults'],
+        queryFn: packingDefaultModel.findMany,
+        enabled: !!user
+      },
+      {
         queryKey: ['settings'],
         queryFn: settingsModel.find,
         enabled: !!user
@@ -102,6 +108,7 @@ export const useDataFetch = () => {
     { data: ordersByQuoteId },
     { data: ordersByProductId },
     { data: invoices },
+    { data: packingDefaults },
     { data: settings },
     { data: priceAdjustments }
   ] = queries
@@ -130,6 +137,7 @@ export const useDataFetch = () => {
     ordersByQuoteId,
     ordersByProductId,
     invoices,
+    packingDefaults,
     settings,
     priceAdjustments
   }
