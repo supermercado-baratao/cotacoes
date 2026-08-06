@@ -146,6 +146,7 @@ export const BatchConfirmDialog = ({
             <Table size="small">
               <TableHead>
                 <TableRow>
+                  <TableCell>Cód VR</TableCell>
                   <TableCell>Descrição NF</TableCell>
                   <TableCell align="right">Qtd</TableCell>
                   <TableCell align="right">Preço de Venda</TableCell>
@@ -156,6 +157,7 @@ export const BatchConfirmDialog = ({
               <TableBody>
                 {previewRows.map(({ row, price, salePrice, margin }) => (
                   <TableRow key={row.item.itemNumber}>
+                    <TableCell>{row.productId}</TableCell>
                     <TableCell>{row.item.description.toUpperCase()}</TableCell>
                     <TableCell align="right">
                       <TextField

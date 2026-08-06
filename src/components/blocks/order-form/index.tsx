@@ -102,11 +102,19 @@ export const OrderForm = ({
             handleEditClick={(product) => setProductToEdit(product)}
             sx={S.FullWidth}
           />
+          {selectedProduct && (
+            <TextField
+              label="Cód VR"
+              value={selectedProduct.id}
+              sx={S.TwoCol}
+              slotProps={{ input: { readOnly: true } }}
+            />
+          )}
           {selectedProduct?.price != null && (
             <TextField
               label="Preço de Venda"
               value={formatCurrency(selectedProduct.price)}
-              sx={S.ThreeCol}
+              sx={S.TwoCol}
               slotProps={{ input: { readOnly: true } }}
             />
           )}
@@ -116,7 +124,7 @@ export const OrderForm = ({
             label="Preço de Custo"
             error={!!errors.price}
             helperText={errors.price?.message}
-            sx={S.ThreeCol}
+            sx={S.TwoCol}
             onFocus={selectOnFocus}
             slotProps={{ input: { readOnly: isLinking } }}
           />

@@ -336,6 +336,8 @@ describe('Invoice flow', () => {
     const batchDialog = batchHeading.closest('.MuiPaper-root') as HTMLElement
     within(batchDialog).getByText('SAND HAVAIANAS COLOR 43 44 BRANCO')
     within(batchDialog).getByText('SAND HAVAIANAS COLOR 35 36 AZUL NAVAL')
+    within(batchDialog).getByText('204682')
+    within(batchDialog).getByText('204364')
 
     await event.click(
       within(batchDialog).getByRole('button', { name: 'Confirmar (2)' })
@@ -447,6 +449,8 @@ describe('Invoice flow', () => {
     )
     within(batchDialog).getByText('SAND HAVAIANAS COLOR 41 42 PRETO')
     within(batchDialog).getByText('SAND HAVAIANAS COLOR 39 40 AZUL NAVAL')
+    within(batchDialog).getByText('204360')
+    within(batchDialog).getByText('204380')
 
     await event.click(
       within(batchDialog).getByRole('button', { name: 'Confirmar (2)' })
@@ -467,6 +471,7 @@ describe('Invoice flow', () => {
     within(orderFormDialog).getByText(
       'SAND HAVAIANAS COLOR 43 44 VERDE PATRIA FC'
     )
+    within(orderFormDialog).getByDisplayValue('218055')
 
     await event.click(
       within(orderFormDialog).getByRole('button', { name: 'Salvar' })
