@@ -120,6 +120,7 @@ export const useInvoiceDetailHandler = () => {
 
   const handleApprove = () => {
     if (!invoice) return
+    setSuccessCallbacks([handleBack])
     updateInvoice({ ...invoice, verificationStatus: 'approved' })
   }
 
