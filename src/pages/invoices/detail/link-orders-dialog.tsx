@@ -291,7 +291,7 @@ export const LinkOrdersDialog = ({
       />
       {quote && supplier && currentQueueItem?.type === 'batch' && (
         <BatchConfirmDialog
-          key={currentQueueItem.group.quoteItemId}
+          key={currentQueueItem.group.rows[0].item.itemNumber}
           isOpened
           group={currentQueueItem.group}
           quoteItem={currentQuoteItem}
