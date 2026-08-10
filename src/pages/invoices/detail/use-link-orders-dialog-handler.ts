@@ -108,8 +108,29 @@ export const useLinkOrdersDialogHandler = (
     [rows, currentPage]
   )
 
+  const applyQuoteItemToFamily = (itemNumber: number, quoteItemId: string) => {
+    const changedProductId = rows.find(
+      (r) => r.item.itemNumber === itemNumber
+    )?.productId
+    const familyId = changedProductId
+      ? (productMap.get(changedProductId)?.familyId ?? null)
+      : null
+
+    setOverrides((prev) => {
+      const next = { ...prev, [itemNumber]: quoteItemId }
+      if (!familyId) return next
+      for (const row of rows) {
+        const rowFamilyId = row.productId
+          ? (productMap.get(row.productId)?.familyId ?? null)
+          : null
+        if (rowFamilyId === familyId) next[row.item.itemNumber] = quoteItemId
+      }
+      return next
+    })
+  }
+
   const handleRowQuoteItemChange = (itemNumber: number, quoteItemId: string) =>
-    setOverrides((prev) => ({ ...prev, [itemNumber]: quoteItemId }))
+    applyQuoteItemToFamily(itemNumber, quoteItemId)
 
   const handleOpenAddQuoteItem = (row: TLinkOrderRow) =>
     setAddQuoteItemDraft({
@@ -145,10 +166,7 @@ export const useLinkOrdersDialogHandler = (
       priceRef
     }
     updateQuote({ ...quote, items: [...quote.items, newItem] })
-    setOverrides((prev) => ({
-      ...prev,
-      [addQuoteItemDraft.itemNumber]: newItem.id
-    }))
+    applyQuoteItemToFamily(addQuoteItemDraft.itemNumber, newItem.id)
     setAddQuoteItemDraft(null)
   }
 

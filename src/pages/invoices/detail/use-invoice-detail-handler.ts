@@ -17,6 +17,7 @@ export type TInvoiceItemRow = TInvoiceItem & {
   orderPrice: number | null
   orderPackingQuantity: number | null
   productDescription: string | null
+  salePrice: number | null
 }
 
 export const useInvoiceDetailHandler = () => {
@@ -123,7 +124,9 @@ export const useInvoiceDetailHandler = () => {
         orderQuantity: order?.quantity ?? null,
         orderPrice: order?.price ?? null,
         orderPackingQuantity: order?.packingQuantity ?? null,
-        productDescription: productMap.get(productId ?? '')?.description ?? null
+        productDescription:
+          productMap.get(productId ?? '')?.description ?? null,
+        salePrice: productMap.get(productId ?? '')?.price ?? null
       }
     })
   }, [invoice, ordersForSupplier, productMap, packageBarcodeLinkMap])

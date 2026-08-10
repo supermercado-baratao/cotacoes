@@ -76,6 +76,12 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         valueFormatter: (value: number) => formatCurrency(value)
       },
       {
+        field: 'salePrice',
+        headerName: 'Preço de Venda',
+        valueFormatter: (value: number | null) =>
+          value != null ? formatCurrency(value) : '—'
+      },
+      {
         field: 'productDescription',
         headerName: 'Produto',
         renderCell: (params) =>

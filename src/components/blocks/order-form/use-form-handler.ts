@@ -16,7 +16,7 @@ import { findPackingDefault, findSupplierByCnpj } from '@/utils'
 
 import { createSchema, type TSchema } from './schema'
 import { useProductHistory } from './use-product-history'
-import { getUnitPriceFromPackingPrice } from './utils'
+import { extractPackingInfo, getUnitPriceFromPackingPrice } from './utils'
 
 type TInvoiceRef = { invoice: TInvoice; itemNumber: number }
 
@@ -57,8 +57,11 @@ export const useFormHandler = (
       )
     : null
 
-  const defaultValues: Partial<TSchema> = useMemo(
-    () => ({
+  const defaultValues: Partial<TSchema> = useMemo(() => {
+    const extractedPacking =
+      !order && invoiceItem ? extractPackingInfo(invoiceItem.unit) : null
+
+    return {
       productId: order?.productId ?? invoiceItem?.productId ?? '',
       supplierId: (() => {
         if (order?.supplierId) return order.supplierId
@@ -74,14 +77,22 @@ export const useFormHandler = (
         (invoiceRef
           ? dayjs(invoiceRef.invoice.emissionDate).format('YYYY-MM-DD')
           : dayjs().format('YYYY-MM-DD')),
-      price: order?.price ?? invoiceItem?.unitPrice ?? undefined,
+      price:
+        order?.price ??
+        (invoiceItem
+          ? getUnitPriceFromPackingPrice(
+              invoiceItem.unitPrice,
+              extractedPacking?.packingQuantity ?? 1
+            )
+          : undefined),
       quantity: order?.quantity ?? invoiceItem?.quantity ?? undefined,
-      packing: order?.packing ?? invoiceItem?.unit ?? '',
-      packingQuantity: order?.packingQuantity ?? 1,
+      packing:
+        order?.packing ?? extractedPacking?.packing ?? invoiceItem?.unit ?? '',
+      packingQuantity:
+        order?.packingQuantity ?? extractedPacking?.packingQuantity ?? 1,
       observations: order?.observations ?? null
-    }),
-    [order, invoiceRef, invoiceItem, suppliers]
-  )
+    }
+  }, [order, invoiceRef, invoiceItem, suppliers])
 
   const schema = useMemo(
     () => createSchema(invoiceRef ? '' : quoteDate),

@@ -5,7 +5,10 @@ import { useForm, useWatch } from 'react-hook-form'
 import type { z } from 'zod'
 
 import { createSchema } from '@/components/blocks/order-form/schema'
-import { getUnitPriceFromPackingPrice } from '@/components/blocks/order-form/utils'
+import {
+  extractPackingInfo,
+  getUnitPriceFromPackingPrice
+} from '@/components/blocks/order-form/utils'
 import type { TInvoice, TOrder, TQuote, TSeller, TSupplier } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import type { TCreateData } from '@/types'
@@ -49,24 +52,26 @@ export const useFormHandler = (
     [group]
   )
 
-  const defaultValues: TSchema = useMemo(
-    () => ({
+  const defaultValues: TSchema = useMemo(() => {
+    const extractedPacking = group ? extractPackingInfo(group.packing) : null
+    const savedPackingQuantity =
+      group &&
+      findGroupPackingDefault(
+        packingDefaults ?? [],
+        supplier.id,
+        productIds,
+        group.packing
+      )
+
+    return {
       sellerId: null,
       date: dayjs(invoice.emissionDate).format('YYYY-MM-DD'),
-      packing: group?.packing ?? '',
+      packing: extractedPacking?.packing ?? group?.packing ?? '',
       packingQuantity:
-        (group &&
-          findGroupPackingDefault(
-            packingDefaults ?? [],
-            supplier.id,
-            productIds,
-            group.packing
-          )) ??
-        1,
+        savedPackingQuantity ?? extractedPacking?.packingQuantity ?? 1,
       observations: null
-    }),
-    [invoice, group, supplier.id, productIds, packingDefaults]
-  )
+    }
+  }, [invoice, group, supplier.id, productIds, packingDefaults])
 
   const {
     register,
