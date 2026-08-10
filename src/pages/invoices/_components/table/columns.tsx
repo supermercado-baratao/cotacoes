@@ -1,5 +1,5 @@
 import { CheckCircle, Warning } from '@mui/icons-material'
-import { Chip } from '@mui/material'
+import { Chip, Tooltip } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 
@@ -41,10 +41,6 @@ export const columns: GridColDef<TInvoiceRow>[] = [
     headerName: 'Nº NF'
   },
   {
-    field: 'series',
-    headerName: 'Série'
-  },
-  {
     field: 'supplierName',
     headerName: 'Fornecedor',
     flex: 1,
@@ -53,24 +49,16 @@ export const columns: GridColDef<TInvoiceRow>[] = [
   },
   {
     field: 'isSupplierRegistered',
-    headerName: 'Cadastro',
-    renderCell: (params) =>
-      params.value ? (
-        <Chip
-          icon={<CheckCircle />}
-          label="Cadastrado"
-          color="success"
-          size="small"
-          variant="outlined"
-        />
-      ) : (
-        <Chip
-          icon={<Warning />}
-          label="Não cadastrado"
-          color="warning"
-          size="small"
-        />
-      )
+    headerName: 'Cadastro Forn.',
+    renderCell: (params) => (
+      <Tooltip title={params.value ? 'Cadastrado' : 'Não cadastrado'}>
+        {params.value ? (
+          <CheckCircle color="success" fontSize="small" />
+        ) : (
+          <Warning color="warning" fontSize="small" />
+        )}
+      </Tooltip>
+    )
   },
   {
     field: 'emissionDate',

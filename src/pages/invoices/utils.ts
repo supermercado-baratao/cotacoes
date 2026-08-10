@@ -65,15 +65,20 @@ export type TGroupedRows = {
 /**
  * Groups invoice rows that are ready to link into batches that can be
  * confirmed together: same quote item, referenced by family (so more than
- * one product can legitimately share it), and consistent packing across the
- * rows. Rows whose packing diverges from the group's majority are never
- * silently merged in — they're returned in `individualRows` instead.
+ * one product can legitimately share it), same product family (a manual
+ * override can point rows for different families/packagings at the same
+ * quote item, so the family is re-checked from the product, not assumed
+ * from the quote item), and consistent packing across the rows. Rows whose
+ * packing diverges from the group's majority are never silently merged in
+ * — they're returned in `individualRows` instead.
  */
 export const groupInvoiceItemsForBatch = (
   readyRows: TLinkOrderRow[],
-  quoteItems: TQuoteItem[]
+  quoteItems: TQuoteItem[],
+  products: TProduct[]
 ): TGroupedRows => {
   const quoteItemMap = new Map(quoteItems.map((qi) => [qi.id, qi]))
+  const productMap = new Map(products.map((p) => [p.id, p]))
 
   const rowsByQuoteItemId = new Map<string, TLinkOrderRow[]>()
   for (const row of readyRows) {
@@ -93,33 +98,53 @@ export const groupInvoiceItemsForBatch = (
       continue
     }
 
-    const rowsByPacking = new Map<string, TLinkOrderRow[]>()
+    const rowsByFamily = new Map<string, TLinkOrderRow[]>()
     for (const row of rows) {
-      const bucket = rowsByPacking.get(row.item.unit) ?? []
+      const familyId = row.productId
+        ? productMap.get(row.productId)?.familyId
+        : null
+      const familyKey = familyId ?? `product:${row.productId}`
+      const bucket = rowsByFamily.get(familyKey) ?? []
       bucket.push(row)
-      rowsByPacking.set(row.item.unit, bucket)
+      rowsByFamily.set(familyKey, bucket)
     }
 
-    let majorityPacking: string | null = null
-    let majorityRows: TLinkOrderRow[] = []
-    for (const [packing, bucket] of rowsByPacking) {
-      if (bucket.length > majorityRows.length) {
-        majorityPacking = packing
-        majorityRows = bucket
+    for (const familyRows of rowsByFamily.values()) {
+      if (familyRows.length < 2) {
+        individualRows.push(...familyRows)
+        continue
       }
-    }
 
-    if (majorityPacking !== null && majorityRows.length >= 2) {
-      const outliers = rows.filter((row) => row.item.unit !== majorityPacking)
-      batchGroups.push({
-        quoteItemId,
-        packing: majorityPacking,
-        rows: majorityRows,
-        outliers
-      })
-      individualRows.push(...outliers)
-    } else {
-      individualRows.push(...rows)
+      const rowsByPacking = new Map<string, TLinkOrderRow[]>()
+      for (const row of familyRows) {
+        const bucket = rowsByPacking.get(row.item.unit) ?? []
+        bucket.push(row)
+        rowsByPacking.set(row.item.unit, bucket)
+      }
+
+      let majorityPacking: string | null = null
+      let majorityRows: TLinkOrderRow[] = []
+      for (const [packing, bucket] of rowsByPacking) {
+        if (bucket.length > majorityRows.length) {
+          majorityPacking = packing
+          majorityRows = bucket
+        }
+      }
+
+      if (majorityPacking !== null && majorityRows.length >= 2) {
+        const outliers = familyRows.filter(
+          (row) => row.item.unit !== majorityPacking
+        )
+        batchGroups.push({
+          quoteItemId,
+          packing: majorityPacking,
+          rows: majorityRows,
+          outliers
+        })
+        individualRows.push(...outliers)
+      } else {
+        individualRows.push(...familyRows)
+      }
     }
   }
 

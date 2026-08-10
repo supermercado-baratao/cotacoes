@@ -180,7 +180,7 @@ export const useFormHandler = (
     })
 
     if (order) {
-      updateOrder({ ...order, ...data })
+      updateOrder({ ...order, ...data, quoteItemId: quoteItem.id })
     } else if (invoiceRef) {
       createOrderWithInvoiceLink({
         order: {

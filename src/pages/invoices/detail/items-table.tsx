@@ -1,5 +1,6 @@
+import { Edit } from '@mui/icons-material'
 import { Chip } from '@mui/material'
-import type { GridColDef } from '@mui/x-data-grid'
+import { GridActionsCellItem, type GridColDef } from '@mui/x-data-grid'
 import { useMemo } from 'react'
 
 import { Table as _Table } from '@/components'
@@ -19,9 +20,10 @@ const matchStatusConfig: Record<
 
 type TProps = {
   items: TInvoiceItemRow[]
+  handleEditOrder: (row: TInvoiceItemRow) => void
 }
 
-export const ItemsTable = ({ items }: TProps) => {
+export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
   const columns = useMemo<GridColDef<TInvoiceItemRow>[]>(
     () => [
       { field: 'itemNumber', headerName: 'Nº' },
@@ -46,6 +48,12 @@ export const ItemsTable = ({ items }: TProps) => {
       },
       { field: 'packageBarcode', headerName: 'Cód. Embalagem' },
       { field: 'unit', headerName: 'UN' },
+      {
+        field: 'orderPackingQuantity',
+        headerName: 'Qtd. Embalagem',
+        valueFormatter: (value: number | null) =>
+          value != null ? formatNumericValue(value) : '—'
+      },
       {
         field: 'quantity',
         headerName: 'Qtd NF',
@@ -91,6 +99,18 @@ export const ItemsTable = ({ items }: TProps) => {
       columns={columns}
       items={items}
       getRowId={(row) => row.itemNumber}
+      getExtraActions={(row) =>
+        row.orderId
+          ? [
+              <GridActionsCellItem
+                key="edit-order"
+                icon={<Edit />}
+                label="Editar pedido"
+                onClick={() => handleEditOrder(row)}
+              />
+            ]
+          : []
+      }
     />
   )
 }

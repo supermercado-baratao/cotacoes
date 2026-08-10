@@ -10,6 +10,7 @@ import { buildPackageBarcodeLinkMap, findSupplierByCnpj } from '@/utils'
 export type TInvoiceItemRow = TInvoiceItem & {
   orderQuantity: number | null
   orderPrice: number | null
+  orderPackingQuantity: number | null
   productDescription: string | null
 }
 
@@ -81,6 +82,11 @@ export const useInvoiceDetailHandler = () => {
     [ordersByQuoteId, supplier?.id]
   )
 
+  const orderMap = useMemo(
+    () => new Map(ordersForSupplier.map((o) => [o.id, o])),
+    [ordersForSupplier]
+  )
+
   const itemsWithDivergences = useMemo((): TInvoiceItemRow[] => {
     if (!invoice) return []
     return invoice.items.map((item) => {
@@ -109,6 +115,7 @@ export const useInvoiceDetailHandler = () => {
         quantityDivergence: order ? item.quantity - order.quantity : null,
         orderQuantity: order?.quantity ?? null,
         orderPrice: order?.price ?? null,
+        orderPackingQuantity: order?.packingQuantity ?? null,
         productDescription: productMap.get(productId ?? '')?.description ?? null
       }
     })
@@ -150,6 +157,7 @@ export const useInvoiceDetailHandler = () => {
     selectedQuote,
     itemsWithDivergences,
     productMap,
+    orderMap,
     itemToDelete,
     handleQuoteChange,
     handleApprove,

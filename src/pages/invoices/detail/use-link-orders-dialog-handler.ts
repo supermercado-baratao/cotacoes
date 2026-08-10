@@ -184,7 +184,8 @@ export const useLinkOrdersDialogHandler = (
 
     const { batchGroups, individualRows } = groupInvoiceItemsForBatch(
       rows.filter(isRowReady),
-      quote.items
+      quote.items,
+      products ?? []
     )
 
     setQueue([

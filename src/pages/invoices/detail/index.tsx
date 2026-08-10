@@ -25,10 +25,14 @@ import { DeleteDialog } from '@/components'
 import type { TInvoiceVerificationStatus } from '@/models'
 import { formatCNPJ, formatCurrency } from '@/utils'
 
+import { EditOrderDialog } from './edit-order-dialog'
 import { ItemsTable } from './items-table'
 import { LinkOrdersDialog } from './link-orders-dialog'
 import * as S from './style'
-import { useInvoiceDetailHandler } from './use-invoice-detail-handler'
+import {
+  type TInvoiceItemRow,
+  useInvoiceDetailHandler
+} from './use-invoice-detail-handler'
 
 const statusLabel: Record<TInvoiceVerificationStatus, string> = {
   pending: 'Pendente',
@@ -53,6 +57,7 @@ export const InvoiceDetail = () => {
     quotes,
     selectedQuoteId,
     selectedQuote,
+    orderMap,
     itemToDelete,
     handleQuoteChange,
     handleApprove,
@@ -64,6 +69,10 @@ export const InvoiceDetail = () => {
   } = useInvoiceDetailHandler()
 
   const [isLinkOrdersOpen, setIsLinkOrdersOpen] = useState(false)
+  const [editingRow, setEditingRow] = useState<TInvoiceItemRow | null>(null)
+  const editingOrder = editingRow?.orderId
+    ? (orderMap.get(editingRow.orderId) ?? null)
+    : null
 
   if (isFetching || !invoice) return null
 
@@ -198,7 +207,10 @@ export const InvoiceDetail = () => {
             />
           )}
         </Box>
-        <ItemsTable items={itemsWithDivergences} />
+        <ItemsTable
+          items={itemsWithDivergences}
+          handleEditOrder={setEditingRow}
+        />
       </Paper>
 
       <Box sx={S.Actions}>
@@ -244,6 +256,17 @@ export const InvoiceDetail = () => {
         quote={selectedQuote}
         handleClose={() => setIsLinkOrdersOpen(false)}
       />
+
+      {selectedQuote && editingRow && editingOrder && (
+        <EditOrderDialog
+          key={editingOrder.id}
+          invoice={invoice}
+          quote={selectedQuote}
+          itemNumber={editingRow.itemNumber}
+          order={editingOrder}
+          handleClose={() => setEditingRow(null)}
+        />
+      )}
     </Box>
   )
 }

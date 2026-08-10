@@ -1,4 +1,13 @@
-import { Box, Button, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography
+} from '@mui/material'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 
@@ -26,6 +35,8 @@ type TOrderFormProps = {
   order: TOrder | null
   setFormOrder: (order: TOrder | null) => void
   invoiceRef?: TInvoiceRef | null
+  quoteItemOptions?: TQuoteItem[]
+  handleQuoteItemChange?: (quoteItemId: string) => void
 } & Pick<TModalProps, 'isOpened' | 'handleClose'>
 
 export const OrderForm = ({
@@ -34,6 +45,8 @@ export const OrderForm = ({
   order,
   setFormOrder,
   invoiceRef,
+  quoteItemOptions,
+  handleQuoteItemChange,
   handleClose
 }: TOrderFormProps) => {
   const {
@@ -67,15 +80,35 @@ export const OrderForm = ({
     <>
       <Modal title={title} isOpened={isOpened} handleClose={handleClose}>
         <Box sx={S.Wrapper} component="form" onSubmit={onSubmit} noValidate>
-          {quoteItem && (
-            <Box sx={S.ItemBanner}>
-              <Typography variant="caption" sx={S.ItemLabel}>
-                item
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {quoteItem.description}
-              </Typography>
-            </Box>
+          {quoteItemOptions && handleQuoteItemChange ? (
+            <FormControl size="small" sx={S.FullWidth}>
+              <InputLabel id="order-form-quote-item-label">
+                Item da cotação
+              </InputLabel>
+              <Select
+                labelId="order-form-quote-item-label"
+                label="Item da cotação"
+                value={quoteItem?.id ?? ''}
+                onChange={(e) => handleQuoteItemChange(e.target.value)}
+              >
+                {quoteItemOptions.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.description.toUpperCase()}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            quoteItem && (
+              <Box sx={S.ItemBanner}>
+                <Typography variant="caption" sx={S.ItemLabel}>
+                  item
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {quoteItem.description}
+                </Typography>
+              </Box>
+            )
           )}
           {invoiceItem && invoiceRef && (
             <Box sx={S.ItemBanner}>
