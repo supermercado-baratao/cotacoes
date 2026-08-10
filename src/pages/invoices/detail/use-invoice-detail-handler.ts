@@ -5,7 +5,12 @@ import { useNavigate, useParams } from 'react-router'
 import { useDeleteHandler } from '@/hooks'
 import type { TInvoice, TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
-import { buildPackageBarcodeLinkMap, findSupplierByCnpj } from '@/utils'
+import {
+  buildPackageBarcodeLinkMap,
+  findSupplierByCnpj,
+  isSupplierCnpjIgnored,
+  normalizeCnpj
+} from '@/utils'
 
 export type TInvoiceItemRow = TInvoiceItem & {
   orderQuantity: number | null
@@ -26,9 +31,11 @@ export const useInvoiceDetailHandler = () => {
     quoteId,
     ordersByQuoteId,
     packageBarcodeLinks,
+    ignoredSuppliers,
     setQuoteId,
     updateInvoice,
-    deleteInvoice
+    deleteInvoice,
+    createIgnoredSupplier
   } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
@@ -125,8 +132,10 @@ export const useInvoiceDetailHandler = () => {
     setQuoteId(quoteId)
   }
 
+  const hasUnlinkedItems = itemsWithDivergences.some((i) => i.orderId === null)
+
   const handleApprove = () => {
-    if (!invoice) return
+    if (!invoice || hasUnlinkedItems) return
     setSuccessCallbacks([handleBack])
     updateInvoice({ ...invoice, verificationStatus: 'approved' })
   }
@@ -134,6 +143,19 @@ export const useInvoiceDetailHandler = () => {
   const handleMarkDivergent = () => {
     if (!invoice) return
     updateInvoice({ ...invoice, verificationStatus: 'divergent' })
+  }
+
+  const isSupplierIgnored = invoice
+    ? isSupplierCnpjIgnored(invoice.supplierCnpj, ignoredSuppliers ?? [])
+    : false
+
+  const handleIgnoreSupplier = () => {
+    if (!invoice || isSupplierIgnored) return
+    createIgnoredSupplier({
+      id: normalizeCnpj(invoice.supplierCnpj),
+      cnpj: invoice.supplierCnpj,
+      name: supplier?.tradeName ?? invoice.supplierName
+    })
   }
 
   const handleBack = () => navigate('/invoices')
@@ -158,10 +180,13 @@ export const useInvoiceDetailHandler = () => {
     itemsWithDivergences,
     productMap,
     orderMap,
+    hasUnlinkedItems,
+    isSupplierIgnored,
     itemToDelete,
     handleQuoteChange,
     handleApprove,
     handleMarkDivergent,
+    handleIgnoreSupplier,
     handleDelete,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm,

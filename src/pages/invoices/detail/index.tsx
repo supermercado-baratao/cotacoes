@@ -1,5 +1,6 @@
 import {
   ArrowBack,
+  Block,
   CheckCircle,
   Delete,
   Link as LinkIcon,
@@ -58,10 +59,13 @@ export const InvoiceDetail = () => {
     selectedQuoteId,
     selectedQuote,
     orderMap,
+    hasUnlinkedItems,
+    isSupplierIgnored,
     itemToDelete,
     handleQuoteChange,
     handleApprove,
     handleMarkDivergent,
+    handleIgnoreSupplier,
     handleDelete,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm,
@@ -214,6 +218,23 @@ export const InvoiceDetail = () => {
       </Paper>
 
       <Box sx={S.Actions}>
+        <Tooltip
+          title={
+            isSupplierIgnored ? 'Fornecedor já ignorado permanentemente' : ''
+          }
+        >
+          <span>
+            <Button
+              variant="outlined"
+              color="warning"
+              startIcon={<Block />}
+              onClick={handleIgnoreSupplier}
+              disabled={isSupplierIgnored}
+            >
+              {isSupplierIgnored ? 'Fornecedor ignorado' : 'Ignorar fornecedor'}
+            </Button>
+          </span>
+        </Tooltip>
         <Button
           variant="outlined"
           color="error"
@@ -231,15 +252,27 @@ export const InvoiceDetail = () => {
         >
           Marcar como divergente
         </Button>
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<CheckCircle />}
-          onClick={handleApprove}
-          disabled={invoice.verificationStatus === 'approved'}
+        <Tooltip
+          title={
+            invoice.verificationStatus !== 'approved' && hasUnlinkedItems
+              ? 'Todos os itens precisam estar vinculados a um pedido para aprovar a nota'
+              : ''
+          }
         >
-          Aprovar nota
-        </Button>
+          <span>
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<CheckCircle />}
+              onClick={handleApprove}
+              disabled={
+                invoice.verificationStatus === 'approved' || hasUnlinkedItems
+              }
+            >
+              Aprovar nota
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
 
       <DeleteDialog

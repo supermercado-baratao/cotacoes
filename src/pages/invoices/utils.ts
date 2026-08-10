@@ -12,24 +12,34 @@ import {
   matchesSearch
 } from '@/utils'
 
+const hasAllOrdersLinked = (invoice: TInvoice): boolean =>
+  invoice.items.every((item) => item.orderId !== null)
+
+const invoiceSortRank = (invoice: TInvoice): number => {
+  if (invoice.verificationStatus !== 'pending') return 2
+  return hasAllOrdersLinked(invoice) ? 1 : 0
+}
+
 export const filterInvoices = (
   search: string,
   invoices: TInvoice[]
 ): TInvoice[] =>
-  invoices.filter(
-    (inv) =>
-      matchesSearch(search, inv.number, inv.supplierName) ||
-      inv.items.some((item) =>
-        matchesSearch(
-          search,
-          item.description,
-          item.barcode,
-          item.calculatedBarcode,
-          item.packageBarcode,
-          item.supplierProductCode
+  invoices
+    .filter(
+      (inv) =>
+        matchesSearch(search, inv.number, inv.supplierName) ||
+        inv.items.some((item) =>
+          matchesSearch(
+            search,
+            item.description,
+            item.barcode,
+            item.calculatedBarcode,
+            item.packageBarcode,
+            item.supplierProductCode
+          )
         )
-      )
-  )
+    )
+    .sort((a, b) => invoiceSortRank(a) - invoiceSortRank(b))
 
 export const findBestQuoteItemMatch = (
   item: TInvoiceItem,
