@@ -1,26 +1,18 @@
 import { Category, Inventory2 } from '@mui/icons-material'
-import { Box, Divider } from '@mui/material'
+import { Box } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
-import { Fragment } from 'react'
 
 import { formatCurrency } from '@/utils'
 
 import type { TQuoteRow } from '../../utils'
 import * as S from './style'
 
-const joinWithDivider = (items: string[]) =>
-  items.length ? (
-    <Box sx={S.Divider}>
-      {items.map((item, i) => (
-        <Fragment key={i}>
-          {i > 0 && <Divider orientation="vertical" />}
-          {item}
-        </Fragment>
-      ))}
-    </Box>
-  ) : (
-    '—'
-  )
+const formatPriceRange = (min: number | null, max: number | null) => {
+  if (min == null || max == null) return '—'
+  return min === max
+    ? formatCurrency(min)
+    : `${formatCurrency(min)} – ${formatCurrency(max)}`
+}
 
 const renderReference = ({ row }: GridRenderCellParams<TQuoteRow>) => {
   const ReferenceIcon = row.priceRef?.type === 'product' ? Inventory2 : Category
@@ -44,11 +36,6 @@ export const columns: GridColDef<TQuoteRow>[] = [
     valueFormatter: (value: string) => value?.toUpperCase() ?? ''
   },
   {
-    field: 'orderCount',
-    headerName: 'Pedidos',
-    type: 'number'
-  },
-  {
     field: 'salePrice',
     headerName: 'Venda',
     valueFormatter: (value: number | null) =>
@@ -62,17 +49,19 @@ export const columns: GridColDef<TQuoteRow>[] = [
     renderCell: renderReference
   },
   {
-    field: 'orderPrices',
-    headerName: 'Custo',
-    renderCell: ({ value }: GridRenderCellParams<TQuoteRow, number[]>) =>
-      joinWithDivider((value ?? []).map(formatCurrency))
+    field: 'orderCount',
+    headerName: 'Pedidos',
+    type: 'number'
   },
   {
-    field: 'supplierNames',
-    headerName: 'Fornecedor',
-    minWidth: 160,
-    flex: 1,
-    renderCell: ({ value }: GridRenderCellParams<TQuoteRow, string[]>) =>
-      joinWithDivider((value ?? []).map((n) => n.toUpperCase()))
+    field: 'minPrice',
+    headerName: 'Custo',
+    renderCell: ({ row }: GridRenderCellParams<TQuoteRow>) =>
+      formatPriceRange(row.minPrice, row.maxPrice)
+  },
+  {
+    field: 'supplierCount',
+    headerName: 'Fornecedores',
+    type: 'number'
   }
 ]

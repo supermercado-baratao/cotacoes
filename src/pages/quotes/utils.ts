@@ -7,8 +7,7 @@ import type {
   TOrder,
   TPriceRef,
   TProduct,
-  TQuote,
-  TSupplier
+  TQuote
 } from '@/models'
 
 export const getNextQuoteDate = (
@@ -129,8 +128,9 @@ export type TQuoteRow = {
   salePrice: number | null
   priceRef: TPriceRef
   referenceDescription: string | null
-  orderPrices: number[]
-  supplierNames: string[]
+  minPrice: number | null
+  maxPrice: number | null
+  supplierCount: number
 }
 
 export const getReferenceDescription = (
@@ -150,23 +150,12 @@ export const getReferenceDescription = (
 export const getQuoteRows = (
   quote: TQuote,
   orders: TOrder[],
-  suppliers: TSupplier[],
   products: TProduct[],
   families: TFamily[]
 ): TQuoteRow[] =>
   quote.items.map((item) => {
     const itemOrders = orders.filter((o) => o.quoteItemId === item.id)
-    const sorted = [...itemOrders].sort((a, b) => a.price - b.price)
-    const seen = new Set<number>()
-    const orderPrices: number[] = []
-    const supplierNames: string[] = []
-    for (const order of sorted) {
-      if (seen.has(order.price)) continue
-      seen.add(order.price)
-      orderPrices.push(order.price)
-      const supplier = suppliers.find((s) => s.id === order.supplierId)
-      supplierNames.push(supplier?.tradeName ?? '')
-    }
+    const prices = itemOrders.map((o) => o.price)
 
     return {
       id: item.id,
@@ -179,7 +168,8 @@ export const getQuoteRows = (
         products,
         families
       ),
-      orderPrices,
-      supplierNames
+      minPrice: prices.length ? Math.min(...prices) : null,
+      maxPrice: prices.length ? Math.max(...prices) : null,
+      supplierCount: getNumberOfSuppliers(itemOrders)
     }
   })
