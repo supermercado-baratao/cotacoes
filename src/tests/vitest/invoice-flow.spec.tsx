@@ -139,7 +139,7 @@ describe('Invoice flow', () => {
     })
 
     expect(screen.getByText('108')).toBeInTheDocument()
-    expect(screen.getByText('Cadastrado')).toBeInTheDocument()
+    expect(screen.getByLabelText('Cadastrado')).toBeInTheDocument()
     expect(screen.getByText('5/21')).toBeInTheDocument()
     expect(screen.getByText('0/21')).toBeInTheDocument()
     expect(screen.getByText('Pendente')).toBeInTheDocument()

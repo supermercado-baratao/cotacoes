@@ -168,7 +168,13 @@ describe('Quote flow', () => {
       { timeout: 10000 }
     )
 
-    expect(screen.getByText('Referenciado')).toBeInTheDocument()
+    const aiModal = screen
+      .getByText('Sugestões da IA')
+      .closest('.MuiPaper-root') as HTMLElement
+
+    expect(
+      within(aiModal).getByText('PUDIM BRETZKE 50G CHOCOLATE')
+    ).toBeInTheDocument()
     expect(screen.getByText('SAB EM PO BRILHANTE 2,4KG SH')).toBeInTheDocument()
     expect(
       screen.getByText('SH CLEAR 200ML ANTICASPA MEN CAB NER. A SECOS')
