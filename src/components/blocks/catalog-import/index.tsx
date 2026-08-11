@@ -2,6 +2,7 @@ import { CheckCircleOutlined } from '@mui/icons-material'
 import { Box, Button } from '@mui/material'
 
 import { Modal, type TModalProps } from '@/components'
+import { useAppStore } from '@/stores'
 
 import { DataPreview, DropZone, SqlQuery } from './_components'
 import * as S from './style'
@@ -13,6 +14,7 @@ export const CatalogImport = ({
   isOpened,
   handleClose
 }: TCatalogImportProps) => {
+  const { settings } = useAppStore()
   const {
     file,
     handleFileSelect,
@@ -38,7 +40,7 @@ export const CatalogImport = ({
     >
       {!file ? (
         <>
-          <SqlQuery />
+          <SqlQuery lastImportAt={settings?.lastCatalogImportAt ?? null} />
           <DropZone onFileSelect={handleFileSelect} />
         </>
       ) : (

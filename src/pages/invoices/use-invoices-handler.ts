@@ -5,7 +5,8 @@ import { useAppStore } from '@/stores'
 import { filterInvoices } from './utils'
 
 export const useInvoicesHandler = () => {
-  const { invoices, invoiceDateRange, setInvoiceDateRange } = useAppStore()
+  const { invoices, invoiceDateRange, setInvoiceDateRange, settings } =
+    useAppStore()
 
   const [search, setSearch] = useState('')
   const [isImportOpen, setIsImportOpen] = useState(false)
@@ -45,6 +46,7 @@ export const useInvoicesHandler = () => {
     endDate,
     setEndDate,
     canSearchDateRange,
-    handleDateRangeSearch
+    handleDateRangeSearch,
+    lastImportAt: settings?.lastInvoiceImportAt ?? null
   }
 }

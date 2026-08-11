@@ -139,7 +139,7 @@ type TAppStore = {
 
   settings: TSettings | null
   setSettings: (settings: TSettings | null) => void
-  updateSettings: (data: TCreateData<TSettings>) => void
+  updateSettings: (data: Partial<TCreateData<TSettings>>) => void
 
   priceAdjustments: TPriceAdjustment[] | null
   setPriceAdjustments: (priceAdjustments: TPriceAdjustment[]) => void
