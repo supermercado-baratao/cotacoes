@@ -1,6 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
-import { type ChangeEvent, useEffect, useLayoutEffect, useMemo } from 'react'
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo
+} from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import type {
@@ -123,15 +129,22 @@ export const useFormHandler = (
 
   const invoiceUnitPrice = linkedInvoiceItem?.unitPrice ?? null
 
+  const applyPackingQuantityPrice = useCallback(
+    (packingQuantity: number, shouldDirty: boolean) => {
+      if (invoiceUnitPrice == null) return
+      setValue(
+        'price',
+        getUnitPriceFromPackingPrice(invoiceUnitPrice, packingQuantity),
+        { shouldValidate: true, shouldDirty }
+      )
+    },
+    [invoiceUnitPrice, setValue]
+  )
+
   const handlePackingQuantityChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (invoiceUnitPrice == null) return
     const raw = e.target.value
     const packingQuantity = raw === '' ? 1 : Math.max(1, parseInt(raw, 10) || 1)
-    setValue(
-      'price',
-      getUnitPriceFromPackingPrice(invoiceUnitPrice, packingQuantity),
-      { shouldValidate: true, shouldDirty: true }
-    )
+    applyPackingQuantityPrice(packingQuantity, true)
   }
 
   useEffect(() => {
@@ -144,6 +157,7 @@ export const useFormHandler = (
     })
     if (!found) return
     setValue('packingQuantity', found.packingQuantity, { shouldDirty: false })
+    applyPackingQuantityPrice(found.packingQuantity, false)
   }, [
     order,
     dirtyFields.packingQuantity,
@@ -151,7 +165,8 @@ export const useFormHandler = (
     watchedSupplierId,
     watchedPacking,
     packingDefaults,
-    setValue
+    setValue,
+    applyPackingQuantityPrice
   ])
 
   useEffect(() => {
