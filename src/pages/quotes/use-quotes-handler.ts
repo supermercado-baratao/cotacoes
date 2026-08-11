@@ -23,7 +23,6 @@ export const useQuotesHandler = () => {
   const {
     quotes,
     ordersByQuoteId,
-    suppliers,
     products,
     families,
     settings,
@@ -136,16 +135,9 @@ export const useQuotesHandler = () => {
   const quote = getSelectedQuote(quotes || [], year, month, day) ?? null
   const numberOfSuppliers = getNumberOfSuppliers(ordersByQuoteId || [])
 
-  const quoteRows =
-    quote && suppliers
-      ? getQuoteRows(
-          quote,
-          ordersByQuoteId || [],
-          suppliers,
-          products || [],
-          families || []
-        )
-      : []
+  const quoteRows = quote
+    ? getQuoteRows(quote, ordersByQuoteId || [], products || [], families || [])
+    : []
 
   useEffect(() => {
     setQuoteId(quote?.id ?? null)
