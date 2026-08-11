@@ -1,5 +1,6 @@
 import { Search } from '@mui/icons-material'
-import { Box, Button, TextField } from '@mui/material'
+import { Box, Button, TextField, Typography } from '@mui/material'
+import dayjs from 'dayjs'
 
 import { DataView, PageHeader } from '@/components'
 
@@ -22,7 +23,8 @@ export const Invoices = () => {
     endDate,
     setEndDate,
     canSearchDateRange,
-    handleDateRangeSearch
+    handleDateRangeSearch,
+    lastImportAt
   } = useInvoicesHandler()
 
   return (
@@ -35,6 +37,15 @@ export const Invoices = () => {
         setSearch={setSearch}
         handleFormOpen={handleImportOpen}
       />
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ mb: 1, display: 'block' }}
+      >
+        {lastImportAt
+          ? `Última importação: ${dayjs(lastImportAt.toDate()).format('DD/MM/YYYY')}`
+          : 'Nenhuma importação realizada ainda'}
+      </Typography>
       <Box sx={S.DateRangeWrapper}>
         <TextField
           label="De"

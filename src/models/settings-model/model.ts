@@ -12,19 +12,27 @@ const find = (): Promise<TSettings | null> =>
     path: getUserPath(PATH)
   })
 
-const upsert = async (data: TCreateData<TSettings>): Promise<TSettings> => {
+const upsert = async (
+  data: Partial<TCreateData<TSettings>>
+): Promise<TSettings> => {
   const existing = await find()
 
   if (existing) {
     return database.update<TSettings>({
       path: getUserPath(PATH),
-      data: { id: SETTINGS_ID, createdAt: existing.createdAt, ...data }
+      data: { ...existing, ...data }
     })
   }
 
   return database.createWithId<TSettings>({
     path: getUserPath(PATH),
-    data: { id: SETTINGS_ID, ...data }
+    data: {
+      id: SETTINGS_ID,
+      pdfDepartmentOrder: [],
+      lastCatalogImportAt: null,
+      lastInvoiceImportAt: null,
+      ...data
+    }
   })
 }
 

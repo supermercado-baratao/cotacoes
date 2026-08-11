@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Timestamp } from 'firebase/firestore'
 
 import { ConflictError } from '@/infra'
-import { invoiceModel, type TInvoice } from '@/models'
+import { invoiceModel, settingsModel, type TInvoice } from '@/models'
 import { useAlertStore, useAppStore, useCallbackStore } from '@/stores'
 
 import {
@@ -47,6 +48,10 @@ export const useInvoiceMutation = () => {
         title: `${n} ${n === 1 ? 'nota importada' : 'notas importadas'} com sucesso!`
       })
       handleSuccessCallbacks()
+      settingsModel
+        .upsert({ lastInvoiceImportAt: Timestamp.now() })
+        .then((settings) => queryClient.setQueryData(['settings'], settings))
+        .catch(() => {})
     },
     onError: () => {
       alert({ severity: 'error', title: 'Erro ao importar notas' })

@@ -17,15 +17,24 @@ import {
   Typography
 } from '@mui/material'
 import dayjs from 'dayjs'
+import type { Timestamp } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { codeToHtml } from 'shiki'
 
 import { buildQuery } from './query'
 import * as S from './style'
 
-export const SqlQuery = () => {
+type TSqlQueryProps = {
+  lastImportAt: Timestamp | null
+}
+
+export const SqlQuery = ({ lastImportAt }: TSqlQueryProps) => {
   const [open, setOpen] = useState(false)
-  const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'))
+  const [date, setDate] = useState(
+    lastImportAt
+      ? dayjs(lastImportAt.toDate()).format('YYYY-MM-DD')
+      : dayjs().format('YYYY-MM-DD')
+  )
   const [copied, setCopied] = useState(false)
   const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null)
 
@@ -54,6 +63,15 @@ export const SqlQuery = () => {
           <Typography variant="caption" color="text.secondary">
             Gere a query SQL, execute no REP e exporte o arquivo .xlsx para
             importar aqui.
+          </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block' }}
+          >
+            {lastImportAt
+              ? `Última importação: ${dayjs(lastImportAt.toDate()).format('DD/MM/YYYY')}`
+              : 'Nenhuma importação realizada ainda'}
           </Typography>
         </Box>
         <Button
