@@ -8,6 +8,7 @@ import {
   Families,
   InvoiceDetail,
   Invoices,
+  Landing,
   NotFound,
   PriceAdjustments,
   Products,
@@ -44,6 +45,7 @@ const VerifyEmailRoute = () => {
 export const Router = () => (
   <Routes>
     <Route element={<PublicRoute />}>
+      <Route path="/" element={<Landing />} />
       <Route path="/signin" element={<Signin />} />
       <Route path="/signup" element={<Signup />} />
     </Route>
