@@ -53,6 +53,7 @@ describe('Import flow', () => {
 
     expect(screen.getByText('495 produtos')).toBeInTheDocument()
     expect(screen.getByText('232 famílias')).toBeInTheDocument()
+    expect(screen.getByText('12 departamentos')).toBeInTheDocument()
     expect(screen.getByText('78 fornecedores')).toBeInTheDocument()
     expect(screen.getByText('207826')).toBeInTheDocument()
     expect(screen.getByText('PUDIM BRETZKE 50G CHOCOLATE')).toBeInTheDocument()
@@ -80,6 +81,7 @@ describe('Import flow', () => {
       () => {
         expect(useAppStore.getState().products).toHaveLength(495)
         expect(useAppStore.getState().families).toHaveLength(232)
+        expect(useAppStore.getState().departments).toHaveLength(12)
         expect(useAppStore.getState().suppliers).toHaveLength(78)
       },
       { timeout: 10000 }
@@ -113,6 +115,7 @@ describe('Import flow', () => {
 
     expect(screen.getByText('10 produtos')).toBeInTheDocument()
     expect(screen.getByText('5 famílias')).toBeInTheDocument()
+    expect(screen.getByText('4 departamentos')).toBeInTheDocument()
     expect(screen.getByText('8 fornecedores')).toBeInTheDocument()
     expect(screen.getByText('7 sem alterações')).toBeInTheDocument()
     expect(screen.getByText('3 linhas selecionadas')).toBeInTheDocument()
@@ -141,6 +144,9 @@ describe('Import flow', () => {
         )
         expect(products.find((p) => p.id === '218301')?.price).toBeCloseTo(3.15)
         expect(products.find((p) => p.id === '210524')?.price).toBeCloseTo(9.85)
+        // Os 4 departamentos do arquivo reimportado já existiam desde o
+        // primeiro import — reaproveita os ids, não duplica.
+        expect(useAppStore.getState().departments).toHaveLength(12)
       },
       { timeout: 10000 }
     )
