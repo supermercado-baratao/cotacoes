@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 
 import type { TProduct } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
+import { evaluateMargin, getMarginTolerance, type TMarginStatus } from '@/utils'
 
 import { schema, type TSchema } from './schema'
 
@@ -20,8 +21,22 @@ export const useFormHandler = (
   handleClose: () => void,
   onCreated?: (product: TProduct) => void
 ) => {
-  const { createProduct, updateProduct, families } = useAppStore()
+  const { createProduct, updateProduct, families, priceAdjustments, settings } =
+    useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
+
+  const marginStatus: TMarginStatus | null = useMemo(() => {
+    if (!product || product.margin == null) return null
+    const cost = priceAdjustments?.find(
+      (pa) => pa.productId === product.id
+    )?.resolvedCost
+    const price = product.price
+    if (!cost || !price) return null
+
+    const actualMargin = ((price - cost) / price) * 100
+    const tolerance = getMarginTolerance(settings, product.departmentId)
+    return evaluateMargin(product.margin, actualMargin, tolerance).status
+  }, [product, priceAdjustments, settings])
 
   const defaultValues: TSchema = useMemo(() => {
     const barcodes =
@@ -72,7 +87,13 @@ export const useFormHandler = (
           packTypes
         })
       : createProduct(
-          { ...rest, barcodes, packTypes, vrCreatedAt: '' },
+          {
+            ...rest,
+            barcodes,
+            packTypes,
+            vrCreatedAt: '',
+            departmentId: null
+          },
           onCreated ? { onSuccess: onCreated } : undefined
         )
 
@@ -84,6 +105,7 @@ export const useFormHandler = (
     onSubmit,
     errors,
     control,
-    families: families ?? []
+    families: families ?? [],
+    marginStatus
   }
 }

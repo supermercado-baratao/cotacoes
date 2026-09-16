@@ -22,6 +22,12 @@ export const ThreeCol: SxProps<Theme> = {
   gridColumn: { sm: 'span 3' }
 }
 
+export const MarginField: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 1
+}
+
 export const FourCol: SxProps<Theme> = {
   gridColumn: { sm: 'span 4' }
 }

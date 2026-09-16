@@ -1,9 +1,31 @@
-import type { GridColDef } from '@mui/x-data-grid'
+import { Chip } from '@mui/material'
+import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 
-import type { TProduct } from '@/models'
-import { formatCurrency, formatNumericValue } from '@/utils'
+import { formatCurrency, formatNumericValue, type TMarginStatus } from '@/utils'
 
-export const columns: GridColDef<TProduct>[] = [
+import type { TProductRow } from '../../utils'
+
+const marginStatusConfig: Record<
+  TMarginStatus,
+  { label: string; color: 'success' | 'error' | 'warning' }
+> = {
+  below: { label: 'Abaixo da margem', color: 'error' },
+  above: { label: 'Acima da margem', color: 'warning' },
+  ok: { label: 'Dentro da margem', color: 'success' }
+}
+
+const renderMarginStatus = ({ row }: GridRenderCellParams<TProductRow>) =>
+  row.marginStatus ? (
+    <Chip
+      label={marginStatusConfig[row.marginStatus].label}
+      color={marginStatusConfig[row.marginStatus].color}
+      size="small"
+    />
+  ) : (
+    '—'
+  )
+
+export const columns: GridColDef<TProductRow>[] = [
   {
     field: 'id',
     headerName: 'Cód. VR'
@@ -27,6 +49,12 @@ export const columns: GridColDef<TProduct>[] = [
       value != null ? `${value.toFixed(1)}%` : '—'
   },
   {
+    field: 'marginStatus',
+    headerName: 'Situação de Margem',
+    minWidth: 160,
+    renderCell: renderMarginStatus
+  },
+  {
     field: 'stock',
     headerName: 'Estoque',
     valueFormatter: (value: number | null) =>
@@ -35,7 +63,7 @@ export const columns: GridColDef<TProduct>[] = [
   {
     field: 'barcodes',
     headerName: 'Embalagens',
-    valueGetter: (value: string[], row: TProduct) =>
+    valueGetter: (value: string[], row: TProductRow) =>
       (value ?? [])
         .map(
           (barcode, i) =>

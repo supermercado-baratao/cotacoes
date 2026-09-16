@@ -7,6 +7,7 @@ import { useAppStore } from '@/stores'
 import { buildPackageBarcodeLinkMap, isSupplierCnpjIgnored } from '@/utils'
 
 import {
+  attachProductMarginStatus,
   buildIgnoredProductRows,
   filterIgnoredProducts,
   filterProducts,
@@ -27,6 +28,8 @@ export const useProductsHandler = () => {
     ignoredProducts,
     ignoredSuppliers,
     packageBarcodeLinks,
+    priceAdjustments,
+    settings,
     createIgnoredProduct,
     createPackageBarcodeLink
   } = useAppStore()
@@ -59,9 +62,21 @@ export const useProductsHandler = () => {
     [products, ignoredProducts]
   )
 
-  const filteredProducts = useMemo(
+  const searchedProducts = useMemo(
     () => (products ? filterProducts(search, registeredProducts) : null),
     [search, products, registeredProducts]
+  )
+
+  const filteredProducts = useMemo(
+    () =>
+      searchedProducts
+        ? attachProductMarginStatus(
+            searchedProducts,
+            priceAdjustments ?? [],
+            settings
+          )
+        : null,
+    [searchedProducts, priceAdjustments, settings]
   )
 
   const unmatchedItems = useMemo(() => {
