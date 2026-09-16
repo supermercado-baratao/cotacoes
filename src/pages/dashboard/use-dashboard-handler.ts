@@ -5,7 +5,8 @@ import { useAppStore } from '@/stores'
 import { getDashboardStats, getMarginAlerts } from './utils'
 
 export const useDashboardHandler = () => {
-  const { products, quotes, invoices, priceAdjustments } = useAppStore()
+  const { products, quotes, invoices, priceAdjustments, settings } =
+    useAppStore()
 
   const isFetching =
     products === null ||
@@ -14,8 +15,8 @@ export const useDashboardHandler = () => {
     priceAdjustments === null
 
   const marginAlerts = useMemo(
-    () => getMarginAlerts(products ?? [], priceAdjustments ?? []),
-    [products, priceAdjustments]
+    () => getMarginAlerts(products ?? [], priceAdjustments ?? [], settings),
+    [products, priceAdjustments, settings]
   )
 
   const stats = useMemo(

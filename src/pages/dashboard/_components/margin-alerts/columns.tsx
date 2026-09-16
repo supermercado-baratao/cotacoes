@@ -39,6 +39,7 @@ export const columns: GridColDef<TMarginAlert>[] = [
   {
     field: 'marginGap',
     headerName: 'Diferença',
-    valueFormatter: (value: number) => `-${value.toFixed(1)} p.p.`
+    valueFormatter: (value: number) =>
+      `${value > 0 ? '-' : '+'}${Math.abs(value).toFixed(1)} p.p.`
   }
 ]

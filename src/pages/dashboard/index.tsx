@@ -2,7 +2,8 @@ import {
   Inventory2,
   PriceChange,
   ReceiptLong,
-  RequestQuote
+  RequestQuote,
+  TrendingUp
 } from '@mui/icons-material'
 import { Box, Typography } from '@mui/material'
 
@@ -43,8 +44,23 @@ export const Dashboard = () => {
           icon={PriceChange}
           color={!isFetching && stats.belowMarginCount ? 'error' : 'primary'}
         />
+        <StatCard
+          label="Produtos acima da margem"
+          value={isFetching ? '—' : String(stats.aboveMarginCount)}
+          icon={TrendingUp}
+          color={!isFetching && stats.aboveMarginCount ? 'warning' : 'primary'}
+        />
       </Box>
-      <MarginAlerts isFetching={isFetching} marginAlerts={marginAlerts} />
+      <MarginAlerts
+        direction="below"
+        isFetching={isFetching}
+        marginAlerts={marginAlerts.below}
+      />
+      <MarginAlerts
+        direction="above"
+        isFetching={isFetching}
+        marginAlerts={marginAlerts.above}
+      />
     </>
   )
 }

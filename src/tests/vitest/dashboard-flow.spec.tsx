@@ -21,6 +21,7 @@ const makeProduct = (
   margin: null,
   observations: null,
   familyId: null,
+  departmentId: null,
   department: '',
   section: '',
   group: '',
@@ -146,16 +147,37 @@ describe('dashboard', () => {
       .closest('div')!
     expect(within(invoicesCard).getByText('2')).toBeInTheDocument()
 
-    // "Produtos abaixo da margem" aparece duas vezes: como rótulo do card e
-    // como título da seção da tabela — o card é o primeiro no DOM.
-    const marginCard = screen
+    // "Produtos abaixo/acima da margem" aparecem duas vezes cada: como
+    // rótulo do card e como título da seção da tabela — o card é o primeiro
+    // no DOM em cada par.
+    const belowMarginCard = screen
       .getAllByText('Produtos abaixo da margem')[0]
       .closest('div')!
-    expect(within(marginCard).getByText('1')).toBeInTheDocument()
+    expect(within(belowMarginCard).getByText('1')).toBeInTheDocument()
+
+    const aboveMarginCard = screen
+      .getAllByText('Produtos acima da margem')[0]
+      .closest('div')!
+    expect(within(aboveMarginCard).getByText('1')).toBeInTheDocument()
 
     await waitFor(() => {
       expect(screen.getByText('PRODUTO ABAIXO')).toBeInTheDocument()
     })
-    expect(screen.queryByText('PRODUTO OK')).not.toBeInTheDocument()
+
+    // PRODUTO OK vende com margem atual (30%) acima da padrão (20%), então
+    // aparece na seção "acima da margem", não na de "abaixo".
+    const belowMarginSection = screen
+      .getAllByText('Produtos abaixo da margem')[1]
+      .closest('div')!
+    expect(
+      within(belowMarginSection).queryByText('PRODUTO OK')
+    ).not.toBeInTheDocument()
+
+    const aboveMarginSection = screen
+      .getAllByText('Produtos acima da margem')[1]
+      .closest('div')!
+    expect(
+      within(aboveMarginSection).getByText('PRODUTO OK')
+    ).toBeInTheDocument()
   })
 })

@@ -1,4 +1,11 @@
-import type { TInvoice, TPriceAdjustment, TProduct, TQuote } from '@/models'
+import type {
+  TInvoice,
+  TPriceAdjustment,
+  TProduct,
+  TQuote,
+  TSettings
+} from '@/models'
+import { evaluateMargin, getMarginTolerance, type TMarginStatus } from '@/utils'
 
 export type TMarginAlert = {
   id: string
@@ -8,6 +15,12 @@ export type TMarginAlert = {
   targetMargin: number
   actualMargin: number
   marginGap: number
+  status: TMarginStatus
+}
+
+export type TMarginAlerts = {
+  below: TMarginAlert[]
+  above: TMarginAlert[]
 }
 
 // Custo real só existe pra produtos que já passaram pelo relatório de
@@ -16,35 +29,48 @@ export type TMarginAlert = {
 // não entra na lista.
 export const getMarginAlerts = (
   products: TProduct[],
-  priceAdjustments: TPriceAdjustment[]
-): TMarginAlert[] => {
+  priceAdjustments: TPriceAdjustment[],
+  settings: TSettings | null
+): TMarginAlerts => {
   const productById = new Map(products.map((p) => [p.id, p]))
 
-  const alerts = priceAdjustments.reduce<TMarginAlert[]>((acc, adjustment) => {
+  const below: TMarginAlert[] = []
+  const above: TMarginAlert[] = []
+
+  priceAdjustments.forEach((adjustment) => {
     const product = productById.get(adjustment.productId)
-    if (!product || product.margin == null) return acc
+    if (!product || product.margin == null) return
 
     const price = product.price
     const cost = adjustment.resolvedCost
-    if (!price || !cost) return acc
+    if (!price || !cost) return
 
     const actualMargin = ((price - cost) / price) * 100
-    const marginGap = product.margin - actualMargin
-    if (marginGap <= 0) return acc
+    const tolerance = getMarginTolerance(settings, product.departmentId)
+    const { status, marginGap } = evaluateMargin(
+      product.margin,
+      actualMargin,
+      tolerance
+    )
+    if (status === 'ok') return
 
-    acc.push({
+    const alert: TMarginAlert = {
       id: product.id,
       description: product.description,
       price,
       cost,
       targetMargin: product.margin,
       actualMargin,
-      marginGap
-    })
-    return acc
-  }, [])
+      marginGap,
+      status
+    }
+    ;(status === 'below' ? below : above).push(alert)
+  })
 
-  return alerts.sort((a, b) => b.marginGap - a.marginGap)
+  below.sort((a, b) => b.marginGap - a.marginGap)
+  above.sort((a, b) => a.marginGap - b.marginGap)
+
+  return { below, above }
 }
 
 export type TDashboardStats = {
@@ -52,18 +78,20 @@ export type TDashboardStats = {
   openQuoteCount: number
   pendingInvoiceCount: number
   belowMarginCount: number
+  aboveMarginCount: number
 }
 
 export const getDashboardStats = (
   products: TProduct[],
   quotes: TQuote[],
   invoices: TInvoice[],
-  marginAlerts: TMarginAlert[]
+  marginAlerts: TMarginAlerts
 ): TDashboardStats => ({
   productCount: products.length,
   openQuoteCount: quotes.filter((quote) => quote.status === 'opened').length,
   pendingInvoiceCount: invoices.filter(
     (invoice) => invoice.verificationStatus === 'pending'
   ).length,
-  belowMarginCount: marginAlerts.length
+  belowMarginCount: marginAlerts.below.length,
+  aboveMarginCount: marginAlerts.above.length
 })
