@@ -10,7 +10,7 @@ import {
 } from './utils'
 
 export const useImportHandler = () => {
-  const { importData: runImport, products } = useAppStore()
+  const { importData: runImport, products, departments } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
   const [file, setFile] = useState<File | null>(null)
@@ -22,7 +22,7 @@ export const useImportHandler = () => {
 
   const handleFileSelect = async (selected: File) => {
     setFile(selected)
-    const data = await getData(selected)
+    const data = await getData(selected, departments ?? [])
     setImportData(data)
 
     const existingById = new Map((products ?? []).map((p) => [p.id, p]))
@@ -53,11 +53,16 @@ export const useImportHandler = () => {
     const selectedFamilyIds = new Set(
       selectedProducts.map((p) => p.familyId).filter(Boolean)
     )
-
+    const selectedDepartmentIds = new Set(
+      selectedProducts.map((p) => p.departmentId).filter(Boolean)
+    )
     setSuccessCallbacks([handleFileRemove])
     runImport({
       products: selectedProducts,
       families: importData.families.filter((f) => selectedFamilyIds.has(f.id)),
+      departments: importData.departments.filter((d) =>
+        selectedDepartmentIds.has(d.id)
+      ),
       suppliers: importData.suppliers
     })
   }

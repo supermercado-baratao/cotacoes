@@ -10,6 +10,7 @@ export type TProduct = {
   margin: number | null
   observations: string | null
   familyId: string | null
+  departmentId: string | null
   department: string
   section: string
   group: string

@@ -1,3 +1,4 @@
+export * from './department-model'
 export * from './family-model'
 export * from './ignored-product-model'
 export * from './ignored-supplier-model'

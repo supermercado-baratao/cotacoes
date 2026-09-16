@@ -2,6 +2,7 @@ import { useQueries } from '@tanstack/react-query'
 import { useEffect } from 'react'
 
 import {
+  departmentModel,
   familyModel,
   ignoredProductModel,
   ignoredSupplierModel,
@@ -58,6 +59,11 @@ export const useDataFetch = () => {
         queryFn: familyModel.findMany,
         enabled: !!user
       },
+      {
+        queryKey: ['departments'],
+        queryFn: departmentModel.findMany,
+        enabled: !!user
+      },
       { queryKey: ['quotes'], queryFn: quoteModel.findMany, enabled: !!user },
       {
         queryKey: ['orders', quoteId],
@@ -104,6 +110,7 @@ export const useDataFetch = () => {
     { data: ignoredSuppliers },
     { data: sellers },
     { data: families },
+    { data: departments },
     { data: quotes },
     { data: ordersByQuoteId },
     { data: ordersByProductId },
@@ -133,6 +140,7 @@ export const useDataFetch = () => {
     ignoredSuppliers,
     sellers,
     families,
+    departments,
     quotes,
     ordersByQuoteId,
     ordersByProductId,

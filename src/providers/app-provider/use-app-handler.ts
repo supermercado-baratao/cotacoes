@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/shallow'
 import { useAppStore } from '@/stores'
 
 import { useDataFetch } from './use-data-fetch'
+import { useDepartmentMutation } from './use-department-mutation'
 import { useFamilyMutation } from './use-family-mutation'
 import { useIgnoredProductMutation } from './use-ignored-product-mutation'
 import { useIgnoredSupplierMutation } from './use-ignored-supplier-mutation'
@@ -30,6 +31,7 @@ export const useAppHandler = () => {
     setIgnoredSuppliers,
     setSellers,
     setFamilies,
+    setDepartments,
     setQuotes,
     setOrdersByQuoteId,
     setOrdersByProductId,
@@ -46,6 +48,7 @@ export const useAppHandler = () => {
       setIgnoredSuppliers: state.setIgnoredSuppliers,
       setSellers: state.setSellers,
       setFamilies: state.setFamilies,
+      setDepartments: state.setDepartments,
       setQuotes: state.setQuotes,
       setOrdersByQuoteId: state.setOrdersByQuoteId,
       setOrdersByProductId: state.setOrdersByProductId,
@@ -64,6 +67,7 @@ export const useAppHandler = () => {
     ignoredSuppliers,
     sellers,
     families,
+    departments,
     quotes,
     ordersByQuoteId,
     ordersByProductId,
@@ -84,6 +88,8 @@ export const useAppHandler = () => {
     useIgnoredSupplierMutation()
   const { createSeller, updateSeller, deleteSeller } = useSellerMutation()
   const { createFamily, updateFamily, deleteFamily } = useFamilyMutation()
+  const { createDepartment, updateDepartment, deleteDepartment } =
+    useDepartmentMutation()
   const { createQuote, updateQuote, deleteQuote } = useQuoteMutation()
   const { createOrder, createOrdersBatch, updateOrder, deleteOrder } =
     useOrderMutation()
@@ -126,6 +132,10 @@ export const useAppHandler = () => {
   useEffect(() => {
     if (families) setFamilies(families)
   }, [families, setFamilies])
+
+  useEffect(() => {
+    if (departments) setDepartments(departments)
+  }, [departments, setDepartments])
 
   useEffect(() => {
     if (quotes) setQuotes(quotes)
@@ -175,6 +185,9 @@ export const useAppHandler = () => {
       createFamily,
       updateFamily,
       deleteFamily,
+      createDepartment,
+      updateDepartment,
+      deleteDepartment,
       createQuote,
       updateQuote,
       deleteQuote,
@@ -212,6 +225,9 @@ export const useAppHandler = () => {
     createFamily,
     updateFamily,
     deleteFamily,
+    createDepartment,
+    updateDepartment,
+    deleteDepartment,
     createQuote,
     updateQuote,
     deleteQuote,

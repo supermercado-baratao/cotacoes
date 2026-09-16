@@ -8,7 +8,8 @@ import {
   ReceiptLong,
   RequestQuote,
   Settings,
-  type SvgIconComponent
+  type SvgIconComponent,
+  Warehouse
 } from '@mui/icons-material'
 
 type TNavItem = {
@@ -30,5 +31,6 @@ export const navItems: TNavItem[] = [
   { label: 'Fornecedores', path: '/suppliers', icon: Business },
   { label: 'Vendedores', path: '/sellers', icon: People },
   { label: 'Famílias', path: '/families', icon: Category },
+  { label: 'Departamentos', path: '/departments', icon: Warehouse },
   { label: 'Configurações', path: '/settings', icon: Settings }
 ]

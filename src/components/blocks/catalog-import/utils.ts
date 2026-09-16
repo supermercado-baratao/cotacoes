@@ -1,6 +1,7 @@
 import * as xlsx from 'xlsx'
 
 import {
+  type TDepartment,
   type TFamily,
   type TImportData,
   type TProduct,
@@ -32,7 +33,7 @@ type TRawRow = {
   // fornecedor
   id_fornecedor: string
   razaosocial: string
-  nomefantasia: string
+  nomefantasia?: string
   cnpj: string
   telefone: string
   datacadastro_fornecedor: string
@@ -62,11 +63,26 @@ const separatePipes = (text: string): string[] => {
   return text.split('|').map((s) => s.trim())
 }
 
-const mapProduct = (row: TRawRow): TCreateDataWithId<TProduct> => ({
+// Departamento não tem código externo no arquivo (diferente de família, que
+// traz id_familia) — precisa de uma chave determinística derivada da própria
+// descrição pra reconhecer o mesmo departamento em reimportações futuras.
+const normalizeDepartmentKey = (description: string): string =>
+  description.trim().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+const slugifyDepartmentId = (description: string): string =>
+  normalizeDepartmentKey(description)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'departamento'
+
+const mapProduct = (
+  row: TRawRow,
+  departmentId: string | null
+): TCreateDataWithId<TProduct> => ({
   id: row.id_produto,
   description: row.descricaocompleta,
   price: Number(row.precovenda) / 10000,
   familyId: row.id_familia || null,
+  departmentId,
   barcodes: separatePipes(row.codigos_barras),
   packTypes: separatePipes(row.tipos_embalagem),
   department: row.departamento,
@@ -86,7 +102,7 @@ const mapFamily = (row: TRawRow): TCreateDataWithId<TFamily> => ({
 
 const mapSupplier = (row: TRawRow): TCreateDataWithId<TSupplier> => ({
   id: row.id_fornecedor,
-  tradeName: row.nomefantasia,
+  tradeName: row.nomefantasia || null,
   legalName: row.razaosocial,
   cnpj: normalizeCnpj(row.cnpj),
   email: row.email || null,
@@ -114,14 +130,35 @@ export const getProductImportStatus = (
   return hasChanges ? 'changed' : 'unchanged'
 }
 
-export const getData = async (file: File): Promise<TImportData> => {
+export const getData = async (
+  file: File,
+  existingDepartments: TDepartment[]
+): Promise<TImportData> => {
   const raw = await parseXlsx(file)
   const productMap = new Map<string, TCreateDataWithId<TProduct>>()
   const familyMap = new Map<string, TCreateDataWithId<TFamily>>()
   const supplierMap = new Map<string, TCreateDataWithId<TSupplier>>()
+  const departmentMap = new Map<string, TCreateDataWithId<TDepartment>>()
+
+  const existingByKey = new Map(
+    existingDepartments.map((d) => [normalizeDepartmentKey(d.description), d])
+  )
+
+  const resolveDepartmentId = (description: string): string => {
+    const key = normalizeDepartmentKey(description)
+    const id =
+      existingByKey.get(key)?.id ??
+      departmentMap.get(key)?.id ??
+      slugifyDepartmentId(description)
+    departmentMap.set(key, { id, description })
+    return id
+  }
 
   raw.forEach((row) => {
-    productMap.set(row.id_produto, mapProduct(row))
+    const departmentId = row.departamento
+      ? resolveDepartmentId(row.departamento)
+      : null
+    productMap.set(row.id_produto, mapProduct(row, departmentId))
     row.id_familia && familyMap.set(row.id_familia, mapFamily(row))
     supplierMap.set(row.id_fornecedor, mapSupplier(row))
   })
@@ -129,6 +166,7 @@ export const getData = async (file: File): Promise<TImportData> => {
   return {
     products: [...productMap.values()],
     families: [...familyMap.values()],
-    suppliers: [...supplierMap.values()]
+    suppliers: [...supplierMap.values()],
+    departments: [...departmentMap.values()]
   }
 }

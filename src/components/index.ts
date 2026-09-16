@@ -1,5 +1,6 @@
 export * from './blocks/catalog-import'
 export * from './blocks/data-view'
+export * from './blocks/department-form'
 export * from './blocks/family-form'
 export * from './blocks/order-form'
 export * from './blocks/order-form/use-product-history'

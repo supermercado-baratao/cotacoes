@@ -13,6 +13,7 @@ export const UPSERT_MANY_UPDATABLE_FIELDS: Array<
   'familyId',
   'barcodes',
   'packTypes',
+  'departmentId',
   'department',
   'section',
   'group',

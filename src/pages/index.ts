@@ -1,4 +1,5 @@
 export * from './dashboard'
+export * from './departments'
 export * from './families'
 export * from './invoices'
 export * from './invoices/detail'

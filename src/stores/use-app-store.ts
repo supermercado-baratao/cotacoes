@@ -3,6 +3,7 @@ import { create } from 'zustand'
 
 import type { TAiSuggestion } from '@/infra'
 import type {
+  TDepartment,
   TFamily,
   TIgnoredProduct,
   TIgnoredSupplier,
@@ -88,6 +89,12 @@ type TAppStore = {
   createFamily: (family: TCreateDataWithId<TFamily>) => void
   updateFamily: (family: TUpdateData<TFamily>) => void
   deleteFamily: (id: string) => void
+
+  departments: TDepartment[] | null
+  setDepartments: (departments: TDepartment[]) => void
+  createDepartment: (department: TCreateData<TDepartment>) => void
+  updateDepartment: (department: TUpdateData<TDepartment>) => void
+  deleteDepartment: (id: string) => void
 
   quotes: TQuote[] | null
   setQuotes: (quotes: TQuote[]) => void
@@ -193,6 +200,12 @@ export const useAppStore = create<TAppStore>((set) => ({
   createFamily: () => {},
   updateFamily: () => {},
   deleteFamily: () => {},
+
+  departments: null,
+  setDepartments: (departments) => set({ departments }),
+  createDepartment: () => {},
+  updateDepartment: () => {},
+  deleteDepartment: () => {},
 
   quotes: null,
   setQuotes: (quotes) => set({ quotes }),
