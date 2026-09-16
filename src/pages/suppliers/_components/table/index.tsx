@@ -27,7 +27,7 @@ export const Table = ({ suppliers, handleEdit }: TTableProps) => {
     createIgnoredSupplier({
       id: normalizeCnpj(supplier.cnpj),
       cnpj: supplier.cnpj,
-      name: supplier.tradeName
+      name: supplier.tradeName ?? supplier.legalName
     })
 
   return (

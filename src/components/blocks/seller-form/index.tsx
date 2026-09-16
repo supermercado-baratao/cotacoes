@@ -55,7 +55,7 @@ export const SellerForm = ({
             name="supplierIds"
             control={control}
             options={suppliers}
-            getOptionLabel={(s) => s.tradeName}
+            getOptionLabel={(s) => s.tradeName ?? s.legalName}
             getOptionValue={(s) => s.id}
             label="Fornecedores"
             error={!!errors.supplierIds}

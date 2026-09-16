@@ -220,7 +220,7 @@ export const OrderForm = ({
             name="supplierId"
             control={control}
             options={suppliers}
-            getOptionLabel={(s) => s.tradeName}
+            getOptionLabel={(s) => s.tradeName ?? s.legalName}
             getOptionValue={(s) => s.id}
             label="Fornecedor"
             error={!!errors.supplierId}
