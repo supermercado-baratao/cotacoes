@@ -23,6 +23,9 @@ export type TInvoiceItem = {
   quantity: number
   unitPrice: number
   totalPrice: number
+  tribUnit: string
+  tribQuantity: number
+  tribUnitPrice: number
   productId: string | null
   orderId: string | null
   matchStatus: TInvoiceItemMatchStatus
