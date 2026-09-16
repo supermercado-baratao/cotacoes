@@ -11,16 +11,20 @@ import { useState } from 'react'
 
 import { Table as _Table } from '@/components'
 
-import type { TPriceAdjustmentGroup } from '../../utils'
+import type {
+  TPriceAdjustmentDisplayRow,
+  TPriceAdjustmentGroup
+} from '../../utils'
 import { columns } from './columns'
 import * as S from './style'
 
 type TTableProps = {
-  groups: TPriceAdjustmentGroup[]
+  groups: TPriceAdjustmentGroup<TPriceAdjustmentDisplayRow>[]
 }
 
-const getGroupKey = (group: TPriceAdjustmentGroup) =>
-  group.familyId ?? group.kind
+const getGroupKey = (
+  group: TPriceAdjustmentGroup<TPriceAdjustmentDisplayRow>
+) => group.familyId ?? group.kind
 
 export const Table = ({ groups }: TTableProps) => {
   // Todo grupo começa expandido, exceto "não cadastrado" — não há o que

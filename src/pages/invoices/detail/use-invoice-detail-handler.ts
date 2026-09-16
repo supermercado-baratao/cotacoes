@@ -7,9 +7,12 @@ import type { TInvoice, TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import {
   buildPackageBarcodeLinkMap,
+  evaluateMargin,
   findSupplierByCnpj,
+  getMarginTolerance,
   isSupplierCnpjIgnored,
-  normalizeCnpj
+  normalizeCnpj,
+  type TMarginStatus
 } from '@/utils'
 
 export type TInvoiceItemRow = TInvoiceItem & {
@@ -18,6 +21,7 @@ export type TInvoiceItemRow = TInvoiceItem & {
   orderPackingQuantity: number | null
   productDescription: string | null
   salePrice: number | null
+  marginStatus: TMarginStatus | null
 }
 
 export const useInvoiceDetailHandler = () => {
@@ -33,6 +37,7 @@ export const useInvoiceDetailHandler = () => {
     ordersByQuoteId,
     packageBarcodeLinks,
     ignoredSuppliers,
+    settings,
     setQuoteId,
     updateInvoice,
     deleteInvoice,
@@ -114,6 +119,20 @@ export const useInvoiceDetailHandler = () => {
           ? 'unmatched_order'
           : 'matched'
 
+      const product = productMap.get(productId ?? '') ?? null
+      const orderPrice = order?.price ?? null
+      const salePrice = product?.price ?? null
+      const cost = orderPrice ?? item.unitPrice
+
+      const marginStatus: TMarginStatus | null =
+        product?.margin != null && salePrice
+          ? evaluateMargin(
+              product.margin,
+              ((salePrice - cost) / salePrice) * 100,
+              getMarginTolerance(settings, product.departmentId)
+            ).status
+          : null
+
       return {
         ...item,
         productId,
@@ -122,14 +141,14 @@ export const useInvoiceDetailHandler = () => {
         priceDivergence: order ? item.unitPrice - order.price : null,
         quantityDivergence: order ? item.quantity - order.quantity : null,
         orderQuantity: order?.quantity ?? null,
-        orderPrice: order?.price ?? null,
+        orderPrice,
         orderPackingQuantity: order?.packingQuantity ?? null,
-        productDescription:
-          productMap.get(productId ?? '')?.description ?? null,
-        salePrice: productMap.get(productId ?? '')?.price ?? null
+        productDescription: product?.description ?? null,
+        salePrice,
+        marginStatus
       }
     })
-  }, [invoice, ordersForSupplier, productMap, packageBarcodeLinkMap])
+  }, [invoice, ordersForSupplier, productMap, packageBarcodeLinkMap, settings])
 
   const handleQuoteChange = (quoteId: string | null) => {
     setQuoteId(quoteId)

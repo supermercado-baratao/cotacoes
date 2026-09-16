@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 
 import { Table as _Table } from '@/components'
 import type { TInvoiceItemMatchStatus } from '@/models'
-import { formatCurrency, formatNumericValue } from '@/utils'
+import { formatCurrency, formatNumericValue, type TMarginStatus } from '@/utils'
 
 import type { TInvoiceItemRow } from './use-invoice-detail-handler'
 
@@ -16,6 +16,15 @@ const matchStatusConfig: Record<
   matched: { label: 'Identificado', color: 'success' },
   unmatched_product: { label: 'Sem produto', color: 'error' },
   unmatched_order: { label: 'Sem pedido', color: 'warning' }
+}
+
+const marginStatusConfig: Record<
+  TMarginStatus,
+  { label: string; color: 'success' | 'error' | 'warning' }
+> = {
+  below: { label: 'Abaixo da margem', color: 'error' },
+  above: { label: 'Acima da margem', color: 'warning' },
+  ok: { label: 'Dentro da margem', color: 'success' }
 }
 
 type TProps = {
@@ -59,6 +68,12 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         headerName: 'Qtd NF',
         valueFormatter: (value: number) => formatNumericValue(value)
       },
+      { field: 'tribUnit', headerName: 'UN Trib.' },
+      {
+        field: 'tribQuantity',
+        headerName: 'Qtd Trib.',
+        valueFormatter: (value: number) => formatNumericValue(value)
+      },
       {
         field: 'orderPrice',
         headerName: 'Valor Unit.',
@@ -68,6 +83,11 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
       {
         field: 'unitPrice',
         headerName: 'Valor Emb.',
+        valueFormatter: (value: number) => formatCurrency(value)
+      },
+      {
+        field: 'tribUnitPrice',
+        headerName: 'Valor Unit. Trib.',
         valueFormatter: (value: number) => formatCurrency(value)
       },
       {
@@ -93,6 +113,17 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         renderCell: (params) => {
           const config =
             matchStatusConfig[params.value as TInvoiceItemMatchStatus]
+          return <Chip label={config.label} color={config.color} size="small" />
+        }
+      },
+      {
+        field: 'marginStatus',
+        headerName: 'Situação de Margem',
+        minWidth: 160,
+        renderCell: (params) => {
+          const status = params.value as TMarginStatus | null
+          if (!status) return '—'
+          const config = marginStatusConfig[status]
           return <Chip label={config.label} color={config.color} size="small" />
         }
       }

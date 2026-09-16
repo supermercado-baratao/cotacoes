@@ -9,10 +9,16 @@ import type {
   TPriceAdjustmentDateRange,
   TProduct,
   TQuote,
+  TSettings,
   TSupplier
 } from '@/models'
 import type { TCreateDataWithId } from '@/types'
-import { matchesSearch } from '@/utils'
+import {
+  evaluateMargin,
+  getMarginTolerance,
+  matchesSearch,
+  type TMarginStatus
+} from '@/utils'
 
 export type TRawPriceAdjustmentRow = {
   Código: string
@@ -308,11 +314,60 @@ export const filterRowsByMovementDate = (
   )
 }
 
-export type TPriceAdjustmentGroup = {
+export type TPriceAdjustmentDisplayRow = TPriceAdjustmentRow & {
+  marginStatus: TMarginStatus | null
+  targetMargin: number | null
+  actualMargin: number | null
+  marginGap: number | null
+}
+
+// `currentSystemPrice`/`resolvedCost` já vêm calculados na linha — só falta
+// cruzar com a margem padrão do produto e a tolerância configurada.
+export const attachMarginStatus = (
+  rows: TPriceAdjustmentRow[],
+  products: TProduct[],
+  settings: TSettings | null
+): TPriceAdjustmentDisplayRow[] => {
+  const productById = new Map(products.map((p) => [p.id, p]))
+
+  return rows.map((row) => {
+    const product = productById.get(row.productId)
+    const price = row.currentSystemPrice
+    const cost = row.resolvedCost
+
+    if (!product || product.margin == null || !price || !cost) {
+      return {
+        ...row,
+        marginStatus: null,
+        targetMargin: null,
+        actualMargin: null,
+        marginGap: null
+      }
+    }
+
+    const actualMargin = ((price - cost) / price) * 100
+    const tolerance = getMarginTolerance(settings, product.departmentId)
+    const { status, marginGap } = evaluateMargin(
+      product.margin,
+      actualMargin,
+      tolerance
+    )
+
+    return {
+      ...row,
+      marginStatus: status,
+      targetMargin: product.margin,
+      actualMargin,
+      marginGap
+    }
+  })
+}
+
+export type TPriceAdjustmentGroup<TRow = TPriceAdjustmentRow> = {
   familyId: string | null
   familyDescription: string
   kind: 'family' | 'no-family' | 'unregistered'
-  rows: TPriceAdjustmentRow[]
+  rows: TRow[]
 }
 
 const NO_FAMILY_KEY = '__no_family__'
@@ -323,15 +378,15 @@ const UNREGISTERED_KEY = '__unregistered__'
 // família definida) e "Não cadastrado" (produto do arquivo que não existe
 // no catálogo) são grupos separados: são causas diferentes de não termos
 // uma família pra mostrar.
-export const groupRowsByFamily = (
-  rows: TPriceAdjustmentRow[],
+export const groupRowsByFamily = <TRow extends { productId: string }>(
+  rows: TRow[],
   products: TProduct[],
   families: TFamily[]
-): TPriceAdjustmentGroup[] => {
+): TPriceAdjustmentGroup<TRow>[] => {
   const productById = new Map(products.map((p) => [p.id, p]))
   const familyById = new Map(families.map((f) => [f.id, f]))
 
-  const groups = new Map<string, TPriceAdjustmentGroup>()
+  const groups = new Map<string, TPriceAdjustmentGroup<TRow>>()
   rows.forEach((row) => {
     const product = productById.get(row.productId)
     const familyId = product?.familyId ?? null

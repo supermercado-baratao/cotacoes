@@ -145,7 +145,7 @@ beforeAll(async () => {
     series: '1',
     emissionDate: '2026-06-15T10:00:00-03:00',
     supplierCnpj: SUPPLIER_B.cnpj,
-    supplierName: SUPPLIER_B.tradeName,
+    supplierName: SUPPLIER_B.tradeName ?? SUPPLIER_B.legalName,
     destinationCnpj: '99999999000199',
     totalValue: 15.5,
     items: [
@@ -160,6 +160,9 @@ beforeAll(async () => {
         quantity: 1,
         unitPrice: 15.5,
         totalPrice: 15.5,
+        tribUnit: 'UN',
+        tribQuantity: 1,
+        tribUnitPrice: 15.5,
         productId: '198954',
         orderId: ORDER_RECENT_B_ID,
         matchStatus: 'matched',

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useAppStore } from '@/stores'
 
 import {
+  attachMarginStatus,
   filterPriceAdjustmentRows,
   filterRowsByMovementDate,
   getDataDateRange,
@@ -10,8 +11,15 @@ import {
 } from './utils'
 
 export const usePriceAdjustmentsHandler = () => {
-  const { products, quotes, invoices, suppliers, families, priceAdjustments } =
-    useAppStore()
+  const {
+    products,
+    quotes,
+    invoices,
+    suppliers,
+    families,
+    priceAdjustments,
+    settings
+  } = useAppStore()
 
   const [search, setSearch] = useState('')
   const [isImportOpen, setIsImportOpen] = useState(false)
@@ -61,12 +69,20 @@ export const usePriceAdjustmentsHandler = () => {
     return filterPriceAdjustmentRows(search, byDate)
   }, [search, priceAdjustments, startDate, endDate])
 
-  const groups = useMemo(
+  const displayRows = useMemo(
     () =>
       filteredRows
-        ? groupRowsByFamily(filteredRows, products ?? [], families ?? [])
+        ? attachMarginStatus(filteredRows, products ?? [], settings)
         : null,
-    [filteredRows, products, families]
+    [filteredRows, products, settings]
+  )
+
+  const groups = useMemo(
+    () =>
+      displayRows
+        ? groupRowsByFamily(displayRows, products ?? [], families ?? [])
+        : null,
+    [displayRows, products, families]
   )
 
   const isFetching = priceAdjustments === null || !isGlobalDataReady
