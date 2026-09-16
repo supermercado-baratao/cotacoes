@@ -29,6 +29,8 @@ const upsert = async (
     data: {
       id: SETTINGS_ID,
       pdfDepartmentOrder: [],
+      marginTolerance: { below: 0, above: 0 },
+      departmentMarginTolerances: {},
       lastCatalogImportAt: null,
       lastInvoiceImportAt: null,
       ...data

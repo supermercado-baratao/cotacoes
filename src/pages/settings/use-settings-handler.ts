@@ -1,13 +1,21 @@
 import { useMemo, useState } from 'react'
 
+import { DEFAULT_MARGIN_TOLERANCE } from '@/constants'
+import type { TMarginTolerance } from '@/models'
 import { useAppStore } from '@/stores'
 
-import { buildDepartmentOrder } from './utils'
+import {
+  buildDepartmentOrder,
+  fromDepartmentOverrideRows,
+  serializeDepartmentOverrideRows,
+  type TDepartmentMarginOverrideRow,
+  toDepartmentOverrideRows
+} from './utils'
 
 export const useSettingsHandler = () => {
-  const { products, settings, updateSettings } = useAppStore()
+  const { products, departments, settings, updateSettings } = useAppStore()
 
-  const departments = useMemo(
+  const productDepartments = useMemo(
     () =>
       Array.from(
         new Set((products ?? []).map((product) => product.department))
@@ -16,8 +24,12 @@ export const useSettingsHandler = () => {
   )
 
   const orderedDepartments = useMemo(
-    () => buildDepartmentOrder(departments, settings?.pdfDepartmentOrder ?? []),
-    [departments, settings]
+    () =>
+      buildDepartmentOrder(
+        productDepartments,
+        settings?.pdfDepartmentOrder ?? []
+      ),
+    [productDepartments, settings]
   )
 
   const [order, setOrder] = useState(orderedDepartments)
@@ -27,6 +39,36 @@ export const useSettingsHandler = () => {
   if (orderedDepartments !== syncedOrderedDepartments) {
     setSyncedOrderedDepartments(orderedDepartments)
     setOrder(orderedDepartments)
+  }
+
+  const derivedMarginTolerance = useMemo(
+    () => settings?.marginTolerance ?? DEFAULT_MARGIN_TOLERANCE,
+    [settings]
+  )
+  const [marginTolerance, setMarginTolerance] = useState(derivedMarginTolerance)
+  const [syncedMarginTolerance, setSyncedMarginTolerance] = useState(
+    derivedMarginTolerance
+  )
+
+  if (derivedMarginTolerance !== syncedMarginTolerance) {
+    setSyncedMarginTolerance(derivedMarginTolerance)
+    setMarginTolerance(derivedMarginTolerance)
+  }
+
+  const derivedDepartmentOverrides = useMemo(
+    () => toDepartmentOverrideRows(settings?.departmentMarginTolerances ?? {}),
+    [settings]
+  )
+  const [departmentOverrides, setDepartmentOverrides] = useState(
+    derivedDepartmentOverrides
+  )
+  const [syncedDepartmentOverrides, setSyncedDepartmentOverrides] = useState(
+    derivedDepartmentOverrides
+  )
+
+  if (derivedDepartmentOverrides !== syncedDepartmentOverrides) {
+    setSyncedDepartmentOverrides(derivedDepartmentOverrides)
+    setDepartmentOverrides(derivedDepartmentOverrides)
   }
 
   const handleMove = (index: number, direction: -1 | 1) => {
@@ -44,12 +86,56 @@ export const useSettingsHandler = () => {
     })
   }
 
+  const handleMarginToleranceChange = (
+    field: keyof TMarginTolerance,
+    value: number
+  ) => setMarginTolerance((prev) => ({ ...prev, [field]: value }))
+
+  const handleDepartmentOverrideAdd = (departmentId: string) =>
+    setDepartmentOverrides((prev) => [
+      ...prev,
+      { departmentId, tolerance: marginTolerance }
+    ])
+
+  const handleDepartmentOverrideChange = (
+    departmentId: string,
+    field: keyof TMarginTolerance,
+    value: number
+  ) =>
+    setDepartmentOverrides((prev) =>
+      prev.map((row) =>
+        row.departmentId === departmentId
+          ? { ...row, tolerance: { ...row.tolerance, [field]: value } }
+          : row
+      )
+    )
+
+  const handleDepartmentOverrideRemove = (departmentId: string) =>
+    setDepartmentOverrides((prev) =>
+      prev.filter((row) => row.departmentId !== departmentId)
+    )
+
   const handleSave = () => {
-    updateSettings({ pdfDepartmentOrder: order })
+    updateSettings({
+      pdfDepartmentOrder: order,
+      marginTolerance,
+      departmentMarginTolerances:
+        fromDepartmentOverrideRows(departmentOverrides)
+    })
   }
 
   const isFetching = products === null
-  const isDirty = order.join('|') !== orderedDepartments.join('|')
+  const isDirty =
+    order.join('|') !== orderedDepartments.join('|') ||
+    marginTolerance.below !== derivedMarginTolerance.below ||
+    marginTolerance.above !== derivedMarginTolerance.above ||
+    serializeDepartmentOverrideRows(departmentOverrides) !==
+      serializeDepartmentOverrideRows(derivedDepartmentOverrides)
+
+  const availableDepartments = (departments ?? []).filter(
+    (department) =>
+      !departmentOverrides.some((row) => row.departmentId === department.id)
+  )
 
   return {
     isFetching,
@@ -57,6 +143,14 @@ export const useSettingsHandler = () => {
     handleMove,
     handleReorder,
     handleSave,
-    isDirty
+    isDirty,
+    marginTolerance,
+    handleMarginToleranceChange,
+    departmentOverrides: departmentOverrides as TDepartmentMarginOverrideRow[],
+    departments: departments ?? [],
+    availableDepartments,
+    handleDepartmentOverrideAdd,
+    handleDepartmentOverrideChange,
+    handleDepartmentOverrideRemove
   }
 }
