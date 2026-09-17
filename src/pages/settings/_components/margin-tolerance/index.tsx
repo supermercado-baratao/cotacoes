@@ -64,6 +64,7 @@ export const MarginTolerance = ({
             )
           }
           slotProps={{ htmlInput: { min: 0, max: MAX_MARGIN_TOLERANCE } }}
+          sx={S.GlobalToleranceField}
         />
         <TextField
           label="Tolerância acima da margem (p.p.)"
@@ -76,6 +77,7 @@ export const MarginTolerance = ({
             )
           }
           slotProps={{ htmlInput: { min: 0, max: MAX_MARGIN_TOLERANCE } }}
+          sx={S.GlobalToleranceField}
         />
       </Box>
 
@@ -106,6 +108,7 @@ export const MarginTolerance = ({
                   )
                 }
                 slotProps={{ htmlInput: { min: 0, max: MAX_MARGIN_TOLERANCE } }}
+                sx={S.OverrideToleranceField}
               />
               <TextField
                 label="Acima (p.p.)"
@@ -120,6 +123,7 @@ export const MarginTolerance = ({
                   )
                 }
                 slotProps={{ htmlInput: { min: 0, max: MAX_MARGIN_TOLERANCE } }}
+                sx={S.OverrideToleranceField}
               />
               <IconButton
                 aria-label="Remover override"

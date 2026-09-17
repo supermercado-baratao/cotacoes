@@ -36,11 +36,6 @@ export const useSettingsHandler = () => {
   const [syncedOrderedDepartments, setSyncedOrderedDepartments] =
     useState(orderedDepartments)
 
-  if (orderedDepartments !== syncedOrderedDepartments) {
-    setSyncedOrderedDepartments(orderedDepartments)
-    setOrder(orderedDepartments)
-  }
-
   const derivedMarginTolerance = useMemo(
     () => settings?.marginTolerance ?? DEFAULT_MARGIN_TOLERANCE,
     [settings]
@@ -49,11 +44,6 @@ export const useSettingsHandler = () => {
   const [syncedMarginTolerance, setSyncedMarginTolerance] = useState(
     derivedMarginTolerance
   )
-
-  if (derivedMarginTolerance !== syncedMarginTolerance) {
-    setSyncedMarginTolerance(derivedMarginTolerance)
-    setMarginTolerance(derivedMarginTolerance)
-  }
 
   const derivedDepartmentOverrides = useMemo(
     () => toDepartmentOverrideRows(settings?.departmentMarginTolerances ?? {}),
@@ -66,7 +56,30 @@ export const useSettingsHandler = () => {
     derivedDepartmentOverrides
   )
 
-  if (derivedDepartmentOverrides !== syncedDepartmentOverrides) {
+  // Só resincroniza com o servidor quando o usuário não tem edições
+  // pendentes — evita que um refetch em segundo plano (ex: import
+  // concluindo) sobrescreva alterações ainda não salvas no formulário.
+  const hasUnsavedChanges =
+    order.join('|') !== syncedOrderedDepartments.join('|') ||
+    marginTolerance.below !== syncedMarginTolerance.below ||
+    marginTolerance.above !== syncedMarginTolerance.above ||
+    serializeDepartmentOverrideRows(departmentOverrides) !==
+      serializeDepartmentOverrideRows(syncedDepartmentOverrides)
+
+  if (!hasUnsavedChanges && orderedDepartments !== syncedOrderedDepartments) {
+    setSyncedOrderedDepartments(orderedDepartments)
+    setOrder(orderedDepartments)
+  }
+
+  if (!hasUnsavedChanges && derivedMarginTolerance !== syncedMarginTolerance) {
+    setSyncedMarginTolerance(derivedMarginTolerance)
+    setMarginTolerance(derivedMarginTolerance)
+  }
+
+  if (
+    !hasUnsavedChanges &&
+    derivedDepartmentOverrides !== syncedDepartmentOverrides
+  ) {
     setSyncedDepartmentOverrides(derivedDepartmentOverrides)
     setDepartmentOverrides(derivedDepartmentOverrides)
   }

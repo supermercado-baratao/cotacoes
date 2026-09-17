@@ -12,6 +12,14 @@ export const GlobalRow: SxProps<Theme> = {
   flexWrap: 'wrap'
 }
 
+export const GlobalToleranceField: SxProps<Theme> = {
+  minWidth: 260
+}
+
+export const OverrideToleranceField: SxProps<Theme> = {
+  minWidth: 140
+}
+
 export const List: SxProps<Theme> = {
   display: 'flex',
   flexDirection: 'column',
