@@ -1,11 +1,11 @@
-import type {
-  TInvoice,
-  TPriceAdjustment,
-  TProduct,
-  TQuote,
-  TSettings
-} from '@/models'
-import { evaluateMargin, getMarginTolerance, type TMarginStatus } from '@/utils'
+import type { TInvoice, TProduct, TQuote, TSettings } from '@/models'
+import {
+  evaluateMargin,
+  getMarginTolerance,
+  resolveProductCost,
+  type TMarginStatus,
+  type TProductCostMap
+} from '@/utils'
 
 export type TMarginAlert = {
   id: string
@@ -23,27 +23,26 @@ export type TMarginAlerts = {
   above: TMarginAlert[]
 }
 
-// Custo real só existe pra produtos que já passaram pelo relatório de
-// reajustes de preços (resolvedCost, ver pages/price-adjustments/utils.ts) —
-// não há como calcular margem atual sem ele, então o produto simplesmente
-// não entra na lista.
+// Avalia todo o catálogo (não só produtos que já passaram por reajuste de
+// preços) — custo vem de resolveProductCost: média das notas de entrada
+// recentes, com fallback pro custo do catálogo (custocomimposto).
 export const getMarginAlerts = (
   products: TProduct[],
-  priceAdjustments: TPriceAdjustment[],
+  recentCostMap: TProductCostMap,
   settings: TSettings | null
 ): TMarginAlerts => {
-  const productById = new Map(products.map((p) => [p.id, p]))
-
   const below: TMarginAlert[] = []
   const above: TMarginAlert[] = []
 
-  priceAdjustments.forEach((adjustment) => {
-    const product = productById.get(adjustment.productId)
-    if (!product || product.margin == null) return
+  products.forEach((product) => {
+    if (product.margin == null) return
 
     const price = product.price
-    const cost = adjustment.resolvedCost
-    if (!price || !cost) return
+    const cost = resolveProductCost(product, recentCostMap)
+    // !price (não `price == null`) é proposital: preço 0 tornaria a divisão
+    // abaixo indefinida. Custo 0 é um valor legítimo (ex: item promocional) e
+    // não deve ser tratado como "sem dado".
+    if (!price || cost == null) return
 
     const actualMargin = ((price - cost) / price) * 100
     const tolerance = getMarginTolerance(settings, product.departmentId)
