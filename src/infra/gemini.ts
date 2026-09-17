@@ -2,8 +2,12 @@ import type { TFamily, TProduct, TQuoteItem } from '@/models'
 
 import { suggestPriceReferencesLocally } from './gemini-fallback'
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string
-const MODEL = import.meta.env.VITE_GEMINI_MODEL as string
+// Fora do Vite (ex: seed de dados do Playwright rodando em Node puro),
+// import.meta.env não é populado — cai pra process.env nesse caso.
+const env = import.meta.env ?? process.env
+
+const API_KEY = env.VITE_GEMINI_API_KEY as string
+const MODEL = env.VITE_GEMINI_MODEL as string
 const DEV_SIMULATED_DELAY_MS = 30_000
 
 export type TAiSuggestion = {
@@ -23,8 +27,8 @@ export const suggestPriceReferences = async (
   products: TProduct[],
   families: TFamily[]
 ): Promise<TSuggestPriceReferencesResult> => {
-  if (import.meta.env.MODE !== 'production') {
-    if (import.meta.env.MODE !== 'test') {
+  if (env.MODE !== 'production') {
+    if (env.MODE !== 'test') {
       await new Promise((resolve) =>
         setTimeout(resolve, DEV_SIMULATED_DELAY_MS)
       )

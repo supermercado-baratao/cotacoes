@@ -1,5 +1,5 @@
 import { getData } from '@/components/blocks/catalog-import/utils'
-import { departmentModel, importModel } from '@/models'
+import { importModel } from '@/models'
 
 import { resetDatabaseMock } from './_mocks/database'
 import {
@@ -19,8 +19,7 @@ export const createUser = () => {
 export const populateDatabase = async (): Promise<void> => {
   const buffer = await readMockFile('import-data.xlsx')
   const file = new File([new Uint8Array(buffer)], 'import-data.xlsx')
-  const existingDepartments = await departmentModel.findMany()
-  const data = await getData(file, existingDepartments)
+  const data = await getData(file)
   await importModel.import(data)
 }
 

@@ -24,29 +24,31 @@ pnpm emulators:start  # iniciar emuladores do Firebase (Auth + Firestore), neces
 Para executar um único arquivo de teste:
 
 ```bash
-pnpm vitest run src/tests/vitest/quote-flow.spec.tsx
+pnpm vitest run src/tests/vitest/margin-utils.spec.ts
+pnpm playwright test src/tests/playwright/quote.spec.ts
 ```
 
 ### Estratégia de testes
 
 ```text
 src/tests/
-├── vitest/              # suíte mockada (Vitest)
-│   ├── _mocks/          # fakes de database.ts, firebase/auth, firebase/firestore + fixtures (xlsx/xml/txt)
+├── _mocks/              # fixtures compartilhadas entre as duas suítes (xlsx/xml/txt)
+├── vitest/              # suíte unitária (Vitest)
+│   ├── _mocks/          # fakes de database.ts, firebase/auth, firebase/firestore
 │   ├── _utils/          # helpers (ex: read-mock-file.ts)
 │   ├── orchestrator.ts  # createUser / populateDatabase / clearData contra o fake in-memory
-│   └── *.spec.tsx
+│   └── *.spec.ts(x)
 └── playwright/          # suíte e2e (Playwright)
-    ├── orchestrator.ts  # createUser / clearData / verifyEmail contra o emulador real do Firebase
+    ├── orchestrator.ts  # createUser / populateDatabase / clearData / verifyEmail contra o emulador real do Firebase
     └── *.spec.ts
 ```
 
-Cada suíte tem seu próprio `orchestrator.ts` com funções globais (criar usuário, popular e limpar dados) — mesma interface nos dois, mas implementação diferente por baixo (fake in-memory vs emulador real), já que tecnicamente não dá pra compartilhar uma única implementação entre os dois ambientes.
+Cada suíte tem seu próprio `orchestrator.ts` com funções globais (criar usuário, popular e limpar dados) — mesma interface nos dois, mas implementação diferente por baixo (fake in-memory vs emulador real), já que tecnicamente não dá pra compartilhar uma única implementação entre os dois ambientes. O orchestrator do Playwright reaproveita models reais (`@/models`) e o parser de import (`getData`) rodando em Node puro contra os emuladores — bem mais rápido que popular via UI — o que só funciona porque `src/infra/firebase-config.ts` e `src/infra/gemini.ts` caem pra `process.env` quando `import.meta.env` não existe (fora do Vite).
 
 O projeto usa duas suítes com responsabilidades distintas:
 
-- **Vitest** (`src/tests/vitest/*.spec.tsx`) — testes rápidos e determinísticos, sem depender de rede ou emuladores. `src/infra/database.ts` e o SDK `firebase/auth`/`firebase/firestore` são mockados (ver `_mocks/`) com um fake in-memory que persiste dados entre chamadas dentro do mesmo arquivo de teste, permitindo fluxos completos de UI (criar → editar → excluir) sem I/O real. Cada arquivo de teste é um roteiro sequencial (estado acumulado entre `test()`s via `beforeAll`), cobrindo tanto o caminho de sucesso quanto cenários de erro (ex: `databaseMock.create.mockRejectedValueOnce(...)`). Não precisa dos emuladores rodando.
-- **Playwright** (`src/tests/playwright/*.spec.ts`) — poucos cenários de ponta a ponta, em browser real, contra os emuladores reais do Firebase (cadastro de conta, verificação de e-mail, import de xlsx, import de notas, criação de cotação e vínculo de pedidos). Precisa dos emuladores rodando e do `.env` preenchido. Roda separado do `pnpm test`/hook `pre-push` (mais lento), tipicamente manual ou em CI.
+- **Vitest** (`src/tests/vitest/*.spec.ts(x)`) — só testes unitários: funções puras (`evaluateMargin`, `groupInvoiceItemsForBatch`, `extractPackingInfo`, etc.) e alguns cenários de erro pontuais que precisam forçar uma rejeição do banco (ex: `databaseMock.create.mockRejectedValueOnce(...)`) — não dá pra simular isso contra um emulador real, então esses ficam aqui como um teste isolado (um `render()` da página + um mock de rejeição), não como fluxo completo. `src/infra/database.ts` e o SDK `firebase/auth`/`firebase/firestore` são mockados (ver `_mocks/`) com um fake in-memory. Rápido e determinístico, sem rede nem emuladores.
+- **Playwright** (`src/tests/playwright/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores reais do Firebase: cadastro de conta, verificação de e-mail, import de xlsx/notas, cotações, reajustes de preço, dashboard. Um arquivo por página, cada `test()` cria seu próprio usuário e semeia só os dados que precisa (via `createUser`/`populateDatabase` do orchestrator ou chamando os models direto) — testes independentes entre si, não um roteiro sequencial. Precisa dos emuladores rodando e do `.env` preenchido.
 
 O hook `pre-push` roda `pnpm test` (Vitest), que **não** precisa dos emuladores. Só inicie-os quando for rodar `pnpm test:e2e`:
 

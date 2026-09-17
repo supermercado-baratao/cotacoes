@@ -7,7 +7,11 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Todos os specs compartilham o mesmo projeto do emulador (um único Auth +
+  // Firestore) e cada arquivo limpa esses dados no seu beforeAll — rodar
+  // arquivos em paralelo faz um deles apagar/sobrescrever dados que outro
+  // ainda está usando. Sempre 1 worker, não só em CI.
+  workers: 1,
   timeout: 60000,
   reporter: 'list',
   use: {
