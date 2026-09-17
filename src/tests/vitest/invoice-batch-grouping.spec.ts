@@ -46,6 +46,7 @@ const makeProduct = (id: string, familyId: string | null): TProduct => ({
   packTypes: [],
   tax: null,
   margin: null,
+  costWithTax: null,
   observations: null,
   familyId,
   departmentId: null,
