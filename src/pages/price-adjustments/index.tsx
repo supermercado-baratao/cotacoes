@@ -1,10 +1,13 @@
-import { Box, TextField } from '@mui/material'
+import { Box, Button, Tab, Tabs, TextField, Typography } from '@mui/material'
 
 import { DataView, PageHeader } from '@/components'
 
-import { ImportDialog, Table } from './_components'
+import { ImportDialog, ProductList, Table } from './_components'
 import * as S from './style'
-import { usePriceAdjustmentsHandler } from './use-price-adjustments-handler'
+import {
+  PRICE_ADJUSTMENTS_TABS,
+  usePriceAdjustmentsHandler
+} from './use-price-adjustments-handler'
 
 export const PriceAdjustments = () => {
   const {
@@ -12,14 +15,25 @@ export const PriceAdjustments = () => {
     hasRows,
     search,
     setSearch,
-    groups,
     startDate,
     setStartDate,
     endDate,
     setEndDate,
     isImportOpen,
     handleImportOpen,
-    handleImportClose
+    handleImportClose,
+    activeTab,
+    setActiveTab,
+    familyGroups,
+    noFamilyRows,
+    unregisteredGroups,
+    hasFamilyGroups,
+    hasNoFamilyRows,
+    hasUnregisteredGroups,
+    isFirstTab,
+    isLastTab,
+    handlePrevTab,
+    handleNextTab
   } = usePriceAdjustmentsHandler()
 
   return (
@@ -59,7 +73,49 @@ export const PriceAdjustments = () => {
         isEmpty={!hasRows}
         emptyMessage="Nenhum arquivo importado. Clique em 'Importar Arquivo' para começar."
       >
-        <Table groups={groups ?? []} />
+        <Tabs
+          value={activeTab}
+          onChange={(_e, value) => setActiveTab(value)}
+          sx={{ mb: 2 }}
+        >
+          {PRICE_ADJUSTMENTS_TABS.map((tab) => (
+            <Tab key={tab.value} label={tab.label} value={tab.value} />
+          ))}
+        </Tabs>
+
+        {activeTab === 'families' &&
+          (hasFamilyGroups ? (
+            <Table groups={familyGroups} />
+          ) : (
+            <Typography>
+              Nenhuma família de preços encontrada para o período selecionado.
+            </Typography>
+          ))}
+
+        {activeTab === 'products' &&
+          (hasNoFamilyRows ? (
+            <ProductList rows={noFamilyRows} />
+          ) : (
+            <Typography>
+              Nenhum produto sem família encontrado para o período selecionado.
+            </Typography>
+          ))}
+
+        {activeTab === 'unregistered' &&
+          (hasUnregisteredGroups ? (
+            <Table groups={unregisteredGroups} />
+          ) : (
+            <Typography>Nenhum produto não cadastrado encontrado.</Typography>
+          ))}
+
+        <Box sx={S.TabNavigation}>
+          <Button disabled={isFirstTab} onClick={handlePrevTab}>
+            Anterior
+          </Button>
+          <Button disabled={isLastTab} onClick={handleNextTab}>
+            Próxima
+          </Button>
+        </Box>
       </DataView>
       <ImportDialog
         isOpened={isImportOpen}

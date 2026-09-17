@@ -5,7 +5,12 @@ import { useMemo } from 'react'
 
 import { Table as _Table } from '@/components'
 import type { TInvoiceItemMatchStatus } from '@/models'
-import { formatCurrency, formatNumericValue, type TMarginStatus } from '@/utils'
+import {
+  formatCurrency,
+  formatNumericValue,
+  marginStatusConfig,
+  type TMarginStatus
+} from '@/utils'
 
 import type { TInvoiceItemRow } from './use-invoice-detail-handler'
 
@@ -16,15 +21,6 @@ const matchStatusConfig: Record<
   matched: { label: 'Identificado', color: 'success' },
   unmatched_product: { label: 'Sem produto', color: 'error' },
   unmatched_order: { label: 'Sem pedido', color: 'warning' }
-}
-
-const marginStatusConfig: Record<
-  TMarginStatus,
-  { label: string; color: 'success' | 'error' | 'warning' }
-> = {
-  below: { label: 'Abaixo da margem', color: 'error' },
-  above: { label: 'Acima da margem', color: 'warning' },
-  ok: { label: 'Dentro da margem', color: 'success' }
 }
 
 type TProps = {
@@ -68,11 +64,16 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         headerName: 'Qtd NF',
         valueFormatter: (value: number) => formatNumericValue(value)
       },
-      { field: 'tribUnit', headerName: 'UN Trib.' },
+      {
+        field: 'tribUnit',
+        headerName: 'UN Trib.',
+        valueFormatter: (value: string | null) => value ?? '—'
+      },
       {
         field: 'tribQuantity',
         headerName: 'Qtd Trib.',
-        valueFormatter: (value: number) => formatNumericValue(value)
+        valueFormatter: (value: number | null) =>
+          value != null ? formatNumericValue(value) : '—'
       },
       {
         field: 'orderPrice',
@@ -88,7 +89,8 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
       {
         field: 'tribUnitPrice',
         headerName: 'Valor Unit. Trib.',
-        valueFormatter: (value: number) => formatCurrency(value)
+        valueFormatter: (value: number | null) =>
+          value != null ? formatCurrency(value) : '—'
       },
       {
         field: 'totalPrice',

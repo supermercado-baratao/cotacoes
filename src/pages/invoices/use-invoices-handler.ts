@@ -5,10 +5,15 @@ import { useAppStore } from '@/stores'
 import { filterInvoices } from './utils'
 
 export const useInvoicesHandler = () => {
-  const { invoices, invoiceDateRange, setInvoiceDateRange, settings } =
-    useAppStore()
+  const {
+    invoices,
+    invoiceDateRange,
+    setInvoiceDateRange,
+    invoiceSearch: search,
+    setInvoiceSearch: setSearch,
+    settings
+  } = useAppStore()
 
-  const [search, setSearch] = useState('')
   const [isImportOpen, setIsImportOpen] = useState(false)
   const [startDate, setStartDate] = useState(invoiceDateRange.startDate)
   const [endDate, setEndDate] = useState(invoiceDateRange.endDate)

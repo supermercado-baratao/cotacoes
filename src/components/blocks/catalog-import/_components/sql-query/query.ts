@@ -22,7 +22,8 @@ export const buildQuery = (date: string) => `
     contato_info.email,
 
     pc.precovenda,
-    pc.estoque
+    pc.estoque,
+    pc.custocomimposto
 
   FROM (
     SELECT DISTINCT nei.id_produto, ne.id_fornecedor

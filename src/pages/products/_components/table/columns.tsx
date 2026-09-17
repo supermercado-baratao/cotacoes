@@ -1,18 +1,9 @@
 import { Chip } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 
-import { formatCurrency, formatNumericValue, type TMarginStatus } from '@/utils'
+import { formatCurrency, formatNumericValue, marginStatusConfig } from '@/utils'
 
 import type { TProductRow } from '../../utils'
-
-const marginStatusConfig: Record<
-  TMarginStatus,
-  { label: string; color: 'success' | 'error' | 'warning' }
-> = {
-  below: { label: 'Abaixo da margem', color: 'error' },
-  above: { label: 'Acima da margem', color: 'warning' },
-  ok: { label: 'Dentro da margem', color: 'success' }
-}
 
 const renderMarginStatus = ({ row }: GridRenderCellParams<TProductRow>) =>
   row.marginStatus ? (

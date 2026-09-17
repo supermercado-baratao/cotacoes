@@ -18,7 +18,8 @@ export const UPSERT_MANY_UPDATABLE_FIELDS: Array<
   'section',
   'group',
   'stock',
-  'vrCreatedAt'
+  'vrCreatedAt',
+  'costWithTax'
 ]
 
 const create = (data: TCreateDataWithId<TProduct>): Promise<TProduct> =>

@@ -22,7 +22,7 @@ export const useImportHandler = () => {
 
   const handleFileSelect = async (selected: File) => {
     setFile(selected)
-    const data = await getData(selected, departments ?? [])
+    const data = await getData(selected)
     setImportData(data)
 
     const existingById = new Map((products ?? []).map((p) => [p.id, p]))
@@ -56,12 +56,16 @@ export const useImportHandler = () => {
     const selectedDepartmentIds = new Set(
       selectedProducts.map((p) => p.departmentId).filter(Boolean)
     )
+    const existingDepartmentIds = new Set((departments ?? []).map((d) => d.id))
     setSuccessCallbacks([handleFileRemove])
     runImport({
       products: selectedProducts,
       families: importData.families.filter((f) => selectedFamilyIds.has(f.id)),
-      departments: importData.departments.filter((d) =>
-        selectedDepartmentIds.has(d.id)
+      // Exclui departamentos já cadastrados: gravá-los de novo sobrescreveria
+      // uma renomeação manual feita pela tela de Departamentos (ver utils.ts).
+      departments: importData.departments.filter(
+        (d) =>
+          selectedDepartmentIds.has(d.id) && !existingDepartmentIds.has(d.id)
       ),
       suppliers: importData.suppliers
     })

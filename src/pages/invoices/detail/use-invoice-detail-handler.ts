@@ -7,11 +7,13 @@ import type { TInvoice, TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import {
   buildPackageBarcodeLinkMap,
+  buildRecentCostMap,
   evaluateMargin,
   findSupplierByCnpj,
   getMarginTolerance,
   isSupplierCnpjIgnored,
   normalizeCnpj,
+  resolveProductCost,
   type TMarginStatus
 } from '@/utils'
 
@@ -38,6 +40,7 @@ export const useInvoiceDetailHandler = () => {
     packageBarcodeLinks,
     ignoredSuppliers,
     settings,
+    recentInvoices,
     setQuoteId,
     updateInvoice,
     deleteInvoice,
@@ -100,6 +103,15 @@ export const useInvoiceDetailHandler = () => {
     [ordersForSupplier]
   )
 
+  // Mesma fonte de custo usada em Dashboard/Products/Price-Adjustments (média
+  // das notas de entrada recentes, com fallback pro custo do catálogo) — evita
+  // que a mesma badge de margem diverja entre telas por usar fontes de custo
+  // diferentes.
+  const recentCostMap = useMemo(
+    () => buildRecentCostMap(recentInvoices ?? []),
+    [recentInvoices]
+  )
+
   const itemsWithDivergences = useMemo((): TInvoiceItemRow[] => {
     if (!invoice) return []
     return invoice.items.map((item) => {
@@ -122,10 +134,10 @@ export const useInvoiceDetailHandler = () => {
       const product = productMap.get(productId ?? '') ?? null
       const orderPrice = order?.price ?? null
       const salePrice = product?.price ?? null
-      const cost = orderPrice ?? item.unitPrice
+      const cost = product ? resolveProductCost(product, recentCostMap) : null
 
       const marginStatus: TMarginStatus | null =
-        product?.margin != null && salePrice
+        product?.margin != null && salePrice && cost != null
           ? evaluateMargin(
               product.margin,
               ((salePrice - cost) / salePrice) * 100,
@@ -148,7 +160,14 @@ export const useInvoiceDetailHandler = () => {
         marginStatus
       }
     })
-  }, [invoice, ordersForSupplier, productMap, packageBarcodeLinkMap, settings])
+  }, [
+    invoice,
+    ordersForSupplier,
+    productMap,
+    packageBarcodeLinkMap,
+    recentCostMap,
+    settings
+  ])
 
   const handleQuoteChange = (quoteId: string | null) => {
     setQuoteId(quoteId)

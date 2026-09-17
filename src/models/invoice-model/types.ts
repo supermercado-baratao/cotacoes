@@ -23,9 +23,10 @@ export type TInvoiceItem = {
   quantity: number
   unitPrice: number
   totalPrice: number
-  tribUnit: string
-  tribQuantity: number
-  tribUnitPrice: number
+  // Notas importadas antes da adição desses campos não os possuem no Firestore.
+  tribUnit: string | null
+  tribQuantity: number | null
+  tribUnitPrice: number | null
   productId: string | null
   orderId: string | null
   matchStatus: TInvoiceItemMatchStatus

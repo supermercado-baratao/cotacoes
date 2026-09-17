@@ -23,7 +23,8 @@ export const schema = z.object({
   section: z.string().max(MAX_DESCRIPTION_LENGTH),
   group: z.string().max(MAX_DESCRIPTION_LENGTH),
   observations: z.string().max(MAX_OBSERVATIONS_LENGTH).nullable(),
-  familyId: z.string().nullable()
+  familyId: z.string().nullable(),
+  departmentId: z.string().nullable()
 })
 
 export type TSchema = z.infer<typeof schema>

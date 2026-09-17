@@ -4,7 +4,6 @@ import type {
   TIgnoredProduct,
   TIgnoredSupplier,
   TInvoice,
-  TPriceAdjustment,
   TProduct,
   TSettings
 } from '@/models'
@@ -13,7 +12,9 @@ import {
   getMarginTolerance,
   isSupplierCnpjIgnored,
   matchesSearch,
-  type TMarginStatus
+  resolveProductCost,
+  type TMarginStatus,
+  type TProductCostMap
 } from '@/utils'
 
 export const filterProducts = (search: string, products: TProduct[]) =>
@@ -23,24 +24,16 @@ export const filterProducts = (search: string, products: TProduct[]) =>
 
 export type TProductRow = TProduct & { marginStatus: TMarginStatus | null }
 
-// O id do relatório de reajustes de preços é o próprio id do produto (ver
-// toPersistedPriceAdjustments em pages/price-adjustments/utils.ts) — dá pra
-// reaproveitar o resolvedCost já calculado ali sem duplicar a resolução de
-// custo aqui.
 export const attachProductMarginStatus = (
   products: TProduct[],
-  priceAdjustments: TPriceAdjustment[],
+  recentCostMap: TProductCostMap,
   settings: TSettings | null
 ): TProductRow[] => {
-  const priceAdjustmentById = new Map(
-    priceAdjustments.map((pa) => [pa.productId, pa])
-  )
-
   return products.map((product) => {
-    const cost = priceAdjustmentById.get(product.id)?.resolvedCost
+    const cost = resolveProductCost(product, recentCostMap)
     const price = product.price
 
-    if (product.margin == null || !price || !cost) {
+    if (product.margin == null || !price || cost == null) {
       return { ...product, marginStatus: null }
     }
 

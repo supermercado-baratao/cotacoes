@@ -28,3 +28,12 @@ export const evaluateMargin = (
   if (-marginGap > tolerance.above) return { status: 'above', marginGap }
   return { status: 'ok', marginGap }
 }
+
+export const marginStatusConfig: Record<
+  TMarginStatus,
+  { label: string; color: 'success' | 'error' | 'warning' }
+> = {
+  below: { label: 'Abaixo da margem', color: 'error' },
+  above: { label: 'Acima da margem', color: 'warning' },
+  ok: { label: 'Dentro da margem', color: 'success' }
+}

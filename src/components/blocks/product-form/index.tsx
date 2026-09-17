@@ -59,8 +59,15 @@ export const ProductForm = ({
   setQuickCreateFamily,
   onCreated
 }: TProductFormProps) => {
-  const { register, onSubmit, errors, control, families, marginStatus } =
-    useFormHandler(product, draft, setFormProduct, handleClose, onCreated)
+  const {
+    register,
+    onSubmit,
+    errors,
+    control,
+    families,
+    departments,
+    marginStatus
+  } = useFormHandler(product, draft, setFormProduct, handleClose, onCreated)
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -101,7 +108,18 @@ export const ProductForm = ({
             helperText={errors.familyId?.message}
             handleAddClick={() => setQuickCreateFamily(true)}
             addLabel="Nova Família"
-            sx={S.FourCol}
+            sx={S.TwoCol}
+          />
+          <Autocomplete
+            name="departmentId"
+            control={control}
+            options={departments}
+            getOptionLabel={(d) => d.description}
+            getOptionValue={(d) => d.id}
+            label="Departamento (margem)"
+            error={!!errors.departmentId}
+            helperText={errors.departmentId?.message}
+            sx={S.TwoCol}
           />
           <TextField
             {...register('department')}

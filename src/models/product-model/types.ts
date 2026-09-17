@@ -8,6 +8,7 @@ export type TProduct = {
   packTypes: string[]
   tax: number | null
   margin: number | null
+  costWithTax: number | null
   observations: string | null
   familyId: string | null
   departmentId: string | null

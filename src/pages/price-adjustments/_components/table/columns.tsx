@@ -3,19 +3,10 @@ import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 import { Fragment } from 'react'
 
-import { formatCurrency, type TMarginStatus } from '@/utils'
+import { formatCurrency, marginStatusConfig } from '@/utils'
 
 import type { TPriceAdjustmentDisplayRow as TPriceAdjustmentRow } from '../../utils'
 import * as S from './style'
-
-const marginStatusConfig: Record<
-  TMarginStatus,
-  { label: string; color: 'success' | 'error' | 'warning' }
-> = {
-  below: { label: 'Abaixo da margem', color: 'error' },
-  above: { label: 'Acima da margem', color: 'warning' },
-  ok: { label: 'Dentro da margem', color: 'success' }
-}
 
 const renderMarginStatus = ({
   row
