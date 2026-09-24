@@ -20,7 +20,6 @@ export type TPriceAdjustment = {
   user: string
   productId: string
   productFound: boolean
-  currentSystemPrice: number | null
   resolvedCost: number
   costSource: TPriceAdjustmentCostSource
   quoteDate: string | null

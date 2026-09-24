@@ -4,13 +4,7 @@ import { useForm } from 'react-hook-form'
 
 import type { TProduct } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
-import {
-  buildRecentCostMap,
-  evaluateMargin,
-  getMarginTolerance,
-  resolveProductCost,
-  type TMarginStatus
-} from '@/utils'
+import { evaluateMargin, getMarginTolerance, type TMarginStatus } from '@/utils'
 
 import { schema, type TSchema } from './schema'
 
@@ -27,31 +21,20 @@ export const useFormHandler = (
   handleClose: () => void,
   onCreated?: (product: TProduct) => void
 ) => {
-  const {
-    createProduct,
-    updateProduct,
-    families,
-    departments,
-    recentInvoices,
-    settings
-  } = useAppStore()
+  const { createProduct, updateProduct, families, departments, settings } =
+    useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
-  const recentCostMap = useMemo(
-    () => buildRecentCostMap(recentInvoices ?? []),
-    [recentInvoices]
-  )
-
   const marginStatus: TMarginStatus | null = useMemo(() => {
-    if (!product || product.margin == null) return null
-    const cost = resolveProductCost(product, recentCostMap)
+    if (!product) return null
+    const cost = product.costWithTax
     const price = product.price
     if (!price || cost == null) return null
 
     const actualMargin = ((price - cost) / price) * 100
     const tolerance = getMarginTolerance(settings, product.departmentId)
-    return evaluateMargin(product.margin, actualMargin, tolerance).status
-  }, [product, recentCostMap, settings])
+    return evaluateMargin(actualMargin, tolerance).status
+  }, [product, settings])
 
   const defaultValues: TSchema = useMemo(() => {
     const barcodes =

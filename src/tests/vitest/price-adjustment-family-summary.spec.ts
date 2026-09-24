@@ -8,28 +8,23 @@ import {
 describe('hasDivergentFamilyPrices', () => {
   test('returns false for a single row', () => {
     expect(
-      hasDivergentFamilyPrices([
-        { previousPrice: 10, newSalePrice: 12, currentSystemPrice: 12 }
-      ])
+      hasDivergentFamilyPrices([{ previousPrice: 10, newSalePrice: 12 }])
     ).toBe(false)
   })
 
   test('returns false when every row shares the same REP prices', () => {
-    const row = { previousPrice: 10, newSalePrice: 12, currentSystemPrice: 12 }
+    const row = { previousPrice: 10, newSalePrice: 12 }
     expect(hasDivergentFamilyPrices([row, { ...row }, { ...row }])).toBe(false)
   })
 
-  test('returns true when any row diverges on previousPrice, newSalePrice or currentSystemPrice', () => {
-    const row = { previousPrice: 10, newSalePrice: 12, currentSystemPrice: 12 }
+  test('returns true when any row diverges on previousPrice or newSalePrice', () => {
+    const row = { previousPrice: 10, newSalePrice: 12 }
     expect(hasDivergentFamilyPrices([row, { ...row, previousPrice: 11 }])).toBe(
       true
     )
     expect(hasDivergentFamilyPrices([row, { ...row, newSalePrice: 13 }])).toBe(
       true
     )
-    expect(
-      hasDivergentFamilyPrices([row, { ...row, currentSystemPrice: null }])
-    ).toBe(true)
   })
 })
 

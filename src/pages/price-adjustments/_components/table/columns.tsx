@@ -82,19 +82,13 @@ export const columns: GridColDef<TPriceAdjustmentRow>[] = [
   },
   {
     field: 'previousPrice',
-    headerName: 'Preço Ant.',
+    headerName: 'Preço Anterior',
     valueFormatter: (value: number) => formatCurrency(value)
   },
   {
     field: 'newSalePrice',
-    headerName: 'Preço Venda (arquivo)',
+    headerName: 'Preço Atual',
     valueFormatter: (value: number) => formatCurrency(value)
-  },
-  {
-    field: 'currentSystemPrice',
-    headerName: 'Preço Atual (sistema)',
-    valueFormatter: (value: number | null) =>
-      value != null ? formatCurrency(value) : '—'
   },
   {
     field: 'fileCost',

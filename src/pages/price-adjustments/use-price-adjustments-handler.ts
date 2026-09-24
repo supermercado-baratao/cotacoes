@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 
 import { useAppStore } from '@/stores'
-import { buildRecentCostMap } from '@/utils'
 
 import {
   attachMarginStatus,
@@ -25,7 +24,6 @@ export const usePriceAdjustmentsHandler = () => {
     products,
     quotes,
     invoices,
-    recentInvoices,
     suppliers,
     families,
     priceAdjustments,
@@ -81,22 +79,12 @@ export const usePriceAdjustmentsHandler = () => {
     return filterPriceAdjustmentRows(search, byDate)
   }, [search, priceAdjustments, startDate, endDate])
 
-  const recentCostMap = useMemo(
-    () => buildRecentCostMap(recentInvoices ?? []),
-    [recentInvoices]
-  )
-
   const displayRows = useMemo(
     () =>
       filteredRows
-        ? attachMarginStatus(
-            filteredRows,
-            products ?? [],
-            settings,
-            recentCostMap
-          )
+        ? attachMarginStatus(filteredRows, products ?? [], settings)
         : null,
-    [filteredRows, products, settings, recentCostMap]
+    [filteredRows, products, settings]
   )
 
   const groups = useMemo(

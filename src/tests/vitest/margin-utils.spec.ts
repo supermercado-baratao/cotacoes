@@ -9,7 +9,7 @@ const now = Timestamp.now()
 const makeSettings = (overrides: Partial<TSettings> = {}): TSettings => ({
   id: 'general',
   pdfDepartmentOrder: [],
-  marginTolerance: { below: 0, above: 0 },
+  marginTolerance: { below: 0, above: 100 },
   departmentMarginTolerances: {},
   lastCatalogImportAt: null,
   lastInvoiceImportAt: null,
@@ -19,76 +19,72 @@ const makeSettings = (overrides: Partial<TSettings> = {}): TSettings => ({
 })
 
 describe('evaluateMargin', () => {
-  test('returns "ok" when the gap is within tolerance', () => {
-    expect(evaluateMargin(30, 27, { below: 5, above: 5 })).toMatchObject({
+  test('returns "ok" when the actual margin is within the floor/ceiling', () => {
+    expect(evaluateMargin(30, { below: 25, above: 35 })).toMatchObject({
       status: 'ok',
-      marginGap: 3
+      marginGap: 0
     })
   })
 
-  test('returns "below" when the actual margin is under target beyond tolerance', () => {
-    expect(evaluateMargin(30, 20, { below: 5, above: 5 })).toMatchObject({
+  test('returns "below" when the actual margin is under the floor', () => {
+    expect(evaluateMargin(20, { below: 25, above: 35 })).toMatchObject({
       status: 'below',
+      marginGap: 5
+    })
+  })
+
+  test('returns "above" when the actual margin is over the ceiling', () => {
+    expect(evaluateMargin(45, { below: 25, above: 35 })).toMatchObject({
+      status: 'above',
       marginGap: 10
     })
   })
 
-  test('returns "above" when the actual margin is over target beyond tolerance', () => {
-    expect(evaluateMargin(30, 45, { below: 5, above: 5 })).toMatchObject({
-      status: 'above',
-      marginGap: -15
-    })
-  })
-
-  test('treats a gap exactly at the tolerance boundary as "ok"', () => {
-    expect(evaluateMargin(30, 25, { below: 5, above: 5 })).toMatchObject({
+  test('treats the floor/ceiling boundaries themselves as "ok"', () => {
+    expect(evaluateMargin(25, { below: 25, above: 35 })).toMatchObject({
       status: 'ok'
     })
-    expect(evaluateMargin(30, 35, { below: 5, above: 5 })).toMatchObject({
+    expect(evaluateMargin(35, { below: 25, above: 35 })).toMatchObject({
       status: 'ok'
     })
-  })
-
-  test('with zero tolerance, any deviation is flagged', () => {
-    expect(evaluateMargin(30, 29.9, { below: 0, above: 0 }).status).toBe(
-      'below'
-    )
-    expect(evaluateMargin(30, 30.1, { below: 0, above: 0 }).status).toBe(
-      'above'
-    )
-    expect(evaluateMargin(30, 30, { below: 0, above: 0 }).status).toBe('ok')
   })
 })
 
 describe('getMarginTolerance', () => {
   test('falls back to the default tolerance when settings is null', () => {
-    expect(getMarginTolerance(null, null)).toEqual({ below: 0, above: 0 })
-    expect(getMarginTolerance(null, 'dept-1')).toEqual({ below: 0, above: 0 })
+    expect(getMarginTolerance(null, null)).toEqual({ below: 0, above: 100 })
+    expect(getMarginTolerance(null, 'dept-1')).toEqual({
+      below: 0,
+      above: 100
+    })
   })
 
   test('uses the global tolerance when there is no department override', () => {
-    const settings = makeSettings({ marginTolerance: { below: 3, above: 7 } })
-    expect(getMarginTolerance(settings, null)).toEqual({ below: 3, above: 7 })
+    const settings = makeSettings({ marginTolerance: { below: 30, above: 70 } })
+    expect(getMarginTolerance(settings, null)).toEqual({
+      below: 30,
+      above: 70
+    })
     expect(getMarginTolerance(settings, 'dept-without-override')).toEqual({
-      below: 3,
-      above: 7
+      below: 30,
+      above: 70
     })
   })
 
   test('prefers the department override over the global tolerance', () => {
     const settings = makeSettings({
-      marginTolerance: { below: 3, above: 7 },
+      marginTolerance: { below: 30, above: 70 },
       departmentMarginTolerances: {
-        'dept-1': { below: 10, above: 10 }
+        'dept-1': { below: 40, above: 60 }
       }
     })
     expect(getMarginTolerance(settings, 'dept-1')).toEqual({
-      below: 10,
-      above: 10
+      below: 40,
+      above: 60
     })
     expect(getMarginTolerance(settings, 'dept-2')).toEqual({
-      below: 3,
-      above: 7
+      below: 30,
+      above: 70
     })
   })
 })

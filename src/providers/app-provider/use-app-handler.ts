@@ -36,7 +36,6 @@ export const useAppHandler = () => {
     setOrdersByQuoteId,
     setOrdersByProductId,
     setInvoices,
-    setRecentInvoices,
     setPackingDefaults,
     setSettings,
     setPriceAdjustments
@@ -54,7 +53,6 @@ export const useAppHandler = () => {
       setOrdersByQuoteId: state.setOrdersByQuoteId,
       setOrdersByProductId: state.setOrdersByProductId,
       setInvoices: state.setInvoices,
-      setRecentInvoices: state.setRecentInvoices,
       setPackingDefaults: state.setPackingDefaults,
       setSettings: state.setSettings,
       setPriceAdjustments: state.setPriceAdjustments
@@ -74,7 +72,6 @@ export const useAppHandler = () => {
     ordersByQuoteId,
     ordersByProductId,
     invoices,
-    recentInvoices,
     packingDefaults,
     settings,
     priceAdjustments
@@ -155,10 +152,6 @@ export const useAppHandler = () => {
   useEffect(() => {
     if (invoices) setInvoices(invoices)
   }, [invoices, setInvoices])
-
-  useEffect(() => {
-    if (recentInvoices) setRecentInvoices(recentInvoices)
-  }, [recentInvoices, setRecentInvoices])
 
   useEffect(() => {
     if (packingDefaults) setPackingDefaults(packingDefaults)

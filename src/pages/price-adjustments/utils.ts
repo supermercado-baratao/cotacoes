@@ -17,9 +17,7 @@ import {
   evaluateMargin,
   getMarginTolerance,
   matchesSearch,
-  resolveProductCost,
-  type TMarginStatus,
-  type TProductCostMap
+  type TMarginStatus
 } from '@/utils'
 
 export type TRawPriceAdjustmentRow = {
@@ -272,7 +270,6 @@ export const crossReferenceRows = (
       user: fileRow.user,
       productId: fileRow.code,
       productFound: !!product,
-      currentSystemPrice: product?.price ?? null,
       resolvedCost,
       costSource,
       quoteDate: resolution.quoteDate,
@@ -318,33 +315,35 @@ export const filterRowsByMovementDate = (
 
 export type TPriceAdjustmentDisplayRow = TPriceAdjustmentRow & {
   marginStatus: TMarginStatus | null
-  targetMargin: number | null
   actualMargin: number | null
   marginGap: number | null
 }
 
-// Situação de margem usa o custo real do catálogo (média das notas de
-// entrada recentes, com fallback pro custo do catálogo — ver
-// resolveProductCost), não o `resolvedCost` da linha (esse é específico da
-// conferência do relatório REP contra cotação/pedido, ver costDivergence).
+// Situação de margem usa o custo com imposto cadastrado no produto
+// (custocomimposto), não o `resolvedCost` da linha (esse é específico da
+// conferência do relatório REP contra cotação/pedido, ver costDivergence) e
+// não uma média de notas fiscais (quantidade por nota não é confiável pra
+// sustentar isso). O preço usado é `newSalePrice` — o import grava esse
+// valor direto em `product.price` (ver getProductPriceUpdates), então é ele
+// que já reflete o preço atual do produto, não um snapshot separado do
+// catálogo. O alvo de margem não é mais por produto: `tolerance.below`/
+// `.above` (Configurações) são o piso/teto aplicados a todo o catálogo.
 export const attachMarginStatus = (
   rows: TPriceAdjustmentRow[],
   products: TProduct[],
-  settings: TSettings | null,
-  recentCostMap: TProductCostMap
+  settings: TSettings | null
 ): TPriceAdjustmentDisplayRow[] => {
   const productById = new Map(products.map((p) => [p.id, p]))
 
   return rows.map((row) => {
     const product = productById.get(row.productId)
-    const price = row.currentSystemPrice
-    const cost = product ? resolveProductCost(product, recentCostMap) : null
+    const price = row.newSalePrice
+    const cost = product ? product.costWithTax : null
 
-    if (!product || product.margin == null || !price || cost == null) {
+    if (!product || !price || cost == null) {
       return {
         ...row,
         marginStatus: null,
-        targetMargin: null,
         actualMargin: null,
         marginGap: null
       }
@@ -352,39 +351,30 @@ export const attachMarginStatus = (
 
     const actualMargin = ((price - cost) / price) * 100
     const tolerance = getMarginTolerance(settings, product.departmentId)
-    const { status, marginGap } = evaluateMargin(
-      product.margin,
-      actualMargin,
-      tolerance
-    )
+    const { status, marginGap } = evaluateMargin(actualMargin, tolerance)
 
     return {
       ...row,
       marginStatus: status,
-      targetMargin: product.margin,
       actualMargin,
       marginGap
     }
   })
 }
 
-// Preço Ant., Preço Venda e Preço Atual vêm do REP e deveriam ser idênticos
-// para todo produto de uma mesma família — divergência aqui é sinal de
-// cadastro de família incorreto (ou produto preso à família errada no REP),
-// não de variação esperada.
+// Preço Ant. e Preço Atual vêm do REP e deveriam ser idênticos para todo
+// produto de uma mesma família — divergência aqui é sinal de cadastro de
+// família incorreto (ou produto preso à família errada no REP), não de
+// variação esperada.
 export const hasDivergentFamilyPrices = (
-  rows: Pick<
-    TPriceAdjustmentRow,
-    'previousPrice' | 'newSalePrice' | 'currentSystemPrice'
-  >[]
+  rows: Pick<TPriceAdjustmentRow, 'previousPrice' | 'newSalePrice'>[]
 ): boolean => {
   const [first, ...rest] = rows
   if (!first) return false
   return rest.some(
     (row) =>
       row.previousPrice !== first.previousPrice ||
-      row.newSalePrice !== first.newSalePrice ||
-      row.currentSystemPrice !== first.currentSystemPrice
+      row.newSalePrice !== first.newSalePrice
   )
 }
 

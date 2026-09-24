@@ -1,8 +1,6 @@
 import { useQueries } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import { useEffect } from 'react'
 
-import { RECENT_COST_WINDOW_DAYS } from '@/constants'
 import {
   departmentModel,
   familyModel,
@@ -27,13 +25,6 @@ export const useDataFetch = () => {
   const historyProductId = useAppStore((state) => state.historyProductId)
   const invoiceDateRange = useAppStore((state) => state.invoiceDateRange)
   const user = useAuthStore((state) => state.user)
-
-  // Janela fixa (não afetada pelo filtro de período da tela de Notas) usada
-  // só pra resolver o custo médio recente de produto na situação de margem.
-  const recentInvoiceStartDate = dayjs()
-    .subtract(RECENT_COST_WINDOW_DAYS, 'day')
-    .format('YYYY-MM-DD')
-  const recentInvoiceEndDate = dayjs().format('YYYY-MM-DD')
 
   const queries = useQueries({
     queries: [
@@ -94,15 +85,6 @@ export const useDataFetch = () => {
         enabled: !!user
       },
       {
-        queryKey: ['invoices', 'recent', recentInvoiceStartDate],
-        queryFn: () =>
-          invoiceModel.findMany({
-            startDate: recentInvoiceStartDate,
-            endDate: recentInvoiceEndDate
-          }),
-        enabled: !!user
-      },
-      {
         queryKey: ['packing-defaults'],
         queryFn: packingDefaultModel.findMany,
         enabled: !!user
@@ -133,7 +115,6 @@ export const useDataFetch = () => {
     { data: ordersByQuoteId },
     { data: ordersByProductId },
     { data: invoices },
-    { data: recentInvoices },
     { data: packingDefaults },
     { data: settings },
     { data: priceAdjustments }
@@ -164,7 +145,6 @@ export const useDataFetch = () => {
     ordersByQuoteId,
     ordersByProductId,
     invoices,
-    recentInvoices,
     packingDefaults,
     settings,
     priceAdjustments

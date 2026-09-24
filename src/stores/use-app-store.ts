@@ -135,12 +135,6 @@ type TAppStore = {
 
   invoices: TInvoice[] | null
   setInvoices: (invoices: TInvoice[]) => void
-  // Notas dos últimos RECENT_COST_WINDOW_DAYS dias, independente do filtro
-  // de período da tela de Notas (invoiceDateRange) — usada pra resolver o
-  // custo médio real de produto na situação de margem (ver
-  // src/utils/product-cost.ts), que precisa sempre da mesma janela fixa.
-  recentInvoices: TInvoice[] | null
-  setRecentInvoices: (invoices: TInvoice[]) => void
   invoiceDateRange: TInvoiceDateRange
   setInvoiceDateRange: (range: TInvoiceDateRange) => void
   invoiceSearch: string
@@ -247,8 +241,6 @@ export const useAppStore = create<TAppStore>((set) => ({
 
   invoices: null,
   setInvoices: (invoices) => set({ invoices }),
-  recentInvoices: null,
-  setRecentInvoices: (recentInvoices) => set({ recentInvoices }),
   invoiceDateRange: defaultInvoiceDateRange(),
   setInvoiceDateRange: (range) => set({ invoiceDateRange: range }),
   invoiceSearch: '',
