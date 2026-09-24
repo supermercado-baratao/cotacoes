@@ -22,7 +22,7 @@ import {
 import dayjs from 'dayjs'
 import { useState } from 'react'
 
-import { DeleteDialog } from '@/components'
+import { DeleteDialog, SearchInput } from '@/components'
 import type { TInvoiceVerificationStatus } from '@/models'
 import { formatCNPJ, formatCurrency } from '@/utils'
 
@@ -55,6 +55,8 @@ export const InvoiceDetail = () => {
     invoice,
     isFetching,
     itemsWithDivergences,
+    search,
+    setSearch,
     quotes,
     selectedQuoteId,
     selectedQuote,
@@ -92,7 +94,7 @@ export const InvoiceDetail = () => {
   return (
     <Box>
       <Box sx={S.HeaderRow}>
-        <IconButton onClick={handleBack} size="small">
+        <IconButton onClick={handleBack} size="small" aria-label="Voltar">
           <ArrowBack />
         </IconButton>
         <Typography component="h1" variant="h5" sx={{ flex: 1 }}>
@@ -167,7 +169,16 @@ export const InvoiceDetail = () => {
 
       <Paper sx={{ p: 2, mb: 3 }}>
         <Box sx={S.ItemsHeader}>
-          <Typography variant="h6">Itens da nota ({summary.total})</Typography>
+          <Box sx={S.ItemsHeaderLeft}>
+            <Typography variant="h6">
+              Itens da nota ({summary.total})
+            </Typography>
+            <SearchInput
+              placeholder="Buscar por produto, código ou descrição..."
+              value={search}
+              onValueChange={setSearch}
+            />
+          </Box>
           <Tooltip
             title={
               !selectedQuote

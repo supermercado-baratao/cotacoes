@@ -1,0 +1,338 @@
+import { expect, type Locator, type Page, test } from '@playwright/test'
+
+import type { TInvoice, TInvoiceItem, TProduct, TQuote } from '@/models'
+import { invoiceModel, productModel, quoteModel, settingsModel } from '@/models'
+
+import { clearData, createUser } from './orchestrator'
+
+const makeProduct = (
+  overrides: Partial<TProduct> & { id: string; description: string }
+): Omit<TProduct, 'createdAt' | 'updatedAt'> => ({
+  price: 100,
+  barcodes: [],
+  packTypes: [],
+  tax: null,
+  margin: null,
+  costWithTax: null,
+  observations: null,
+  familyId: null,
+  departmentId: null,
+  department: '',
+  section: '',
+  group: '',
+  stock: 0,
+  vrCreatedAt: '2026-01-01',
+  ...overrides
+})
+
+const makeQuote = (
+  overrides: Partial<TQuote>
+): Omit<TQuote, 'id' | 'createdAt' | 'updatedAt'> => ({
+  items: [],
+  orders: [],
+  status: 'opened',
+  date: '2026-01-01',
+  observations: null,
+  ...overrides
+})
+
+// A tela busca notas dos últimos 30 dias (defaultInvoiceDateRange em
+// use-app-store.ts) — precisa ser uma data recente, não fixa, pra cair
+// dentro dessa janela sempre que o teste rodar.
+const RECENT_EMISSION_DATE = new Date().toISOString().slice(0, 10)
+
+const makeInvoice = (
+  overrides: Partial<TInvoice> & { id: string }
+): Omit<TInvoice, 'createdAt' | 'updatedAt'> => ({
+  accessKey: overrides.id,
+  number: overrides.id,
+  series: '1',
+  emissionDate: RECENT_EMISSION_DATE,
+  supplierCnpj: '11111111000111',
+  supplierName: 'FORNECEDOR',
+  destinationCnpj: '22222222000122',
+  totalValue: 0,
+  items: [],
+  verificationStatus: 'pending',
+  quoteId: null,
+  ...overrides
+})
+
+const makeInvoiceItem = (
+  overrides: Partial<TInvoiceItem> = {}
+): TInvoiceItem => ({
+  itemNumber: 1,
+  supplierProductCode: '1',
+  barcode: null,
+  calculatedBarcode: null,
+  packageBarcode: null,
+  description: 'item',
+  unit: 'UN',
+  quantity: 1,
+  unitPrice: 10,
+  totalPrice: 10,
+  tribUnit: 'UN',
+  tribQuantity: 1,
+  tribUnitPrice: 10,
+  productId: null,
+  orderId: null,
+  matchStatus: 'matched',
+  priceDivergence: null,
+  quantityDivergence: null,
+  ...overrides
+})
+
+const daysAgo = (days: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() - days)
+  return date.toISOString().slice(0, 10)
+}
+
+const getRow = (page: Page, description: string): Locator =>
+  page
+    .getByText(description, { exact: true })
+    .locator('xpath=ancestor::*[@role="row"][1]')
+
+test.beforeAll(async () => {
+  await clearData()
+})
+
+test('shows aggregate stats and flags products outside the configured margin range', async ({
+  page
+}) => {
+  const { email, password } = await createUser()
+
+  // Piso 25% / teto 35% de margem — aplicado a todo o catálogo, não depende
+  // de nenhum campo por produto.
+  await settingsModel.upsert({ marginTolerance: { below: 25, above: 35 } })
+
+  // 5 produtos cadastrados, dos quais só 2 têm custo apurado e só 1 deles
+  // vende abaixo da margem mínima.
+  await Promise.all([
+    // preço 100, custo 80 -> margem atual 20%; piso 25% -> abaixo
+    productModel.create(
+      makeProduct({
+        id: 'p1',
+        description: 'PRODUTO ABAIXO',
+        costWithTax: 80
+      })
+    ),
+    // preço 100, custo 50 -> margem atual 50%; teto 35% -> acima
+    productModel.create(
+      makeProduct({
+        id: 'p2',
+        description: 'PRODUTO ACIMA',
+        costWithTax: 50
+      })
+    ),
+    productModel.create(
+      makeProduct({ id: 'p3', description: 'PRODUTO SEM CUSTO APURADO' })
+    ),
+    productModel.create(
+      makeProduct({ id: 'p4', description: 'PRODUTO SEM CUSTO APURADO 2' })
+    ),
+    productModel.create(
+      makeProduct({ id: 'p5', description: 'PRODUTO SEM CUSTO APURADO 3' })
+    ),
+    // 3 cotações abertas, 1 fechada
+    quoteModel.create(makeQuote({ status: 'opened' })),
+    quoteModel.create(makeQuote({ status: 'opened' })),
+    quoteModel.create(makeQuote({ status: 'opened' })),
+    quoteModel.create(makeQuote({ status: 'closed' })),
+    // 2 notas pendentes, 1 aprovada
+    invoiceModel.create(
+      makeInvoice({ id: 'i1', verificationStatus: 'pending' })
+    ),
+    invoiceModel.create(
+      makeInvoice({ id: 'i2', verificationStatus: 'pending' })
+    ),
+    invoiceModel.create(
+      makeInvoice({ id: 'i3', verificationStatus: 'approved' })
+    )
+  ])
+
+  await page.goto('/signin')
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Senha').fill(password)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+
+  await expect(page).toHaveURL(/\/dashboard/)
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+
+  // Este teste cobre os totais do catálogo inteiro, não o filtro por período
+  // de entrada — desliga o filtro pra não depender de notas vinculadas aos
+  // produtos criados aqui (cenário de período é coberto no teste abaixo).
+  await page
+    .getByRole('switch', { name: 'Filtrar por entrada no período' })
+    .uncheck()
+
+  const productsCard = page.getByText('Produtos cadastrados').locator('..')
+  await expect(productsCard.getByText('5', { exact: true })).toBeVisible()
+
+  const quotesCard = page.getByText('Cotações abertas').locator('..')
+  await expect(quotesCard.getByText('3', { exact: true })).toBeVisible()
+
+  const invoicesCard = page
+    .getByText('Notas pendentes de verificação')
+    .locator('..')
+  await expect(invoicesCard.getByText('2', { exact: true })).toBeVisible()
+
+  // "Produtos abaixo/acima da margem" aparecem duas vezes cada: como rótulo
+  // do card e como título da seção da tabela — o card é o primeiro no DOM.
+  const belowMarginCard = page
+    .getByText('Produtos abaixo da margem')
+    .first()
+    .locator('..')
+  await expect(belowMarginCard.getByText('1', { exact: true })).toBeVisible()
+
+  const aboveMarginCard = page
+    .getByText('Produtos acima da margem')
+    .first()
+    .locator('..')
+  await expect(aboveMarginCard.getByText('1', { exact: true })).toBeVisible()
+
+  await expect(page.getByText('PRODUTO ABAIXO')).toBeVisible()
+
+  // PRODUTO ACIMA vende com margem atual (50%) acima do teto (35%), então
+  // aparece na seção "acima da margem", não na de "abaixo".
+  const belowMarginSection = page
+    .getByText('Produtos abaixo da margem')
+    .last()
+    .locator('..')
+  await expect(belowMarginSection.getByText('PRODUTO ACIMA')).not.toBeVisible()
+
+  const aboveMarginSection = page
+    .getByText('Produtos acima da margem')
+    .last()
+    .locator('..')
+  await expect(aboveMarginSection.getByText('PRODUTO ACIMA')).toBeVisible()
+})
+
+test('filters margin alerts by presence in an invoice within the selected period, with an option to disable the filter', async ({
+  page
+}) => {
+  const { email, password } = await createUser()
+
+  await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
+
+  // Todos abaixo da margem (piso 25%): preço 100, custo 80 -> margem 20%.
+  await Promise.all([
+    productModel.create(
+      makeProduct({
+        id: 'p1',
+        description: 'ENTRADA RECENTE',
+        costWithTax: 80
+      })
+    ),
+    productModel.create(
+      makeProduct({ id: 'p2', description: 'ENTRADA ANTIGA', costWithTax: 80 })
+    ),
+    productModel.create(
+      makeProduct({ id: 'p3', description: 'SEM ENTRADA', costWithTax: 80 })
+    ),
+    invoiceModel.create(
+      makeInvoice({
+        id: 'i1',
+        emissionDate: daysAgo(10),
+        items: [makeInvoiceItem({ productId: 'p1' })]
+      })
+    ),
+    invoiceModel.create(
+      makeInvoice({
+        id: 'i2',
+        emissionDate: daysAgo(60),
+        items: [makeInvoiceItem({ productId: 'p2' })]
+      })
+    )
+  ])
+
+  await page.goto('/signin')
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Senha').fill(password)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+  await expect(page).toHaveURL(/\/dashboard/)
+
+  // Filtro de período ligado por padrão (últimos 30 dias): só ENTRADA
+  // RECENTE tem uma nota emitida dentro do período e já carregada. ENTRADA
+  // ANTIGA (nota de 60 dias atrás — nem carregada ainda, já que a busca
+  // global de Notas de Entrada também é limitada a 30 dias por padrão) e SEM
+  // ENTRADA (nunca teve nota vinculada) somem, pois o filtro exige presença
+  // confirmada numa nota do período.
+  await expect(page.getByText('ENTRADA RECENTE')).toBeVisible()
+  await expect(page.getByText('ENTRADA ANTIGA')).not.toBeVisible()
+  await expect(page.getByText('SEM ENTRADA')).not.toBeVisible()
+
+  // Amplia a busca em Notas de Entrada pra trazer a nota de 60 dias atrás.
+  await page.getByRole('button', { name: 'Notas de Entrada' }).click()
+  await expect(page).toHaveURL(/\/invoices/)
+  await page.getByLabel('De', { exact: true }).fill(daysAgo(70))
+  await page.getByRole('button', { name: 'Buscar' }).click()
+  await page.getByPlaceholder('Buscar por NF, fornecedor ou item...').fill('i2')
+  await expect(page.getByText('i2', { exact: true })).toBeVisible({
+    timeout: 10000
+  })
+
+  // De volta ao Dashboard: a nota já está carregada, mas ENTRADA ANTIGA
+  // ainda some, pois o período do próprio Dashboard segue nos últimos 30
+  // dias.
+  await page.getByRole('button', { name: 'Dashboard' }).click()
+  await expect(page).toHaveURL(/\/dashboard/)
+  await expect(page.getByText('ENTRADA ANTIGA')).not.toBeVisible()
+
+  // Amplia o início do período do próprio Dashboard -> ENTRADA ANTIGA passa
+  // a ser reconhecida dentro do período e volta a aparecer.
+  await page.getByLabel('Início do período').fill(daysAgo(70))
+  await expect(page.getByText('ENTRADA RECENTE')).toBeVisible()
+  await expect(page.getByText('ENTRADA ANTIGA')).toBeVisible()
+  await expect(page.getByText('SEM ENTRADA')).not.toBeVisible()
+
+  // Desligando o filtro de período: todo o catálogo abaixo da margem
+  // aparece, inclusive o produto sem nenhuma nota vinculada.
+  await page
+    .getByRole('switch', { name: 'Filtrar por entrada no período' })
+    .uncheck()
+  await expect(page.getByText('SEM ENTRADA')).toBeVisible()
+})
+
+test('opens a drawer with the invoices where a flagged product had an entry within the period', async ({
+  page
+}) => {
+  const { email, password } = await createUser()
+
+  await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
+
+  // preço 100, custo 80 -> margem 20%; piso 25% -> abaixo.
+  await Promise.all([
+    productModel.create(
+      makeProduct({
+        id: 'p1',
+        description: 'PRODUTO COM NOTA',
+        costWithTax: 80
+      })
+    ),
+    invoiceModel.create(
+      makeInvoice({
+        id: 'i1',
+        emissionDate: daysAgo(5),
+        items: [makeInvoiceItem({ productId: 'p1', quantity: 3 })]
+      })
+    )
+  ])
+
+  await page.goto('/signin')
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Senha').fill(password)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+  await expect(page).toHaveURL(/\/dashboard/)
+
+  await expect(page.getByText('PRODUTO COM NOTA')).toBeVisible()
+
+  await getRow(page, 'PRODUTO COM NOTA')
+    .getByRole('menuitem', { name: 'Ver notas' })
+    .click()
+
+  await expect(
+    page.getByRole('cell', { name: 'i1', exact: true })
+  ).toBeVisible()
+  await expect(page.getByRole('cell', { name: 'FORNECEDOR' })).toBeVisible()
+})

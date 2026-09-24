@@ -5,9 +5,11 @@ import { useAuthStore } from '@/stores'
 
 import {
   Dashboard,
+  Departments,
   Families,
   InvoiceDetail,
   Invoices,
+  Landing,
   NotFound,
   PriceAdjustments,
   Products,
@@ -44,6 +46,7 @@ const VerifyEmailRoute = () => {
 export const Router = () => (
   <Routes>
     <Route element={<PublicRoute />}>
+      <Route path="/" element={<Landing />} />
       <Route path="/signin" element={<Signin />} />
       <Route path="/signup" element={<Signup />} />
     </Route>
@@ -58,6 +61,7 @@ export const Router = () => (
         <Route path="/suppliers" element={<Suppliers />} />
         <Route path="/sellers" element={<Sellers />} />
         <Route path="/families" element={<Families />} />
+        <Route path="/departments" element={<Departments />} />
         <Route path="/price-adjustments" element={<PriceAdjustments />} />
         <Route path="/invoices" element={<Invoices />} />
         <Route path="/invoices/:id" element={<InvoiceDetail />} />

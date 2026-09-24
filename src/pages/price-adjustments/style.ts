@@ -10,3 +10,9 @@ export const DateRangeWrapper: SxProps<Theme> = {
 export const DateField: SxProps<Theme> = {
   minWidth: 160
 }
+
+export const TabNavigation: SxProps<Theme> = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  mt: 3
+}

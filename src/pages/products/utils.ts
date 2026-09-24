@@ -4,14 +4,46 @@ import type {
   TIgnoredProduct,
   TIgnoredSupplier,
   TInvoice,
-  TProduct
+  TProduct,
+  TSettings
 } from '@/models'
-import { isSupplierCnpjIgnored, matchesSearch } from '@/utils'
+import {
+  evaluateMargin,
+  getMarginTolerance,
+  isSupplierCnpjIgnored,
+  matchesSearch,
+  resolveProductCost,
+  type TMarginStatus,
+  type TProductCostMap
+} from '@/utils'
 
 export const filterProducts = (search: string, products: TProduct[]) =>
   products.filter((p) =>
     matchesSearch(search, p.description, p.barcodes.join(' '))
   )
+
+export type TProductRow = TProduct & { marginStatus: TMarginStatus | null }
+
+export const attachProductMarginStatus = (
+  products: TProduct[],
+  recentCostMap: TProductCostMap,
+  settings: TSettings | null
+): TProductRow[] => {
+  return products.map((product) => {
+    const cost = resolveProductCost(product, recentCostMap)
+    const price = product.price
+
+    if (product.margin == null || !price || cost == null) {
+      return { ...product, marginStatus: null }
+    }
+
+    const actualMargin = ((price - cost) / price) * 100
+    const tolerance = getMarginTolerance(settings, product.departmentId)
+    const { status } = evaluateMargin(product.margin, actualMargin, tolerance)
+
+    return { ...product, marginStatus: status }
+  })
+}
 
 export const isProductIgnored = (
   productId: string,

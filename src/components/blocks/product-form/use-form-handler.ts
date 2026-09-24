@@ -4,6 +4,13 @@ import { useForm } from 'react-hook-form'
 
 import type { TProduct } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
+import {
+  buildRecentCostMap,
+  evaluateMargin,
+  getMarginTolerance,
+  resolveProductCost,
+  type TMarginStatus
+} from '@/utils'
 
 import { schema, type TSchema } from './schema'
 
@@ -20,8 +27,31 @@ export const useFormHandler = (
   handleClose: () => void,
   onCreated?: (product: TProduct) => void
 ) => {
-  const { createProduct, updateProduct, families } = useAppStore()
+  const {
+    createProduct,
+    updateProduct,
+    families,
+    departments,
+    recentInvoices,
+    settings
+  } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
+
+  const recentCostMap = useMemo(
+    () => buildRecentCostMap(recentInvoices ?? []),
+    [recentInvoices]
+  )
+
+  const marginStatus: TMarginStatus | null = useMemo(() => {
+    if (!product || product.margin == null) return null
+    const cost = resolveProductCost(product, recentCostMap)
+    const price = product.price
+    if (!price || cost == null) return null
+
+    const actualMargin = ((price - cost) / price) * 100
+    const tolerance = getMarginTolerance(settings, product.departmentId)
+    return evaluateMargin(product.margin, actualMargin, tolerance).status
+  }, [product, recentCostMap, settings])
 
   const defaultValues: TSchema = useMemo(() => {
     const barcodes =
@@ -43,7 +73,8 @@ export const useFormHandler = (
       section: product?.section ?? '',
       group: product?.group ?? '',
       observations: product?.observations ?? null,
-      familyId: product?.familyId ?? null
+      familyId: product?.familyId ?? null,
+      departmentId: product?.departmentId ?? null
     }
   }, [product, draft])
 
@@ -65,14 +96,22 @@ export const useFormHandler = (
 
     product
       ? updateProduct({
-          ...product,
           ...rest,
           id: product.id,
           barcodes,
-          packTypes
+          packTypes,
+          costWithTax: product.costWithTax,
+          vrCreatedAt: product.vrCreatedAt,
+          createdAt: product.createdAt
         })
       : createProduct(
-          { ...rest, barcodes, packTypes, vrCreatedAt: '' },
+          {
+            ...rest,
+            barcodes,
+            packTypes,
+            vrCreatedAt: '',
+            costWithTax: null
+          },
           onCreated ? { onSuccess: onCreated } : undefined
         )
 
@@ -84,6 +123,8 @@ export const useFormHandler = (
     onSubmit,
     errors,
     control,
-    families: families ?? []
+    families: families ?? [],
+    departments: departments ?? [],
+    marginStatus
   }
 }

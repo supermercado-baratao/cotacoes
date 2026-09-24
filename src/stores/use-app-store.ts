@@ -3,6 +3,7 @@ import { create } from 'zustand'
 
 import type { TAiSuggestion } from '@/infra'
 import type {
+  TDepartment,
   TFamily,
   TIgnoredProduct,
   TIgnoredSupplier,
@@ -89,6 +90,12 @@ type TAppStore = {
   updateFamily: (family: TUpdateData<TFamily>) => void
   deleteFamily: (id: string) => void
 
+  departments: TDepartment[] | null
+  setDepartments: (departments: TDepartment[]) => void
+  createDepartment: (department: TCreateData<TDepartment>) => void
+  updateDepartment: (department: TUpdateData<TDepartment>) => void
+  deleteDepartment: (id: string) => void
+
   quotes: TQuote[] | null
   setQuotes: (quotes: TQuote[]) => void
   createQuote: (quote: TCreateData<TQuote>) => void
@@ -128,8 +135,16 @@ type TAppStore = {
 
   invoices: TInvoice[] | null
   setInvoices: (invoices: TInvoice[]) => void
+  // Notas dos últimos RECENT_COST_WINDOW_DAYS dias, independente do filtro
+  // de período da tela de Notas (invoiceDateRange) — usada pra resolver o
+  // custo médio real de produto na situação de margem (ver
+  // src/utils/product-cost.ts), que precisa sempre da mesma janela fixa.
+  recentInvoices: TInvoice[] | null
+  setRecentInvoices: (invoices: TInvoice[]) => void
   invoiceDateRange: TInvoiceDateRange
   setInvoiceDateRange: (range: TInvoiceDateRange) => void
+  invoiceSearch: string
+  setInvoiceSearch: (search: string) => void
   createInvoice: (invoice: Omit<TInvoice, 'createdAt' | 'updatedAt'>) => void
   createInvoicesBatch: (
     invoices: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>
@@ -194,6 +209,12 @@ export const useAppStore = create<TAppStore>((set) => ({
   updateFamily: () => {},
   deleteFamily: () => {},
 
+  departments: null,
+  setDepartments: (departments) => set({ departments }),
+  createDepartment: () => {},
+  updateDepartment: () => {},
+  deleteDepartment: () => {},
+
   quotes: null,
   setQuotes: (quotes) => set({ quotes }),
   createQuote: () => {},
@@ -226,8 +247,12 @@ export const useAppStore = create<TAppStore>((set) => ({
 
   invoices: null,
   setInvoices: (invoices) => set({ invoices }),
+  recentInvoices: null,
+  setRecentInvoices: (recentInvoices) => set({ recentInvoices }),
   invoiceDateRange: defaultInvoiceDateRange(),
   setInvoiceDateRange: (range) => set({ invoiceDateRange: range }),
+  invoiceSearch: '',
+  setInvoiceSearch: (search) => set({ invoiceSearch: search }),
   createInvoice: () => {},
   createInvoicesBatch: () => {},
   updateInvoice: () => {},

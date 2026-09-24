@@ -6,10 +6,11 @@ import { useDeleteHandler } from '@/hooks'
 import type { TProduct } from '@/models'
 import { useAppStore } from '@/stores'
 
+import type { TProductRow } from '../../utils'
 import { columns } from './columns'
 
 type TTableProps = {
-  products: TProduct[]
+  products: TProductRow[]
   handleEdit: (product: TProduct) => void
 }
 

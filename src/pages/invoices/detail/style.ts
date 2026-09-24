@@ -11,7 +11,16 @@ export const ItemsHeader: SxProps<Theme> = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  gap: 2,
   mb: 1.5
+}
+
+export const ItemsHeaderLeft: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 2,
+  flexWrap: 'wrap'
 }
 
 export const ChipRow: SxProps<Theme> = {

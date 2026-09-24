@@ -9,10 +9,18 @@ import type {
   TPriceAdjustmentDateRange,
   TProduct,
   TQuote,
+  TSettings,
   TSupplier
 } from '@/models'
 import type { TCreateDataWithId } from '@/types'
-import { matchesSearch } from '@/utils'
+import {
+  evaluateMargin,
+  getMarginTolerance,
+  matchesSearch,
+  resolveProductCost,
+  type TMarginStatus,
+  type TProductCostMap
+} from '@/utils'
 
 export type TRawPriceAdjustmentRow = {
   Código: string
@@ -308,11 +316,100 @@ export const filterRowsByMovementDate = (
   )
 }
 
-export type TPriceAdjustmentGroup = {
+export type TPriceAdjustmentDisplayRow = TPriceAdjustmentRow & {
+  marginStatus: TMarginStatus | null
+  targetMargin: number | null
+  actualMargin: number | null
+  marginGap: number | null
+}
+
+// Situação de margem usa o custo real do catálogo (média das notas de
+// entrada recentes, com fallback pro custo do catálogo — ver
+// resolveProductCost), não o `resolvedCost` da linha (esse é específico da
+// conferência do relatório REP contra cotação/pedido, ver costDivergence).
+export const attachMarginStatus = (
+  rows: TPriceAdjustmentRow[],
+  products: TProduct[],
+  settings: TSettings | null,
+  recentCostMap: TProductCostMap
+): TPriceAdjustmentDisplayRow[] => {
+  const productById = new Map(products.map((p) => [p.id, p]))
+
+  return rows.map((row) => {
+    const product = productById.get(row.productId)
+    const price = row.currentSystemPrice
+    const cost = product ? resolveProductCost(product, recentCostMap) : null
+
+    if (!product || product.margin == null || !price || cost == null) {
+      return {
+        ...row,
+        marginStatus: null,
+        targetMargin: null,
+        actualMargin: null,
+        marginGap: null
+      }
+    }
+
+    const actualMargin = ((price - cost) / price) * 100
+    const tolerance = getMarginTolerance(settings, product.departmentId)
+    const { status, marginGap } = evaluateMargin(
+      product.margin,
+      actualMargin,
+      tolerance
+    )
+
+    return {
+      ...row,
+      marginStatus: status,
+      targetMargin: product.margin,
+      actualMargin,
+      marginGap
+    }
+  })
+}
+
+// Preço Ant., Preço Venda e Preço Atual vêm do REP e deveriam ser idênticos
+// para todo produto de uma mesma família — divergência aqui é sinal de
+// cadastro de família incorreto (ou produto preso à família errada no REP),
+// não de variação esperada.
+export const hasDivergentFamilyPrices = (
+  rows: Pick<
+    TPriceAdjustmentRow,
+    'previousPrice' | 'newSalePrice' | 'currentSystemPrice'
+  >[]
+): boolean => {
+  const [first, ...rest] = rows
+  if (!first) return false
+  return rest.some(
+    (row) =>
+      row.previousPrice !== first.previousPrice ||
+      row.newSalePrice !== first.newSalePrice ||
+      row.currentSystemPrice !== first.currentSystemPrice
+  )
+}
+
+// Diferente dos preços (amarrados no REP por família), a margem varia por
+// produto (depende do custo real de cada um) — por isso aqui o resultado
+// pode ser "mixed" quando os produtos da família não convergem pra uma
+// única situação de margem.
+export const getFamilyMarginStatus = (
+  rows: Pick<TPriceAdjustmentDisplayRow, 'marginStatus'>[]
+): TMarginStatus | 'mixed' | null => {
+  const statuses = new Set(
+    rows
+      .map((row) => row.marginStatus)
+      .filter((status): status is TMarginStatus => status !== null)
+  )
+  if (statuses.size === 0) return null
+  if (statuses.size > 1) return 'mixed'
+  return [...statuses][0]
+}
+
+export type TPriceAdjustmentGroup<TRow = TPriceAdjustmentRow> = {
   familyId: string | null
   familyDescription: string
   kind: 'family' | 'no-family' | 'unregistered'
-  rows: TPriceAdjustmentRow[]
+  rows: TRow[]
 }
 
 const NO_FAMILY_KEY = '__no_family__'
@@ -323,15 +420,15 @@ const UNREGISTERED_KEY = '__unregistered__'
 // família definida) e "Não cadastrado" (produto do arquivo que não existe
 // no catálogo) são grupos separados: são causas diferentes de não termos
 // uma família pra mostrar.
-export const groupRowsByFamily = (
-  rows: TPriceAdjustmentRow[],
+export const groupRowsByFamily = <TRow extends { productId: string }>(
+  rows: TRow[],
   products: TProduct[],
   families: TFamily[]
-): TPriceAdjustmentGroup[] => {
+): TPriceAdjustmentGroup<TRow>[] => {
   const productById = new Map(products.map((p) => [p.id, p]))
   const familyById = new Map(families.map((f) => [f.id, f]))
 
-  const groups = new Map<string, TPriceAdjustmentGroup>()
+  const groups = new Map<string, TPriceAdjustmentGroup<TRow>>()
   rows.forEach((row) => {
     const product = productById.get(row.productId)
     const familyId = product?.familyId ?? null

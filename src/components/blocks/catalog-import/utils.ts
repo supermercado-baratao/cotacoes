@@ -1,6 +1,7 @@
 import * as xlsx from 'xlsx'
 
 import {
+  type TDepartment,
   type TFamily,
   type TImportData,
   type TProduct,
@@ -32,7 +33,7 @@ type TRawRow = {
   // fornecedor
   id_fornecedor: string
   razaosocial: string
-  nomefantasia: string
+  nomefantasia?: string
   cnpj: string
   telefone: string
   datacadastro_fornecedor: string
@@ -41,6 +42,7 @@ type TRawRow = {
   // produtocomplemento
   precovenda: string
   estoque: string
+  custocomimposto: string
 }
 
 export const parseXlsx = async (file: File): Promise<TRawRow[]> => {
@@ -62,11 +64,29 @@ const separatePipes = (text: string): string[] => {
   return text.split('|').map((s) => s.trim())
 }
 
-const mapProduct = (row: TRawRow): TCreateDataWithId<TProduct> => ({
+// Departamento não tem código externo no arquivo (diferente de família, que
+// traz id_familia) — o id é derivado deterministicamente da própria descrição
+// bruta do ERP, pra reconhecer o mesmo departamento em reimportações futuras
+// mesmo que o usuário tenha renomeado a descrição pela tela de Departamentos
+// (o id do documento nunca muda, só o texto que ele guarda).
+const slugifyDepartmentId = (description: string): string =>
+  description
+    .trim()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'departamento'
+
+const mapProduct = (
+  row: TRawRow,
+  departmentId: string | null
+): TCreateDataWithId<TProduct> => ({
   id: row.id_produto,
   description: row.descricaocompleta,
   price: Number(row.precovenda) / 10000,
   familyId: row.id_familia || null,
+  departmentId,
   barcodes: separatePipes(row.codigos_barras),
   packTypes: separatePipes(row.tipos_embalagem),
   department: row.departamento,
@@ -76,6 +96,7 @@ const mapProduct = (row: TRawRow): TCreateDataWithId<TProduct> => ({
   vrCreatedAt: row.datacadastro_produto,
   tax: null,
   margin: null,
+  costWithTax: row.custocomimposto ? Number(row.custocomimposto) / 10000 : null,
   observations: null
 })
 
@@ -86,7 +107,7 @@ const mapFamily = (row: TRawRow): TCreateDataWithId<TFamily> => ({
 
 const mapSupplier = (row: TRawRow): TCreateDataWithId<TSupplier> => ({
   id: row.id_fornecedor,
-  tradeName: row.nomefantasia,
+  tradeName: row.nomefantasia || null,
   legalName: row.razaosocial,
   cnpj: normalizeCnpj(row.cnpj),
   email: row.email || null,
@@ -114,14 +135,30 @@ export const getProductImportStatus = (
   return hasChanges ? 'changed' : 'unchanged'
 }
 
+// `departments` no retorno lista TODOS os departamentos encontrados no
+// arquivo (novos e já cadastrados) — usado pro resumo do preview, no mesmo
+// espírito de `products`/`families`/`suppliers`. Cabe a quem consome esse
+// resultado pra gravar no Firestore (ver use-import-handler.ts) excluir os
+// já existentes antes de persistir, pra não sobrescrever uma renomeação
+// manual feita pela tela de Departamentos.
 export const getData = async (file: File): Promise<TImportData> => {
   const raw = await parseXlsx(file)
   const productMap = new Map<string, TCreateDataWithId<TProduct>>()
   const familyMap = new Map<string, TCreateDataWithId<TFamily>>()
   const supplierMap = new Map<string, TCreateDataWithId<TSupplier>>()
+  const departmentMap = new Map<string, TCreateDataWithId<TDepartment>>()
 
   raw.forEach((row) => {
-    productMap.set(row.id_produto, mapProduct(row))
+    const departmentId = row.departamento
+      ? slugifyDepartmentId(row.departamento)
+      : null
+    if (departmentId) {
+      departmentMap.set(departmentId, {
+        id: departmentId,
+        description: row.departamento
+      })
+    }
+    productMap.set(row.id_produto, mapProduct(row, departmentId))
     row.id_familia && familyMap.set(row.id_familia, mapFamily(row))
     supplierMap.set(row.id_fornecedor, mapSupplier(row))
   })
@@ -129,6 +166,7 @@ export const getData = async (file: File): Promise<TImportData> => {
   return {
     products: [...productMap.values()],
     families: [...familyMap.values()],
-    suppliers: [...supplierMap.values()]
+    suppliers: [...supplierMap.values()],
+    departments: [...departmentMap.values()]
   }
 }

@@ -1,7 +1,10 @@
 import { useQueries } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { useEffect } from 'react'
 
+import { RECENT_COST_WINDOW_DAYS } from '@/constants'
 import {
+  departmentModel,
   familyModel,
   ignoredProductModel,
   ignoredSupplierModel,
@@ -24,6 +27,13 @@ export const useDataFetch = () => {
   const historyProductId = useAppStore((state) => state.historyProductId)
   const invoiceDateRange = useAppStore((state) => state.invoiceDateRange)
   const user = useAuthStore((state) => state.user)
+
+  // Janela fixa (não afetada pelo filtro de período da tela de Notas) usada
+  // só pra resolver o custo médio recente de produto na situação de margem.
+  const recentInvoiceStartDate = dayjs()
+    .subtract(RECENT_COST_WINDOW_DAYS, 'day')
+    .format('YYYY-MM-DD')
+  const recentInvoiceEndDate = dayjs().format('YYYY-MM-DD')
 
   const queries = useQueries({
     queries: [
@@ -58,6 +68,11 @@ export const useDataFetch = () => {
         queryFn: familyModel.findMany,
         enabled: !!user
       },
+      {
+        queryKey: ['departments'],
+        queryFn: departmentModel.findMany,
+        enabled: !!user
+      },
       { queryKey: ['quotes'], queryFn: quoteModel.findMany, enabled: !!user },
       {
         queryKey: ['orders', quoteId],
@@ -76,6 +91,15 @@ export const useDataFetch = () => {
           invoiceDateRange.endDate
         ],
         queryFn: () => invoiceModel.findMany(invoiceDateRange),
+        enabled: !!user
+      },
+      {
+        queryKey: ['invoices', 'recent', recentInvoiceStartDate],
+        queryFn: () =>
+          invoiceModel.findMany({
+            startDate: recentInvoiceStartDate,
+            endDate: recentInvoiceEndDate
+          }),
         enabled: !!user
       },
       {
@@ -104,10 +128,12 @@ export const useDataFetch = () => {
     { data: ignoredSuppliers },
     { data: sellers },
     { data: families },
+    { data: departments },
     { data: quotes },
     { data: ordersByQuoteId },
     { data: ordersByProductId },
     { data: invoices },
+    { data: recentInvoices },
     { data: packingDefaults },
     { data: settings },
     { data: priceAdjustments }
@@ -133,10 +159,12 @@ export const useDataFetch = () => {
     ignoredSuppliers,
     sellers,
     families,
+    departments,
     quotes,
     ordersByQuoteId,
     ordersByProductId,
     invoices,
+    recentInvoices,
     packingDefaults,
     settings,
     priceAdjustments

@@ -3,10 +3,23 @@ import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 import { Fragment } from 'react'
 
-import { formatCurrency } from '@/utils'
+import { formatCurrency, marginStatusConfig } from '@/utils'
 
-import type { TPriceAdjustmentRow } from '../../utils'
+import type { TPriceAdjustmentDisplayRow as TPriceAdjustmentRow } from '../../utils'
 import * as S from './style'
+
+const renderMarginStatus = ({
+  row
+}: GridRenderCellParams<TPriceAdjustmentRow>) =>
+  row.marginStatus ? (
+    <Chip
+      label={marginStatusConfig[row.marginStatus].label}
+      color={marginStatusConfig[row.marginStatus].color}
+      size="small"
+    />
+  ) : (
+    '—'
+  )
 
 const joinWithDivider = (items: string[]) =>
   items.length ? (
@@ -99,6 +112,12 @@ export const columns: GridColDef<TPriceAdjustmentRow>[] = [
     headerName: 'Divergência de Custo',
     minWidth: 150,
     renderCell: renderCostDivergence
+  },
+  {
+    field: 'marginStatus',
+    headerName: 'Situação de Margem',
+    minWidth: 160,
+    renderCell: renderMarginStatus
   },
   {
     field: 'supplierNames',

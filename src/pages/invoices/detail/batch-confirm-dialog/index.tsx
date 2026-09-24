@@ -116,7 +116,7 @@ export const BatchConfirmDialog = ({
           />
           <TextField
             label="Fornecedor"
-            value={supplier.tradeName}
+            value={supplier.tradeName ?? supplier.legalName}
             sx={S.TwoColRowStart}
             slotProps={{ input: { readOnly: true } }}
           />

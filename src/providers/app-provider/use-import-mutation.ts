@@ -15,6 +15,7 @@ export const useImportMutation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['families'] })
+      queryClient.invalidateQueries({ queryKey: ['departments'] })
       queryClient.invalidateQueries({ queryKey: ['suppliers'] })
       alert({ severity: 'success', title: 'Dados importados com sucesso!' })
       handleSuccessCallbacks()

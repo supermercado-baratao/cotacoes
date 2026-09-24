@@ -4,9 +4,14 @@ import type { TProductDraft } from '@/components'
 import { useFormState } from '@/hooks'
 import type { TProduct } from '@/models'
 import { useAppStore } from '@/stores'
-import { buildPackageBarcodeLinkMap, isSupplierCnpjIgnored } from '@/utils'
+import {
+  buildPackageBarcodeLinkMap,
+  buildRecentCostMap,
+  isSupplierCnpjIgnored
+} from '@/utils'
 
 import {
+  attachProductMarginStatus,
   buildIgnoredProductRows,
   filterIgnoredProducts,
   filterProducts,
@@ -24,9 +29,11 @@ export const useProductsHandler = () => {
   const {
     products,
     invoices,
+    recentInvoices,
     ignoredProducts,
     ignoredSuppliers,
     packageBarcodeLinks,
+    settings,
     createIgnoredProduct,
     createPackageBarcodeLink
   } = useAppStore()
@@ -59,9 +66,22 @@ export const useProductsHandler = () => {
     [products, ignoredProducts]
   )
 
-  const filteredProducts = useMemo(
+  const searchedProducts = useMemo(
     () => (products ? filterProducts(search, registeredProducts) : null),
     [search, products, registeredProducts]
+  )
+
+  const recentCostMap = useMemo(
+    () => buildRecentCostMap(recentInvoices ?? []),
+    [recentInvoices]
+  )
+
+  const filteredProducts = useMemo(
+    () =>
+      searchedProducts
+        ? attachProductMarginStatus(searchedProducts, recentCostMap, settings)
+        : null,
+    [searchedProducts, recentCostMap, settings]
   )
 
   const unmatchedItems = useMemo(() => {

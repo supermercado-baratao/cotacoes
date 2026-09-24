@@ -5,7 +5,12 @@ import { useMemo } from 'react'
 
 import { Table as _Table } from '@/components'
 import type { TInvoiceItemMatchStatus } from '@/models'
-import { formatCurrency, formatNumericValue } from '@/utils'
+import {
+  formatCurrency,
+  formatNumericValue,
+  marginStatusConfig,
+  type TMarginStatus
+} from '@/utils'
 
 import type { TInvoiceItemRow } from './use-invoice-detail-handler'
 
@@ -60,6 +65,17 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         valueFormatter: (value: number) => formatNumericValue(value)
       },
       {
+        field: 'tribUnit',
+        headerName: 'UN Trib.',
+        valueFormatter: (value: string | null) => value ?? '—'
+      },
+      {
+        field: 'tribQuantity',
+        headerName: 'Qtd Trib.',
+        valueFormatter: (value: number | null) =>
+          value != null ? formatNumericValue(value) : '—'
+      },
+      {
         field: 'orderPrice',
         headerName: 'Valor Unit.',
         valueGetter: (_value, row) => row.orderPrice ?? row.unitPrice,
@@ -69,6 +85,12 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         field: 'unitPrice',
         headerName: 'Valor Emb.',
         valueFormatter: (value: number) => formatCurrency(value)
+      },
+      {
+        field: 'tribUnitPrice',
+        headerName: 'Valor Unit. Trib.',
+        valueFormatter: (value: number | null) =>
+          value != null ? formatCurrency(value) : '—'
       },
       {
         field: 'totalPrice',
@@ -93,6 +115,17 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         renderCell: (params) => {
           const config =
             matchStatusConfig[params.value as TInvoiceItemMatchStatus]
+          return <Chip label={config.label} color={config.color} size="small" />
+        }
+      },
+      {
+        field: 'marginStatus',
+        headerName: 'Situação de Margem',
+        minWidth: 160,
+        renderCell: (params) => {
+          const status = params.value as TMarginStatus | null
+          if (!status) return '—'
+          const config = marginStatusConfig[status]
           return <Chip label={config.label} color={config.color} size="small" />
         }
       }

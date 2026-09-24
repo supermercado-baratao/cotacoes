@@ -42,6 +42,11 @@ export const Header = ({
           variant="outlined"
         />
         <Chip
+          label={`${importData.departments.length} departamentos`}
+          size="small"
+          variant="outlined"
+        />
+        <Chip
           label={`${importData.suppliers.length} fornecedores`}
           size="small"
           variant="outlined"

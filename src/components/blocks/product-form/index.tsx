@@ -2,9 +2,12 @@ import { Add, Delete } from '@mui/icons-material'
 import {
   Box,
   Button,
+  Chip,
   InputAdornment,
   Stack,
+  type SxProps,
   TextField,
+  type Theme,
   Typography
 } from '@mui/material'
 import { useFieldArray } from 'react-hook-form'
@@ -21,7 +24,7 @@ import {
   MAX_OBSERVATIONS_LENGTH
 } from '@/constants'
 import type { TProduct } from '@/models'
-import { selectOnFocus } from '@/utils'
+import { selectOnFocus, type TMarginStatus } from '@/utils'
 
 import * as S from './style'
 import { type TProductDraft, useFormHandler } from './use-form-handler'
@@ -38,6 +41,15 @@ type TProductFormProps = {
 
 const percentageAdornment = <InputAdornment position="end">%</InputAdornment>
 
+const marginStatusConfig: Record<
+  TMarginStatus,
+  { label: string; color: 'success' | 'error' | 'warning' }
+> = {
+  below: { label: 'Abaixo da margem', color: 'error' },
+  above: { label: 'Acima da margem', color: 'warning' },
+  ok: { label: 'Dentro da margem', color: 'success' }
+}
+
 export const ProductForm = ({
   isOpened,
   product,
@@ -47,13 +59,15 @@ export const ProductForm = ({
   setQuickCreateFamily,
   onCreated
 }: TProductFormProps) => {
-  const { register, onSubmit, errors, control, families } = useFormHandler(
-    product,
-    draft,
-    setFormProduct,
-    handleClose,
-    onCreated
-  )
+  const {
+    register,
+    onSubmit,
+    errors,
+    control,
+    families,
+    departments,
+    marginStatus
+  } = useFormHandler(product, draft, setFormProduct, handleClose, onCreated)
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -94,7 +108,18 @@ export const ProductForm = ({
             helperText={errors.familyId?.message}
             handleAddClick={() => setQuickCreateFamily(true)}
             addLabel="Nova Família"
-            sx={S.FourCol}
+            sx={S.TwoCol}
+          />
+          <Autocomplete
+            name="departmentId"
+            control={control}
+            options={departments}
+            getOptionLabel={(d) => d.description}
+            getOptionValue={(d) => d.id}
+            label="Departamento (margem)"
+            error={!!errors.departmentId}
+            helperText={errors.departmentId?.message}
+            sx={S.TwoCol}
           />
           <TextField
             {...register('department')}
@@ -157,21 +182,29 @@ export const ProductForm = ({
               htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
             }}
           />
-          <TextField
-            {...register('margin', {
-              setValueAs: (value) => (value === '' ? null : Number(value))
-            })}
-            label="Margem Padrão"
-            type="number"
-            error={!!errors.margin}
-            helperText={errors.margin?.message}
-            sx={S.ThreeCol}
-            onFocus={selectOnFocus}
-            slotProps={{
-              input: { endAdornment: percentageAdornment },
-              htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
-            }}
-          />
+          <Box sx={[S.ThreeCol, S.MarginField] as SxProps<Theme>}>
+            <TextField
+              {...register('margin', {
+                setValueAs: (value) => (value === '' ? null : Number(value))
+              })}
+              label="Margem Padrão"
+              type="number"
+              error={!!errors.margin}
+              helperText={errors.margin?.message}
+              onFocus={selectOnFocus}
+              slotProps={{
+                input: { endAdornment: percentageAdornment },
+                htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
+              }}
+            />
+            {marginStatus && (
+              <Chip
+                label={marginStatusConfig[marginStatus].label}
+                color={marginStatusConfig[marginStatus].color}
+                size="small"
+              />
+            )}
+          </Box>
 
           <Box sx={S.FullWidth}>
             <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
