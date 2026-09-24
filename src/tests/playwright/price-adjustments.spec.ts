@@ -154,7 +154,7 @@ const seedQuotesOrdersAndInvoice = async () => {
     accessKey: 'fake-access-key-198954',
     number: '9500',
     series: '1',
-    // A tela busca notas dos últimos 90 dias a partir de "hoje" (ver
+    // A tela busca notas dos últimos 30 dias a partir de "hoje" (ver
     // defaultInvoiceDateRange em use-app-store.ts) — precisa ser uma data
     // recente, não a data fixa da cotação, pra sempre cair dentro da janela.
     emissionDate: dayjs().subtract(3, 'day').format('YYYY-MM-DD'),
