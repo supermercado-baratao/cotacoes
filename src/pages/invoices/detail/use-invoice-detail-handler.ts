@@ -1,21 +1,21 @@
 import dayjs from 'dayjs'
-import { useEffect, useMemo, useRef } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router'
 
 import { useDeleteHandler } from '@/hooks'
 import type { TInvoice, TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
 import {
   buildPackageBarcodeLinkMap,
-  buildRecentCostMap,
   evaluateMargin,
   findSupplierByCnpj,
   getMarginTolerance,
   isSupplierCnpjIgnored,
   normalizeCnpj,
-  resolveProductCost,
   type TMarginStatus
 } from '@/utils'
+
+import { filterInvoiceItemRows } from './utils'
 
 export type TInvoiceItemRow = TInvoiceItem & {
   orderQuantity: number | null
@@ -29,6 +29,7 @@ export type TInvoiceItemRow = TInvoiceItem & {
 export const useInvoiceDetailHandler = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const {
     invoices,
@@ -40,7 +41,6 @@ export const useInvoiceDetailHandler = () => {
     packageBarcodeLinks,
     ignoredSuppliers,
     settings,
-    recentInvoices,
     setQuoteId,
     updateInvoice,
     deleteInvoice,
@@ -103,15 +103,6 @@ export const useInvoiceDetailHandler = () => {
     [ordersForSupplier]
   )
 
-  // Mesma fonte de custo usada em Dashboard/Products/Price-Adjustments (média
-  // das notas de entrada recentes, com fallback pro custo do catálogo) — evita
-  // que a mesma badge de margem diverja entre telas por usar fontes de custo
-  // diferentes.
-  const recentCostMap = useMemo(
-    () => buildRecentCostMap(recentInvoices ?? []),
-    [recentInvoices]
-  )
-
   const itemsWithDivergences = useMemo((): TInvoiceItemRow[] => {
     if (!invoice) return []
     return invoice.items.map((item) => {
@@ -134,12 +125,11 @@ export const useInvoiceDetailHandler = () => {
       const product = productMap.get(productId ?? '') ?? null
       const orderPrice = order?.price ?? null
       const salePrice = product?.price ?? null
-      const cost = product ? resolveProductCost(product, recentCostMap) : null
+      const cost = product ? product.costWithTax : null
 
       const marginStatus: TMarginStatus | null =
-        product?.margin != null && salePrice && cost != null
+        product && salePrice && cost != null
           ? evaluateMargin(
-              product.margin,
               ((salePrice - cost) / salePrice) * 100,
               getMarginTolerance(settings, product.departmentId)
             ).status
@@ -160,19 +150,22 @@ export const useInvoiceDetailHandler = () => {
         marginStatus
       }
     })
-  }, [
-    invoice,
-    ordersForSupplier,
-    productMap,
-    packageBarcodeLinkMap,
-    recentCostMap,
-    settings
-  ])
+  }, [invoice, ordersForSupplier, productMap, packageBarcodeLinkMap, settings])
+
+  const [search, setSearch] = useState('')
+
+  const filteredItems = useMemo(
+    () => filterInvoiceItemRows(search, itemsWithDivergences),
+    [search, itemsWithDivergences]
+  )
 
   const handleQuoteChange = (quoteId: string | null) => {
     setQuoteId(quoteId)
   }
 
+  // Baseado em todos os itens da nota, não só nos filtrados pela busca — a
+  // busca é só uma lente sobre a tabela, não deve mudar se a nota pode ser
+  // aprovada.
   const hasUnlinkedItems = itemsWithDivergences.some((i) => i.orderId === null)
 
   const handleApprove = () => {
@@ -199,7 +192,18 @@ export const useInvoiceDetailHandler = () => {
     })
   }
 
-  const handleBack = () => navigate('/invoices')
+  // `location.key === 'default'` só ocorre na entrada inicial do histórico
+  // desta aba (acesso direto pela URL, sem navegação prévia dentro do app) —
+  // nesses casos não há pra onde voltar, então cai na lista. Nos demais, back
+  // navega pro histórico real: lista de Notas ou o botão "ver nota" de onde
+  // o usuário veio (Dashboard, cotações, etc.).
+  const handleBack = () => {
+    if (location.key === 'default') {
+      navigate('/invoices')
+      return
+    }
+    navigate(-1)
+  }
 
   const {
     itemToDelete,
@@ -218,7 +222,9 @@ export const useInvoiceDetailHandler = () => {
     quotes: sortedQuotes,
     selectedQuoteId: quoteId,
     selectedQuote,
-    itemsWithDivergences,
+    itemsWithDivergences: filteredItems,
+    search,
+    setSearch,
     productMap,
     orderMap,
     hasUnlinkedItems,

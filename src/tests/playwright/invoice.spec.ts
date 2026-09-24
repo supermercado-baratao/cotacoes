@@ -3,7 +3,14 @@ import path from 'node:path'
 import { expect, type Page, test } from '@playwright/test'
 
 import type { TInvoice } from '@/models'
-import { invoiceModel, orderModel, quoteModel, supplierModel } from '@/models'
+import {
+  invoiceModel,
+  orderModel,
+  productModel,
+  quoteModel,
+  settingsModel,
+  supplierModel
+} from '@/models'
 
 import { clearData, createUser, populateDatabase } from './orchestrator'
 
@@ -206,6 +213,140 @@ test('links an invoice item to a quote order', async ({ page }) => {
       )
     })
     .not.toBeNull()
+})
+
+test('back button returns to the page it was opened from, and items can be filtered by product', async ({
+  page
+}) => {
+  test.setTimeout(30000)
+  const { email, password } = await createUser()
+
+  await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
+
+  // preço 100, custo 80 -> margem 20%; piso 25% -> abaixo, aparece no
+  // Dashboard.
+  await productModel.create({
+    id: 'pback1',
+    description: 'PRODUTO BACK TEST',
+    price: 100,
+    barcodes: [],
+    packTypes: [],
+    tax: null,
+    margin: null,
+    costWithTax: 80,
+    observations: null,
+    familyId: null,
+    departmentId: null,
+    department: '',
+    section: '',
+    group: '',
+    stock: 0,
+    vrCreatedAt: '2026-01-01'
+  })
+
+  const invoiceId = crypto.randomUUID()
+  const invoice: Omit<TInvoice, 'createdAt' | 'updatedAt'> = {
+    id: invoiceId,
+    accessKey: 'access-key-back-test',
+    number: 'BACKTEST',
+    series: '1',
+    emissionDate: new Date().toISOString().slice(0, 10),
+    supplierCnpj: '11111111000111',
+    supplierName: 'FORNECEDOR BACK',
+    destinationCnpj: '22222222000122',
+    totalValue: 110,
+    items: [
+      {
+        itemNumber: 1,
+        supplierProductCode: '1',
+        barcode: null,
+        calculatedBarcode: null,
+        packageBarcode: null,
+        description: 'PRODUTO BACK TEST NF',
+        unit: 'UN',
+        quantity: 1,
+        unitPrice: 100,
+        totalPrice: 100,
+        tribUnit: 'UN',
+        tribQuantity: 1,
+        tribUnitPrice: 100,
+        productId: 'pback1',
+        orderId: null,
+        matchStatus: 'matched',
+        priceDivergence: null,
+        quantityDivergence: null
+      },
+      {
+        itemNumber: 2,
+        supplierProductCode: '2',
+        barcode: null,
+        calculatedBarcode: null,
+        packageBarcode: null,
+        description: 'OUTRO ITEM SEM RELACAO',
+        unit: 'UN',
+        quantity: 1,
+        unitPrice: 10,
+        totalPrice: 10,
+        tribUnit: 'UN',
+        tribQuantity: 1,
+        tribUnitPrice: 10,
+        productId: null,
+        orderId: null,
+        matchStatus: 'unmatched_product',
+        priceDivergence: null,
+        quantityDivergence: null
+      }
+    ],
+    verificationStatus: 'pending',
+    quoteId: null
+  }
+  await invoiceModel.create(invoice)
+
+  await page.goto('/signin')
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Senha').fill(password)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+  await expect(page).toHaveURL(/\/dashboard/)
+
+  await test.step('opening the invoice via the Dashboard "ver nota" link, back returns to the Dashboard', async () => {
+    await expect(page.getByText('PRODUTO BACK TEST')).toBeVisible()
+    await page
+      .getByText('PRODUTO BACK TEST', { exact: true })
+      .locator('xpath=ancestor::*[@role="row"][1]')
+      .getByRole('menuitem', { name: 'Ver notas' })
+      .click()
+    await page.getByRole('link', { name: 'Ver nota fiscal' }).click()
+
+    await expect(page).toHaveURL(new RegExp(`/invoices/${invoiceId}`))
+    await expect(page.getByText('NF nº BACKTEST')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Voltar' }).click()
+    await expect(page).toHaveURL(/\/dashboard/)
+  })
+
+  await test.step('opening the invoice from the invoices list, back returns to the list', async () => {
+    await page.getByRole('button', { name: 'Notas de Entrada' }).click()
+    await expect(page).toHaveURL(/\/invoices/)
+    await page.getByText('BACKTEST', { exact: true }).click()
+    await expect(page).toHaveURL(new RegExp(`/invoices/${invoiceId}`))
+
+    await page.getByRole('button', { name: 'Voltar' }).click()
+    await expect(page).toHaveURL(/\/invoices$/)
+  })
+
+  await test.step('filters the invoice items by product', async () => {
+    await page.getByText('BACKTEST', { exact: true }).click()
+    await expect(page).toHaveURL(new RegExp(`/invoices/${invoiceId}`))
+    await expect(page.getByText('PRODUTO BACK TEST NF')).toBeVisible()
+    await expect(page.getByText('OUTRO ITEM SEM RELACAO')).toBeVisible()
+
+    await page
+      .getByPlaceholder('Buscar por produto, código ou descrição...')
+      .fill('PRODUTO BACK TEST')
+
+    await expect(page.getByText('PRODUTO BACK TEST NF')).toBeVisible()
+    await expect(page.getByText('OUTRO ITEM SEM RELACAO')).not.toBeVisible()
+  })
 })
 
 test('confirms a batch of same-family invoice items with matching packaging', async ({
