@@ -17,7 +17,7 @@ import {
 
 export const filterProducts = (search: string, products: TProduct[]) =>
   products.filter((p) =>
-    matchesSearch(search, p.description, p.barcodes.join(' '))
+    matchesSearch(search, p.description, p.id, p.barcodes.join(' '))
   )
 
 export type TProductRow = TProduct & { marginStatus: TMarginStatus | null }

@@ -35,7 +35,8 @@ export const filterInvoices = (
             item.barcode,
             item.calculatedBarcode,
             item.packageBarcode,
-            item.supplierProductCode
+            item.supplierProductCode,
+            item.productId
           )
         )
     )

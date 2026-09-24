@@ -58,7 +58,8 @@ const matchesItemSearch = (search: string, item: TInvoiceItem): boolean =>
     item.barcode,
     item.calculatedBarcode,
     item.packageBarcode,
-    item.supplierProductCode
+    item.supplierProductCode,
+    item.productId
   )
 
 export const filterSuggestionsBySearch = (
