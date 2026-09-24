@@ -5,14 +5,31 @@ import {
   RequestQuote,
   TrendingUp
 } from '@mui/icons-material'
-import { Box, Typography } from '@mui/material'
+import {
+  Box,
+  FormControlLabel,
+  Switch,
+  TextField,
+  Typography
+} from '@mui/material'
 
 import { MarginAlerts, StatCard } from './_components'
 import * as S from './style'
 import { useDashboardHandler } from './use-dashboard-handler'
 
 export const Dashboard = () => {
-  const { isFetching, stats, marginAlerts } = useDashboardHandler()
+  const {
+    isFetching,
+    stats,
+    marginAlerts,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    isPeriodFilterEnabled,
+    setIsPeriodFilterEnabled,
+    activeDateRange
+  } = useDashboardHandler()
 
   return (
     <>
@@ -51,15 +68,51 @@ export const Dashboard = () => {
           color={!isFetching && stats.aboveMarginCount ? 'warning' : 'primary'}
         />
       </Box>
+      <Box sx={S.DateRangeWrapper}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={isPeriodFilterEnabled}
+              onChange={(e) => setIsPeriodFilterEnabled(e.target.checked)}
+            />
+          }
+          label="Filtrar por entrada no período"
+        />
+        <Typography variant="body2" color="text.secondary">
+          Entrada entre:
+        </Typography>
+        <TextField
+          label="Início do período"
+          type="date"
+          size="small"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          sx={S.DateField}
+          disabled={!isPeriodFilterEnabled}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+        <TextField
+          label="Fim do período"
+          type="date"
+          size="small"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          sx={S.DateField}
+          disabled={!isPeriodFilterEnabled}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+      </Box>
       <MarginAlerts
         direction="below"
         isFetching={isFetching}
         marginAlerts={marginAlerts.below}
+        dateRange={activeDateRange}
       />
       <MarginAlerts
         direction="above"
         isFetching={isFetching}
         marginAlerts={marginAlerts.above}
+        dateRange={activeDateRange}
       />
     </>
   )

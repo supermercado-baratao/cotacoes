@@ -1,24 +1,59 @@
-import { useMemo } from 'react'
+import dayjs from 'dayjs'
+import { useMemo, useState } from 'react'
 
 import { useAppStore } from '@/stores'
-import { buildRecentCostMap } from '@/utils'
 
-import { getDashboardStats, getMarginAlerts } from './utils'
+import {
+  buildLastEntryDateMap,
+  buildProductIdsWithEntryInRange,
+  filterMarginAlertsByEntryPeriod,
+  getDashboardStats,
+  getMarginAlerts
+} from './utils'
+
+const ENTRY_DATE_DEFAULT_WINDOW_DAYS = 30
 
 export const useDashboardHandler = () => {
-  const { products, quotes, invoices, recentInvoices, settings } = useAppStore()
+  const { products, quotes, invoices, settings } = useAppStore()
 
   const isFetching = products === null || quotes === null || invoices === null
 
-  const recentCostMap = useMemo(
-    () => buildRecentCostMap(recentInvoices ?? []),
-    [recentInvoices]
+  const [startDate, setStartDate] = useState(() =>
+    dayjs().subtract(ENTRY_DATE_DEFAULT_WINDOW_DAYS, 'day').format('YYYY-MM-DD')
+  )
+  const [endDate, setEndDate] = useState(() => dayjs().format('YYYY-MM-DD'))
+  const [isPeriodFilterEnabled, setIsPeriodFilterEnabled] = useState(true)
+
+  const lastEntryDateMap = useMemo(
+    () => buildLastEntryDateMap(invoices ?? []),
+    [invoices]
   )
 
   const marginAlerts = useMemo(
-    () => getMarginAlerts(products ?? [], recentCostMap, settings),
-    [products, recentCostMap, settings]
+    () => getMarginAlerts(products ?? [], settings, lastEntryDateMap),
+    [products, settings, lastEntryDateMap]
   )
+
+  // `null` significa "sem restrição de período" — filtro desligado pelo
+  // usuário ou intervalo inválido. Também é o valor passado pro drawer "Ver
+  // notas" de cada alerta, pra manter a mesma noção de período em toda a
+  // tela.
+  const activeDateRange = useMemo(() => {
+    if (!isPeriodFilterEnabled) return null
+    return startDate && endDate && startDate <= endDate
+      ? { startDate, endDate }
+      : null
+  }, [isPeriodFilterEnabled, startDate, endDate])
+
+  const filteredMarginAlerts = useMemo(() => {
+    if (!activeDateRange) return marginAlerts
+
+    const productIdsInPeriod = buildProductIdsWithEntryInRange(
+      invoices ?? [],
+      activeDateRange
+    )
+    return filterMarginAlertsByEntryPeriod(marginAlerts, productIdsInPeriod)
+  }, [marginAlerts, invoices, activeDateRange])
 
   const stats = useMemo(
     () =>
@@ -26,10 +61,21 @@ export const useDashboardHandler = () => {
         products ?? [],
         quotes ?? [],
         invoices ?? [],
-        marginAlerts
+        filteredMarginAlerts
       ),
-    [products, quotes, invoices, marginAlerts]
+    [products, quotes, invoices, filteredMarginAlerts]
   )
 
-  return { isFetching, stats, marginAlerts }
+  return {
+    isFetching,
+    stats,
+    marginAlerts: filteredMarginAlerts,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    isPeriodFilterEnabled,
+    setIsPeriodFilterEnabled,
+    activeDateRange
+  }
 }
