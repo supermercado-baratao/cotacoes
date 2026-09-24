@@ -258,11 +258,7 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
   )
 
   // Período padrão = menor/maior Data Movimento do relatório importado
-  // ('198954'/'199770'/'000427' em 10/06, '217636' em 11/06). Checado antes
-  // de navegar pra Produtos: o filtro é estado local sincronizado só quando
-  // dataDateRange MUDA (ver use-price-adjustments-handler.ts) — ao
-  // remontar a página com os dados já carregados, não teria mudança pra
-  // sincronizar e o filtro ficaria vazio.
+  // ('198954'/'199770'/'000427' em 10/06, '217636' em 11/06).
   await expect(page.getByLabel('Início do período')).toHaveValue('2026-06-10')
   await expect(page.getByLabel('Fim do período')).toHaveValue('2026-06-11')
 
@@ -275,6 +271,15 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
     .getByPlaceholder('Buscar produto...')
     .fill('SALG DORITOS 60G DINAMITA PIMENTA MEXICANA PCT')
   await expect(page.getByText('R$ 5,55')).toBeVisible()
+
+  // Remonta a página com `priceAdjustments` já carregado no store (a busca
+  // global resolveu na primeira visita) — o preenchimento automático do
+  // período precisa disparar de novo nesse caso, não só na primeira vez que
+  // os dados chegam.
+  await page.getByRole('button', { name: 'Reajustes de Preços' }).click()
+  await expect(page).toHaveURL(/\/price-adjustments/)
+  await expect(page.getByLabel('Início do período')).toHaveValue('2026-06-10')
+  await expect(page.getByLabel('Fim do período')).toHaveValue('2026-06-11')
 })
 
 test('the "Não cadastrado" group starts expanded on the "Sem cadastro" tab', async ({
