@@ -1,8 +1,16 @@
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
+import dayjs from 'dayjs'
+import type { Timestamp } from 'firebase/firestore'
 
 import { formatCurrency } from '@/utils'
 
 import type { TMarginAlert } from '../../utils'
+
+const renderMarginGap = ({ row }: GridRenderCellParams<TMarginAlert>) =>
+  `${row.status === 'below' ? '-' : '+'}${row.marginGap.toFixed(1)} p.p.`
+
+const formatDate = (value: Date | null) =>
+  value ? dayjs(value).format('DD/MM/YYYY') : '—'
 
 export const columns: GridColDef<TMarginAlert>[] = [
   {
@@ -32,14 +40,34 @@ export const columns: GridColDef<TMarginAlert>[] = [
     valueFormatter: (value: number) => `${value.toFixed(1)}%`
   },
   {
-    field: 'targetMargin',
-    headerName: 'Margem Padrão',
+    field: 'thresholdMargin',
+    headerName: 'Limite de Margem',
     valueFormatter: (value: number) => `${value.toFixed(1)}%`
   },
   {
     field: 'marginGap',
     headerName: 'Diferença',
-    valueFormatter: (value: number) =>
-      `${value > 0 ? '-' : '+'}${Math.abs(value).toFixed(1)} p.p.`
+    renderCell: renderMarginGap
+  },
+  {
+    field: 'updatedAt',
+    headerName: 'Última Atualização',
+    type: 'date',
+    valueGetter: (value: Timestamp) => value.toDate(),
+    valueFormatter: formatDate
+  },
+  {
+    field: 'vrCreatedAt',
+    headerName: 'Cadastro VR',
+    type: 'date',
+    valueGetter: (value: string) => (value ? new Date(value) : null),
+    valueFormatter: formatDate
+  },
+  {
+    field: 'lastEntryDate',
+    headerName: 'Última Entrada',
+    type: 'date',
+    valueGetter: (value: string | null) => (value ? new Date(value) : null),
+    valueFormatter: formatDate
   }
 ]
