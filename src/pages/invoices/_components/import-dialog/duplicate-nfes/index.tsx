@@ -17,13 +17,29 @@ import { useState } from 'react'
 
 import type { TParsedNfe } from '../../../utils'
 
+type TDuplicateNfesVariant = 'ignored' | 'completable'
+
+const buildMessage = (variant: TDuplicateNfesVariant, count: number) => {
+  const isSingular = count === 1
+  if (variant === 'completable') {
+    return isSingular
+      ? 'nota já importada será completada com os dados fiscais do XML (CFOP, natureza da operação e custo com impostos) — vínculos e conferência são mantidos'
+      : 'notas já importadas serão completadas com os dados fiscais do XML (CFOP, natureza da operação e custo com impostos) — vínculos e conferência são mantidos'
+  }
+  return isSingular
+    ? 'nota já foi importada anteriormente e será ignorada'
+    : 'notas já foram importadas anteriormente e serão ignoradas'
+}
+
 type TProps = {
   duplicateNfes: TParsedNfe[]
+  variant?: TDuplicateNfesVariant
   handleRemoveDuplicate: (accessKey: string) => void
 }
 
 export const DuplicateNfes = ({
   duplicateNfes,
+  variant = 'ignored',
   handleRemoveDuplicate
 }: TProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -35,17 +51,14 @@ export const DuplicateNfes = ({
   return (
     <Paper variant="outlined" sx={{ mb: 1 }}>
       <Alert
-        severity="info"
+        severity={variant === 'completable' ? 'success' : 'info'}
         action={
           <Button size="small" onClick={handleToggleExpanded}>
             {isExpanded ? 'Ocultar' : 'Ver detalhes'}
           </Button>
         }
       >
-        {duplicateNfes.length}{' '}
-        {duplicateNfes.length === 1
-          ? 'nota já foi importada anteriormente e será ignorada'
-          : 'notas já foram importadas anteriormente e serão ignoradas'}
+        {duplicateNfes.length} {buildMessage(variant, duplicateNfes.length)}
       </Alert>
       <Collapse in={isExpanded} mountOnEnter>
         <Divider />

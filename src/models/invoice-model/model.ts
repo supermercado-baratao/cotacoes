@@ -10,13 +10,14 @@ import {
 
 import { ConflictError, database, firestore, getUserPath } from '@/infra'
 import type { TUpdateData } from '@/types'
+import { completeInvoiceFiscalData, hasMissingFiscalData } from '@/utils'
 
-import type { TInvoice, TInvoiceDateRange } from './types'
+import type { TInvoice, TInvoiceDateRange, TInvoiceImportResult } from './types'
 
 const PATH = 'invoices'
 const IN_QUERY_CHUNK_SIZE = 30
 
-const findExistingIds = async (ids: string[]): Promise<Set<string>> => {
+const findExisting = async (ids: string[]): Promise<TInvoice[]> => {
   const chunks: string[][] = []
   for (let i = 0; i < ids.length; i += IN_QUERY_CHUNK_SIZE) {
     chunks.push(ids.slice(i, i + IN_QUERY_CHUNK_SIZE))
@@ -29,19 +30,39 @@ const findExistingIds = async (ids: string[]): Promise<Set<string>> => {
       })
     )
   )
-  return new Set(results.flat().map((invoice) => invoice.id))
+  return results.flat()
 }
 
 const createMany = async (
   data: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>
-): Promise<TInvoice[]> => {
-  const existingIds = await findExistingIds(data.map((item) => item.id))
-  const newData = data.filter((item) => !existingIds.has(item.id))
-  if (!newData.length) return []
-  return database.createManyWithIds<TInvoice>({
-    path: getUserPath(PATH),
-    data: newData
+): Promise<TInvoiceImportResult> => {
+  const existing = await findExisting(data.map((item) => item.id))
+  const existingById = new Map(existing.map((invoice) => [invoice.id, invoice]))
+
+  const newData = data.filter((item) => !existingById.has(item.id))
+  const completed = data.flatMap((item) => {
+    const current = existingById.get(item.id)
+    return current && hasMissingFiscalData(current)
+      ? [{ ...current, ...completeInvoiceFiscalData(current, item) }]
+      : []
   })
+
+  const [created, updated] = await Promise.all([
+    newData.length
+      ? database.createManyWithIds<TInvoice>({
+          path: getUserPath(PATH),
+          data: newData
+        })
+      : Promise.resolve([]),
+    completed.length
+      ? database.updateMany<TInvoice>({
+          path: getUserPath(PATH),
+          data: completed
+        })
+      : Promise.resolve([])
+  ])
+
+  return { created, completed: updated }
 }
 
 const create = async (

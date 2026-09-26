@@ -1,7 +1,13 @@
 import { expect, type Locator, type Page, test } from '@playwright/test'
 
 import type { TInvoice, TInvoiceItem, TProduct, TQuote } from '@/models'
-import { invoiceModel, productModel, quoteModel, settingsModel } from '@/models'
+import {
+  invoiceModel,
+  productModel,
+  quoteModel,
+  settingsModel,
+  supplierModel
+} from '@/models'
 
 import { clearData, createUser } from './orchestrator'
 
@@ -216,6 +222,8 @@ test('filters margin alerts by presence in an invoice within the selected period
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
 
   // Todos abaixo da margem (piso 25%): preço 100, custo 80 -> margem 20%.
+  // As notas trazem o mesmo custo do VR (80), já que o custo médio das notas
+  // do período prevalece sobre o do VR.
   await Promise.all([
     productModel.create(
       makeProduct({
@@ -234,14 +242,18 @@ test('filters margin alerts by presence in an invoice within the selected period
       makeInvoice({
         id: 'i1',
         emissionDate: daysAgo(10),
-        items: [makeInvoiceItem({ productId: 'p1' })]
+        items: [
+          makeInvoiceItem({ productId: 'p1', unitPrice: 80, totalPrice: 80 })
+        ]
       })
     ),
     invoiceModel.create(
       makeInvoice({
         id: 'i2',
         emissionDate: daysAgo(60),
-        items: [makeInvoiceItem({ productId: 'p2' })]
+        items: [
+          makeInvoiceItem({ productId: 'p2', unitPrice: 80, totalPrice: 80 })
+        ]
       })
     )
   ])
@@ -301,7 +313,7 @@ test('opens a drawer with the invoices where a flagged product had an entry with
 
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
 
-  // preço 100, custo 80 -> margem 20%; piso 25% -> abaixo.
+  // preço 100, custo 80 (VR e nota) -> margem 20%; piso 25% -> abaixo.
   await Promise.all([
     productModel.create(
       makeProduct({
@@ -314,7 +326,14 @@ test('opens a drawer with the invoices where a flagged product had an entry with
       makeInvoice({
         id: 'i1',
         emissionDate: daysAgo(5),
-        items: [makeInvoiceItem({ productId: 'p1', quantity: 3 })]
+        items: [
+          makeInvoiceItem({
+            productId: 'p1',
+            quantity: 3,
+            unitPrice: 80,
+            totalPrice: 240
+          })
+        ]
       })
     )
   ])
@@ -335,4 +354,101 @@ test('opens a drawer with the invoices where a flagged product had an entry with
     page.getByRole('cell', { name: 'i1', exact: true })
   ).toBeVisible()
   await expect(page.getByRole('cell', { name: 'FORNECEDOR' })).toBeVisible()
+})
+
+test('uses the entry cost with bonus and VR packing, flagging bonus and cost divergence', async ({
+  page
+}) => {
+  const { email, password } = await createUser()
+
+  await settingsModel.upsert({ marginTolerance: { below: 30, above: 100 } })
+
+  // Pelo custo do VR (10) a margem seria 50% — dentro da faixa. Pelas notas:
+  // 2 CX com 12 unidades cada (embalagem do VR pro código do fornecedor) a
+  // 216,00 = 432,00 pagos, mais 6 unidades bonificadas (CFOP 5910), cujo
+  // valor é ignorado -> 432 / (24 + 6) = 14,40 por unidade -> margem 28%,
+  // abaixo do piso de 30%. O custo das notas diverge +44% do VR -> atenção.
+  await Promise.all([
+    productModel.create({
+      ...makeProduct({
+        id: 'p1',
+        description: 'PRODUTO BONIFICADO',
+        price: 20,
+        costWithTax: 10
+      }),
+      supplierPackings: [
+        { supplierId: 's1', supplierProductCode: 'CX12', packQuantity: 12 }
+      ]
+    }),
+    invoiceModel.create(
+      makeInvoice({
+        id: 'venda',
+        emissionDate: daysAgo(5),
+        operationNature: 'VENDA DE MERCADORIA',
+        items: [
+          makeInvoiceItem({
+            productId: 'p1',
+            supplierProductCode: 'CX12',
+            unit: 'CX',
+            quantity: 2,
+            unitPrice: 216,
+            totalPrice: 432,
+            cfop: '5102',
+            totalCost: 432
+          })
+        ]
+      })
+    ),
+    invoiceModel.create(
+      makeInvoice({
+        id: 'bonificacao',
+        emissionDate: daysAgo(5),
+        operationNature: 'BONIFICACAO, DOACAO OU BRINDE',
+        items: [
+          makeInvoiceItem({
+            productId: 'p1',
+            supplierProductCode: 'UN',
+            quantity: 6,
+            unitPrice: 18,
+            totalPrice: 108,
+            cfop: '5910',
+            totalCost: 108
+          })
+        ]
+      })
+    )
+  ])
+  await supplierModel.create({
+    id: 's1',
+    legalName: 'FORNECEDOR',
+    tradeName: 'FORNECEDOR',
+    cnpj: '11111111000111',
+    email: null,
+    phone: null,
+    observations: null,
+    vrCreatedAt: '2020-01-01'
+  })
+
+  await page.goto('/signin')
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Senha').fill(password)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+  await expect(page).toHaveURL(/\/dashboard/)
+
+  // A célula de descrição também traz o selo "Bonificação", então o texto
+  // exato do produto não basta pra achar a linha.
+  const row = page.getByRole('row').filter({ hasText: 'PRODUTO BONIFICADO' })
+  await expect(row).toBeVisible()
+  await expect(row.getByText('Bonificação')).toBeVisible()
+  await expect(row.getByText('R$ 14,40')).toBeVisible()
+  await expect(row.getByLabel('Atenção: custo divergente do VR')).toBeVisible()
+
+  await row.getByRole('menuitem', { name: 'Ver notas' }).click()
+  const drawer = page.getByRole('presentation')
+  await expect(drawer.getByText('× 12')).toBeVisible()
+  await expect(
+    drawer.getByRole('cell', { name: '24', exact: true })
+  ).toBeVisible()
+  await expect(drawer.getByText('R$ 18,00')).toHaveCount(2)
+  await expect(drawer.getByText('Bonificação')).toBeVisible()
 })

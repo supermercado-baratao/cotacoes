@@ -1,5 +1,5 @@
 import { WarningAmber } from '@mui/icons-material'
-import { Box, Chip, Tooltip } from '@mui/material'
+import { Box, Chip, Tooltip, Typography } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 import type { Timestamp } from 'firebase/firestore'
@@ -21,38 +21,46 @@ const renderDescription = ({ row }: GridRenderCellParams<TMarginAlert>) => (
   </Box>
 )
 
+const formatDivergence = (divergence: number) =>
+  `${divergence > 0 ? '+' : ''}${divergence.toFixed(1)}%`
+
+const buildCostTooltip = (row: TMarginAlert): string => {
+  if (row.costSource === 'vr') {
+    return 'Sem entrada paga no período: custo com imposto do VR'
+  }
+  const vrCost = row.vrCost == null ? '—' : formatCurrency(row.vrCost)
+  const divergence =
+    row.costDivergence === null
+      ? ''
+      : ` (${formatDivergence(row.costDivergence)})`
+  const attention = row.isCostDivergent
+    ? ` Atenção: diverge mais de ${COST_DIVERGENCE_ATTENTION_PERCENT}% do custo do VR — confira a embalagem, bonificações ou o custo cadastrado no VR.`
+    : ''
+  return `Custo médio das notas de entrada do período. Custo VR: ${vrCost}${divergence}.${attention}`
+}
+
+// Custo usado na margem, com o custo do VR e a divergência no tooltip e só
+// um ícone de atenção na célula — compacto pra grade caber na tela sem
+// esconder a coluna de ações.
 const renderCost = ({ row }: GridRenderCellParams<TMarginAlert>) => (
-  <Tooltip
-    title={
-      row.costSource === 'entries'
-        ? 'Custo médio das notas de entrada do período'
-        : 'Sem entrada paga no período: custo com imposto do VR'
-    }
-  >
-    <span>
+  <Tooltip title={buildCostTooltip(row)}>
+    <Box sx={S.DescriptionCell}>
       {formatCurrency(row.cost)}
-      {row.costSource === 'vr' && ' (VR)'}
-    </span>
+      {row.costSource === 'vr' && (
+        <Typography variant="caption" color="text.secondary">
+          VR
+        </Typography>
+      )}
+      {row.isCostDivergent && (
+        <WarningAmber
+          color="warning"
+          fontSize="small"
+          aria-label="Atenção: custo divergente do VR"
+        />
+      )}
+    </Box>
   </Tooltip>
 )
-
-const renderCostDivergence = ({ row }: GridRenderCellParams<TMarginAlert>) => {
-  if (row.costDivergence === null) return '—'
-  const label = `${row.costDivergence > 0 ? '+' : ''}${row.costDivergence.toFixed(1)}%`
-  if (!row.isCostDivergent) return label
-  return (
-    <Tooltip
-      title={`Atenção: o custo das notas diverge mais de ${COST_DIVERGENCE_ATTENTION_PERCENT}% do custo do VR. Confira a embalagem, bonificações ou o custo cadastrado no VR.`}
-    >
-      <Chip
-        icon={<WarningAmber />}
-        label={label}
-        size="small"
-        color="warning"
-      />
-    </Tooltip>
-  )
-}
 
 const renderMarginGap = ({ row }: GridRenderCellParams<TMarginAlert>) =>
   `${row.status === 'below' ? '-' : '+'}${row.marginGap.toFixed(1)} p.p.`
@@ -68,7 +76,7 @@ export const columns: GridColDef<TMarginAlert>[] = [
   {
     field: 'description',
     headerName: 'Descrição',
-    minWidth: 280,
+    minWidth: 240,
     flex: 1,
     renderCell: renderDescription
   },
@@ -80,20 +88,7 @@ export const columns: GridColDef<TMarginAlert>[] = [
   {
     field: 'cost',
     headerName: 'Custo',
-    minWidth: 120,
     renderCell: renderCost
-  },
-  {
-    field: 'vrCost',
-    headerName: 'Custo VR',
-    valueFormatter: (value: number | null) =>
-      value == null ? '—' : formatCurrency(value)
-  },
-  {
-    field: 'costDivergence',
-    headerName: 'Divergência de Custo',
-    minWidth: 120,
-    renderCell: renderCostDivergence
   },
   {
     field: 'actualMargin',

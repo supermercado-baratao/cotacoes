@@ -57,3 +57,11 @@ export type TInvoice = {
   createdAt: Timestamp
   updatedAt: Timestamp
 }
+
+export type TInvoiceImportResult = {
+  created: TInvoice[]
+  // Notas já gravadas que estavam sem os dados fiscais adicionados depois
+  // (CFOP, natureza da operação, custo com impostos...) e foram completadas
+  // com o XML reenviado, preservando vínculos e conferência.
+  completed: TInvoice[]
+}
