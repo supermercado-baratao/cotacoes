@@ -3,7 +3,6 @@ import {
   ExpandMore,
   History,
   PriceCheck,
-  Sell,
   TrendingDown,
   TrendingFlat,
   TrendingUp,
@@ -57,13 +56,12 @@ const marginConfig: Record<
   mixed: { label: 'Margem variada entre os produtos', color: 'warning' }
 }
 
-// Preço Ant., Preço Venda e Preço Atual vêm do REP e são amarrados ao
-// produto no arquivo/sistema de origem — todo produto de uma mesma família
-// compartilha esses três valores, então basta ler da primeira linha do
-// grupo (com uma única linha, caso de um produto sem família, o resultado é
-// simplesmente os dados desse produto). Já a margem depende do custo real de
-// cada produto, então é resumida à parte (pode divergir dentro da mesma
-// família).
+// Preço Anterior e Preço Atual vêm do REP e são amarrados ao produto no
+// arquivo/sistema de origem — todo produto de uma mesma família compartilha
+// esses dois valores, então basta ler da primeira linha do grupo (com uma
+// única linha, caso de um produto sem família, o resultado é simplesmente os
+// dados desse produto). Já a margem depende do custo real de cada produto,
+// então é resumida à parte (pode divergir dentro da mesma família).
 export const PriceSummary = ({
   rows
 }: {
@@ -98,7 +96,7 @@ export const PriceSummary = ({
         <Box sx={S.PriceSummaryItemLabel}>
           <History fontSize="inherit" color="disabled" />
           <Typography variant="caption" color="text.secondary">
-            Preço Ant.
+            Preço Anterior
           </Typography>
         </Box>
         <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -112,29 +110,13 @@ export const PriceSummary = ({
 
       <Box sx={S.PriceSummaryItem}>
         <Box sx={S.PriceSummaryItemLabel}>
-          <Sell fontSize="inherit" color="disabled" />
-          <Typography variant="caption" color="text.secondary">
-            Preço Venda
-          </Typography>
-        </Box>
-        <Typography variant="body1" sx={{ fontWeight: 600 }}>
-          {formatCurrency(first.newSalePrice)}
-        </Typography>
-      </Box>
-
-      <Box sx={S.PriceSummaryDivider} />
-
-      <Box sx={S.PriceSummaryItem}>
-        <Box sx={S.PriceSummaryItemLabel}>
           <PriceCheck fontSize="inherit" color="disabled" />
           <Typography variant="caption" color="text.secondary">
             Preço Atual
           </Typography>
         </Box>
         <Typography variant="body1" sx={{ fontWeight: 600 }}>
-          {first.currentSystemPrice != null
-            ? formatCurrency(first.currentSystemPrice)
-            : '—'}
+          {formatCurrency(first.newSalePrice)}
         </Typography>
       </Box>
 

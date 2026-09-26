@@ -54,7 +54,7 @@ export const MarginTolerance = ({
     <Box sx={S.Wrapper}>
       <Box sx={S.GlobalRow}>
         <TextField
-          label="Tolerância abaixo da margem (p.p.)"
+          label="Margem mínima aceitável (%)"
           type="number"
           value={marginTolerance.below}
           onChange={(e) =>
@@ -67,7 +67,7 @@ export const MarginTolerance = ({
           sx={S.GlobalToleranceField}
         />
         <TextField
-          label="Tolerância acima da margem (p.p.)"
+          label="Margem máxima esperada (%)"
           type="number"
           value={marginTolerance.above}
           onChange={(e) =>
@@ -96,7 +96,7 @@ export const MarginTolerance = ({
                 ).toUpperCase()}
               </Typography>
               <TextField
-                label="Abaixo (p.p.)"
+                label="Mínima (%)"
                 type="number"
                 size="small"
                 value={row.tolerance.below}
@@ -111,7 +111,7 @@ export const MarginTolerance = ({
                 sx={S.OverrideToleranceField}
               />
               <TextField
-                label="Acima (p.p.)"
+                label="Máxima (%)"
                 type="number"
                 size="small"
                 value={row.tolerance.above}

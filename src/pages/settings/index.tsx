@@ -48,13 +48,13 @@ export const Settings = () => {
       </DataView>
 
       <Typography variant="subtitle1" sx={{ mt: 4 }}>
-        Tolerância de Margem
+        Margem de Referência
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Define quantos pontos percentuais de diferença em relação à margem
-        padrão do produto são tolerados antes de gerar um alerta de margem
-        abaixo ou acima do esperado. Pode ser ajustado globalmente ou por
-        departamento.
+        Define a margem mínima aceitável e a margem máxima esperada para os
+        produtos, considerando o custo com imposto cadastrado em cada um.
+        Produtos fora desse intervalo geram um alerta de margem abaixo ou acima
+        do esperado. Pode ser ajustado globalmente ou por departamento.
       </Typography>
       <MarginTolerance
         marginTolerance={marginTolerance}

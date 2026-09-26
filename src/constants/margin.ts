@@ -1,12 +1,11 @@
 import type { TMarginTolerance } from '@/models'
 
+// Piso/teto de margem inertes (nunca disparam alerta) até o usuário
+// configurar valores reais em Configurações — 0/0 aqui sinalizaria toda
+// margem positiva como "acima", inundando a tela por padrão.
 export const DEFAULT_MARGIN_TOLERANCE: TMarginTolerance = {
   below: 0,
-  above: 0
+  above: 100
 }
 
 export const MAX_MARGIN_TOLERANCE = 100
-
-// Janela usada para calcular o custo médio real de um produto a partir das
-// notas de entrada, antes de cair pro custo do catálogo (custocomimposto).
-export const RECENT_COST_WINDOW_DAYS = 30

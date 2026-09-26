@@ -18,15 +18,20 @@ export const getMarginTolerance = (
   return override ?? settings?.marginTolerance ?? DEFAULT_MARGIN_TOLERANCE
 }
 
+// Piso/teto globais (ou por departamento) de margem, não mais uma tolerância
+// de desvio em torno da margem própria do produto — `tolerance.below` é a
+// margem mínima aceitável, `tolerance.above` a máxima esperada.
 export const evaluateMargin = (
-  targetMargin: number,
   actualMargin: number,
   tolerance: TMarginTolerance
 ): TMarginEvaluation => {
-  const marginGap = targetMargin - actualMargin
-  if (marginGap > tolerance.below) return { status: 'below', marginGap }
-  if (-marginGap > tolerance.above) return { status: 'above', marginGap }
-  return { status: 'ok', marginGap }
+  if (actualMargin < tolerance.below) {
+    return { status: 'below', marginGap: tolerance.below - actualMargin }
+  }
+  if (actualMargin > tolerance.above) {
+    return { status: 'above', marginGap: actualMargin - tolerance.above }
+  }
+  return { status: 'ok', marginGap: 0 }
 }
 
 export const marginStatusConfig: Record<
