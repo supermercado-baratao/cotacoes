@@ -5,6 +5,8 @@ export const buildQuery = (date: string) => `
     p.datacadastro               AS datacadastro_produto,
     barcodes_info.codigos_barras,
     barcodes_info.tipos_embalagem,
+    barcodes_info.qtds_embalagem,
+    embalagens_fornecedor_info.embalagens_fornecedor,
 
     m1.descricao                  AS departamento,
     m2.descricao                  AS secao,
@@ -57,11 +59,34 @@ export const buildQuery = (date: string) => `
   LEFT JOIN LATERAL (
     SELECT
       string_agg(pa.codigobarras::text, '|' ORDER BY pa.qtdembalagem ASC) AS codigos_barras,
-      string_agg(te.descricao,          '|' ORDER BY pa.qtdembalagem ASC) AS tipos_embalagem
+      string_agg(te.descricao,          '|' ORDER BY pa.qtdembalagem ASC) AS tipos_embalagem,
+      string_agg(pa.qtdembalagem::text, '|' ORDER BY pa.qtdembalagem ASC) AS qtds_embalagem
     FROM produtoautomacao pa
     LEFT JOIN tipoembalagem te ON te.id = pa.id_tipoembalagem
     WHERE pa.id_produto = p.id
   ) AS barcodes_info ON true
+
+  -- Código do produto no fornecedor (<cProd> da NF-e) e a quantidade por
+  -- embalagem usada pelo VR ao lançar a nota, no formato codigo:qtd|codigo:qtd
+  LEFT JOIN LATERAL (
+    SELECT string_agg(DISTINCT codigos.codigo || ':' || codigos.qtd, '|') AS embalagens_fornecedor
+    FROM (
+      SELECT pf.codigoexterno::text AS codigo, pf.qtdembalagem::text AS qtd
+      FROM produtofornecedor pf
+      WHERE pf.id_produto = p.id
+        AND pf.id_fornecedor = f.id
+        AND pf.codigoexterno IS NOT NULL
+        AND pf.codigoexterno::text <> ''
+      UNION
+      SELECT pfce.codigoexterno::text, pfce.qtdembalagem::text
+      FROM produtofornecedorcodigoexterno pfce
+      JOIN produtofornecedor pf ON pf.id = pfce.id_produtofornecedor
+      WHERE pf.id_produto = p.id
+        AND pf.id_fornecedor = f.id
+        AND pfce.codigoexterno IS NOT NULL
+        AND pfce.codigoexterno::text <> ''
+    ) AS codigos
+  ) AS embalagens_fornecedor_info ON true
 
   LEFT JOIN LATERAL (
     SELECT fc.email

@@ -7,7 +7,11 @@ import { DataView, Table } from '@/components'
 import type { TInvoiceDateRange } from '@/models'
 import { useAppStore } from '@/stores'
 
-import { getInvoiceEntriesForProduct, type TMarginAlert } from '../../utils'
+import {
+  addEntryUnitCosts,
+  getInvoiceEntriesForProduct,
+  type TMarginAlert
+} from '../../utils'
 import { columns } from './columns'
 import { InvoiceEntriesDrawer } from './invoice-entries-drawer'
 import * as S from './style'
@@ -21,13 +25,13 @@ const copyByDirection: Record<
   below: {
     title: 'Produtos abaixo da margem',
     description:
-      'Produtos cujo preço de venda atual resulta numa margem menor que a margem mínima aceitável definida em Configurações, considerando o custo com imposto cadastrado no produto.',
+      'Produtos cujo preço de venda atual resulta numa margem menor que a margem mínima aceitável definida em Configurações, considerando o custo médio das notas de entrada do período (convertido pela embalagem do VR, com bonificações entrando só na quantidade) ou, sem entradas, o custo com imposto do VR.',
     emptyMessage: 'Nenhum produto abaixo da margem mínima no momento.'
   },
   above: {
     title: 'Produtos acima da margem',
     description:
-      'Produtos cujo preço de venda atual resulta numa margem maior que a margem máxima esperada definida em Configurações, considerando o custo com imposto cadastrado no produto.',
+      'Produtos cujo preço de venda atual resulta numa margem maior que a margem máxima esperada definida em Configurações, considerando o custo médio das notas de entrada do período (convertido pela embalagem do VR, com bonificações entrando só na quantidade) ou, sem entradas, o custo com imposto do VR.',
     emptyMessage: 'Nenhum produto acima da margem máxima no momento.'
   }
 }
@@ -45,12 +49,16 @@ export const MarginAlerts = ({
   marginAlerts,
   dateRange
 }: TMarginAlertsProps) => {
-  const { invoices } = useAppStore()
+  const { invoices, products, suppliers } = useAppStore()
   const [drawerAlert, setDrawerAlert] = useState<TMarginAlert | null>(null)
   const copy = copyByDirection[direction]
 
   const invoiceEntries = drawerAlert
-    ? getInvoiceEntriesForProduct(invoices ?? [], drawerAlert.id, dateRange)
+    ? addEntryUnitCosts(
+        getInvoiceEntriesForProduct(invoices ?? [], drawerAlert.id, dateRange),
+        products?.find((product) => product.id === drawerAlert.id) ?? null,
+        suppliers ?? []
+      )
     : []
 
   return (

@@ -27,6 +27,11 @@ export type TInvoiceItem = {
   tribUnit: string | null
   tribQuantity: number | null
   tribUnitPrice: number | null
+  // CFOP do item e custo total com impostos/despesas (vProd - vDesc + vFrete
+  // + vSeg + vOutro + vIPI + vICMSST + vFCPST). Ausentes em notas importadas
+  // antes da adição desses campos.
+  cfop?: string | null
+  totalCost?: number | null
   productId: string | null
   orderId: string | null
   matchStatus: TInvoiceItemMatchStatus
@@ -42,6 +47,8 @@ export type TInvoice = {
   emissionDate: string
   supplierCnpj: string
   supplierName: string
+  // <natOp> — ausente em notas importadas antes da adição do campo.
+  operationNature?: string | null
   destinationCnpj: string
   totalValue: number
   items: TInvoiceItem[]

@@ -9,3 +9,9 @@ export const DEFAULT_MARGIN_TOLERANCE: TMarginTolerance = {
 }
 
 export const MAX_MARGIN_TOLERANCE = 100
+
+// Divergência (em %) entre o custo calculado pelas notas de entrada e o
+// custo com imposto do VR a partir da qual o alerta de margem é marcado como
+// "atenção" — sinal de embalagem errada, bonificação não identificada ou
+// custo desatualizado no VR.
+export const COST_DIVERGENCE_ATTENTION_PERCENT = 15

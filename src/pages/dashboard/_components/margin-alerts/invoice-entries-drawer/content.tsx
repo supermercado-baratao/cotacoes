@@ -1,6 +1,7 @@
 import { ReceiptLong } from '@mui/icons-material'
 import {
   Box,
+  Chip,
   IconButton,
   Table as MuiTable,
   TableBody,
@@ -14,13 +15,20 @@ import {
 import dayjs from 'dayjs'
 import { Link } from 'react-router'
 
+import type { TPackQuantitySource } from '@/utils'
 import { formatCurrency, formatNumericValue } from '@/utils'
 
-import type { TInvoiceEntry } from '../../../utils'
+import type { TInvoiceEntryWithCost } from '../../../utils'
 import * as S from './style'
 
+const packSourceLabel: Record<TPackQuantitySource, string> = {
+  supplier: 'Embalagem cadastrada no VR para o código do fornecedor',
+  barcode: 'Embalagem do código de barras da nota no VR',
+  default: 'Sem embalagem cadastrada no VR para este código: considerado 1'
+}
+
 type TContentProps = {
-  entries: TInvoiceEntry[]
+  entries: TInvoiceEntryWithCost[]
 }
 
 export const Content = ({ entries }: TContentProps) => {
@@ -44,19 +52,51 @@ export const Content = ({ entries }: TContentProps) => {
             <TableCell>Emissão</TableCell>
             <TableCell>Qtd</TableCell>
             <TableCell>Preço Unit.</TableCell>
+            <TableCell>Embalagem</TableCell>
+            <TableCell>Qtd Unid.</TableCell>
+            <TableCell>Custo Unid.</TableCell>
             <TableCell align="right">Ações</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {entries.map(({ invoice, item }) => (
+          {entries.map(({ invoice, item, entryCost }) => (
             <TableRow key={`${invoice.id}-${item.itemNumber}`} hover>
               <TableCell>{invoice.number}</TableCell>
               <TableCell>{invoice.supplierName.toUpperCase()}</TableCell>
               <TableCell>
                 {dayjs(invoice.emissionDate).format('DD/MM/YYYY')}
               </TableCell>
-              <TableCell>{formatNumericValue(item.quantity)}</TableCell>
+              <TableCell>
+                {formatNumericValue(item.quantity)} {item.unit}
+              </TableCell>
               <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
+              <TableCell>
+                {entryCost ? (
+                  <Tooltip title={packSourceLabel[entryCost.source]}>
+                    <span>
+                      {entryCost.source === 'default'
+                        ? '—'
+                        : `× ${formatNumericValue(entryCost.packQuantity)}`}
+                    </span>
+                  </Tooltip>
+                ) : (
+                  '—'
+                )}
+              </TableCell>
+              <TableCell>
+                {entryCost ? formatNumericValue(entryCost.unitQuantity) : '—'}
+              </TableCell>
+              <TableCell>
+                {entryCost?.isBonus ? (
+                  <Tooltip title="Bonificação: entra no custo médio só com a quantidade">
+                    <Chip label="Bonificação" size="small" color="info" />
+                  </Tooltip>
+                ) : entryCost?.unitCost != null ? (
+                  formatCurrency(entryCost.unitCost)
+                ) : (
+                  '—'
+                )}
+              </TableCell>
               <TableCell align="right">
                 <Tooltip title="Ver nota fiscal">
                   <IconButton

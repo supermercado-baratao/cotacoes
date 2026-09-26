@@ -6,6 +6,7 @@ import {
   type TImportData,
   type TProduct,
   type TSupplier,
+  type TSupplierPacking,
   UPSERT_MANY_UPDATABLE_FIELDS
 } from '@/models'
 import type { TCreateDataWithId } from '@/types'
@@ -20,6 +21,9 @@ type TRawRow = {
   datacadastro_produto: string
   codigos_barras: string
   tipos_embalagem: string
+  // Ausentes em planilhas exportadas antes da adição dessas colunas à query.
+  qtds_embalagem?: string
+  embalagens_fornecedor?: string
 
   // mercadologico
   departamento: string
@@ -64,6 +68,33 @@ const separatePipes = (text: string): string[] => {
   return text.split('|').map((s) => s.trim())
 }
 
+// Quantidades de embalagem chegam como texto já concatenado pelo SQL
+// (string_agg), então usam ponto decimal do Postgres (ex: "12" ou "12.000"),
+// sem a formatação de milhar que a planilha aplica às colunas numéricas.
+const parsePackQuantity = (value: string): number => Number(value.trim())
+
+const parsePackQuantities = (row: TRawRow): number[] =>
+  row.qtds_embalagem
+    ? separatePipes(row.qtds_embalagem).map(
+        (qty) => parsePackQuantity(qty) || 1
+      )
+    : []
+
+// `embalagens_fornecedor` vem como "codigo:qtd|codigo:qtd" (ver query.ts).
+const parseSupplierPackings = (row: TRawRow): TSupplierPacking[] => {
+  if (!row.embalagens_fornecedor) return []
+  return separatePipes(row.embalagens_fornecedor).flatMap((entry) => {
+    const separatorIndex = entry.lastIndexOf(':')
+    if (separatorIndex <= 0) return []
+    const supplierProductCode = entry.slice(0, separatorIndex).trim()
+    const packQuantity = parsePackQuantity(entry.slice(separatorIndex + 1))
+    if (!supplierProductCode || !(packQuantity > 0)) return []
+    return [
+      { supplierId: row.id_fornecedor, supplierProductCode, packQuantity }
+    ]
+  })
+}
+
 // Departamento não tem código externo no arquivo (diferente de família, que
 // traz id_familia) — o id é derivado deterministicamente da própria descrição
 // bruta do ERP, pra reconhecer o mesmo departamento em reimportações futuras
@@ -89,6 +120,8 @@ const mapProduct = (
   departmentId,
   barcodes: separatePipes(row.codigos_barras),
   packTypes: separatePipes(row.tipos_embalagem),
+  packQuantities: parsePackQuantities(row),
+  supplierPackings: parseSupplierPackings(row),
   department: row.departamento,
   section: row.secao,
   group: row.grupo,
@@ -118,7 +151,10 @@ const mapSupplier = (row: TRawRow): TCreateDataWithId<TSupplier> => ({
 
 const isEqualValue = (a: unknown, b: unknown): boolean => {
   if (Array.isArray(a) && Array.isArray(b)) {
-    return a.length === b.length && a.every((v, i) => v === b[i])
+    return a.length === b.length && a.every((v, i) => isEqualValue(v, b[i]))
+  }
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    return JSON.stringify(a) === JSON.stringify(b)
   }
   return a === b
 }
@@ -158,7 +194,20 @@ export const getData = async (file: File): Promise<TImportData> => {
         description: row.departamento
       })
     }
-    productMap.set(row.id_produto, mapProduct(row, departmentId))
+    // Uma linha por (produto × fornecedor): os demais campos do produto se
+    // repetem, mas as embalagens por fornecedor precisam ser acumuladas.
+    const product = mapProduct(row, departmentId)
+    const previousSupplierPackings =
+      productMap.get(row.id_produto)?.supplierPackings ?? []
+    productMap.set(row.id_produto, {
+      ...product,
+      supplierPackings: [
+        ...previousSupplierPackings.filter(
+          (packing) => packing.supplierId !== row.id_fornecedor
+        ),
+        ...(product.supplierPackings ?? [])
+      ]
+    })
     row.id_familia && familyMap.set(row.id_familia, mapFamily(row))
     supplierMap.set(row.id_fornecedor, mapSupplier(row))
   })

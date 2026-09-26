@@ -1,13 +1,13 @@
 import { Drawer } from '@mui/material'
 
-import type { TInvoiceEntry, TMarginAlert } from '../../../utils'
+import type { TInvoiceEntryWithCost, TMarginAlert } from '../../../utils'
 import { Content } from './content'
 import { Header } from './header'
 import * as S from './style'
 
 type TInvoiceEntriesDrawerProps = {
   alert: TMarginAlert | null
-  entries: TInvoiceEntry[]
+  entries: TInvoiceEntryWithCost[]
   handleClose: () => void
 }
 
