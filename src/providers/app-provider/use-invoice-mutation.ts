@@ -11,6 +11,24 @@ import {
   upsertInvoiceInCache
 } from './invoice-cache'
 
+const buildImportSuccessTitle = (
+  createdCount: number,
+  completedCount: number
+): string => {
+  const parts: string[] = []
+  if (createdCount || !completedCount) {
+    parts.push(
+      `${createdCount} ${createdCount === 1 ? 'nota importada' : 'notas importadas'}`
+    )
+  }
+  if (completedCount) {
+    parts.push(
+      `${completedCount} ${completedCount === 1 ? 'nota completada' : 'notas completadas'}`
+    )
+  }
+  return `${parts.join(' e ')} com sucesso!`
+}
+
 export const useInvoiceMutation = () => {
   const { alert } = useAlertStore()
   const { handleSuccessCallbacks, handleErrorCallbacks } = useCallbackStore()
@@ -40,14 +58,17 @@ export const useInvoiceMutation = () => {
   const { mutate: createInvoicesBatch } = useMutation({
     mutationFn: (data: Array<Omit<TInvoice, 'createdAt' | 'updatedAt'>>) =>
       invoiceModel.createMany(data),
-    onSuccess: (invoices) => {
-      addInvoicesToCache(queryClient, invoices, invoiceDateRange)
-      const n = invoices.length
+    onSuccess: ({ created, completed }) => {
+      addInvoicesToCache(queryClient, created, invoiceDateRange)
+      completed.forEach((invoice) =>
+        upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
+      )
       alert({
         severity: 'success',
-        title: `${n} ${n === 1 ? 'nota importada' : 'notas importadas'} com sucesso!`
+        title: buildImportSuccessTitle(created.length, completed.length)
       })
       handleSuccessCallbacks()
+      if (!created.length) return
       settingsModel
         .upsert({ lastInvoiceImportAt: Timestamp.now() })
         .then((settings) => queryClient.setQueryData(['settings'], settings))

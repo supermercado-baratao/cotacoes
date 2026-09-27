@@ -35,27 +35,30 @@ A query completa está em [`query-sql.md`](./query-sql.md).
 
 ### Campos e seus papéis
 
-| Campo                     | Tipo    | Descrição                                                                                               |
-| ------------------------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `id_produto`              | integer | Chave do produto no VR                                                                                  |
-| `descricaocompleta`       | text    | Nome completo do produto                                                                                |
-| `datacadastro_produto`    | date    | Data de cadastro do produto no VR                                                                       |
-| `codigos_barras`          | text    | EANs separados por `\|`, ordenados do menor embalagem para o maior. Ex: `7891234567890\|17891234567897` |
-| `tipos_embalagem`         | text    | Tipos de embalagem correspondentes aos barcodes, separados por `\|`. Ex: `UN\|CX`                       |
-| `departamento`            | text    | Nível 1 da hierarquia mercadológica                                                                     |
-| `secao`                   | text    | Nível 2 da hierarquia mercadológica                                                                     |
-| `grupo`                   | text    | Nível 3 da hierarquia mercadológica                                                                     |
-| `id_familia`              | integer | ID da família de preço (pode ser nulo)                                                                  |
-| `familia`                 | text    | Nome da família de preço (pode ser nulo)                                                                |
-| `id_fornecedor`           | integer | Chave do fornecedor no VR                                                                               |
-| `razaosocial`             | text    | Razão social do fornecedor                                                                              |
-| `nomefantasia`            | text    | Nome fantasia do fornecedor                                                                             |
-| `cnpj`                    | numeric | CNPJ do fornecedor (sem formatação)                                                                     |
-| `telefone`                | text    | Telefone do fornecedor (pode ser nulo)                                                                  |
-| `datacadastro_fornecedor` | date    | Data de cadastro do fornecedor no VR                                                                    |
-| `email`                   | text    | Email do fornecedor, vindo de `fornecedorcontato` (pode ser nulo)                                       |
-| `precovenda`              | numeric | Preço de venda atual (loja 1), em centavos × 100 — dividir por 10000 para obter o valor real            |
-| `estoque`                 | numeric | Saldo em estoque (loja 1), em milésimos — dividir por 1000 para obter a quantidade real                 |
+| Campo                     | Tipo    | Descrição                                                                                                 |
+| ------------------------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| `id_produto`              | integer | Chave do produto no VR                                                                                    |
+| `descricaocompleta`       | text    | Nome completo do produto                                                                                  |
+| `datacadastro_produto`    | date    | Data de cadastro do produto no VR                                                                         |
+| `codigos_barras`          | text    | EANs separados por `\|`, ordenados do menor embalagem para o maior. Ex: `7891234567890\|17891234567897`   |
+| `tipos_embalagem`         | text    | Tipos de embalagem correspondentes aos barcodes, separados por `\|`. Ex: `UN\|CX`                         |
+| `qtds_embalagem`          | text    | Quantidade de unidades de cada barcode (`produtoautomacao.qtdembalagem`), separadas por `\|`. Ex: `1\|12` |
+| `embalagens_fornecedor`   | text    | Código do produto no fornecedor e quantidade por embalagem, no formato `codigo:qtd\|codigo:qtd`           |
+| `departamento`            | text    | Nível 1 da hierarquia mercadológica                                                                       |
+| `secao`                   | text    | Nível 2 da hierarquia mercadológica                                                                       |
+| `grupo`                   | text    | Nível 3 da hierarquia mercadológica                                                                       |
+| `id_familia`              | integer | ID da família de preço (pode ser nulo)                                                                    |
+| `familia`                 | text    | Nome da família de preço (pode ser nulo)                                                                  |
+| `id_fornecedor`           | integer | Chave do fornecedor no VR                                                                                 |
+| `razaosocial`             | text    | Razão social do fornecedor                                                                                |
+| `nomefantasia`            | text    | Nome fantasia do fornecedor                                                                               |
+| `cnpj`                    | numeric | CNPJ do fornecedor (sem formatação)                                                                       |
+| `telefone`                | text    | Telefone do fornecedor (pode ser nulo)                                                                    |
+| `datacadastro_fornecedor` | date    | Data de cadastro do fornecedor no VR                                                                      |
+| `email`                   | text    | Email do fornecedor, vindo de `fornecedorcontato` (pode ser nulo)                                         |
+| `precovenda`              | numeric | Preço de venda atual (loja 1), em centavos × 100 — dividir por 10000 para obter o valor real              |
+| `estoque`                 | numeric | Saldo em estoque (loja 1), em milésimos — dividir por 1000 para obter a quantidade real                   |
+| `custocomimposto`         | numeric | Custo com imposto (loja 1), escalado como `precovenda` — dividir por 10000                                |
 
 ### Observações importantes
 
@@ -64,6 +67,18 @@ A query completa está em [`query-sql.md`](./query-sql.md).
 - **`email` pode ser nulo**: nem todos os fornecedores têm contato cadastrado em `fornecedorcontato`.
 - **Estoque negativo é real**: indica divergência de inventário no VR, não erro de query.
 - **`precovenda` e `estoque` vêm escalados**: `precovenda / 10000` e `estoque / 1000` (formato interno do VR).
+- **`embalagens_fornecedor`** vem de `produtofornecedor` (código principal) e `produtofornecedorcodigoexterno` (códigos adicionais) — é a mesma conversão que o VR aplica ao lançar a nota: o `<cProd>` do item da NF-e é casado com o código do fornecedor e a quantidade comercial é multiplicada pela `qtdembalagem`. O app usa essa informação para converter notas que vêm em `CX`/fardo (valor unitário = valor da caixa) para unidades de venda, sem precisar corrigir a quantidade manualmente.
+
+---
+
+## Custo de entrada (Dashboard)
+
+Os alertas de margem do Dashboard usam o custo médio das notas de entrada do período selecionado, com fallback para `custocomimposto` quando o produto não teve entrada paga:
+
+- **Custo do item**: `vProd - vDesc + vFrete + vSeg + vOutro + vIPI + vICMSST + vFCPST` (mesma composição do custo com imposto do VR, sem abater créditos).
+- **Quantidade**: `qCom × qtdembalagem`, com a embalagem resolvida por (1) código do fornecedor em `embalagens_fornecedor`, (2) quantidade do barcode `<cEAN>` em `qtds_embalagem`, (3) 1.
+- **Bonificação** (CFOP 5910/6910, ou natureza da operação com `BONIFICACAO`/`DOACAO`/`BRINDE` quando o CFOP não é de venda): entra só na quantidade — o valor da nota é ignorado e o custo pago é diluído. O produto é marcado com "Bonificação".
+- **Atenção**: quando o custo das notas diverge mais de `COST_DIVERGENCE_ATTENTION_PERCENT` (15%) do `custocomimposto`, o alerta é marcado — geralmente embalagem não cadastrada no VR, bonificação não identificada ou custo desatualizado no VR.
 
 ---
 

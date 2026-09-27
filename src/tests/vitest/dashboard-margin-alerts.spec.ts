@@ -5,14 +5,17 @@ import type { TInvoice, TInvoiceItem, TProduct, TSettings } from '@/models'
 import {
   buildLastEntryDateMap,
   buildProductIdsWithEntryInRange,
+  filterInvoicesByEmissionDate,
   filterMarginAlertsByEntryPeriod,
   getInvoiceEntriesForProduct,
   getMarginAlerts
 } from '@/pages/dashboard/utils'
+import type { TEntryCost } from '@/utils'
 
 const now = Timestamp.now()
 
 const noEntries = new Map<string, string>()
+const noEntryCosts = new Map<string, TEntryCost>()
 
 const makeProduct = (overrides: Partial<TProduct> = {}): TProduct => ({
   id: 'p1',
@@ -96,7 +99,12 @@ describe('getMarginAlerts', () => {
     const product = makeProduct({ costWithTax: 80 })
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
 
-    const { below, above } = getMarginAlerts([product], settings, noEntries)
+    const { below, above } = getMarginAlerts(
+      [product],
+      settings,
+      noEntries,
+      noEntryCosts
+    )
 
     expect(above).toEqual([])
     expect(below).toHaveLength(1)
@@ -117,7 +125,12 @@ describe('getMarginAlerts', () => {
     const product = makeProduct({ costWithTax: 50 })
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
 
-    const { below, above } = getMarginAlerts([product], settings, noEntries)
+    const { below, above } = getMarginAlerts(
+      [product],
+      settings,
+      noEntries,
+      noEntryCosts
+    )
 
     expect(below).toEqual([])
     expect(above).toHaveLength(1)
@@ -134,7 +147,12 @@ describe('getMarginAlerts', () => {
     const withinRange = makeProduct({ id: 'p1', costWithTax: 70 })
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
 
-    const { below, above } = getMarginAlerts([withinRange], settings, noEntries)
+    const { below, above } = getMarginAlerts(
+      [withinRange],
+      settings,
+      noEntries,
+      noEntryCosts
+    )
 
     expect(below).toEqual([])
     expect(above).toEqual([])
@@ -145,7 +163,12 @@ describe('getMarginAlerts', () => {
     // 100% never trips for a normal positive margin.
     const product = makeProduct({ costWithTax: 70 })
 
-    const { below, above } = getMarginAlerts([product], null, noEntries)
+    const { below, above } = getMarginAlerts(
+      [product],
+      null,
+      noEntries,
+      noEntryCosts
+    )
 
     expect(below).toEqual([])
     expect(above).toEqual([])
@@ -160,7 +183,12 @@ describe('getMarginAlerts', () => {
       departmentMarginTolerances: { 'dept-1': { below: 20, above: 35 } }
     })
 
-    const { below } = getMarginAlerts([product], settings, noEntries)
+    const { below } = getMarginAlerts(
+      [product],
+      settings,
+      noEntries,
+      noEntryCosts
+    )
     expect(below).toEqual([])
   })
 
@@ -172,7 +200,8 @@ describe('getMarginAlerts', () => {
     const { below, above } = getMarginAlerts(
       [noPrice, noCost],
       settings,
-      noEntries
+      noEntries,
+      noEntryCosts
     )
 
     expect(below).toEqual([])
@@ -186,7 +215,12 @@ describe('getMarginAlerts', () => {
     // actual margin 10% -> gap of 20 p.p.
     const big = makeProduct({ id: 'p2', price: 100, costWithTax: 90 })
 
-    const { below } = getMarginAlerts([small, big], settings, noEntries)
+    const { below } = getMarginAlerts(
+      [small, big],
+      settings,
+      noEntries,
+      noEntryCosts
+    )
 
     expect(below.map((alert) => alert.id)).toEqual(['p2', 'p1'])
   })
@@ -198,9 +232,85 @@ describe('getMarginAlerts', () => {
     // actual margin 60% -> excess of 30 p.p.
     const big = makeProduct({ id: 'p2', price: 100, costWithTax: 40 })
 
-    const { above } = getMarginAlerts([small, big], settings, noEntries)
+    const { above } = getMarginAlerts(
+      [small, big],
+      settings,
+      noEntries,
+      noEntryCosts
+    )
 
     expect(above.map((alert) => alert.id)).toEqual(['p2', 'p1'])
+  })
+
+  test('uses the entry cost from invoices instead of the VR cost when available', () => {
+    // entry cost 80 -> margin 20% (below 25%); VR cost 70 would be ok
+    const product = makeProduct({ costWithTax: 70 })
+    const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
+    const entryCosts = new Map<string, TEntryCost>([
+      ['p1', { cost: 80, paidQuantity: 10, bonusQuantity: 0, hasBonus: false }]
+    ])
+
+    const { below } = getMarginAlerts(
+      [product],
+      settings,
+      noEntries,
+      entryCosts
+    )
+
+    expect(below).toHaveLength(1)
+    expect(below[0]).toMatchObject({
+      cost: 80,
+      costSource: 'entries',
+      vrCost: 70,
+      hasBonus: false
+    })
+    expect(below[0].costDivergence).toBeCloseTo(14.29, 2)
+    expect(below[0].isCostDivergent).toBe(false)
+  })
+
+  test('flags attention when the entry cost diverges too much from the VR cost', () => {
+    // entry cost 90 vs VR 70 -> +28.6% (over the attention threshold)
+    const product = makeProduct({ costWithTax: 70 })
+    const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
+    const entryCosts = new Map<string, TEntryCost>([
+      ['p1', { cost: 90, paidQuantity: 10, bonusQuantity: 2, hasBonus: true }]
+    ])
+
+    const { below } = getMarginAlerts(
+      [product],
+      settings,
+      noEntries,
+      entryCosts
+    )
+
+    expect(below[0]).toMatchObject({
+      cost: 90,
+      isCostDivergent: true,
+      hasBonus: true
+    })
+  })
+
+  test('falls back to the VR cost when there was only bonus entries', () => {
+    const product = makeProduct({ costWithTax: 80 })
+    const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
+    const entryCosts = new Map<string, TEntryCost>([
+      ['p1', { cost: null, paidQuantity: 0, bonusQuantity: 5, hasBonus: true }]
+    ])
+
+    const { below } = getMarginAlerts(
+      [product],
+      settings,
+      noEntries,
+      entryCosts
+    )
+
+    expect(below[0]).toMatchObject({
+      cost: 80,
+      costSource: 'vr',
+      costDivergence: null,
+      isCostDivergent: false,
+      hasBonus: true
+    })
   })
 
   test('reads the last entry date from the map when one exists for the product', () => {
@@ -208,9 +318,43 @@ describe('getMarginAlerts', () => {
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
     const entries = new Map([['p1', '2026-09-10']])
 
-    const { below } = getMarginAlerts([product], settings, entries)
+    const { below } = getMarginAlerts(
+      [product],
+      settings,
+      entries,
+      noEntryCosts
+    )
 
     expect(below[0]).toMatchObject({ lastEntryDate: '2026-09-10' })
+  })
+})
+
+describe('filterInvoicesByEmissionDate', () => {
+  test('includes invoices emitted on the last day of the range despite the time part', () => {
+    const invoices = [
+      makeInvoice({
+        id: 'i1',
+        emissionDate: '2026-09-30T18:04:07-03:00',
+        items: []
+      }),
+      makeInvoice({
+        id: 'i2',
+        emissionDate: '2026-10-01T08:00:00-03:00',
+        items: []
+      })
+    ]
+
+    const result = filterInvoicesByEmissionDate(invoices, {
+      startDate: '2026-09-01',
+      endDate: '2026-09-30'
+    })
+
+    expect(result.map((invoice) => invoice.id)).toEqual(['i1'])
+  })
+
+  test('keeps every invoice when the period filter is disabled', () => {
+    const invoices = [makeInvoice({ id: 'i1', items: [] })]
+    expect(filterInvoicesByEmissionDate(invoices, null)).toEqual(invoices)
   })
 })
 
@@ -292,6 +436,11 @@ describe('filterMarginAlertsByEntryPeriod', () => {
     description: '',
     price: 100,
     cost: 70,
+    costSource: 'vr' as const,
+    vrCost: 70,
+    costDivergence: null,
+    isCostDivergent: false,
+    hasBonus: false,
     thresholdMargin: 25,
     actualMargin: 30,
     marginGap: 0,

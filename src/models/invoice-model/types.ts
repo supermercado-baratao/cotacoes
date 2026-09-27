@@ -27,6 +27,11 @@ export type TInvoiceItem = {
   tribUnit: string | null
   tribQuantity: number | null
   tribUnitPrice: number | null
+  // CFOP do item e custo total com impostos/despesas (vProd - vDesc + vFrete
+  // + vSeg + vOutro + vIPI + vICMSST + vFCPST). Ausentes em notas importadas
+  // antes da adição desses campos.
+  cfop?: string | null
+  totalCost?: number | null
   productId: string | null
   orderId: string | null
   matchStatus: TInvoiceItemMatchStatus
@@ -42,6 +47,8 @@ export type TInvoice = {
   emissionDate: string
   supplierCnpj: string
   supplierName: string
+  // <natOp> — ausente em notas importadas antes da adição do campo.
+  operationNature?: string | null
   destinationCnpj: string
   totalValue: number
   items: TInvoiceItem[]
@@ -49,4 +56,12 @@ export type TInvoice = {
   quoteId: string | null
   createdAt: Timestamp
   updatedAt: Timestamp
+}
+
+export type TInvoiceImportResult = {
+  created: TInvoice[]
+  // Notas já gravadas que estavam sem os dados fiscais adicionados depois
+  // (CFOP, natureza da operação, custo com impostos...) e foram completadas
+  // com o XML reenviado, preservando vínculos e conferência.
+  completed: TInvoice[]
 }

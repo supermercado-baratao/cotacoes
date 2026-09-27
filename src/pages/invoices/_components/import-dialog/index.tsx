@@ -34,6 +34,19 @@ import { IgnoredSupplierNfes } from './ignored-supplier-nfes'
 import * as S from './style'
 import { useImportDialogHandler } from './use-import-dialog-handler'
 
+const buildImportLabel = (newCount: number, completableCount: number) => {
+  const parts: string[] = []
+  if (newCount) {
+    parts.push(`Importar ${newCount} ${newCount === 1 ? 'nota' : 'notas'}`)
+  }
+  if (completableCount) {
+    parts.push(
+      `${newCount ? 'completar' : 'Completar'} ${completableCount} ${completableCount === 1 ? 'nota' : 'notas'}`
+    )
+  }
+  return parts.length ? parts.join(' e ') : 'Importar'
+}
+
 type TImportDialogProps = {
   isOpened: boolean
   handleClose: () => void
@@ -43,6 +56,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
   const {
     parsedNfes,
     duplicateNfes,
+    completableNfes,
     ignoredNfes,
     parseErrors,
     products,
@@ -50,6 +64,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
     handleFilesChange,
     handleRemoveNfe,
     handleRemoveDuplicate,
+    handleRemoveCompletable,
     handleRemoveIgnored,
     handleRemoveError,
     handleIgnoreSupplier,
@@ -131,6 +146,12 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
           <strong>{err.filename}:</strong> {err.message}
         </Alert>
       ))}
+
+      <DuplicateNfes
+        duplicateNfes={completableNfes}
+        variant="completable"
+        handleRemoveDuplicate={handleRemoveCompletable}
+      />
 
       <DuplicateNfes
         duplicateNfes={duplicateNfes}
@@ -280,12 +301,10 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
         <Button onClick={handleCloseAndReset}>Cancelar</Button>
         <Button
           variant="contained"
-          disabled={!parsedNfes.length}
+          disabled={!parsedNfes.length && !completableNfes.length}
           onClick={handleImport}
         >
-          {parsedNfes.length > 0
-            ? `Importar ${parsedNfes.length} ${parsedNfes.length === 1 ? 'nota' : 'notas'}`
-            : 'Importar'}
+          {buildImportLabel(parsedNfes.length, completableNfes.length)}
         </Button>
       </Box>
     </Modal>

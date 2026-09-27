@@ -26,6 +26,11 @@ const login = async (page: Page, email: string, password: string) => {
   await expect(page).toHaveURL(/\/dashboard/)
   await page.getByRole('button', { name: 'Notas de Entrada' }).click()
   await expect(page).toHaveURL(/\/invoices/)
+  // A lista mostra por padrão só os últimos 90 dias a partir de hoje — fixa
+  // o início do período pra que as notas dos fixtures (2026) continuem
+  // visíveis independentemente da data em que o teste roda.
+  await page.getByLabel('De', { exact: true }).fill('2026-01-01')
+  await page.getByRole('button', { name: 'Buscar' }).click()
 }
 
 const openImportDialog = async (page: Page) => {
@@ -119,6 +124,76 @@ test('imports an invoice, blocks reimporting it and rejects an XML without an ac
 
     await page.getByRole('alert').getByRole('button').click()
     await expect(page.getByText('invalido.xml:')).not.toBeVisible()
+  })
+})
+
+test('completes the fiscal data of an invoice imported before those fields existed', async ({
+  page
+}) => {
+  test.setTimeout(60000)
+  const { email, password } = await createUser()
+  await populateDatabase()
+  await login(page, email, password)
+
+  await openImportDialog(page)
+  await uploadXml(page, `${QUOTE_DIR}/${INVOICE_XML}`)
+  await page.getByRole('button', { name: 'Importar 1 nota' }).click()
+  await expect(page.getByText('1 nota importada com sucesso!')).toBeVisible()
+
+  // Regrava a nota como ficaria antes dos campos fiscais (sem natOp, CFOP,
+  // custo com impostos e unidade tributável), já conferida no app.
+  const [imported] = await invoiceModel.findMany({
+    startDate: '2026-06-01',
+    endDate: '2026-06-30'
+  })
+  const legacy = {
+    ...imported,
+    verificationStatus: 'approved',
+    items: imported.items.map((item) => {
+      const legacyItem: Partial<typeof item> = { ...item }
+      delete legacyItem.cfop
+      delete legacyItem.totalCost
+      delete legacyItem.tribUnit
+      delete legacyItem.tribQuantity
+      delete legacyItem.tribUnitPrice
+      return legacyItem
+    })
+  } as TInvoice
+  delete legacy.operationNature
+  await invoiceModel.deleteUniqueById(imported.id)
+  await invoiceModel.create(legacy)
+  await page.reload()
+  await page.getByLabel('De', { exact: true }).fill('2026-01-01')
+  await page.getByRole('button', { name: 'Buscar' }).click()
+  await expect(page.getByText('Aprovada')).toBeVisible()
+
+  await openImportDialog(page)
+  await uploadXml(page, `${QUOTE_DIR}/${INVOICE_XML}`)
+  await expect(
+    page.getByText(
+      /1 nota já importada será completada com os dados fiscais do XML/
+    )
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Completar 1 nota' }).click()
+  await expect(page.getByText('1 nota completada com sucesso!')).toBeVisible()
+
+  await expect(page.getByText('Aprovada')).toBeVisible()
+  const [completed] = await invoiceModel.findMany({
+    startDate: '2026-06-01',
+    endDate: '2026-06-30'
+  })
+  expect(completed.verificationStatus).toBe('approved')
+  expect(completed.operationNature).toBeTruthy()
+  expect(completed.items.every((item) => item.cfop)).toBe(true)
+  expect(completed.items.every((item) => item.totalCost != null)).toBe(true)
+
+  await test.step('treats the completed invoice as a regular duplicate afterwards', async () => {
+    await openImportDialog(page)
+    await uploadXml(page, `${QUOTE_DIR}/${INVOICE_XML}`)
+    await expect(
+      page.getByText('1 nota já foi importada anteriormente e será ignorada')
+    ).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Importar' })).toBeDisabled()
   })
 })
 

@@ -196,6 +196,28 @@ const buildBarcodeMap = (products: TProduct[]): Map<string, TProduct> => {
   return barcodeMap
 }
 
+const getNumber = (root: Element | undefined, tag: string): number =>
+  root ? Number(get(root, tag)) || 0 : 0
+
+// Custo total do item com impostos e despesas acessórias — mesma composição
+// do custo com imposto do VR (sem abater créditos), pra que o custo médio
+// das notas seja comparável ao produtocomplemento.custocomimposto.
+const calcItemTotalCost = (det: Element, prod: Element): number => {
+  const imposto = det.getElementsByTagName('imposto')[0]
+  const ipi = imposto?.getElementsByTagName('IPI')[0]
+  const icms = imposto?.getElementsByTagName('ICMS')[0]
+  const total =
+    getNumber(prod, 'vProd') -
+    getNumber(prod, 'vDesc') +
+    getNumber(prod, 'vFrete') +
+    getNumber(prod, 'vSeg') +
+    getNumber(prod, 'vOutro') +
+    getNumber(ipi, 'vIPI') +
+    getNumber(icms, 'vICMSST') +
+    getNumber(icms, 'vFCPST')
+  return Math.round(total * 100) / 100
+}
+
 const parseItems = (
   doc: Document,
   barcodeMap: Map<string, TProduct>,
@@ -240,6 +262,8 @@ const parseItems = (
       tribUnit: get(prod, 'uTrib'),
       tribQuantity: Number(get(prod, 'qTrib')),
       tribUnitPrice: Number(get(prod, 'vUnTrib')),
+      cfop: get(prod, 'CFOP') || null,
+      totalCost: calcItemTotalCost(det, prod),
       productId,
       orderId: null,
       matchStatus,
@@ -283,6 +307,7 @@ export const parseNfe = (
     emissionDate: get(doc, 'dhEmi'),
     supplierCnpj,
     supplierName,
+    operationNature: get(doc, 'natOp') || null,
     destinationCnpj,
     totalValue: Number(get(doc, 'vNF')),
     items: parseItems(doc, barcodeMap, packageBarcodeLinkMap),

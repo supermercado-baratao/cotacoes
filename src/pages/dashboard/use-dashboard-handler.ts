@@ -2,10 +2,12 @@ import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 
 import { useAppStore } from '@/stores'
+import { buildEntryCostMap } from '@/utils'
 
 import {
   buildLastEntryDateMap,
   buildProductIdsWithEntryInRange,
+  filterInvoicesByEmissionDate,
   filterMarginAlertsByEntryPeriod,
   getDashboardStats,
   getMarginAlerts
@@ -14,7 +16,7 @@ import {
 const ENTRY_DATE_DEFAULT_WINDOW_DAYS = 30
 
 export const useDashboardHandler = () => {
-  const { products, quotes, invoices, settings } = useAppStore()
+  const { products, quotes, invoices, suppliers, settings } = useAppStore()
 
   const isFetching = products === null || quotes === null || invoices === null
 
@@ -29,11 +31,6 @@ export const useDashboardHandler = () => {
     [invoices]
   )
 
-  const marginAlerts = useMemo(
-    () => getMarginAlerts(products ?? [], settings, lastEntryDateMap),
-    [products, settings, lastEntryDateMap]
-  )
-
   // `null` significa "sem restrição de período" — filtro desligado pelo
   // usuário ou intervalo inválido. Também é o valor passado pro drawer "Ver
   // notas" de cada alerta, pra manter a mesma noção de período em toda a
@@ -44,6 +41,24 @@ export const useDashboardHandler = () => {
       ? { startDate, endDate }
       : null
   }, [isPeriodFilterEnabled, startDate, endDate])
+
+  // Custo médio de entrada só com as notas do período ativo — o mesmo
+  // período que decide quais alertas aparecem.
+  const entryCostMap = useMemo(
+    () =>
+      buildEntryCostMap(
+        filterInvoicesByEmissionDate(invoices ?? [], activeDateRange),
+        products ?? [],
+        suppliers ?? []
+      ),
+    [invoices, products, suppliers, activeDateRange]
+  )
+
+  const marginAlerts = useMemo(
+    () =>
+      getMarginAlerts(products ?? [], settings, lastEntryDateMap, entryCostMap),
+    [products, settings, lastEntryDateMap, entryCostMap]
+  )
 
   const filteredMarginAlerts = useMemo(() => {
     if (!activeDateRange) return marginAlerts

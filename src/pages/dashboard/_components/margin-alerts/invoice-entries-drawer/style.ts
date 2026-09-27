@@ -1,7 +1,7 @@
 import type { SxProps, Theme } from '@mui/material'
 
 export const Paper: SxProps<Theme> = {
-  width: { xs: '100%', sm: 700 },
+  width: { xs: '100%', sm: 900 },
   display: 'flex',
   flexDirection: 'column'
 }

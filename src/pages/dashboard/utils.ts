@@ -1,20 +1,41 @@
 import type { Timestamp } from 'firebase/firestore'
 
+import { COST_DIVERGENCE_ATTENTION_PERCENT } from '@/constants'
 import type {
   TInvoice,
   TInvoiceDateRange,
   TInvoiceItem,
   TProduct,
   TQuote,
-  TSettings
+  TSettings,
+  TSupplier
 } from '@/models'
-import { evaluateMargin, getMarginTolerance, type TMarginStatus } from '@/utils'
+import {
+  evaluateMargin,
+  findSupplierByCnpj,
+  getCostDivergence,
+  getEntryUnitCost,
+  getMarginTolerance,
+  type TEntryCost,
+  type TEntryUnitCost,
+  type TMarginStatus
+} from '@/utils'
+
+export type TMarginCostSource = 'entries' | 'vr'
 
 export type TMarginAlert = {
   id: string
   description: string
   price: number
+  // Custo usado na margem: médio das notas de entrada do período quando
+  // houver, senão o custo com imposto do VR.
   cost: number
+  costSource: TMarginCostSource
+  vrCost: number | null
+  // Divergência (%) do custo das notas em relação ao custo do VR.
+  costDivergence: number | null
+  isCostDivergent: boolean
+  hasBonus: boolean
   thresholdMargin: number
   actualMargin: number
   marginGap: number
@@ -48,22 +69,27 @@ export type TMarginAlerts = {
 }
 
 // Avalia todo o catálogo (não só produtos que já passaram por reajuste de
-// preços) — custo é sempre o custo com imposto cadastrado no produto
-// (custocomimposto), sem olhar pra notas fiscais (quantidade por nota não é
-// confiável pra sustentar uma média). O alvo de margem não é mais por
-// produto: `tolerance.below`/`.above` (Configurações, global ou por
-// departamento) são o piso/teto aplicados a todo o catálogo.
+// preços). Custo: médio das notas de entrada do período (ver
+// buildEntryCostMap — quantidade convertida pela embalagem do VR e
+// bonificação entrando só na quantidade), com fallback pro custo com imposto
+// cadastrado no VR (custocomimposto) quando o produto não teve entrada paga.
+// O alvo de margem não é por produto: `tolerance.below`/`.above`
+// (Configurações, global ou por departamento) são o piso/teto aplicados a
+// todo o catálogo.
 export const getMarginAlerts = (
   products: TProduct[],
   settings: TSettings | null,
-  lastEntryDateMap: Map<string, string>
+  lastEntryDateMap: Map<string, string>,
+  entryCostMap: Map<string, TEntryCost>
 ): TMarginAlerts => {
   const below: TMarginAlert[] = []
   const above: TMarginAlert[] = []
 
   products.forEach((product) => {
     const price = product.price
-    const cost = product.costWithTax
+    const entryCost = entryCostMap.get(product.id) ?? null
+    const vrCost = product.costWithTax
+    const cost = entryCost?.cost ?? vrCost
     // !price (não `price == null`) é proposital: preço 0 tornaria a divisão
     // abaixo indefinida. Custo 0 é um valor legítimo (ex: item promocional) e
     // não deve ser tratado como "sem dado".
@@ -74,11 +100,19 @@ export const getMarginAlerts = (
     const { status, marginGap } = evaluateMargin(actualMargin, tolerance)
     if (status === 'ok') return
 
+    const costDivergence = getCostDivergence(entryCost?.cost ?? null, vrCost)
     const alert: TMarginAlert = {
       id: product.id,
       description: product.description,
       price,
       cost,
+      costSource: entryCost?.cost != null ? 'entries' : 'vr',
+      vrCost,
+      costDivergence,
+      isCostDivergent:
+        costDivergence !== null &&
+        Math.abs(costDivergence) > COST_DIVERGENCE_ATTENTION_PERCENT,
+      hasBonus: entryCost?.hasBonus ?? false,
       thresholdMargin: status === 'below' ? tolerance.below : tolerance.above,
       actualMargin,
       marginGap,
@@ -96,11 +130,27 @@ export const getMarginAlerts = (
   return { below, above }
 }
 
+// `emissionDate` é o <dhEmi> completo (com hora e fuso) — compara só a data,
+// senão uma nota emitida no próprio dia final ficaria de fora
+// ("2026-05-30T12:51..." > "2026-05-30").
 const isEmissionDateInRange = (
   emissionDate: string,
   dateRange: TInvoiceDateRange
-): boolean =>
-  emissionDate >= dateRange.startDate && emissionDate <= dateRange.endDate
+): boolean => {
+  const date = emissionDate.slice(0, 10)
+  return date >= dateRange.startDate && date <= dateRange.endDate
+}
+
+// `dateRange === null` mantém todas as notas (filtro de período desligado).
+export const filterInvoicesByEmissionDate = (
+  invoices: TInvoice[],
+  dateRange: TInvoiceDateRange | null
+): TInvoice[] =>
+  dateRange
+    ? invoices.filter((invoice) =>
+        isEmissionDateInRange(invoice.emissionDate, dateRange)
+      )
+    : invoices
 
 // Produtos com item vinculado em alguma nota emitida dentro do intervalo —
 // base pro filtro de período: presença numa nota do período, não a última
@@ -147,6 +197,29 @@ export const getInvoiceEntriesForProduct = (
     b.invoice.emissionDate.localeCompare(a.invoice.emissionDate)
   )
 }
+
+export type TInvoiceEntryWithCost = TInvoiceEntry & {
+  entryCost: TEntryUnitCost | null
+}
+
+// Embalagem, bonificação e custo por unidade de cada entrada — mesma conta
+// usada no custo médio do alerta, pra o drawer mostrar de onde ele veio.
+export const addEntryUnitCosts = (
+  entries: TInvoiceEntry[],
+  product: TProduct | null,
+  suppliers: TSupplier[]
+): TInvoiceEntryWithCost[] =>
+  entries.map((entry) => ({
+    ...entry,
+    entryCost: product
+      ? getEntryUnitCost(
+          entry.invoice,
+          entry.item,
+          product,
+          findSupplierByCnpj(entry.invoice.supplierCnpj, suppliers)?.id ?? null
+        )
+      : null
+  }))
 
 // Filtro de período: mantém só os alertas cujo produto apareceu em alguma
 // nota emitida dentro do intervalo. `productIdsInPeriod === null` desativa o
