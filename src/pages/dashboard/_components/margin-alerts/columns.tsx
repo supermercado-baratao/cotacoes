@@ -36,7 +36,10 @@ const buildCostTooltip = (row: TMarginAlert): string => {
   const attention = row.isCostDivergent
     ? ` Atenção: diverge mais de ${COST_DIVERGENCE_ATTENTION_PERCENT}% do custo do VR — confira a embalagem, bonificações ou o custo cadastrado no VR.`
     : ''
-  return `Custo médio das notas de entrada do período. Custo VR: ${vrCost}${divergence}.${attention}`
+  const packReview = row.needsPackReview
+    ? ' Confira a Qtd. Embalagem: há entrada em embalagem diferente de UN sem conversão na unidade tributável da nota (Valor Unit. Trib. igual ao Valor Unit.).'
+    : ''
+  return `Custo médio das notas de entrada do período. Custo VR: ${vrCost}${divergence}.${attention}${packReview}`
 }
 
 // Custo usado na margem, com o custo do VR e a divergência no tooltip e só
@@ -51,11 +54,15 @@ const renderCost = ({ row }: GridRenderCellParams<TMarginAlert>) => (
           VR
         </Typography>
       )}
-      {row.isCostDivergent && (
+      {(row.isCostDivergent || row.needsPackReview) && (
         <WarningAmber
           color="warning"
           fontSize="small"
-          aria-label="Atenção: custo divergente do VR"
+          aria-label={
+            row.isCostDivergent
+              ? 'Atenção: custo divergente do VR'
+              : 'Atenção: conferir quantidade da embalagem'
+          }
         />
       )}
     </Box>

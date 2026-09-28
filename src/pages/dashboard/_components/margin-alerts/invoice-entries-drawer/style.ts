@@ -45,3 +45,9 @@ export const Table: SxProps<Theme> = {
     backgroundColor: 'secondary.dark'
   }
 }
+
+export const PackCell: SxProps<Theme> = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 0.5
+}

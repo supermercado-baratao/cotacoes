@@ -1,11 +1,12 @@
 import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test } from 'vitest'
 
-import type { TInvoice, TProduct, TSupplier } from '@/models'
+import type { TInvoice, TInvoiceItem, TProduct, TSupplier } from '@/models'
 import { parseNfe } from '@/pages/invoices/utils'
 import {
   buildEntryCostMap,
   getCostDivergence,
+  getEntryUnitCost,
   isBonusEntry,
   resolvePackQuantity
 } from '@/utils'
@@ -169,6 +170,95 @@ describe('resolvePackQuantity', () => {
   })
 })
 
+describe('getEntryUnitCost', () => {
+  const sale = { operationNature: 'VENDA' }
+  const product = makeProduct({
+    supplierPackings: [
+      { supplierId: SUPPLIER_ID, supplierProductCode: '5184', packQuantity: 6 }
+    ]
+  })
+
+  const makeItem = (overrides: Partial<TInvoiceItem> = {}): TInvoiceItem => ({
+    itemNumber: 1,
+    supplierProductCode: '5184',
+    barcode: null,
+    calculatedBarcode: null,
+    packageBarcode: null,
+    description: '',
+    unit: 'CX',
+    quantity: 5,
+    unitPrice: 57.16,
+    totalPrice: 285.8,
+    tribUnit: 'UN',
+    tribQuantity: 60,
+    tribUnitPrice: 4.7633333333,
+    cfop: '5102',
+    totalCost: 300,
+    productId: product.id,
+    orderId: null,
+    matchStatus: 'matched',
+    priceDivergence: null,
+    quantityDivergence: null,
+    ...overrides
+  })
+
+  test('uses the taxable quantity when the taxable unit price differs from the commercial one', () => {
+    const entry = getEntryUnitCost(sale, makeItem(), product, SUPPLIER_ID)
+
+    // Conversão do XML (60 ÷ 5 = 12) prevalece sobre a embalagem do VR (6).
+    expect(entry).toMatchObject({
+      source: 'trib',
+      packQuantity: 12,
+      unitQuantity: 60,
+      needsPackReview: false
+    })
+    expect(entry.unitCost).toBeCloseTo(300 / 60, 6)
+  })
+
+  test('falls back to the VR packing and flags a review when both unit prices match', () => {
+    const entry = getEntryUnitCost(
+      sale,
+      makeItem({ tribUnit: 'CX', tribQuantity: 5, tribUnitPrice: 57.16 }),
+      product,
+      SUPPLIER_ID
+    )
+
+    expect(entry).toMatchObject({
+      source: 'supplier',
+      packQuantity: 6,
+      unitQuantity: 30,
+      needsPackReview: true
+    })
+    expect(entry.unitCost).toBeCloseTo(300 / 30, 6)
+  })
+
+  test('keeps the current conversion for unit packages', () => {
+    const entry = getEntryUnitCost(
+      sale,
+      makeItem({ unit: 'UN', unitPrice: 57.16, tribUnitPrice: 4.76 }),
+      product,
+      SUPPLIER_ID
+    )
+
+    expect(entry).toMatchObject({
+      source: 'supplier',
+      packQuantity: 6,
+      needsPackReview: false
+    })
+  })
+
+  test('does not flag a review on invoices without taxable fields', () => {
+    const entry = getEntryUnitCost(
+      sale,
+      makeItem({ tribUnit: null, tribQuantity: null, tribUnitPrice: null }),
+      product,
+      SUPPLIER_ID
+    )
+
+    expect(entry).toMatchObject({ source: 'supplier', needsPackReview: false })
+  })
+})
+
 describe('buildEntryCostMap', () => {
   test('dilutes the paid cost over the paid and bonus quantities', async () => {
     const product = makeProduct()
@@ -208,6 +298,8 @@ describe('buildEntryCostMap', () => {
 
     expect(entryCost.paidQuantity).toBe(500)
     expect(entryCost.cost).toBeCloseTo(saleItem.totalCost! / 500, 6)
+    // PT com Valor Unit. Trib. igual ao Valor Unit.: sem conversão no XML.
+    expect(entryCost.needsPackReview).toBe(true)
   })
 
   test('has no cost when the product only had bonus entries', async () => {
@@ -236,7 +328,9 @@ describe('buildEntryCostMap', () => {
           productId: product.id,
           supplierProductCode: '5184',
           packageBarcode: null,
+          unit: 'UN',
           quantity: 4,
+          unitPrice: 10,
           totalPrice: 40
         }
       ]

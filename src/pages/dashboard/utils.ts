@@ -36,6 +36,7 @@ export type TMarginAlert = {
   costDivergence: number | null
   isCostDivergent: boolean
   hasBonus: boolean
+  needsPackReview: boolean
   thresholdMargin: number
   actualMargin: number
   marginGap: number
@@ -70,7 +71,8 @@ export type TMarginAlerts = {
 
 // Avalia todo o catálogo (não só produtos que já passaram por reajuste de
 // preços). Custo: médio das notas de entrada do período (ver
-// buildEntryCostMap — quantidade convertida pela embalagem do VR e
+// buildEntryCostMap — quantidade convertida pela unidade tributável da nota
+// (embalagem diferente de UN) ou pela embalagem do VR, e
 // bonificação entrando só na quantidade), com fallback pro custo com imposto
 // cadastrado no VR (custocomimposto) quando o produto não teve entrada paga.
 // O alvo de margem não é por produto: `tolerance.below`/`.above`
@@ -113,6 +115,7 @@ export const getMarginAlerts = (
         costDivergence !== null &&
         Math.abs(costDivergence) > COST_DIVERGENCE_ATTENTION_PERCENT,
       hasBonus: entryCost?.hasBonus ?? false,
+      needsPackReview: entryCost?.needsPackReview ?? false,
       thresholdMargin: status === 'below' ? tolerance.below : tolerance.above,
       actualMargin,
       marginGap,

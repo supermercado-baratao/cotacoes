@@ -1,4 +1,4 @@
-import { ReceiptLong } from '@mui/icons-material'
+import { ReceiptLong, WarningAmber } from '@mui/icons-material'
 import {
   Box,
   Chip,
@@ -22,6 +22,7 @@ import type { TInvoiceEntryWithCost } from '../../../utils'
 import * as S from './style'
 
 const packSourceLabel: Record<TPackQuantitySource, string> = {
+  trib: 'Conversão da nota: Qtd. Trib. ÷ Qtd. (Valor Unit. Trib. diferente do Valor Unit.)',
   supplier: 'Embalagem cadastrada no VR para o código do fornecedor',
   barcode: 'Embalagem do código de barras da nota no VR',
   default: 'Sem embalagem cadastrada no VR para este código: considerado 1'
@@ -72,12 +73,25 @@ export const Content = ({ entries }: TContentProps) => {
               <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
               <TableCell>
                 {entryCost ? (
-                  <Tooltip title={packSourceLabel[entryCost.source]}>
-                    <span>
+                  <Tooltip
+                    title={
+                      entryCost.needsPackReview
+                        ? `${packSourceLabel[entryCost.source]}. Confira a Qtd. Embalagem: a nota não converte a embalagem ${item.unit} na unidade tributável (Valor Unit. Trib. igual ao Valor Unit.).`
+                        : packSourceLabel[entryCost.source]
+                    }
+                  >
+                    <Box component="span" sx={S.PackCell}>
                       {entryCost.source === 'default'
                         ? '—'
                         : `× ${formatNumericValue(entryCost.packQuantity)}`}
-                    </span>
+                      {entryCost.needsPackReview && (
+                        <WarningAmber
+                          color="warning"
+                          fontSize="small"
+                          aria-label="Atenção: conferir quantidade da embalagem"
+                        />
+                      )}
+                    </Box>
                   </Tooltip>
                 ) : (
                   '—'

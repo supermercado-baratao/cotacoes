@@ -28,7 +28,7 @@ const normalizeSupplierProductCode = (code: string): string =>
     .replace(/^0+(?=.)/, '')
     .toUpperCase()
 
-export type TPackQuantitySource = 'supplier' | 'barcode' | 'default'
+export type TPackQuantitySource = 'trib' | 'supplier' | 'barcode' | 'default'
 
 export type TPackQuantity = {
   packQuantity: number
@@ -74,7 +74,33 @@ export type TEntryUnitCost = TPackQuantity & {
   // Custo por unidade de venda, com impostos. `null` em bonificação — o
   // valor da nota de bonificação não é custo real.
   unitCost: number | null
+  // Embalagem comercial diferente de UN sem conversão na unidade tributável
+  // (Valor Unit. Trib. igual ao Valor Unit.): o custo depende da Qtd.
+  // Embalagem cadastrada, que provavelmente precisa ser conferida.
+  needsPackReview: boolean
 }
+
+const UNIT_PATTERN = /^UN(D|ID)?$/i
+
+// Valores do XML vêm com até 10 casas; diferenças abaixo de meio centavo são
+// arredondamento, não conversão de embalagem.
+const PRICE_EPSILON = 0.005
+
+// Embalagem comercial (CX, DP, FD...) com a unidade tributável convertida
+// pelo fornecedor: Valor Unit. Trib. diferente do Valor Unit. indica que a
+// Qtd. Trib. já está em unidades — mais confiável que a embalagem do VR.
+const getTribPackQuantity = (item: TInvoiceItem): TPackQuantity | null => {
+  if (UNIT_PATTERN.test(item.unit.trim())) return null
+  const { tribQuantity, tribUnitPrice } = item
+  if (!tribQuantity || tribUnitPrice == null || item.quantity <= 0) return null
+  if (Math.abs(tribUnitPrice - item.unitPrice) < PRICE_EPSILON) return null
+  return { packQuantity: tribQuantity / item.quantity, source: 'trib' }
+}
+
+const isPackReviewNeeded = (item: TInvoiceItem): boolean =>
+  !UNIT_PATTERN.test(item.unit.trim()) &&
+  item.tribUnitPrice != null &&
+  Math.abs(item.tribUnitPrice - item.unitPrice) < PRICE_EPSILON
 
 export const getEntryUnitCost = (
   invoice: Pick<TInvoice, 'operationNature'>,
@@ -82,15 +108,24 @@ export const getEntryUnitCost = (
   product: TProduct,
   supplierId: string | null
 ): TEntryUnitCost => {
-  const packQuantity = resolvePackQuantity(item, product, supplierId)
+  const packQuantity =
+    getTribPackQuantity(item) ?? resolvePackQuantity(item, product, supplierId)
   const isBonus = isBonusEntry(invoice, item)
   const unitQuantity = item.quantity * packQuantity.packQuantity
   // Notas importadas antes do custo com impostos caem pro valor dos produtos.
+  // Com conversão pela unidade tributável, totalCost ÷ Qtd. Trib. é o Valor
+  // Unit. Trib. acrescido dos impostos/despesas do item.
   const totalCost = item.totalCost ?? item.totalPrice
   const unitCost =
     isBonus || unitQuantity <= 0 ? null : totalCost / unitQuantity
 
-  return { ...packQuantity, isBonus, unitQuantity, unitCost }
+  return {
+    ...packQuantity,
+    isBonus,
+    unitQuantity,
+    unitCost,
+    needsPackReview: isPackReviewNeeded(item)
+  }
 }
 
 export type TEntryCost = {
@@ -101,6 +136,9 @@ export type TEntryCost = {
   paidQuantity: number
   bonusQuantity: number
   hasBonus: boolean
+  // Alguma entrada do período precisa de conferência da Qtd. Embalagem (ver
+  // TEntryUnitCost.needsPackReview).
+  needsPackReview: boolean
 }
 
 // `invoices` já deve vir filtrado pro período desejado.
@@ -115,7 +153,12 @@ export const buildEntryCostMap = (
   )
   const totals = new Map<
     string,
-    { paidCost: number; paidQuantity: number; bonusQuantity: number }
+    {
+      paidCost: number
+      paidQuantity: number
+      bonusQuantity: number
+      needsPackReview: boolean
+    }
   >()
 
   invoices.forEach((invoice) => {
@@ -130,8 +173,10 @@ export const buildEntryCostMap = (
       const total = totals.get(product.id) ?? {
         paidCost: 0,
         paidQuantity: 0,
-        bonusQuantity: 0
+        bonusQuantity: 0,
+        needsPackReview: false
       }
+      if (entry.needsPackReview) total.needsPackReview = true
       if (entry.isBonus) {
         total.bonusQuantity += entry.unitQuantity
       } else if (entry.unitCost !== null) {
@@ -151,7 +196,8 @@ export const buildEntryCostMap = (
           : null,
       paidQuantity: total.paidQuantity,
       bonusQuantity: total.bonusQuantity,
-      hasBonus: total.bonusQuantity > 0
+      hasBonus: total.bonusQuantity > 0,
+      needsPackReview: total.needsPackReview
     })
   })
   return result
