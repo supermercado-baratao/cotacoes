@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 
 import type { TProduct } from '@/models'
 import { useAppStore, useCallbackStore } from '@/stores'
@@ -25,17 +25,6 @@ export const useFormHandler = (
     useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
-  const marginStatus: TMarginStatus | null = useMemo(() => {
-    if (!product) return null
-    const cost = product.costWithTax
-    const price = product.price
-    if (!price || cost == null) return null
-
-    const actualMargin = ((price - cost) / price) * 100
-    const tolerance = getMarginTolerance(settings, product.departmentId)
-    return evaluateMargin(actualMargin, tolerance).status
-  }, [product, settings])
-
   const defaultValues: TSchema = useMemo(() => {
     const barcodes =
       product?.barcodes ?? (draft?.barcode ? [draft.barcode] : [])
@@ -43,6 +32,7 @@ export const useFormHandler = (
       id: product?.id ?? '',
       description: product?.description ?? draft?.description ?? '',
       price: product?.price ?? draft?.price ?? 0,
+      costWithTax: product?.costWithTax ?? null,
       tax: product?.tax ?? null,
       margin: product?.margin ?? null,
       stock: product?.stock ?? 0,
@@ -73,7 +63,20 @@ export const useFormHandler = (
     reset(defaultValues)
   }, [defaultValues, reset])
 
-  const onSubmit = handleSubmit(({ packagings, ...rest }) => {
+  const [price, costWithTax, departmentId] = useWatch({
+    control,
+    name: ['price', 'costWithTax', 'departmentId']
+  })
+
+  const marginStatus: TMarginStatus | null = useMemo(() => {
+    if (!price || costWithTax == null) return null
+
+    const actualMargin = ((price - costWithTax) / price) * 100
+    const tolerance = getMarginTolerance(settings, departmentId)
+    return evaluateMargin(actualMargin, tolerance).status
+  }, [price, costWithTax, departmentId, settings])
+
+  const onSubmit = handleSubmit(({ packagings, costWithTax, ...rest }) => {
     const barcodes = packagings.map((p) => p.barcode)
     const packTypes = packagings.map((p) => p.packType)
 
@@ -83,7 +86,7 @@ export const useFormHandler = (
           id: product.id,
           barcodes,
           packTypes,
-          costWithTax: product.costWithTax,
+          costWithTax: costWithTax ?? null,
           vrCreatedAt: product.vrCreatedAt,
           createdAt: product.createdAt
         })
@@ -93,7 +96,7 @@ export const useFormHandler = (
             barcodes,
             packTypes,
             vrCreatedAt: '',
-            costWithTax: null
+            costWithTax: costWithTax ?? null
           },
           onCreated ? { onSuccess: onCreated } : undefined
         )

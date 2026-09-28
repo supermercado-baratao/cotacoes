@@ -157,13 +157,22 @@ export const ProductForm = ({
             sx={S.ThreeCol}
             onFocus={selectOnFocus}
           />
+          <CurrencyInput
+            name="costWithTax"
+            control={control}
+            label="Custo com Imposto"
+            error={!!errors.costWithTax}
+            helperText={errors.costWithTax?.message}
+            sx={S.ThreeCol}
+            onFocus={selectOnFocus}
+          />
           <TextField
             {...register('stock', { valueAsNumber: true })}
             label="Estoque"
             type="number"
             error={!!errors.stock}
             helperText={errors.stock?.message}
-            sx={S.ThreeCol}
+            sx={S.TwoCol}
             onFocus={selectOnFocus}
             slotProps={{ htmlInput: { step: 0.001, max: MAX_NUMERIC_VALUE } }}
           />
@@ -175,14 +184,14 @@ export const ProductForm = ({
             type="number"
             error={!!errors.tax}
             helperText={errors.tax?.message}
-            sx={S.ThreeCol}
+            sx={S.TwoCol}
             onFocus={selectOnFocus}
             slotProps={{
               input: { endAdornment: percentageAdornment },
               htmlInput: { min: 0, max: MAX_NUMERIC_VALUE }
             }}
           />
-          <Box sx={[S.ThreeCol, S.MarginField] as SxProps<Theme>}>
+          <Box sx={[S.TwoCol, S.MarginField] as SxProps<Theme>}>
             <TextField
               {...register('margin', {
                 setValueAs: (value) => (value === '' ? null : Number(value))
