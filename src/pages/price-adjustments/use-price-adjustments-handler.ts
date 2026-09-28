@@ -44,11 +44,18 @@ export const usePriceAdjustmentsHandler = () => {
   // Preenche o filtro com a menor/maior Data Movimento encontrada nos dados
   // assim que carrega (uma vez por conjunto de dados novo) — o usuário pode
   // estreitar depois. Ajuste de estado durante o render (não em useEffect)
-  // evita o flash de um render extra; `dataDateRange` só muda de referência
-  // quando `priceAdjustments` muda (useMemo acima), então não entra em loop.
-  const [prevDataDateRange, setPrevDataDateRange] = useState(dataDateRange)
-  if (dataDateRange !== prevDataDateRange) {
-    setPrevDataDateRange(dataDateRange)
+  // evita o flash de um render extra. O gatilho é a referência de
+  // `priceAdjustments` (não `dataDateRange`) e o sentinel inicial é
+  // `undefined` — nunca igual a um `priceAdjustments` real (`null` ou array)
+  // — pra garantir que o preenchimento rode mesmo quando a página monta com
+  // os dados já carregados no store (ex: navegar de volta pra cá depois da
+  // busca global já ter resolvido), não só quando eles chegam durante a
+  // sessão da página.
+  const [syncedPriceAdjustments, setSyncedPriceAdjustments] = useState<
+    typeof priceAdjustments | undefined
+  >(undefined)
+  if (priceAdjustments !== syncedPriceAdjustments) {
+    setSyncedPriceAdjustments(priceAdjustments)
     if (dataDateRange) {
       setStartDate(dataDateRange.startDate)
       setEndDate(dataDateRange.endDate)

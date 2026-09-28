@@ -10,25 +10,28 @@ import {
 
 import { ConflictError, database, firestore, getUserPath } from '@/infra'
 import type { TUpdateData } from '@/types'
-import { completeInvoiceFiscalData, hasMissingFiscalData } from '@/utils'
+import {
+  chunk,
+  completeInvoiceFiscalData,
+  hasMissingFiscalData,
+  mapWithConcurrencyLimit
+} from '@/utils'
 
 import type { TInvoice, TInvoiceDateRange, TInvoiceImportResult } from './types'
 
 const PATH = 'invoices'
 const IN_QUERY_CHUNK_SIZE = 30
+const CONCURRENT_QUERY_LIMIT = 10
 
 const findExisting = async (ids: string[]): Promise<TInvoice[]> => {
-  const chunks: string[][] = []
-  for (let i = 0; i < ids.length; i += IN_QUERY_CHUNK_SIZE) {
-    chunks.push(ids.slice(i, i + IN_QUERY_CHUNK_SIZE))
-  }
-  const results = await Promise.all(
-    chunks.map((chunkIds) =>
+  const results = await mapWithConcurrencyLimit(
+    chunk(ids, IN_QUERY_CHUNK_SIZE),
+    CONCURRENT_QUERY_LIMIT,
+    (idsChunk) =>
       database.findMany<TInvoice>({
         path: getUserPath(PATH),
-        queryConstraints: [where(documentId(), 'in', chunkIds)]
+        queryConstraints: [where(documentId(), 'in', idsChunk)]
       })
-    )
   )
   return results.flat()
 }

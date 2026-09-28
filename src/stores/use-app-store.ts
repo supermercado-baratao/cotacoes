@@ -22,7 +22,7 @@ import type {
 } from '@/models'
 import type { TCreateData, TCreateDataWithId, TUpdateData } from '@/types'
 
-const DEFAULT_INVOICE_LOOKBACK_DAYS = 90
+const DEFAULT_INVOICE_LOOKBACK_DAYS = 30
 
 const defaultInvoiceDateRange = (): TInvoiceDateRange => ({
   startDate: dayjs()

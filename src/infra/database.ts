@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore'
 
 import type { TCreateData, TUpdateData } from '@/types'
+import { chunk, mapWithConcurrencyLimit } from '@/utils'
 
 import { InternalServerError } from './errors'
 import { firestore } from './firebase-config'
@@ -80,14 +81,11 @@ const createWithId = async <T>({
 
 const BATCH_CHUNK_SIZE = 500
 const IN_QUERY_CHUNK_SIZE = 30
-
-const chunk = <T>(items: T[], size: number): T[][] => {
-  const chunks: T[][] = []
-  for (let i = 0; i < items.length; i += size) {
-    chunks.push(items.slice(i, i + size))
-  }
-  return chunks
-}
+// Um catálogo grande (ex: 9 mil produtos) gera centenas de chunks de 30 ids —
+// disparar todos de uma vez satura a conexão com o Firestore (emulador trava,
+// stream WebChannel derruba). Limita quantas queries ficam em voo ao mesmo
+// tempo, sem perder o paralelismo entre chunks.
+const CONCURRENT_QUERY_LIMIT = 10
 
 const findExistingIds = async ({
   ids,
@@ -96,15 +94,17 @@ const findExistingIds = async ({
   ids: string[]
   path: string
 }): Promise<Set<string>> => {
-  const results = await Promise.all(
-    chunk(ids, IN_QUERY_CHUNK_SIZE).map(async (idsChunk) => {
+  const results = await mapWithConcurrencyLimit(
+    chunk(ids, IN_QUERY_CHUNK_SIZE),
+    CONCURRENT_QUERY_LIMIT,
+    async (idsChunk) => {
       const q = query(
         collection(firestore, path),
         where(documentId(), 'in', idsChunk)
       )
       const { docs } = await getDocs(q)
       return docs.map((docSnap) => docSnap.id)
-    })
+    }
   )
   return new Set(results.flat())
 }

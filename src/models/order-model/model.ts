@@ -2,11 +2,13 @@ import { where } from 'firebase/firestore'
 
 import { database, getUserPath } from '@/infra'
 import type { TCreateData, TUpdateData } from '@/types'
+import { chunk, mapWithConcurrencyLimit } from '@/utils'
 
 import type { TOrder } from './types'
 
 const PATH = 'orders'
 const IN_QUERY_CHUNK_SIZE = 30
+const CONCURRENT_QUERY_LIMIT = 10
 
 const create = (data: TCreateData<TOrder>): Promise<TOrder> =>
   database.create({ path: getUserPath(PATH), data })
@@ -32,18 +34,14 @@ const findManyByProductIds = async (
   const uniqueIds = [...new Set(productIds)]
   if (!uniqueIds.length) return []
 
-  const chunks: string[][] = []
-  for (let i = 0; i < uniqueIds.length; i += IN_QUERY_CHUNK_SIZE) {
-    chunks.push(uniqueIds.slice(i, i + IN_QUERY_CHUNK_SIZE))
-  }
-
-  const results = await Promise.all(
-    chunks.map((chunkIds) =>
+  const results = await mapWithConcurrencyLimit(
+    chunk(uniqueIds, IN_QUERY_CHUNK_SIZE),
+    CONCURRENT_QUERY_LIMIT,
+    (idsChunk) =>
       database.findMany<TOrder>({
         path: getUserPath(PATH),
-        queryConstraints: [where('productId', 'in', chunkIds)]
+        queryConstraints: [where('productId', 'in', idsChunk)]
       })
-    )
   )
   return results.flat()
 }
