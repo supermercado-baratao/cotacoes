@@ -242,15 +242,15 @@ describe('getMarginAlerts', () => {
     expect(above.map((alert) => alert.id)).toEqual(['p2', 'p1'])
   })
 
-  test('uses the entry cost from invoices instead of the VR cost when available', () => {
-    // entry cost 80 -> margin 20% (below 25%); VR cost 70 would be ok
-    const product = makeProduct({ costWithTax: 70 })
+  test('prioritizes the VR cost over the entry cost from invoices', () => {
+    // VR cost 80 -> margin 20% (below 25%); entry cost 70 would be ok
+    const product = makeProduct({ costWithTax: 80 })
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
     const entryCosts = new Map<string, TEntryCost>([
       [
         'p1',
         {
-          cost: 80,
+          cost: 70,
           paidQuantity: 10,
           bonusQuantity: 0,
           hasBonus: false,
@@ -269,18 +269,20 @@ describe('getMarginAlerts', () => {
     expect(below).toHaveLength(1)
     expect(below[0]).toMatchObject({
       cost: 80,
-      costSource: 'entries',
-      vrCost: 70,
+      costSource: 'vr',
+      vrCost: 80,
+      entryCost: 70,
       hasBonus: false
     })
-    expect(below[0].costDivergence).toBeCloseTo(14.29, 2)
+    expect(below[0].costDivergence).toBeCloseTo(-12.5, 2)
     expect(below[0].isCostDivergent).toBe(false)
   })
 
   test('flags attention when the entry cost diverges too much from the VR cost', () => {
-    // entry cost 90 vs VR 70 -> +28.6% (over the attention threshold)
+    // entry cost 90 vs VR 70 -> +28.6% (over the attention threshold); the
+    // margin still uses the VR cost -> 30%, below the 35% floor
     const product = makeProduct({ costWithTax: 70 })
-    const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
+    const settings = makeSettings({ marginTolerance: { below: 35, above: 50 } })
     const entryCosts = new Map<string, TEntryCost>([
       [
         'p1',
@@ -302,13 +304,14 @@ describe('getMarginAlerts', () => {
     )
 
     expect(below[0]).toMatchObject({
-      cost: 90,
+      cost: 70,
+      entryCost: 90,
       isCostDivergent: true,
       hasBonus: true
     })
   })
 
-  test('falls back to the VR cost when there was only bonus entries', () => {
+  test('keeps the VR cost without divergence when there was only bonus entries', () => {
     const product = makeProduct({ costWithTax: 80 })
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
     const entryCosts = new Map<string, TEntryCost>([
@@ -340,8 +343,41 @@ describe('getMarginAlerts', () => {
     })
   })
 
+  test('falls back to the entry cost when the product has no VR cost', () => {
+    // entry cost 80 -> margin 20% (below 25%)
+    const product = makeProduct({ costWithTax: null })
+    const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
+    const entryCosts = new Map<string, TEntryCost>([
+      [
+        'p1',
+        {
+          cost: 80,
+          paidQuantity: 10,
+          bonusQuantity: 0,
+          hasBonus: false,
+          needsPackReview: false
+        }
+      ]
+    ])
+
+    const { below } = getMarginAlerts(
+      [product],
+      settings,
+      noEntries,
+      entryCosts
+    )
+
+    expect(below[0]).toMatchObject({
+      cost: 80,
+      costSource: 'entries',
+      vrCost: null,
+      costDivergence: null,
+      isCostDivergent: false
+    })
+  })
+
   test('flags the pack quantity review coming from the entry cost', () => {
-    const product = makeProduct({ costWithTax: 70 })
+    const product = makeProduct({ costWithTax: 80 })
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
     const entryCosts = new Map<string, TEntryCost>([
       [
@@ -491,6 +527,7 @@ describe('filterMarginAlertsByEntryPeriod', () => {
     cost: 70,
     costSource: 'vr' as const,
     vrCost: 70,
+    entryCost: null,
     costDivergence: null,
     isCostDivergent: false,
     hasBonus: false,
