@@ -247,7 +247,16 @@ describe('getMarginAlerts', () => {
     const product = makeProduct({ costWithTax: 70 })
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
     const entryCosts = new Map<string, TEntryCost>([
-      ['p1', { cost: 80, paidQuantity: 10, bonusQuantity: 0, hasBonus: false }]
+      [
+        'p1',
+        {
+          cost: 80,
+          paidQuantity: 10,
+          bonusQuantity: 0,
+          hasBonus: false,
+          needsPackReview: false
+        }
+      ]
     ])
 
     const { below } = getMarginAlerts(
@@ -273,7 +282,16 @@ describe('getMarginAlerts', () => {
     const product = makeProduct({ costWithTax: 70 })
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
     const entryCosts = new Map<string, TEntryCost>([
-      ['p1', { cost: 90, paidQuantity: 10, bonusQuantity: 2, hasBonus: true }]
+      [
+        'p1',
+        {
+          cost: 90,
+          paidQuantity: 10,
+          bonusQuantity: 2,
+          hasBonus: true,
+          needsPackReview: false
+        }
+      ]
     ])
 
     const { below } = getMarginAlerts(
@@ -294,7 +312,16 @@ describe('getMarginAlerts', () => {
     const product = makeProduct({ costWithTax: 80 })
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
     const entryCosts = new Map<string, TEntryCost>([
-      ['p1', { cost: null, paidQuantity: 0, bonusQuantity: 5, hasBonus: true }]
+      [
+        'p1',
+        {
+          cost: null,
+          paidQuantity: 0,
+          bonusQuantity: 5,
+          hasBonus: true,
+          needsPackReview: false
+        }
+      ]
     ])
 
     const { below } = getMarginAlerts(
@@ -311,6 +338,32 @@ describe('getMarginAlerts', () => {
       isCostDivergent: false,
       hasBonus: true
     })
+  })
+
+  test('flags the pack quantity review coming from the entry cost', () => {
+    const product = makeProduct({ costWithTax: 70 })
+    const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
+    const entryCosts = new Map<string, TEntryCost>([
+      [
+        'p1',
+        {
+          cost: 80,
+          paidQuantity: 10,
+          bonusQuantity: 0,
+          hasBonus: false,
+          needsPackReview: true
+        }
+      ]
+    ])
+
+    const { below } = getMarginAlerts(
+      [product],
+      settings,
+      noEntries,
+      entryCosts
+    )
+
+    expect(below[0].needsPackReview).toBe(true)
   })
 
   test('reads the last entry date from the map when one exists for the product', () => {
@@ -441,6 +494,7 @@ describe('filterMarginAlertsByEntryPeriod', () => {
     costDivergence: null,
     isCostDivergent: false,
     hasBonus: false,
+    needsPackReview: false,
     thresholdMargin: 25,
     actualMargin: 30,
     marginGap: 0,

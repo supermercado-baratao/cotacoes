@@ -25,13 +25,13 @@ const copyByDirection: Record<
   below: {
     title: 'Produtos abaixo da margem',
     description:
-      'Produtos cujo preço de venda atual resulta numa margem menor que a margem mínima aceitável definida em Configurações, considerando o custo médio das notas de entrada do período (convertido pela embalagem do VR, com bonificações entrando só na quantidade) ou, se não houver entrada paga, o custo com imposto do VR.',
+      'Produtos cujo preço de venda atual resulta numa margem menor que a margem mínima aceitável definida em Configurações, considerando o custo médio das notas de entrada do período (convertido pela unidade tributável da nota quando a embalagem não é UN, senão pela embalagem do VR, com bonificações entrando só na quantidade) ou, se não houver entrada paga, o custo com imposto do VR.',
     emptyMessage: 'Nenhum produto abaixo da margem mínima no momento.'
   },
   above: {
     title: 'Produtos acima da margem',
     description:
-      'Produtos cujo preço de venda atual resulta numa margem maior que a margem máxima esperada definida em Configurações, considerando o custo médio das notas de entrada do período (convertido pela embalagem do VR, com bonificações entrando só na quantidade) ou, se não houver entrada paga, o custo com imposto do VR.',
+      'Produtos cujo preço de venda atual resulta numa margem maior que a margem máxima esperada definida em Configurações, considerando o custo médio das notas de entrada do período (convertido pela unidade tributável da nota quando a embalagem não é UN, senão pela embalagem do VR, com bonificações entrando só na quantidade) ou, se não houver entrada paga, o custo com imposto do VR.',
     emptyMessage: 'Nenhum produto acima da margem máxima no momento.'
   }
 }
