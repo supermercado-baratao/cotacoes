@@ -392,6 +392,11 @@ test('prioritizes the VR cost, flagging bonus and divergence from the entry cost
             unit: 'CX',
             quantity: 2,
             unitPrice: 216,
+            // Unidade tributável igual à comercial (Valor Unit. Trib. igual ao
+            // Valor Unit.) — a conversão cai pra embalagem do VR.
+            tribUnit: 'CX',
+            tribQuantity: 2,
+            tribUnitPrice: 216,
             totalPrice: 432,
             cfop: '5102',
             totalCost: 432
