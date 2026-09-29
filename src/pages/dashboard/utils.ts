@@ -27,11 +27,12 @@ export type TMarginAlert = {
   id: string
   description: string
   price: number
-  // Custo usado na margem: médio das notas de entrada do período quando
-  // houver, senão o custo com imposto do VR.
+  // Custo usado na margem: custo com imposto do VR quando houver, senão o
+  // médio das notas de entrada do período.
   cost: number
   costSource: TMarginCostSource
   vrCost: number | null
+  entryCost: number | null
   // Divergência (%) do custo das notas em relação ao custo do VR.
   costDivergence: number | null
   isCostDivergent: boolean
@@ -70,11 +71,12 @@ export type TMarginAlerts = {
 }
 
 // Avalia todo o catálogo (não só produtos que já passaram por reajuste de
-// preços). Custo: médio das notas de entrada do período (ver
-// buildEntryCostMap — quantidade convertida pela unidade tributável da nota
-// (embalagem diferente de UN) ou pela embalagem do VR, e
-// bonificação entrando só na quantidade), com fallback pro custo com imposto
-// cadastrado no VR (custocomimposto) quando o produto não teve entrada paga.
+// preços). Custo: custo com imposto cadastrado no VR (custocomimposto), o
+// mais próximo do real, com fallback pro médio das notas de entrada do
+// período (ver buildEntryCostMap — quantidade convertida pela unidade
+// tributável da nota (embalagem diferente de UN) ou pela embalagem do VR, e
+// bonificação entrando só na quantidade) quando o produto não tem custo no
+// VR. O custo das notas segue calculado pra sinalizar divergência com o VR.
 // O alvo de margem não é por produto: `tolerance.below`/`.above`
 // (Configurações, global ou por departamento) são o piso/teto aplicados a
 // todo o catálogo.
@@ -91,7 +93,7 @@ export const getMarginAlerts = (
     const price = product.price
     const entryCost = entryCostMap.get(product.id) ?? null
     const vrCost = product.costWithTax
-    const cost = entryCost?.cost ?? vrCost
+    const cost = vrCost ?? entryCost?.cost ?? null
     // !price (não `price == null`) é proposital: preço 0 tornaria a divisão
     // abaixo indefinida. Custo 0 é um valor legítimo (ex: item promocional) e
     // não deve ser tratado como "sem dado".
@@ -108,8 +110,9 @@ export const getMarginAlerts = (
       description: product.description,
       price,
       cost,
-      costSource: entryCost?.cost != null ? 'entries' : 'vr',
+      costSource: vrCost != null ? 'vr' : 'entries',
       vrCost,
+      entryCost: entryCost?.cost ?? null,
       costDivergence,
       isCostDivergent:
         costDivergence !== null &&

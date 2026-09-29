@@ -356,18 +356,18 @@ test('opens a drawer with the invoices where a flagged product had an entry with
   await expect(page.getByRole('cell', { name: 'FORNECEDOR' })).toBeVisible()
 })
 
-test('uses the entry cost with bonus and VR packing, flagging bonus and cost divergence', async ({
+test('prioritizes the VR cost, flagging bonus and divergence from the entry cost with VR packing', async ({
   page
 }) => {
   const { email, password } = await createUser()
 
-  await settingsModel.upsert({ marginTolerance: { below: 30, above: 100 } })
+  await settingsModel.upsert({ marginTolerance: { below: 60, above: 100 } })
 
-  // Pelo custo do VR (10) a margem seria 50% — dentro da faixa. Pelas notas:
-  // 2 CX com 12 unidades cada (embalagem do VR pro código do fornecedor) a
-  // 216,00 = 432,00 pagos, mais 6 unidades bonificadas (CFOP 5910), cujo
-  // valor é ignorado -> 432 / (24 + 6) = 14,40 por unidade -> margem 28%,
-  // abaixo do piso de 30%. O custo das notas diverge +44% do VR -> atenção.
+  // A margem usa o custo do VR (10) -> 50%, abaixo do piso de 60%. Pelas
+  // notas: 2 CX com 12 unidades cada (embalagem do VR pro código do
+  // fornecedor) a 216,00 = 432,00 pagos, mais 6 unidades bonificadas (CFOP
+  // 5910), cujo valor é ignorado -> 432 / (24 + 6) = 14,40 por unidade, que
+  // diverge +44% do VR -> atenção.
   await Promise.all([
     productModel.create({
       ...makeProduct({
@@ -440,7 +440,7 @@ test('uses the entry cost with bonus and VR packing, flagging bonus and cost div
   const row = page.getByRole('row').filter({ hasText: 'PRODUTO BONIFICADO' })
   await expect(row).toBeVisible()
   await expect(row.getByText('Bonificação')).toBeVisible()
-  await expect(row.getByText('R$ 14,40')).toBeVisible()
+  await expect(row.getByText('R$ 10,00')).toBeVisible()
   await expect(row.getByLabel('Atenção: custo divergente do VR')).toBeVisible()
 
   await row.getByRole('menuitem', { name: 'Ver notas' }).click()

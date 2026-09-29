@@ -25,10 +25,15 @@ const formatDivergence = (divergence: number) =>
   `${divergence > 0 ? '+' : ''}${divergence.toFixed(1)}%`
 
 const buildCostTooltip = (row: TMarginAlert): string => {
-  if (row.costSource === 'vr') {
-    return 'Sem entrada paga no período: custo com imposto do VR'
+  const packReview = row.needsPackReview
+    ? ' Confira a Qtd. Embalagem: há entrada em embalagem diferente de UN sem conversão na unidade tributável da nota (Valor Unit. Trib. igual ao Valor Unit.).'
+    : ''
+  if (row.costSource === 'entries') {
+    return `Sem custo com imposto no VR: custo médio das notas de entrada do período.${packReview}`
   }
-  const vrCost = row.vrCost == null ? '—' : formatCurrency(row.vrCost)
+  if (row.entryCost == null) {
+    return 'Custo com imposto do VR. Sem entrada paga no período'
+  }
   const divergence =
     row.costDivergence === null
       ? ''
@@ -36,22 +41,19 @@ const buildCostTooltip = (row: TMarginAlert): string => {
   const attention = row.isCostDivergent
     ? ` Atenção: diverge mais de ${COST_DIVERGENCE_ATTENTION_PERCENT}% do custo do VR — confira a embalagem, bonificações ou o custo cadastrado no VR.`
     : ''
-  const packReview = row.needsPackReview
-    ? ' Confira a Qtd. Embalagem: há entrada em embalagem diferente de UN sem conversão na unidade tributável da nota (Valor Unit. Trib. igual ao Valor Unit.).'
-    : ''
-  return `Custo médio das notas de entrada do período. Custo VR: ${vrCost}${divergence}.${attention}${packReview}`
+  return `Custo com imposto do VR. Custo médio das notas do período: ${formatCurrency(row.entryCost)}${divergence}.${attention}${packReview}`
 }
 
-// Custo usado na margem, com o custo do VR e a divergência no tooltip e só
+// Custo usado na margem, com o custo das notas e a divergência no tooltip e só
 // um ícone de atenção na célula — compacto pra grade caber na tela sem
 // esconder a coluna de ações.
 const renderCost = ({ row }: GridRenderCellParams<TMarginAlert>) => (
   <Tooltip title={buildCostTooltip(row)}>
     <Box sx={S.DescriptionCell}>
       {formatCurrency(row.cost)}
-      {row.costSource === 'vr' && (
+      {row.costSource === 'entries' && (
         <Typography variant="caption" color="text.secondary">
-          VR
+          NF
         </Typography>
       )}
       {(row.isCostDivergent || row.needsPackReview) && (
