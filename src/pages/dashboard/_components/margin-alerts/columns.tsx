@@ -1,5 +1,5 @@
 import { WarningAmber } from '@mui/icons-material'
-import { Box, Chip, Tooltip, Typography } from '@mui/material'
+import { Box, Chip, MenuItem, Select, Tooltip, Typography } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 import type { Timestamp } from 'firebase/firestore'
@@ -7,7 +7,11 @@ import type { Timestamp } from 'firebase/firestore'
 import { COST_DIVERGENCE_ATTENTION_PERCENT } from '@/constants'
 import { formatCurrency } from '@/utils'
 
-import type { TMarginAlert } from '../../utils'
+import type {
+  TMarginAlert,
+  TMarginCostOption,
+  TMarginCostSource
+} from '../../utils'
 import * as S from './style'
 
 const renderDescription = ({ row }: GridRenderCellParams<TMarginAlert>) => (
@@ -24,38 +28,81 @@ const renderDescription = ({ row }: GridRenderCellParams<TMarginAlert>) => (
 const formatDivergence = (divergence: number) =>
   `${divergence > 0 ? '+' : ''}${divergence.toFixed(1)}%`
 
+const formatDate = (value: Date | null) =>
+  value ? dayjs(value).format('DD/MM/YYYY') : '—'
+
+const formatQuantity = (value: number) =>
+  value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
+
+const costSourceLabels: Record<
+  TMarginCostSource,
+  { name: string; shortName: string }
+> = {
+  vr: { name: 'Custo c/ Imposto (VR)', shortName: 'VR' },
+  entries: { name: 'Custo médio das NFs', shortName: 'NF média' },
+  lastEntry: { name: 'Última NF paga', shortName: 'Últ. NF' }
+}
+
+// De onde vem o valor de cada opção do select — campo do cadastro no VR ou
+// as notas que entraram na conta.
+const describeCostOption = (
+  option: TMarginCostOption,
+  hasPeriod: boolean
+): string => {
+  switch (option.source) {
+    case 'vr':
+      return 'Cadastro do produto no VR (custocomimposto)'
+    case 'entries': {
+      const entries = `${option.paidEntryCount} entrada${option.paidEntryCount > 1 ? 's' : ''} paga${option.paidEntryCount > 1 ? 's' : ''}`
+      const bonus = option.bonusQuantity
+        ? ` + ${formatQuantity(option.bonusQuantity)} bonif.`
+        : ''
+      const scope = hasPeriod ? 'notas do período' : 'todas as notas'
+      return `${entries} · ${formatQuantity(option.paidQuantity)} un.${bonus} · ${scope}`
+    }
+    case 'lastEntry':
+      return `NF ${option.invoiceNumber} · ${option.supplierName} · ${formatDate(new Date(option.emissionDate))}`
+  }
+}
+
 const buildCostTooltip = (row: TMarginAlert): string => {
   const packReview = row.needsPackReview
     ? ' Confira a Qtd. Embalagem: há entrada em embalagem diferente de UN sem conversão na unidade tributável da nota (Valor Unit. Trib. igual ao Valor Unit.).'
     : ''
-  if (row.costSource === 'entries') {
-    return `Sem custo com imposto no VR: custo médio das notas de entrada do período.${packReview}`
+  const source = {
+    vr: 'Custo com imposto do VR.',
+    entries: 'Custo médio das notas de entrada do período.',
+    lastEntry: 'Custo da última nota paga do período.'
+  }[row.costSource]
+  const choice =
+    row.costSource === row.defaultCostSource
+      ? ''
+      : ` Escolhido no lugar do padrão (${costSourceLabels[row.defaultCostSource].name}).`
+  const marginOk =
+    row.status === 'ok' ? ' Com este custo a margem fica dentro da faixa.' : ''
+  if (row.vrCost == null) {
+    return `${source} Sem custo com imposto no VR.${choice}${marginOk}${packReview}`
   }
   if (row.entryCost == null) {
-    return 'Custo com imposto do VR. Sem entrada paga no período'
+    return `${source} Sem entrada paga no período.${choice}${marginOk}`
   }
   const divergence =
     row.costDivergence === null
       ? ''
-      : ` (${formatDivergence(row.costDivergence)})`
+      : ` (${formatDivergence(row.costDivergence)} sobre o VR)`
   const attention = row.isCostDivergent
     ? ` Atenção: diverge mais de ${COST_DIVERGENCE_ATTENTION_PERCENT}% do custo do VR — confira a embalagem, bonificações ou o custo cadastrado no VR.`
     : ''
-  return `Custo com imposto do VR. Custo médio das notas do período: ${formatCurrency(row.entryCost)}${divergence}.${attention}${packReview}`
+  return `${source}${choice} Custo médio das notas do período: ${formatCurrency(row.entryCost)}${divergence}.${attention}${marginOk}${packReview}`
 }
 
-// Custo usado na margem, com o custo das notas e a divergência no tooltip e só
-// um ícone de atenção na célula — compacto pra grade caber na tela sem
-// esconder a coluna de ações.
-const renderCost = ({ row }: GridRenderCellParams<TMarginAlert>) => (
+const renderCostValue = (row: TMarginAlert) => (
   <Tooltip title={buildCostTooltip(row)}>
     <Box sx={S.DescriptionCell}>
       {formatCurrency(row.cost)}
-      {row.costSource === 'entries' && (
-        <Typography variant="caption" color="text.secondary">
-          NF
-        </Typography>
-      )}
+      <Typography variant="caption" color="text.secondary">
+        {costSourceLabels[row.costSource].shortName}
+      </Typography>
       {(row.isCostDivergent || row.needsPackReview) && (
         <WarningAmber
           color="warning"
@@ -71,13 +118,75 @@ const renderCost = ({ row }: GridRenderCellParams<TMarginAlert>) => (
   </Tooltip>
 )
 
-const renderMarginGap = ({ row }: GridRenderCellParams<TMarginAlert>) =>
-  `${row.status === 'below' ? '-' : '+'}${row.marginGap.toFixed(1)} p.p.`
+// Select da fonte de custo usada na margem: cada opção traz o nome do campo,
+// o valor e de onde ele vem. O valor na célula é compacto (custo + sigla da
+// fonte + ícone de atenção) pra grade caber na tela sem esconder a coluna de
+// ações; o detalhe de divergência fica no tooltip.
+const buildRenderCost =
+  (
+    handleCostSourceChange: (
+      productId: string,
+      source: TMarginCostSource
+    ) => void,
+    hasPeriod: boolean
+  ) =>
+  ({ row }: GridRenderCellParams<TMarginAlert>) => (
+    // Setas/espaço dentro do select (e do menu, que borbulha pela árvore do
+    // React) não devem mover o foco entre as células da grade.
+    <Box sx={S.CostCell} onKeyDown={(event) => event.stopPropagation()}>
+      <Select
+        variant="standard"
+        size="small"
+        fullWidth
+        disableUnderline
+        value={row.costSource}
+        onChange={(event) =>
+          handleCostSourceChange(
+            row.id,
+            event.target.value as TMarginCostSource
+          )
+        }
+        renderValue={() => renderCostValue(row)}
+        inputProps={{ 'aria-label': `Fonte do custo de ${row.description}` }}
+      >
+        {row.costOptions.map((option) => (
+          <MenuItem key={option.source} value={option.source}>
+            <Box sx={S.CostOption}>
+              <Box sx={S.CostOptionHeader}>
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                  {costSourceLabels[option.source].name}
+                </Typography>
+                {option.source === row.defaultCostSource && (
+                  <Chip label="Padrão" size="small" variant="outlined" />
+                )}
+                <Typography variant="body2" sx={S.CostOptionValue}>
+                  {formatCurrency(option.cost)}
+                </Typography>
+              </Box>
+              <Typography variant="caption" color="text.secondary">
+                {describeCostOption(option, hasPeriod)}
+              </Typography>
+            </Box>
+          </MenuItem>
+        ))}
+      </Select>
+    </Box>
+  )
 
-const formatDate = (value: Date | null) =>
-  value ? dayjs(value).format('DD/MM/YYYY') : '—'
+const renderMarginGap = ({ row }: GridRenderCellParams<TMarginAlert>) => {
+  if (row.status === 'ok') return 'Dentro da margem'
+  return `${row.status === 'below' ? '-' : '+'}${row.marginGap.toFixed(1)} p.p.`
+}
 
-export const columns: GridColDef<TMarginAlert>[] = [
+// `hasPeriod`: o custo das notas considera só o período filtrado (senão, todas
+// as notas carregadas) — entra na descrição das opções do select.
+export const buildColumns = (
+  handleCostSourceChange: (
+    productId: string,
+    source: TMarginCostSource
+  ) => void,
+  hasPeriod: boolean
+): GridColDef<TMarginAlert>[] => [
   {
     field: 'id',
     headerName: 'Cód. VR'
@@ -97,7 +206,8 @@ export const columns: GridColDef<TMarginAlert>[] = [
   {
     field: 'cost',
     headerName: 'Custo',
-    renderCell: renderCost
+    minWidth: 200,
+    renderCell: buildRenderCost(handleCostSourceChange, hasPeriod)
   },
   {
     field: 'actualMargin',
@@ -112,6 +222,7 @@ export const columns: GridColDef<TMarginAlert>[] = [
   {
     field: 'marginGap',
     headerName: 'Diferença',
+    minWidth: 150,
     renderCell: renderMarginGap
   },
   {

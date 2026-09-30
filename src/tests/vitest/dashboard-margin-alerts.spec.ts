@@ -7,8 +7,10 @@ import {
   buildProductIdsWithEntryInRange,
   filterInvoicesByEmissionDate,
   filterMarginAlertsByEntryPeriod,
+  getDashboardStats,
   getInvoiceEntriesForProduct,
-  getMarginAlerts
+  getMarginAlerts,
+  getMarginCostOptions
 } from '@/pages/dashboard/utils'
 import type { TEntryCost } from '@/utils'
 
@@ -251,10 +253,12 @@ describe('getMarginAlerts', () => {
         'p1',
         {
           cost: 70,
+          paidEntryCount: 1,
           paidQuantity: 10,
           bonusQuantity: 0,
           hasBonus: false,
-          needsPackReview: false
+          needsPackReview: false,
+          lastPaidEntry: null
         }
       ]
     ])
@@ -288,10 +292,12 @@ describe('getMarginAlerts', () => {
         'p1',
         {
           cost: 90,
+          paidEntryCount: 1,
           paidQuantity: 10,
           bonusQuantity: 2,
           hasBonus: true,
-          needsPackReview: false
+          needsPackReview: false,
+          lastPaidEntry: null
         }
       ]
     ])
@@ -319,10 +325,12 @@ describe('getMarginAlerts', () => {
         'p1',
         {
           cost: null,
+          paidEntryCount: 0,
           paidQuantity: 0,
           bonusQuantity: 5,
           hasBonus: true,
-          needsPackReview: false
+          needsPackReview: false,
+          lastPaidEntry: null
         }
       ]
     ])
@@ -352,10 +360,12 @@ describe('getMarginAlerts', () => {
         'p1',
         {
           cost: 80,
+          paidEntryCount: 1,
           paidQuantity: 10,
           bonusQuantity: 0,
           hasBonus: false,
-          needsPackReview: false
+          needsPackReview: false,
+          lastPaidEntry: null
         }
       ]
     ])
@@ -384,10 +394,12 @@ describe('getMarginAlerts', () => {
         'p1',
         {
           cost: 80,
+          paidEntryCount: 1,
           paidQuantity: 10,
           bonusQuantity: 0,
           hasBonus: false,
-          needsPackReview: true
+          needsPackReview: true,
+          lastPaidEntry: null
         }
       ]
     ])
@@ -400,6 +412,117 @@ describe('getMarginAlerts', () => {
     )
 
     expect(below[0].needsPackReview).toBe(true)
+  })
+
+  describe('cost source selection', () => {
+    // VR 80 -> 20% (below 25%); NF média 70 -> 30% (ok); última NF 60 -> 40%
+    // (above 35%)
+    const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
+    const entryCosts = new Map<string, TEntryCost>([
+      [
+        'p1',
+        {
+          cost: 70,
+          paidEntryCount: 2,
+          paidQuantity: 10,
+          bonusQuantity: 0,
+          hasBonus: false,
+          needsPackReview: false,
+          lastPaidEntry: {
+            unitCost: 60,
+            invoiceNumber: '123',
+            supplierName: 'FORNECEDOR',
+            emissionDate: '2026-09-20'
+          }
+        }
+      ]
+    ])
+
+    test('lists every available cost with the default first', () => {
+      const { below } = getMarginAlerts(
+        [makeProduct({ costWithTax: 80 })],
+        settings,
+        noEntries,
+        entryCosts
+      )
+
+      expect(below[0]).toMatchObject({
+        costSource: 'vr',
+        defaultCostSource: 'vr',
+        costOptions: [
+          { source: 'vr', cost: 80 },
+          {
+            source: 'entries',
+            cost: 70,
+            paidEntryCount: 2,
+            paidQuantity: 10,
+            bonusQuantity: 0
+          },
+          {
+            source: 'lastEntry',
+            cost: 60,
+            invoiceNumber: '123',
+            supplierName: 'FORNECEDOR',
+            emissionDate: '2026-09-20'
+          }
+        ]
+      })
+    })
+
+    test('moves the alert to the table of the selected cost', () => {
+      const { below, above } = getMarginAlerts(
+        [makeProduct({ costWithTax: 80 })],
+        settings,
+        noEntries,
+        entryCosts,
+        new Map([['p1', 'lastEntry' as const]])
+      )
+
+      expect(below).toEqual([])
+      expect(above[0]).toMatchObject({
+        cost: 60,
+        costSource: 'lastEntry',
+        defaultCostSource: 'vr',
+        actualMargin: 40,
+        thresholdMargin: 35,
+        marginGap: 5,
+        status: 'above'
+      })
+    })
+
+    test('keeps the alert in the default table when the selected cost is within the margin', () => {
+      const { below, above } = getMarginAlerts(
+        [makeProduct({ costWithTax: 80 })],
+        settings,
+        noEntries,
+        entryCosts,
+        new Map([['p1', 'entries' as const]])
+      )
+
+      expect(above).toEqual([])
+      expect(below[0]).toMatchObject({
+        cost: 70,
+        costSource: 'entries',
+        actualMargin: 30,
+        marginGap: 0,
+        status: 'ok'
+      })
+      expect(
+        getDashboardStats([], [], [], { below, above }).belowMarginCount
+      ).toBe(0)
+    })
+
+    test('ignores a selected cost that is not available for the product', () => {
+      const { below } = getMarginAlerts(
+        [makeProduct({ costWithTax: 80 })],
+        settings,
+        noEntries,
+        noEntryCosts,
+        new Map([['p1', 'entries' as const]])
+      )
+
+      expect(below[0]).toMatchObject({ cost: 80, costSource: 'vr' })
+    })
   })
 
   test('reads the last entry date from the map when one exists for the product', () => {
@@ -415,6 +538,24 @@ describe('getMarginAlerts', () => {
     )
 
     expect(below[0]).toMatchObject({ lastEntryDate: '2026-09-10' })
+  })
+})
+
+describe('getMarginCostOptions', () => {
+  test('skips the sources without a cost', () => {
+    expect(getMarginCostOptions(null, null)).toEqual([])
+    expect(
+      getMarginCostOptions(null, {
+        cost: null,
+        paidEntryCount: 0,
+        paidQuantity: 0,
+        bonusQuantity: 5,
+        hasBonus: true,
+        needsPackReview: false,
+        lastPaidEntry: null
+      })
+    ).toEqual([])
+    expect(getMarginCostOptions(0, null)).toEqual([{ source: 'vr', cost: 0 }])
   })
 })
 
@@ -526,6 +667,8 @@ describe('filterMarginAlertsByEntryPeriod', () => {
     price: 100,
     cost: 70,
     costSource: 'vr' as const,
+    defaultCostSource: 'vr' as const,
+    costOptions: [{ source: 'vr' as const, cost: 70 }],
     vrCost: 70,
     entryCost: null,
     costDivergence: null,

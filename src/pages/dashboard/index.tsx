@@ -28,7 +28,8 @@ export const Dashboard = () => {
     setEndDate,
     isPeriodFilterEnabled,
     setIsPeriodFilterEnabled,
-    activeDateRange
+    activeDateRange,
+    handleCostSourceChange
   } = useDashboardHandler()
 
   return (
@@ -107,12 +108,14 @@ export const Dashboard = () => {
         isFetching={isFetching}
         marginAlerts={marginAlerts.below}
         dateRange={activeDateRange}
+        handleCostSourceChange={handleCostSourceChange}
       />
       <MarginAlerts
         direction="above"
         isFetching={isFetching}
         marginAlerts={marginAlerts.above}
         dateRange={activeDateRange}
+        handleCostSourceChange={handleCostSourceChange}
       />
     </>
   )
