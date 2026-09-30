@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useAppStore } from '@/stores'
 import { buildEntryCostMap } from '@/utils'
@@ -10,7 +10,8 @@ import {
   filterInvoicesByEmissionDate,
   filterMarginAlertsByEntryPeriod,
   getDashboardStats,
-  getMarginAlerts
+  getMarginAlerts,
+  type TMarginCostSource
 } from './utils'
 
 const ENTRY_DATE_DEFAULT_WINDOW_DAYS = 30
@@ -25,6 +26,19 @@ export const useDashboardHandler = () => {
   )
   const [endDate, setEndDate] = useState(() => dayjs().format('YYYY-MM-DD'))
   const [isPeriodFilterEnabled, setIsPeriodFilterEnabled] = useState(true)
+  // Fonte de custo escolhida no select da coluna Custo, por produto. Só vale
+  // na sessão — é uma ferramenta de análise, não altera o cadastro.
+  const [costSourceOverrides, setCostSourceOverrides] = useState<
+    Map<string, TMarginCostSource>
+  >(() => new Map())
+
+  const handleCostSourceChange = useCallback(
+    (productId: string, source: TMarginCostSource) =>
+      setCostSourceOverrides((current) =>
+        new Map(current).set(productId, source)
+      ),
+    []
+  )
 
   const lastEntryDateMap = useMemo(
     () => buildLastEntryDateMap(invoices ?? []),
@@ -56,8 +70,14 @@ export const useDashboardHandler = () => {
 
   const marginAlerts = useMemo(
     () =>
-      getMarginAlerts(products ?? [], settings, lastEntryDateMap, entryCostMap),
-    [products, settings, lastEntryDateMap, entryCostMap]
+      getMarginAlerts(
+        products ?? [],
+        settings,
+        lastEntryDateMap,
+        entryCostMap,
+        costSourceOverrides
+      ),
+    [products, settings, lastEntryDateMap, entryCostMap, costSourceOverrides]
   )
 
   const filteredMarginAlerts = useMemo(() => {
@@ -91,6 +111,7 @@ export const useDashboardHandler = () => {
     setEndDate,
     isPeriodFilterEnabled,
     setIsPeriodFilterEnabled,
-    activeDateRange
+    activeDateRange,
+    handleCostSourceChange
   }
 }

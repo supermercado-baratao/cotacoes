@@ -128,17 +128,28 @@ export const getEntryUnitCost = (
   }
 }
 
+// Entrada paga mais recente do produto (maior data de emissão) — alternativa
+// ao custo médio quando o custo mudou dentro do período.
+export type TLastPaidEntry = {
+  unitCost: number
+  invoiceNumber: string
+  supplierName: string
+  emissionDate: string
+}
+
 export type TEntryCost = {
   // Custo médio por unidade de venda: valor pago nas notas ÷ quantidade
   // total recebida, incluindo a bonificada. `null` quando só há bonificação
   // (sem entrada paga pra servir de base).
   cost: number | null
+  paidEntryCount: number
   paidQuantity: number
   bonusQuantity: number
   hasBonus: boolean
   // Alguma entrada do período precisa de conferência da Qtd. Embalagem (ver
   // TEntryUnitCost.needsPackReview).
   needsPackReview: boolean
+  lastPaidEntry: TLastPaidEntry | null
 }
 
 // `invoices` já deve vir filtrado pro período desejado.
@@ -155,9 +166,11 @@ export const buildEntryCostMap = (
     string,
     {
       paidCost: number
+      paidEntryCount: number
       paidQuantity: number
       bonusQuantity: number
       needsPackReview: boolean
+      lastPaidEntry: TLastPaidEntry | null
     }
   >()
 
@@ -172,16 +185,30 @@ export const buildEntryCostMap = (
       const entry = getEntryUnitCost(invoice, item, product, supplierId)
       const total = totals.get(product.id) ?? {
         paidCost: 0,
+        paidEntryCount: 0,
         paidQuantity: 0,
         bonusQuantity: 0,
-        needsPackReview: false
+        needsPackReview: false,
+        lastPaidEntry: null
       }
       if (entry.needsPackReview) total.needsPackReview = true
       if (entry.isBonus) {
         total.bonusQuantity += entry.unitQuantity
       } else if (entry.unitCost !== null) {
         total.paidCost += entry.unitCost * entry.unitQuantity
+        total.paidEntryCount += 1
         total.paidQuantity += entry.unitQuantity
+        if (
+          !total.lastPaidEntry ||
+          invoice.emissionDate > total.lastPaidEntry.emissionDate
+        ) {
+          total.lastPaidEntry = {
+            unitCost: entry.unitCost,
+            invoiceNumber: invoice.number,
+            supplierName: invoice.supplierName,
+            emissionDate: invoice.emissionDate
+          }
+        }
       }
       totals.set(product.id, total)
     })
@@ -194,10 +221,12 @@ export const buildEntryCostMap = (
         total.paidQuantity > 0
           ? total.paidCost / (total.paidQuantity + total.bonusQuantity)
           : null,
+      paidEntryCount: total.paidEntryCount,
       paidQuantity: total.paidQuantity,
       bonusQuantity: total.bonusQuantity,
       hasBonus: total.bonusQuantity > 0,
-      needsPackReview: total.needsPackReview
+      needsPackReview: total.needsPackReview,
+      lastPaidEntry: total.lastPaidEntry
     })
   })
   return result

@@ -279,6 +279,47 @@ describe('buildEntryCostMap', () => {
     expect(entryCost.cost).toBeCloseTo(saleItem.totalCost! / 110, 6)
   })
 
+  test('counts the paid entries and keeps the most recent one', () => {
+    const product = makeProduct()
+    const makeSale = (id: string, emissionDate: string, totalPrice: number) =>
+      ({
+        id,
+        number: id,
+        emissionDate,
+        supplierCnpj: SUPPLIER_CNPJ,
+        supplierName: 'CONCORD',
+        items: [
+          {
+            productId: product.id,
+            supplierProductCode: '5184',
+            packageBarcode: null,
+            unit: 'UN',
+            quantity: 1,
+            unitPrice: totalPrice,
+            totalPrice
+          }
+        ]
+      }) as unknown as TInvoice
+
+    const entryCost = buildEntryCostMap(
+      [
+        makeSale('100', '2026-09-01', 10),
+        makeSale('102', '2026-09-20', 12),
+        makeSale('101', '2026-09-10', 11)
+      ],
+      [product],
+      [supplier]
+    ).get(product.id)!
+
+    expect(entryCost.paidEntryCount).toBe(3)
+    expect(entryCost.lastPaidEntry).toEqual({
+      unitCost: 12,
+      invoiceNumber: '102',
+      supplierName: 'CONCORD',
+      emissionDate: '2026-09-20'
+    })
+  })
+
   test('converts the invoice quantity by the VR supplier packing', async () => {
     const product = makeProduct({
       supplierPackings: [
@@ -312,6 +353,8 @@ describe('buildEntryCostMap', () => {
 
     expect(entryCost).toMatchObject({
       cost: null,
+      paidEntryCount: 0,
+      lastPaidEntry: null,
       paidQuantity: 0,
       bonusQuantity: 10,
       hasBonus: true

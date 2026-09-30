@@ -457,3 +457,104 @@ test('prioritizes the VR cost, flagging bonus and divergence from the entry cost
   await expect(drawer.getByText('R$ 18,00')).toHaveCount(2)
   await expect(drawer.getByText('Bonificação')).toBeVisible()
 })
+
+test('recalculates the margin with the cost source selected in the cost column', async ({
+  page
+}) => {
+  const { email, password } = await createUser()
+
+  await settingsModel.upsert({ marginTolerance: { below: 25, above: 38 } })
+
+  // Preço 100. VR 80 -> margem 20% (abaixo do piso de 25%). Notas: 70 e 60
+  // -> média 65 -> 35% (dentro da faixa); última NF 60 -> 40% (acima do teto
+  // de 38%).
+  await Promise.all([
+    productModel.create(
+      makeProduct({ id: 'p1', description: 'PRODUTO CUSTO', costWithTax: 80 })
+    ),
+    invoiceModel.create(
+      makeInvoice({
+        id: 'nf-antiga',
+        emissionDate: daysAgo(10),
+        items: [
+          makeInvoiceItem({ productId: 'p1', unitPrice: 70, totalPrice: 70 })
+        ]
+      })
+    ),
+    invoiceModel.create(
+      makeInvoice({
+        id: 'nf-recente',
+        emissionDate: daysAgo(5),
+        items: [
+          makeInvoiceItem({ productId: 'p1', unitPrice: 60, totalPrice: 60 })
+        ]
+      })
+    )
+  ])
+
+  await page.goto('/signin')
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Senha').fill(password)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+  await expect(page).toHaveURL(/\/dashboard/)
+
+  const belowMarginSection = page
+    .getByText('Produtos abaixo da margem')
+    .last()
+    .locator('..')
+  const aboveMarginSection = page
+    .getByText('Produtos acima da margem')
+    .last()
+    .locator('..')
+  const belowMarginCard = page
+    .getByText('Produtos abaixo da margem')
+    .first()
+    .locator('..')
+
+  const row = getRow(page, 'PRODUTO CUSTO')
+  await expect(row.getByText('R$ 80,00')).toBeVisible()
+  await expect(row.getByText('20.0%')).toBeVisible()
+
+  const costSelect = page.getByRole('combobox', {
+    name: 'Fonte do custo de PRODUTO CUSTO'
+  })
+  await costSelect.click()
+
+  const vrOption = page.getByRole('option', {
+    name: /Custo c\/ Imposto \(VR\)/
+  })
+  await expect(vrOption).toContainText('Padrão')
+  await expect(vrOption).toContainText('R$ 80,00')
+  await expect(vrOption).toContainText('custocomimposto')
+
+  const entriesOption = page.getByRole('option', {
+    name: /Custo médio das NFs/
+  })
+  await expect(entriesOption).toContainText('R$ 65,00')
+  await expect(entriesOption).toContainText(
+    '2 entradas pagas · 2 un. · notas do período'
+  )
+
+  const lastEntryOption = page.getByRole('option', { name: /Última NF paga/ })
+  await expect(lastEntryOption).toContainText('R$ 60,00')
+  await expect(lastEntryOption).toContainText('NF nf-recente · FORNECEDOR')
+
+  // Média das notas põe a margem dentro da faixa: a linha continua na tabela
+  // (pra poder voltar a escolha), mas deixa de contar como alerta.
+  await entriesOption.click()
+  await expect(row.getByText('R$ 65,00')).toBeVisible()
+  await expect(row.getByText('35.0%')).toBeVisible()
+  await expect(row.getByText('Dentro da margem')).toBeVisible()
+  await expect(belowMarginCard.getByText('0', { exact: true })).toBeVisible()
+
+  // Última NF põe a margem acima do teto: a linha muda de tabela.
+  await costSelect.click()
+  await page.getByRole('option', { name: /Última NF paga/ }).click()
+  await expect(
+    aboveMarginSection.getByText('PRODUTO CUSTO', { exact: true })
+  ).toBeVisible()
+  await expect(
+    belowMarginSection.getByText('PRODUTO CUSTO', { exact: true })
+  ).not.toBeVisible()
+  await expect(getRow(page, 'PRODUTO CUSTO').getByText('40.0%')).toBeVisible()
+})

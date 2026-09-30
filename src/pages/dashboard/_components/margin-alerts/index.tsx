@@ -1,7 +1,7 @@
 import { ReceiptLong } from '@mui/icons-material'
 import { Paper, Typography } from '@mui/material'
 import { GridActionsCellItem } from '@mui/x-data-grid'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { DataView, Table } from '@/components'
 import type { TInvoiceDateRange } from '@/models'
@@ -10,9 +10,10 @@ import { useAppStore } from '@/stores'
 import {
   addEntryUnitCosts,
   getInvoiceEntriesForProduct,
-  type TMarginAlert
+  type TMarginAlert,
+  type TMarginCostSource
 } from '../../utils'
-import { columns } from './columns'
+import { buildColumns } from './columns'
 import { InvoiceEntriesDrawer } from './invoice-entries-drawer'
 import * as S from './style'
 
@@ -25,13 +26,13 @@ const copyByDirection: Record<
   below: {
     title: 'Produtos abaixo da margem',
     description:
-      'Produtos cujo preço de venda atual resulta numa margem menor que a margem mínima aceitável definida em Configurações, considerando o custo médio das notas de entrada do período (convertido pela unidade tributável da nota quando a embalagem não é UN, senão pela embalagem do VR, com bonificações entrando só na quantidade) ou, se não houver entrada paga, o custo com imposto do VR.',
+      'Produtos cujo preço de venda atual resulta numa margem menor que a margem mínima aceitável definida em Configurações, considerando o custo com imposto do VR ou, se o produto não tiver custo no VR, o custo médio das notas de entrada do período (convertido pela unidade tributável da nota quando a embalagem não é UN, senão pela embalagem do VR, com bonificações entrando só na quantidade). Use o select da coluna Custo para calcular a margem com outra fonte de custo.',
     emptyMessage: 'Nenhum produto abaixo da margem mínima no momento.'
   },
   above: {
     title: 'Produtos acima da margem',
     description:
-      'Produtos cujo preço de venda atual resulta numa margem maior que a margem máxima esperada definida em Configurações, considerando o custo médio das notas de entrada do período (convertido pela unidade tributável da nota quando a embalagem não é UN, senão pela embalagem do VR, com bonificações entrando só na quantidade) ou, se não houver entrada paga, o custo com imposto do VR.',
+      'Produtos cujo preço de venda atual resulta numa margem maior que a margem máxima esperada definida em Configurações, considerando o custo com imposto do VR ou, se o produto não tiver custo no VR, o custo médio das notas de entrada do período (convertido pela unidade tributável da nota quando a embalagem não é UN, senão pela embalagem do VR, com bonificações entrando só na quantidade). Use o select da coluna Custo para calcular a margem com outra fonte de custo.',
     emptyMessage: 'Nenhum produto acima da margem máxima no momento.'
   }
 }
@@ -41,17 +42,23 @@ type TMarginAlertsProps = {
   isFetching: boolean
   marginAlerts: TMarginAlert[]
   dateRange: TInvoiceDateRange | null
+  handleCostSourceChange: (productId: string, source: TMarginCostSource) => void
 }
 
 export const MarginAlerts = ({
   direction,
   isFetching,
   marginAlerts,
-  dateRange
+  dateRange,
+  handleCostSourceChange
 }: TMarginAlertsProps) => {
   const { invoices, products, suppliers } = useAppStore()
   const [drawerAlert, setDrawerAlert] = useState<TMarginAlert | null>(null)
   const copy = copyByDirection[direction]
+  const columns = useMemo(
+    () => buildColumns(handleCostSourceChange, dateRange !== null),
+    [handleCostSourceChange, dateRange]
+  )
 
   const invoiceEntries = drawerAlert
     ? addEntryUnitCosts(

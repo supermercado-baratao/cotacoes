@@ -18,19 +18,36 @@ import {
   getMarginTolerance,
   type TEntryCost,
   type TEntryUnitCost,
+  type TLastPaidEntry,
   type TMarginStatus
 } from '@/utils'
 
-export type TMarginCostSource = 'entries' | 'vr'
+export type TMarginCostSource = 'vr' | 'entries' | 'lastEntry'
+
+// Uma fonte de custo disponível pro produto — alimenta o select da coluna
+// Custo, com o que for preciso pra identificar de onde o valor vem.
+export type TMarginCostOption =
+  | { source: 'vr'; cost: number }
+  | {
+      source: 'entries'
+      cost: number
+      paidEntryCount: number
+      paidQuantity: number
+      bonusQuantity: number
+    }
+  | ({ source: 'lastEntry'; cost: number } & Omit<TLastPaidEntry, 'unitCost'>)
 
 export type TMarginAlert = {
   id: string
   description: string
   price: number
-  // Custo usado na margem: custo com imposto do VR quando houver, senão o
-  // médio das notas de entrada do período.
+  // Custo usado na margem: o escolhido no select da coluna Custo ou, sem
+  // escolha, o padrão (custo com imposto do VR quando houver, senão o médio
+  // das notas de entrada do período).
   cost: number
   costSource: TMarginCostSource
+  defaultCostSource: TMarginCostSource
+  costOptions: TMarginCostOption[]
   vrCost: number | null
   entryCost: number | null
   // Divergência (%) do custo das notas em relação ao custo do VR.
@@ -41,10 +58,37 @@ export type TMarginAlert = {
   thresholdMargin: number
   actualMargin: number
   marginGap: number
+  // 'ok' só quando o custo escolhido no select põe a margem dentro da faixa —
+  // a linha continua na tabela em que o custo padrão a colocou, pra poder
+  // voltar a escolha.
   status: TMarginStatus
   updatedAt: Timestamp
   vrCreatedAt: string
   lastEntryDate: string | null
+}
+
+// Ordem = prioridade do fallback padrão. A última NF não entra no fallback
+// (só existe quando o médio das notas também existe), só como escolha.
+export const getMarginCostOptions = (
+  vrCost: number | null,
+  entryCost: TEntryCost | null
+): TMarginCostOption[] => {
+  const options: TMarginCostOption[] = []
+  if (vrCost != null) options.push({ source: 'vr', cost: vrCost })
+  if (entryCost?.cost != null) {
+    options.push({
+      source: 'entries',
+      cost: entryCost.cost,
+      paidEntryCount: entryCost.paidEntryCount,
+      paidQuantity: entryCost.paidQuantity,
+      bonusQuantity: entryCost.bonusQuantity
+    })
+  }
+  if (entryCost?.lastPaidEntry) {
+    const { unitCost, ...lastPaidEntry } = entryCost.lastPaidEntry
+    options.push({ source: 'lastEntry', cost: unitCost, ...lastPaidEntry })
+  }
+  return options
 }
 
 // Última data de emissão entre as notas com item vinculado ao produto — base
@@ -71,12 +115,14 @@ export type TMarginAlerts = {
 }
 
 // Avalia todo o catálogo (não só produtos que já passaram por reajuste de
-// preços). Custo: custo com imposto cadastrado no VR (custocomimposto), o
-// mais próximo do real, com fallback pro médio das notas de entrada do
-// período (ver buildEntryCostMap — quantidade convertida pela unidade
-// tributável da nota (embalagem diferente de UN) ou pela embalagem do VR, e
-// bonificação entrando só na quantidade) quando o produto não tem custo no
-// VR. O custo das notas segue calculado pra sinalizar divergência com o VR.
+// preços). Custo padrão: custo com imposto cadastrado no VR
+// (custocomimposto), o mais próximo do real, com fallback pro médio das notas
+// de entrada do período (ver buildEntryCostMap — quantidade convertida pela
+// unidade tributável da nota (embalagem diferente de UN) ou pela embalagem do
+// VR, e bonificação entrando só na quantidade) quando o produto não tem custo
+// no VR. `costSourceOverrides` troca, por produto, a fonte escolhida no select
+// da coluna Custo (ignorada se a fonte não estiver disponível). O custo das
+// notas segue calculado pra sinalizar divergência com o VR.
 // O alvo de margem não é por produto: `tolerance.below`/`.above`
 // (Configurações, global ou por departamento) são o piso/teto aplicados a
 // todo o catálogo.
@@ -84,7 +130,8 @@ export const getMarginAlerts = (
   products: TProduct[],
   settings: TSettings | null,
   lastEntryDateMap: Map<string, string>,
-  entryCostMap: Map<string, TEntryCost>
+  entryCostMap: Map<string, TEntryCost>,
+  costSourceOverrides: Map<string, TMarginCostSource> = new Map()
 ): TMarginAlerts => {
   const below: TMarginAlert[] = []
   const above: TMarginAlert[] = []
@@ -93,24 +140,36 @@ export const getMarginAlerts = (
     const price = product.price
     const entryCost = entryCostMap.get(product.id) ?? null
     const vrCost = product.costWithTax
-    const cost = vrCost ?? entryCost?.cost ?? null
+    const costOptions = getMarginCostOptions(vrCost, entryCost)
+    const defaultOption = costOptions[0]
     // !price (não `price == null`) é proposital: preço 0 tornaria a divisão
     // abaixo indefinida. Custo 0 é um valor legítimo (ex: item promocional) e
     // não deve ser tratado como "sem dado".
-    if (!price || cost == null) return
+    if (!price || !defaultOption) return
 
-    const actualMargin = ((price - cost) / price) * 100
+    const selectedOption =
+      costOptions.find(
+        (option) => option.source === costSourceOverrides.get(product.id)
+      ) ?? defaultOption
     const tolerance = getMarginTolerance(settings, product.departmentId)
-    const { status, marginGap } = evaluateMargin(actualMargin, tolerance)
-    if (status === 'ok') return
+    const evaluate = (cost: number) => {
+      const actualMargin = ((price - cost) / price) * 100
+      return { actualMargin, ...evaluateMargin(actualMargin, tolerance) }
+    }
+    const { actualMargin, status, marginGap } = evaluate(selectedOption.cost)
+    const { status: defaultStatus } = evaluate(defaultOption.cost)
+    const listStatus = status === 'ok' ? defaultStatus : status
+    if (listStatus === 'ok') return
 
     const costDivergence = getCostDivergence(entryCost?.cost ?? null, vrCost)
     const alert: TMarginAlert = {
       id: product.id,
       description: product.description,
       price,
-      cost,
-      costSource: vrCost != null ? 'vr' : 'entries',
+      cost: selectedOption.cost,
+      costSource: selectedOption.source,
+      defaultCostSource: defaultOption.source,
+      costOptions,
       vrCost,
       entryCost: entryCost?.cost ?? null,
       costDivergence,
@@ -119,7 +178,8 @@ export const getMarginAlerts = (
         Math.abs(costDivergence) > COST_DIVERGENCE_ATTENTION_PERCENT,
       hasBonus: entryCost?.hasBonus ?? false,
       needsPackReview: entryCost?.needsPackReview ?? false,
-      thresholdMargin: status === 'below' ? tolerance.below : tolerance.above,
+      thresholdMargin:
+        listStatus === 'below' ? tolerance.below : tolerance.above,
       actualMargin,
       marginGap,
       status,
@@ -127,7 +187,7 @@ export const getMarginAlerts = (
       vrCreatedAt: product.vrCreatedAt,
       lastEntryDate: lastEntryDateMap.get(product.id) ?? null
     }
-    ;(status === 'below' ? below : above).push(alert)
+    ;(listStatus === 'below' ? below : above).push(alert)
   })
 
   below.sort((a, b) => b.marginGap - a.marginGap)
@@ -264,6 +324,10 @@ export const getDashboardStats = (
   pendingInvoiceCount: invoices.filter(
     (invoice) => invoice.verificationStatus === 'pending'
   ).length,
-  belowMarginCount: marginAlerts.below.length,
-  aboveMarginCount: marginAlerts.above.length
+  // Linhas que o custo escolhido pôs dentro da margem ficam na tabela, mas não
+  // contam como alerta.
+  belowMarginCount: marginAlerts.below.filter((alert) => alert.status !== 'ok')
+    .length,
+  aboveMarginCount: marginAlerts.above.filter((alert) => alert.status !== 'ok')
+    .length
 })
