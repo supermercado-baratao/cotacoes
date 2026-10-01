@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { useCallback, useMemo, useState } from 'react'
 
+import type { TMarginCostSource } from '@/models'
 import { useAppStore } from '@/stores'
 import { buildEntryCostMap } from '@/utils'
 
@@ -11,13 +12,14 @@ import {
   filterMarginAlertsByEntryPeriod,
   getDashboardStats,
   getMarginAlerts,
-  type TMarginCostSource
+  type TMarginAlert
 } from './utils'
 
 const ENTRY_DATE_DEFAULT_WINDOW_DAYS = 30
 
 export const useDashboardHandler = () => {
-  const { products, quotes, invoices, suppliers, settings } = useAppStore()
+  const { products, quotes, invoices, suppliers, settings, updateProduct } =
+    useAppStore()
 
   const isFetching = products === null || quotes === null || invoices === null
 
@@ -26,18 +28,21 @@ export const useDashboardHandler = () => {
   )
   const [endDate, setEndDate] = useState(() => dayjs().format('YYYY-MM-DD'))
   const [isPeriodFilterEnabled, setIsPeriodFilterEnabled] = useState(true)
-  // Fonte de custo escolhida no select da coluna Custo, por produto. Só vale
-  // na sessão — é uma ferramenta de análise, não altera o cadastro.
-  const [costSourceOverrides, setCostSourceOverrides] = useState<
-    Map<string, TMarginCostSource>
-  >(() => new Map())
 
+  // Fonte de custo escolhida no select da coluna Custo — salva no produto, pra
+  // valer em outras sessões. Voltar pro padrão grava `null`, pra seguir o
+  // fallback (VR → médio das notas) se o VR ganhar/perder custo depois. A
+  // margem é recalculada quando a query de produtos é invalidada.
   const handleCostSourceChange = useCallback(
-    (productId: string, source: TMarginCostSource) =>
-      setCostSourceOverrides((current) =>
-        new Map(current).set(productId, source)
-      ),
-    []
+    (alert: TMarginAlert, source: TMarginCostSource) => {
+      const product = products?.find((item) => item.id === alert.id)
+      if (!product) return
+      updateProduct({
+        ...product,
+        marginCostSource: source === alert.defaultCostSource ? null : source
+      })
+    },
+    [products, updateProduct]
   )
 
   const lastEntryDateMap = useMemo(
@@ -70,14 +75,8 @@ export const useDashboardHandler = () => {
 
   const marginAlerts = useMemo(
     () =>
-      getMarginAlerts(
-        products ?? [],
-        settings,
-        lastEntryDateMap,
-        entryCostMap,
-        costSourceOverrides
-      ),
-    [products, settings, lastEntryDateMap, entryCostMap, costSourceOverrides]
+      getMarginAlerts(products ?? [], settings, lastEntryDateMap, entryCostMap),
+    [products, settings, lastEntryDateMap, entryCostMap]
   )
 
   const filteredMarginAlerts = useMemo(() => {

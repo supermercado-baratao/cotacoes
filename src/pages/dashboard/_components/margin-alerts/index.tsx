@@ -4,14 +4,13 @@ import { GridActionsCellItem } from '@mui/x-data-grid'
 import { useMemo, useState } from 'react'
 
 import { DataView, Table } from '@/components'
-import type { TInvoiceDateRange } from '@/models'
+import type { TInvoiceDateRange, TMarginCostSource } from '@/models'
 import { useAppStore } from '@/stores'
 
 import {
   addEntryUnitCosts,
   getInvoiceEntriesForProduct,
-  type TMarginAlert,
-  type TMarginCostSource
+  type TMarginAlert
 } from '../../utils'
 import { buildColumns } from './columns'
 import { InvoiceEntriesDrawer } from './invoice-entries-drawer'
@@ -42,7 +41,10 @@ type TMarginAlertsProps = {
   isFetching: boolean
   marginAlerts: TMarginAlert[]
   dateRange: TInvoiceDateRange | null
-  handleCostSourceChange: (productId: string, source: TMarginCostSource) => void
+  handleCostSourceChange: (
+    alert: TMarginAlert,
+    source: TMarginCostSource
+  ) => void
 }
 
 export const MarginAlerts = ({

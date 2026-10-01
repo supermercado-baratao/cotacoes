@@ -5,13 +5,10 @@ import dayjs from 'dayjs'
 import type { Timestamp } from 'firebase/firestore'
 
 import { COST_DIVERGENCE_ATTENTION_PERCENT } from '@/constants'
+import type { TMarginCostSource } from '@/models'
 import { formatCurrency } from '@/utils'
 
-import type {
-  TMarginAlert,
-  TMarginCostOption,
-  TMarginCostSource
-} from '../../utils'
+import type { TMarginAlert, TMarginCostOption } from '../../utils'
 import * as S from './style'
 
 const renderDescription = ({ row }: GridRenderCellParams<TMarginAlert>) => (
@@ -125,7 +122,7 @@ const renderCostValue = (row: TMarginAlert) => (
 const buildRenderCost =
   (
     handleCostSourceChange: (
-      productId: string,
+      alert: TMarginAlert,
       source: TMarginCostSource
     ) => void,
     hasPeriod: boolean
@@ -141,10 +138,7 @@ const buildRenderCost =
         disableUnderline
         value={row.costSource}
         onChange={(event) =>
-          handleCostSourceChange(
-            row.id,
-            event.target.value as TMarginCostSource
-          )
+          handleCostSourceChange(row, event.target.value as TMarginCostSource)
         }
         renderValue={() => renderCostValue(row)}
         inputProps={{ 'aria-label': `Fonte do custo de ${row.description}` }}
@@ -182,7 +176,7 @@ const renderMarginGap = ({ row }: GridRenderCellParams<TMarginAlert>) => {
 // as notas carregadas) — entra na descrição das opções do select.
 export const buildColumns = (
   handleCostSourceChange: (
-    productId: string,
+    alert: TMarginAlert,
     source: TMarginCostSource
   ) => void,
   hasPeriod: boolean

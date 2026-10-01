@@ -469,13 +469,12 @@ describe('getMarginAlerts', () => {
       })
     })
 
-    test('moves the alert to the table of the selected cost', () => {
+    test('moves the alert to the table of the cost source saved on the product', () => {
       const { below, above } = getMarginAlerts(
-        [makeProduct({ costWithTax: 80 })],
+        [makeProduct({ costWithTax: 80, marginCostSource: 'lastEntry' })],
         settings,
         noEntries,
-        entryCosts,
-        new Map([['p1', 'lastEntry' as const]])
+        entryCosts
       )
 
       expect(below).toEqual([])
@@ -490,13 +489,12 @@ describe('getMarginAlerts', () => {
       })
     })
 
-    test('keeps the alert in the default table when the selected cost is within the margin', () => {
+    test('keeps the alert in the default table when the saved cost source is within the margin', () => {
       const { below, above } = getMarginAlerts(
-        [makeProduct({ costWithTax: 80 })],
+        [makeProduct({ costWithTax: 80, marginCostSource: 'entries' })],
         settings,
         noEntries,
-        entryCosts,
-        new Map([['p1', 'entries' as const]])
+        entryCosts
       )
 
       expect(above).toEqual([])
@@ -512,13 +510,12 @@ describe('getMarginAlerts', () => {
       ).toBe(0)
     })
 
-    test('ignores a selected cost that is not available for the product', () => {
+    test('ignores a saved cost source that is not available for the product', () => {
       const { below } = getMarginAlerts(
-        [makeProduct({ costWithTax: 80 })],
+        [makeProduct({ costWithTax: 80, marginCostSource: 'entries' })],
         settings,
         noEntries,
-        noEntryCosts,
-        new Map([['p1', 'entries' as const]])
+        noEntryCosts
       )
 
       expect(below[0]).toMatchObject({ cost: 80, costSource: 'vr' })
