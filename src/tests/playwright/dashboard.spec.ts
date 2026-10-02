@@ -557,4 +557,24 @@ test('recalculates the margin with the cost source selected in the cost column',
     belowMarginSection.getByText('PRODUTO CUSTO', { exact: true })
   ).not.toBeVisible()
   await expect(getRow(page, 'PRODUTO CUSTO').getByText('40.0%')).toBeVisible()
+
+  // A escolha fica salva no produto: sobrevive a um reload da página.
+  await page.reload()
+  await expect(
+    aboveMarginSection.getByText('PRODUTO CUSTO', { exact: true })
+  ).toBeVisible()
+  await expect(
+    getRow(page, 'PRODUTO CUSTO').getByText('R$ 60,00')
+  ).toBeVisible()
+  await expect(getRow(page, 'PRODUTO CUSTO').getByText('40.0%')).toBeVisible()
+
+  // Voltar pro padrão limpa a escolha salva.
+  await costSelect.click()
+  await page.getByRole('option', { name: /Custo c\/ Imposto \(VR\)/ }).click()
+  await expect(
+    belowMarginSection.getByText('PRODUTO CUSTO', { exact: true })
+  ).toBeVisible()
+  await expect(getRow(page, 'PRODUTO CUSTO').getByText('20.0%')).toBeVisible()
+  await page.reload()
+  await expect(getRow(page, 'PRODUTO CUSTO').getByText('20.0%')).toBeVisible()
 })

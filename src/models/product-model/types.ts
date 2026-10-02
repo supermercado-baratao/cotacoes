@@ -10,6 +10,10 @@ export type TSupplierPacking = {
   packQuantity: number
 }
 
+// Fonte de custo usada na margem do Dashboard — cadastro do VR, médio das
+// notas do período ou última nota paga.
+export type TMarginCostSource = 'vr' | 'entries' | 'lastEntry'
+
 export type TProduct = {
   id: string
   description: string
@@ -23,6 +27,10 @@ export type TProduct = {
   tax: number | null
   margin: number | null
   costWithTax: number | null
+  // Fonte escolhida no select da coluna Custo do Dashboard. `null`/ausente =
+  // padrão (VR, senão médio das notas). Fica fora de
+  // UPSERT_MANY_UPDATABLE_FIELDS pra sobreviver à reimportação do catálogo.
+  marginCostSource?: TMarginCostSource | null
   observations: string | null
   familyId: string | null
   departmentId: string | null

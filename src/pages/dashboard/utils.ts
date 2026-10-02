@@ -5,6 +5,7 @@ import type {
   TInvoice,
   TInvoiceDateRange,
   TInvoiceItem,
+  TMarginCostSource,
   TProduct,
   TQuote,
   TSettings,
@@ -21,8 +22,6 @@ import {
   type TLastPaidEntry,
   type TMarginStatus
 } from '@/utils'
-
-export type TMarginCostSource = 'vr' | 'entries' | 'lastEntry'
 
 // Uma fonte de custo disponível pro produto — alimenta o select da coluna
 // Custo, com o que for preciso pra identificar de onde o valor vem.
@@ -120,8 +119,8 @@ export type TMarginAlerts = {
 // de entrada do período (ver buildEntryCostMap — quantidade convertida pela
 // unidade tributável da nota (embalagem diferente de UN) ou pela embalagem do
 // VR, e bonificação entrando só na quantidade) quando o produto não tem custo
-// no VR. `costSourceOverrides` troca, por produto, a fonte escolhida no select
-// da coluna Custo (ignorada se a fonte não estiver disponível). O custo das
+// no VR. `product.marginCostSource` troca a fonte pela escolhida (e salva) no
+// select da coluna Custo (ignorada se a fonte não estiver disponível). O custo das
 // notas segue calculado pra sinalizar divergência com o VR.
 // O alvo de margem não é por produto: `tolerance.below`/`.above`
 // (Configurações, global ou por departamento) são o piso/teto aplicados a
@@ -130,8 +129,7 @@ export const getMarginAlerts = (
   products: TProduct[],
   settings: TSettings | null,
   lastEntryDateMap: Map<string, string>,
-  entryCostMap: Map<string, TEntryCost>,
-  costSourceOverrides: Map<string, TMarginCostSource> = new Map()
+  entryCostMap: Map<string, TEntryCost>
 ): TMarginAlerts => {
   const below: TMarginAlert[] = []
   const above: TMarginAlert[] = []
@@ -149,7 +147,7 @@ export const getMarginAlerts = (
 
     const selectedOption =
       costOptions.find(
-        (option) => option.source === costSourceOverrides.get(product.id)
+        (option) => option.source === product.marginCostSource
       ) ?? defaultOption
     const tolerance = getMarginTolerance(settings, product.departmentId)
     const evaluate = (cost: number) => {
