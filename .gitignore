@@ -6,3 +6,9 @@ dist
 test-results
 playwright-report
 blob-report
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/skills/impeccable/scripts/bin
+.impeccable/*.local.json
+.impeccable/hook.cache.json
+.playwright-mcp
