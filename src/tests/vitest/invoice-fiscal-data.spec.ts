@@ -1,13 +1,25 @@
 import { Timestamp } from 'firebase/firestore'
-import { afterEach, beforeEach, describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 
+import { database } from '@/infra'
 import { invoiceModel, type TInvoice, type TInvoiceItem } from '@/models'
 import { parseNfe } from '@/pages/invoices/utils'
 import { completeInvoiceFiscalData, hasMissingFiscalData } from '@/utils'
 
-import { getSeededCollection, seedCollection } from './_mocks/database'
 import { readMockFile } from './_utils/read-mock-file'
-import { clearData, createUser } from './orchestrator'
+
+vi.mock('@/infra/firebase-config', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/infra/firebase-config')>()),
+  getUserPath: (collection: string) => `users/test/${collection}`
+}))
+
+vi.mock('@/infra/database', () => ({
+  database: {
+    findMany: vi.fn(),
+    createManyWithIds: vi.fn(),
+    updateMany: vi.fn()
+  }
+}))
 
 const now = Timestamp.now()
 
@@ -119,24 +131,25 @@ describe('completeInvoiceFiscalData', () => {
 })
 
 describe('invoiceModel.createMany', () => {
-  beforeEach(() => {
-    createUser()
-  })
-
-  afterEach(() => {
-    clearData()
-  })
+  const mockDatabase = (existing: TInvoice[]) => {
+    vi.mocked(database.findMany).mockResolvedValue(existing)
+    vi.mocked(database.createManyWithIds).mockImplementation(({ data }) =>
+      Promise.resolve(data)
+    )
+    vi.mocked(database.updateMany).mockImplementation(({ data }) =>
+      Promise.resolve(data)
+    )
+  }
 
   test('completes existing invoices missing fiscal data instead of skipping them', async () => {
     const parsed = await loadParsed()
-    const legacy = toLegacyInvoice(parsed)
-    seedCollection('invoices', [legacy])
+    mockDatabase([toLegacyInvoice(parsed)])
 
     const { created, completed } = await invoiceModel.createMany([parsed])
 
     expect(created).toEqual([])
     expect(completed).toHaveLength(1)
-    const [stored] = getSeededCollection('invoices') as unknown as TInvoice[]
+    const [stored] = completed
     expect(stored.operationNature).toBe('BONIFICACAO, DOACAO OU BRINDE')
     expect(stored.verificationStatus).toBe('approved')
     expect(stored.items.every((item) => item.cfop === '5910')).toBe(true)
@@ -145,16 +158,19 @@ describe('invoiceModel.createMany', () => {
 
   test('skips existing invoices that already have the fiscal data', async () => {
     const parsed = await loadParsed()
-    seedCollection('invoices', [{ ...parsed, createdAt: now, updatedAt: now }])
+    mockDatabase([{ ...parsed, createdAt: now, updatedAt: now }])
 
     const { created, completed } = await invoiceModel.createMany([parsed])
 
     expect(created).toEqual([])
     expect(completed).toEqual([])
+    expect(database.createManyWithIds).not.toHaveBeenCalled()
+    expect(database.updateMany).not.toHaveBeenCalled()
   })
 
   test('creates invoices that do not exist yet', async () => {
     const parsed = await loadParsed()
+    mockDatabase([])
 
     const { created, completed } = await invoiceModel.createMany([parsed])
 

@@ -283,18 +283,18 @@ Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o suje
 src/tests/
 ├── _mocks/              # fixtures compartilhadas entre as duas suítes (xlsx/xml/txt)
 ├── vitest/              # suíte unitária (Vitest)
-│   ├── _mocks/          # fakes de database.ts, firebase/auth, firebase/firestore
-│   ├── _utils/          # helpers (ex: read-mock-file.ts)
-│   ├── orchestrator.ts  # createUser / populateDatabase / clearData contra o fake in-memory
+│   ├── _utils/          # helpers (ex: read-mock-file.ts, create-query-wrapper.tsx)
 │   └── *.spec.ts(x)
 └── playwright/          # suíte e2e (Playwright)
     ├── orchestrator.ts  # createUser / populateDatabase / clearData / verifyEmail contra o emulador real do Firebase
     └── *.spec.ts
 ```
 
-Cada suíte tem seu próprio `orchestrator.ts` — mesma interface, implementação diferente (fake in-memory vs emulador real). O orchestrator do Playwright reaproveita os models reais (`@/models`) e o parser de import (`getData`) em Node puro contra os emuladores — bem mais rápido que popular via UI. Isso só funciona porque `src/infra/firebase-config.ts` e `src/infra/gemini.ts` caem para `process.env` quando `import.meta.env` não existe (fora do Vite).
+O `orchestrator.ts` do Playwright reaproveita os models reais (`@/models`) e o parser de import (`getData`) em Node puro contra os emuladores — bem mais rápido que popular via UI. Isso só funciona porque `src/infra/firebase-config.ts` e `src/infra/gemini.ts` caem para `process.env` quando `import.meta.env` não existe (fora do Vite).
 
-- **Vitest** (`src/tests/vitest/*.spec.ts(x)`) — só testes unitários: funções puras (`evaluateMargin`, `groupInvoiceItemsForBatch`, `extractPackingInfo`...) e cenários de erro que precisam forçar uma rejeição do banco (ex: `databaseMock.create.mockRejectedValueOnce(...)`), que não dá para simular contra o emulador — esses ficam como um teste isolado (um `render()` da página + um mock de rejeição), não como fluxo completo. Sem rede nem emuladores.
+- **Vitest** (`src/tests/vitest/*.spec.ts(x)`) — só testes unitários, que rodam em segundos: funções puras (`evaluateMargin`, `groupInvoiceItemsForBatch`, `extractPackingInfo`...) e cenários de erro que precisam forçar uma rejeição do banco, que não dá para simular contra o emulador. Esses testam o hook (mutation do `AppProvider` ou handler da página) com `renderHook` e `vi.spyOn(<model>, '<método>').mockRejectedValueOnce(...)` — nunca renderize o `App` nem páginas inteiras. Sem rede nem emuladores.
+  - Cada arquivo mocka só o que usa (`vi.spyOn` no model ou `vi.mock` local); não há mocks globais. O `vitest.setup.ts` reseta e restaura todos os mocks antes de cada teste.
+  - Todos os arquivos rodam no ambiente `jsdom` (padrão do `vite.config.ts`); não declare `// @vitest-environment` por arquivo.
 - **Playwright** (`src/tests/playwright/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores do Firebase. Um arquivo por página; cada `test()` cria seu próprio usuário e semeia só os dados de que precisa (via orchestrator ou chamando os models) — testes independentes, não um roteiro sequencial. Precisa dos emuladores rodando e do `.env` preenchido.
 - Teste apenas a lógica que escrevemos (cálculos, filtros, mapeamentos, parsers, regras de negócio). Não teste comportamento de bibliotecas (MUI, zod, React Query) e descarte um teste cujo custo principal é um mock necessário só para renderizar.
 
