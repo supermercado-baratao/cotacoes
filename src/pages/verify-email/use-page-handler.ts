@@ -37,6 +37,8 @@ export const usePageHandler = () => {
   const handleLoginClick = async () => {
     try {
       await auth.currentUser!.reload()
+      // reload() doesn't refresh the ID token, and firestore.rules checks its email_verified claim
+      await auth.currentUser!.getIdToken(true)
       setUser(auth.currentUser)
       navigate('/dashboard', { replace: true })
     } catch {

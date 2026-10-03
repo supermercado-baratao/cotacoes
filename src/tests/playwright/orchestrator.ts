@@ -120,6 +120,8 @@ export const createUser = async (): Promise<{
       body: JSON.stringify({ localId: user.uid, emailVerified: true })
     }
   )
+  // The token issued at signup still has email_verified: false, which firestore.rules rejects
+  await user.getIdToken(true)
 
   return { name, email, password }
 }
