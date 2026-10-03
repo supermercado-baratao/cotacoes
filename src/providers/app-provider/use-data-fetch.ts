@@ -24,7 +24,7 @@ export const useDataFetch = () => {
   const quoteId = useAppStore((state) => state.quoteId)
   const historyProductId = useAppStore((state) => state.historyProductId)
   const invoiceDateRange = useAppStore((state) => state.invoiceDateRange)
-  const user = useAuthStore((state) => state.user)
+  const isEmailVerified = useAuthStore((state) => !!state.user?.emailVerified)
 
   // Todas as coleções compartilham uma única conexão WebChannel com o
   // Firestore — disparar as 15 buscas de uma vez faz o servidor tentar
@@ -58,7 +58,7 @@ export const useDataFetch = () => {
   const [readyCount, setReadyCount] = useState(1)
 
   const isEnabled = (index: number) =>
-    !!user && shouldFetch[index] && index < readyCount
+    isEmailVerified && shouldFetch[index] && index < readyCount
 
   const queries = useQueries({
     queries: [

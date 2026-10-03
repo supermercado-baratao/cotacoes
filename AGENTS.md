@@ -91,6 +91,8 @@ Fora de `src/`: `docs/` (documentação do projeto e da integração com o VR So
 
 **`src/infra/`** — `database.ts` expõe um objeto genérico `database` (`findMany`, `create`, `update`, `deleteUniqueById`, `upsertManyWithIds`, etc.) sobre o Firestore. Todos os documentos recebem automaticamente `id`, `createdAt` e `updatedAt`. Os dados ficam por usuário: os models montam o caminho com `getUserPath(PATH)`.
 
+**`firestore.rules`** — regras de segurança do Firestore, aplicadas pelo emulador (via `firebase.json`) e publicadas em produção com `firebase deploy --only firestore:rules`. Só o próprio usuário, com e-mail verificado, lê e escreve em `users/{uid}/...`. Como a regra lê a claim `email_verified` do ID token, renove o token (`getIdToken(true)`) sempre que o e-mail for verificado durante a sessão — `reload()` não basta.
+
 **`src/models/`** — modelos de domínio. Cada model define as operações de negócio chamando `database` com o caminho da coleção. As funções não são marcadas com `async` — retornam diretamente a `Promise` do `database`. Parâmetros de tipo só são passados ao `database` quando o TypeScript não consegue inferi-los.
 
 ```typescript
@@ -303,6 +305,8 @@ Os emuladores só são necessários para `pnpm test:e2e`:
 ```bash
 pnpm emulators:start > /tmp/emulators.log 2>&1 &
 ```
+
+O emulador carrega o `firestore.rules` só ao iniciar: reinicie-o depois de alterar as regras.
 
 ## Git hooks (husky)
 
