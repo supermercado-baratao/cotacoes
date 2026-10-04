@@ -79,7 +79,7 @@ Siga as Regras de commit do [`AGENTS.md`](../AGENTS.md): inglês, imperativo, mi
 
 - Um agente de IA só commita depois que o usuário aprova a mensagem.
 - Cada commit é uma única mudança lógica.
-- `pre-commit` roda `lint-staged` (ESLint e Prettier) nos arquivos staged.
+- `pre-commit` roda `lint-staged` nos arquivos staged: ESLint, Prettier e os testes unitários relacionados (`vitest related`).
 - Faça stage apenas dos arquivos que pertencem à mudança.
 
 ## 7. Push

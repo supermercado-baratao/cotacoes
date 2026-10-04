@@ -1,17 +1,12 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const buildCommand = (stagedFiles) => {
-  const files = stagedFiles.map((f) =>
-    path.relative(path.dirname(fileURLToPath(import.meta.url)), f)
-  )
-
-  return [
-    `pnpm eslint:fix ${files.join(' ')}`,
-    `pnpm prettier:fix --file ${files.join(' --file ')}`
-  ]
-}
+const eslint = 'pnpm exec eslint --fix --no-warn-ignored'
+const prettier = 'pnpm exec prettier --write --ignore-unknown'
 
 export default {
-  '*': [buildCommand]
+  '*.{js,jsx,ts,tsx,mjs,cjs}': [
+    eslint,
+    prettier,
+    'pnpm exec vitest related --run --passWithNoTests'
+  ],
+  '*.md': [eslint, prettier],
+  '*.{json,yml,yaml}': prettier
 }
