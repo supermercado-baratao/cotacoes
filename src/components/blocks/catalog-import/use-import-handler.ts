@@ -9,7 +9,7 @@ import {
   type TProductImportStatus
 } from './utils'
 
-export const useImportHandler = () => {
+export const useImportHandler = (handleClose: () => void) => {
   const { importData: runImport, products, departments } = useAppStore()
   const { setSuccessCallbacks } = useCallbackStore()
 
@@ -57,7 +57,7 @@ export const useImportHandler = () => {
       selectedProducts.map((p) => p.departmentId).filter(Boolean)
     )
     const existingDepartmentIds = new Set((departments ?? []).map((d) => d.id))
-    setSuccessCallbacks([handleFileRemove])
+    setSuccessCallbacks([handleClose, handleFileRemove])
     runImport({
       products: selectedProducts,
       families: importData.families.filter((f) => selectedFamilyIds.has(f.id)),

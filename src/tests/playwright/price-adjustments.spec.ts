@@ -229,7 +229,9 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
   const azeiteCard = page
     .getByText('AZEITE ANDORINHA EXTRA VIRGEM 250ML VD')
     .locator('xpath=ancestor::*[contains(@class,"MuiPaper-root")][1]')
-  await expect(azeiteCard.getByText('R$ 21,98')).toHaveCount(2)
+  await expect(azeiteCard.getByText('R$ 23,98')).toBeVisible()
+  await expect(azeiteCard.getByText('R$ 21,98')).toBeVisible()
+  await expect(azeiteCard.getByText('R$ 99,99')).toHaveCount(0)
 
   // A coleção price-adjustments guarda o relatório inteiro. Custo real,
   // divergência e fornecedores não aparecem na aba "Produtos" (sem
