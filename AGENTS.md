@@ -279,7 +279,7 @@ Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o suje
 - Prettier: aspas simples, sem ponto e vírgula, sem vírgula final (`.prettierrc`).
 - Indentação e espaços (2 espaços, LF) via `.editorconfig`.
 - `.claude/` é ignorado pelo ESLint e pelo Prettier: as skills instaladas de terceiros não seguem o estilo do projeto.
-- As saídas do Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) também são ignoradas pelo ESLint: o hook de `pre-commit` roda o lint no repositório inteiro.
+- As saídas do Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) também são ignoradas pelo ESLint: o `pnpm eslint:check` roda o lint no repositório inteiro.
 
 ## Testes
 
@@ -312,7 +312,7 @@ O emulador carrega o `firestore.rules` só ao iniciar: reinicie-o depois de alte
 
 ## Git hooks (husky)
 
-- **`pre-commit`** — roda `lint-staged` (ESLint + Prettier nos arquivos staged).
+- **`pre-commit`** — roda `lint-staged` (`lint-staged.config.js`) apenas nos arquivos staged: ESLint e Prettier nos arquivos de código e Markdown, só Prettier em JSON e YAML, e `vitest related` para rodar os testes unitários afetados pelos arquivos de código.
 - **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
 - **`pre-push`** — roda `pnpm type-check && pnpm test:e2e` (Playwright): os emuladores precisam estar rodando e o `.env` preenchido.
 
