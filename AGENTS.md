@@ -15,12 +15,13 @@ pnpm test             # executar testes unitários (Vitest) uma vez
 pnpm test:watch       # executar testes Vitest em modo watch
 pnpm test:e2e         # executar testes e2e (Playwright)
 pnpm test:e2e:ui      # executar testes e2e no modo UI do Playwright
-pnpm eslint:check     # verificar tipos (tsc) e lint
+pnpm type-check       # verificar tipos (tsc)
+pnpm eslint:check     # verificar lint
 pnpm eslint:fix       # corrigir problemas de lint automaticamente
 pnpm prettier:check   # verificar formatação
 pnpm prettier:fix     # formatar código
 pnpm generate         # gerar novo componente via plop
-pnpm emulators:start  # iniciar emuladores do Firebase (Auth + Firestore), necessário apenas para pnpm test:e2e
+pnpm emulators:start  # iniciar emuladores do Firebase (Auth + Firestore), necessário para pnpm test:e2e (e para o pre-push)
 ```
 
 Para executar um único arquivo de teste:
@@ -35,7 +36,7 @@ pnpm playwright test src/tests/playwright/quote.spec.ts
 - Use apenas **pnpm** (nunca npm/yarn/npx).
 - Versões de `dependencies` e `devDependencies` são fixas (sem `^`/`~`). Instale com `pnpm add -E <pkg>` (ou `pnpm add -D -E <pkg>`) — nunca edite as versões à mão.
 - A regra de versão fixa não vale para servidores MCP (`.mcp.json`) nem para scripts, que podem usar `@latest` (ex: `pnpm dlx @playwright/mcp@latest`), sempre via `pnpm dlx`.
-- A versão do Node fica em `.nvmrc`.
+- A versão do Node fica em `.nvmrc`, e o `engines.node` do `package.json` acompanha a major dela; a do pnpm fica no `packageManager`.
 
 ## Configuração do ambiente
 
@@ -301,7 +302,7 @@ O `orchestrator.ts` do Playwright reaproveita os models reais (`@/models`) e o p
 - **Playwright** (`src/tests/playwright/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores do Firebase. Um arquivo por página; cada `test()` cria seu próprio usuário e semeia só os dados de que precisa (via orchestrator ou chamando os models) — testes independentes, não um roteiro sequencial. Precisa dos emuladores rodando e do `.env` preenchido.
 - Teste apenas a lógica que escrevemos (cálculos, filtros, mapeamentos, parsers, regras de negócio). Não teste comportamento de bibliotecas (MUI, zod, React Query) e descarte um teste cujo custo principal é um mock necessário só para renderizar.
 
-Os emuladores só são necessários para `pnpm test:e2e`:
+Os emuladores são necessários para `pnpm test:e2e` e, portanto, para o `pre-push`:
 
 ```bash
 pnpm emulators:start > /tmp/emulators.log 2>&1 &
@@ -313,7 +314,7 @@ O emulador carrega o `firestore.rules` só ao iniciar: reinicie-o depois de alte
 
 - **`pre-commit`** — roda `lint-staged` (ESLint + Prettier nos arquivos staged).
 - **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
-- **`pre-push`** — roda `pnpm tsc -b --noEmit && pnpm test` (Vitest, sem emuladores).
+- **`pre-push`** — roda `pnpm type-check && pnpm test:e2e` (Playwright): os emuladores precisam estar rodando e o `.env` preenchido.
 
 ## Ferramentas de IA
 

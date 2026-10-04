@@ -63,7 +63,7 @@ git switch -c 'feat/relatorio-pedidos#10'
 Verifique localmente antes de commitar:
 
 ```bash
-pnpm eslint:check && pnpm prettier:check && pnpm test
+pnpm type-check && pnpm eslint:check && pnpm prettier:check && pnpm test
 ```
 
 E, se a mudança toca fluxos de UI, a suíte e2e (com os emuladores rodando):
@@ -88,7 +88,7 @@ Siga as Regras de commit do [`AGENTS.md`](../AGENTS.md): inglês, imperativo, mi
 git push -u origin 'feat/relatorio-pedidos#10'
 ```
 
-`pre-push` roda `pnpm tsc -b --noEmit` e `pnpm test`. O push é rejeitado se algum falhar.
+`pre-push` roda `pnpm type-check` e `pnpm test:e2e`, então os emuladores precisam estar rodando (`pnpm emulators:start`). O push é rejeitado se algum falhar.
 
 ## 8. Abrir a merge request
 
