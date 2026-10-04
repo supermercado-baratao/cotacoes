@@ -60,6 +60,8 @@ export const useAppHandler = () => {
   )
 
   const {
+    fetchErrorCode,
+    retryFetch,
     products,
     ignoredProducts,
     packageBarcodeLinks,
@@ -104,6 +106,10 @@ export const useAppHandler = () => {
   const isFetching = useIsFetching()
   const isMutating = useIsMutating()
   const isLoading = Boolean(isFetching || isMutating)
+
+  useEffect(() => {
+    useAppStore.setState({ fetchErrorCode, retryFetch })
+  }, [fetchErrorCode, retryFetch])
 
   useEffect(() => {
     if (products) setProducts(products)

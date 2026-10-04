@@ -1,5 +1,6 @@
-import { useQueries } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { FirebaseError } from 'firebase/app'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   departmentModel,
@@ -18,6 +19,9 @@ import {
   supplierModel
 } from '@/models'
 import { useAlertStore, useAppStore, useAuthStore } from '@/stores'
+
+const getErrorCode = (error: unknown) =>
+  error instanceof FirebaseError ? error.code : 'unknown'
 
 export const useDataFetch = () => {
   const { alert } = useAlertStore()
@@ -183,7 +187,27 @@ export const useDataFetch = () => {
     }
   }, [isError, alert])
 
+  // Exposing the error only after the whole queue settles keeps a page whose
+  // own collection is still queued from flashing another collection's error.
+  const isQueueSettled =
+    readyCount === shouldFetch.length &&
+    !queries.some((query) => query.isFetching)
+  const failedQuery = queries.find((query) => query.isError)
+  const fetchErrorCode =
+    isQueueSettled && failedQuery ? getErrorCode(failedQuery.error) : null
+
+  const queryClient = useQueryClient()
+  const retryFetch = useCallback(
+    () =>
+      queryClient.refetchQueries({
+        predicate: (query) => query.state.status === 'error'
+      }),
+    [queryClient]
+  )
+
   return {
+    fetchErrorCode,
+    retryFetch,
     products,
     ignoredProducts,
     packageBarcodeLinks,

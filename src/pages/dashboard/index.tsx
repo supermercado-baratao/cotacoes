@@ -13,6 +13,8 @@ import {
   Typography
 } from '@mui/material'
 
+import { DataView } from '@/components'
+
 import { MarginAlerts, StatCard } from './_components'
 import * as S from './style'
 import { useDashboardHandler } from './use-dashboard-handler'
@@ -103,20 +105,22 @@ export const Dashboard = () => {
           slotProps={{ inputLabel: { shrink: true } }}
         />
       </Box>
-      <MarginAlerts
-        direction="below"
-        isFetching={isFetching}
-        marginAlerts={marginAlerts.below}
-        dateRange={activeDateRange}
-        handleCostSourceChange={handleCostSourceChange}
-      />
-      <MarginAlerts
-        direction="above"
-        isFetching={isFetching}
-        marginAlerts={marginAlerts.above}
-        dateRange={activeDateRange}
-        handleCostSourceChange={handleCostSourceChange}
-      />
+      <DataView isFetching={isFetching}>
+        <MarginAlerts
+          direction="below"
+          isFetching={isFetching}
+          marginAlerts={marginAlerts.below}
+          dateRange={activeDateRange}
+          handleCostSourceChange={handleCostSourceChange}
+        />
+        <MarginAlerts
+          direction="above"
+          isFetching={isFetching}
+          marginAlerts={marginAlerts.above}
+          dateRange={activeDateRange}
+          handleCostSourceChange={handleCostSourceChange}
+        />
+      </DataView>
     </>
   )
 }

@@ -38,6 +38,9 @@ export type TQuotesSelectedDate = {
 }
 
 type TAppStore = {
+  fetchErrorCode: string | null
+  retryFetch: () => void
+
   aiSuggestions: Record<string, TAiSuggestion[]>
   setAiSuggestions: (quoteId: string, suggestions: TAiSuggestion[]) => void
   products: TProduct[] | null
@@ -158,6 +161,9 @@ type TAppStore = {
 }
 
 export const useAppStore = create<TAppStore>((set) => ({
+  fetchErrorCode: null,
+  retryFetch: () => {},
+
   aiSuggestions: {},
   setAiSuggestions: (quoteId, suggestions) =>
     set((s) => ({
