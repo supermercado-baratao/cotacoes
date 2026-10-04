@@ -176,7 +176,7 @@ test('Full flow', async ({ page }) => {
   })
 
   await test.step('Link an invoice item to a quote order', async () => {
-    // First invoice: a single item, routes straight to the order form
+    // First invoice: a single registered item, routes straight to the order form
     await page.getByText('8995473').click()
     await expect(page.getByText('NF nº 8995473 — Série 0')).toBeVisible()
 
@@ -193,8 +193,12 @@ test('Full flow', async ({ page }) => {
 
     await expect(page.getByText('Pedido criado com sucesso!')).toBeVisible()
 
-    await page.getByRole('button', { name: 'Aprovar nota' }).click()
-    await expect(page.getByText('Nota atualizada com sucesso!')).toBeVisible()
+    // The other 15 items have no registered product, so they stay without an
+    // order and the invoice can't be approved yet
+    await expect(page.getByText('15 sem pedido')).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Aprovar nota' })
+    ).toBeDisabled()
   })
 
   await test.step('Confirm a batch of same-family invoice items', async () => {

@@ -24,7 +24,7 @@ export const CatalogImport = ({
     setSelectedIds,
     productStatuses,
     handleImportClick
-  } = useImportHandler()
+  } = useImportHandler(handleClose)
 
   const handleModalClose = () => {
     handleFileRemove()
