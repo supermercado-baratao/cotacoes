@@ -19,6 +19,7 @@ export default defineConfig([
     'playwright-report',
     'blob-report',
     '.playwright-mcp',
+    '.pnpm-store',
     'src/tests/_mocks'
   ]),
   {

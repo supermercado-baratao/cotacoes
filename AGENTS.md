@@ -281,7 +281,7 @@ Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o suje
 - Prettier: aspas simples, sem ponto e vírgula, sem vírgula final (`.prettierrc`).
 - Indentação e espaços (2 espaços, LF) via `.editorconfig`.
 - `.claude/` é ignorado pelo ESLint e pelo Prettier: as skills instaladas de terceiros não seguem o estilo do projeto.
-- As saídas do Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) também são ignoradas pelo ESLint: o `pnpm eslint:check` roda o lint no repositório inteiro.
+- As saídas do Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) também são ignoradas pelo ESLint, e o cache do pnpm no CI (`.pnpm-store/`), pelo ESLint e pelo Prettier: os dois rodam no repositório inteiro.
 
 ## Testes
 

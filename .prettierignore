@@ -1,3 +1,4 @@
 generators
 .claude
 pnpm-lock.yaml
+.pnpm-store
