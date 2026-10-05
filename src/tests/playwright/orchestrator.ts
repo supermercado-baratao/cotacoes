@@ -28,14 +28,13 @@ if (typeof globalThis.FileReader === 'undefined') {
     onload: (() => void) | null = null
     onerror: ((error: unknown) => void) | null = null
 
-    readAsArrayBuffer(file: File) {
-      file
-        .arrayBuffer()
-        .then((buffer) => {
-          this.result = buffer
-          this.onload?.()
-        })
-        .catch((error: unknown) => this.onerror?.(error))
+    async readAsArrayBuffer(file: File) {
+      try {
+        this.result = await file.arrayBuffer()
+        this.onload?.()
+      } catch (error) {
+        this.onerror?.(error)
+      }
     }
   }
 

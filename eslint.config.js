@@ -1,7 +1,10 @@
 import js from '@eslint/js'
+import json from '@eslint/json'
 import markdown from '@eslint/markdown'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import eslintConfigPrettier from 'eslint-config-prettier'
+import preferArrowFunctions from 'eslint-plugin-prefer-arrow-functions'
+import pluginPromise from 'eslint-plugin-promise'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
@@ -15,7 +18,8 @@ export default defineConfig([
     'test-results',
     'playwright-report',
     'blob-report',
-    '.playwright-mcp'
+    '.playwright-mcp',
+    'src/tests/_mocks'
   ]),
   {
     files: ['**/*.{ts,tsx}'],
@@ -24,10 +28,15 @@ export default defineConfig([
       tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
+      preferArrowFunctions.configs.all,
+      pluginPromise.configs['flat/recommended'],
       eslintConfigPrettier
     ],
     languageOptions: {
       globals: globals.browser
+    },
+    rules: {
+      'prefer-arrow-functions/prefer-arrow-functions': 'error'
     }
   },
   { plugins: { 'simple-import-sort': simpleImportSort } },
@@ -36,6 +45,20 @@ export default defineConfig([
     plugins: { markdown },
     language: 'markdown/gfm',
     extends: ['markdown/recommended']
+  },
+  {
+    files: ['**/*.json'],
+    ignores: ['**/tsconfig*.json', '.vscode/*.json'],
+    plugins: { json },
+    language: 'json/json',
+    extends: ['json/recommended']
+  },
+  {
+    files: ['**/tsconfig*.json', '.vscode/*.json'],
+    plugins: { json },
+    language: 'json/jsonc',
+    languageOptions: { allowTrailingCommas: true },
+    extends: ['json/recommended']
   },
   {
     rules: {
