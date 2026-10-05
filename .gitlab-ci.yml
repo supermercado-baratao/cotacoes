@@ -1,0 +1,50 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+default:
+  image: node:24
+  interruptible: true
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+  before_script:
+    - corepack enable
+    - pnpm install --frozen-lockfile --store-dir .pnpm-store
+    - cp .env.example .env
+
+variables:
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+  HUSKY: '0'
+
+commitlint:
+  variables:
+    GIT_DEPTH: 0
+  script:
+    - pnpm commitlint --from "$CI_MERGE_REQUEST_DIFF_BASE_SHA" --to HEAD --verbose
+
+check:
+  script:
+    - pnpm type-check
+    - pnpm eslint:check
+    - pnpm prettier:check
+    - pnpm test
+
+e2e:
+  # Keep the tag in sync with @playwright/test so the bundled browsers match
+  image: mcr.microsoft.com/playwright:v1.61.1-noble
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends openjdk-21-jre-headless
+    - corepack enable
+    - pnpm install --frozen-lockfile --store-dir .pnpm-store
+    - cp .env.example .env
+  script:
+    - pnpm dlx firebase-tools@latest emulators:exec --only auth,firestore 'pnpm test:e2e'
+  artifacts:
+    when: on_failure
+    paths:
+      - test-results/
+    expire_in: 1 week

@@ -11,7 +11,8 @@ flowchart LR
   E --> F[Commit]
   F --> G[Push]
   G --> H[Merge request]
-  H --> I[Merge fecha a issue]
+  H --> CI[Pipeline verde]
+  CI --> I[Merge fecha a issue]
 ```
 
 ## 1. Planejar com `grill-me`
@@ -102,15 +103,18 @@ glab mr create --source-branch 'feat/relatorio-pedidos#10' --target-branch main 
 - **Título:** segue a convenção de commits (prefixo com emoji, imperativo, minúsculo).
 - **Descrição:** `Resumo` (o que mudou e por quê; num review com vários achados, agrupe por severidade/categoria), `Plano de testes` (o que foi verificado) e `Closes #<issue>`, para que o merge feche a issue.
 
+A MR dispara o pipeline do `.gitlab-ci.yml` (ver CI no [`AGENTS.md`](../AGENTS.md)): `commitlint` nos commits da MR, tipos, lint, formatação, testes unitários e e2e. Acompanhe com `glab ci status`.
+
 ## 9. Merge e fechamento
 
-1. Na issue, marque cada item concluído do checklist (`- [x]`). Não feche uma issue com itens desmarcados, a menos que tenham sido descartados ou movidos, e diga isso em um comentário.
-2. Faça o merge com **merge commit**, que mantém cada commit da MR como foi validado pelo `commitlint`. O commit de merge (`Merge branch '...' into 'main'`) não precisa seguir as Regras de commit.
-3. Apague a branch e atualize a `main` local:
+1. Espere o pipeline da MR ficar verde: o GitLab bloqueia o merge enquanto ele falhar.
+2. Na issue, marque cada item concluído do checklist (`- [x]`). Não feche uma issue com itens desmarcados, a menos que tenham sido descartados ou movidos, e diga isso em um comentário.
+3. Faça o merge com **merge commit**, que mantém cada commit da MR como foi validado pelo `commitlint`. O commit de merge (`Merge branch '...' into 'main'`) não precisa seguir as Regras de commit.
+4. Apague a branch e atualize a `main` local:
 
    ```bash
    git switch main && git pull
    git branch -d 'feat/relatorio-pedidos#10'
    ```
 
-4. Confirme que a issue foi fechada.
+5. Confirme que a issue foi fechada.

@@ -281,7 +281,7 @@ Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o suje
 - Prettier: aspas simples, sem ponto e vírgula, sem vírgula final (`.prettierrc`).
 - Indentação e espaços (2 espaços, LF) via `.editorconfig`.
 - `.claude/` é ignorado pelo ESLint e pelo Prettier: as skills instaladas de terceiros não seguem o estilo do projeto.
-- As saídas do Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) também são ignoradas pelo ESLint: o `pnpm eslint:check` roda o lint no repositório inteiro.
+- As saídas do Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) também são ignoradas pelo ESLint, e o cache do pnpm no CI (`.pnpm-store/`), pelo ESLint e pelo Prettier: os dois rodam no repositório inteiro.
 
 ## Testes
 
@@ -317,6 +317,14 @@ O emulador carrega o `firestore.rules` só ao iniciar: reinicie-o depois de alte
 - **`pre-commit`** — roda `lint-staged` (`lint-staged.config.js`) apenas nos arquivos staged: ESLint e Prettier nos arquivos de código, Markdown e JSON, só Prettier em YAML, e `vitest related` para rodar os testes unitários afetados pelos arquivos de código.
 - **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
 - **`pre-push`** — roda `pnpm type-check && pnpm test:e2e` (Playwright): os emuladores precisam estar rodando e o `.env` preenchido.
+
+## CI (GitLab)
+
+O `.gitlab-ci.yml` roda só em merge requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. O merge exige o pipeline verde. Todos os jobs usam o `.env.example` como `.env`: os valores dele bastam para os testes e os emuladores, sem segredos.
+
+- **`commitlint`** — valida todos os commits da MR (`--from $CI_MERGE_REQUEST_DIFF_BASE_SHA`).
+- **`check`** — `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check` e `pnpm test`.
+- **`e2e`** — `pnpm test:e2e` dentro de `firebase-tools emulators:exec`, na imagem do Playwright com Java instalado. Ao atualizar o `@playwright/test`, atualize também a tag da imagem.
 
 ## Ferramentas de IA
 
