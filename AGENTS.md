@@ -318,6 +318,14 @@ O emulador carrega o `firestore.rules` só ao iniciar: reinicie-o depois de alte
 - **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
 - **`pre-push`** — roda `pnpm type-check && pnpm test:e2e` (Playwright): os emuladores precisam estar rodando e o `.env` preenchido.
 
+## CI (GitLab)
+
+O `.gitlab-ci.yml` roda só em merge requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. O merge exige o pipeline verde.
+
+- **`commitlint`** — valida todos os commits da MR (`--from $CI_MERGE_REQUEST_DIFF_BASE_SHA`).
+- **`check`** — `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check` e `pnpm test`.
+- **`e2e`** — `pnpm test:e2e` dentro de `firebase-tools emulators:exec`, na imagem do Playwright com Java instalado. Usa o `.env.example` como `.env`: os valores dele bastam para os emuladores, sem segredos. Ao atualizar o `@playwright/test`, atualize também a tag da imagem.
+
 ## Ferramentas de IA
 
 - **MCPs** (`.mcp.json`): **Context7** para a documentação de bibliotecas (MUI, React Query, Firebase, Zod, Vite...); **Playwright** para abrir o app no browser e conferir uma mudança; **Firebase** (`firestore`, `auth`) para inspecionar dados. O Firebase MCP usa a conta logada no `firebase` CLI, ou seja, o projeto **de produção**: só leia dados quando o usuário pedir e nunca escreva ou exclua nada por ele.
