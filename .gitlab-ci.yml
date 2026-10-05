@@ -14,6 +14,7 @@ default:
   before_script:
     - corepack enable
     - pnpm install --frozen-lockfile --store-dir .pnpm-store
+    - cp .env.example .env
 
 variables:
   COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'

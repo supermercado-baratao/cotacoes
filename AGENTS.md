@@ -320,11 +320,11 @@ O emulador carrega o `firestore.rules` só ao iniciar: reinicie-o depois de alte
 
 ## CI (GitLab)
 
-O `.gitlab-ci.yml` roda só em merge requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. O merge exige o pipeline verde.
+O `.gitlab-ci.yml` roda só em merge requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. O merge exige o pipeline verde. Todos os jobs usam o `.env.example` como `.env`: os valores dele bastam para os testes e os emuladores, sem segredos.
 
 - **`commitlint`** — valida todos os commits da MR (`--from $CI_MERGE_REQUEST_DIFF_BASE_SHA`).
 - **`check`** — `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check` e `pnpm test`.
-- **`e2e`** — `pnpm test:e2e` dentro de `firebase-tools emulators:exec`, na imagem do Playwright com Java instalado. Usa o `.env.example` como `.env`: os valores dele bastam para os emuladores, sem segredos. Ao atualizar o `@playwright/test`, atualize também a tag da imagem.
+- **`e2e`** — `pnpm test:e2e` dentro de `firebase-tools emulators:exec`, na imagem do Playwright com Java instalado. Ao atualizar o `@playwright/test`, atualize também a tag da imagem.
 
 ## Ferramentas de IA
 
