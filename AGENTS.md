@@ -275,7 +275,9 @@ Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o suje
 
 ### Lint e formatação
 
-- ESLint em flat config (`eslint.config.js`): `typescript-eslint`, `react-hooks`, `react-refresh`, `simple-import-sort`, `@eslint/markdown` e `eslint-config-prettier`.
+- ESLint em flat config (`eslint.config.js`): `typescript-eslint`, `react-hooks`, `react-refresh`, `simple-import-sort`, `prefer-arrow-functions` (config `all`, como erro), `promise` (`flat/recommended`), `@eslint/markdown`, `@eslint/json` e `eslint-config-prettier`.
+- `@eslint/json` lê `tsconfig*.json` e `.vscode/*.json` como JSONC (aceitam comentários) e os demais `*.json` como JSON estrito. As fixtures de `src/tests/_mocks/` ficam fora do lint.
+- `pnpm-lock.yaml` é ignorado pelo Prettier: é gerado pelo pnpm.
 - Prettier: aspas simples, sem ponto e vírgula, sem vírgula final (`.prettierrc`).
 - Indentação e espaços (2 espaços, LF) via `.editorconfig`.
 - `.claude/` é ignorado pelo ESLint e pelo Prettier: as skills instaladas de terceiros não seguem o estilo do projeto.
@@ -312,7 +314,7 @@ O emulador carrega o `firestore.rules` só ao iniciar: reinicie-o depois de alte
 
 ## Git hooks (husky)
 
-- **`pre-commit`** — roda `lint-staged` (`lint-staged.config.js`) apenas nos arquivos staged: ESLint e Prettier nos arquivos de código e Markdown, só Prettier em JSON e YAML, e `vitest related` para rodar os testes unitários afetados pelos arquivos de código.
+- **`pre-commit`** — roda `lint-staged` (`lint-staged.config.js`) apenas nos arquivos staged: ESLint e Prettier nos arquivos de código, Markdown e JSON, só Prettier em YAML, e `vitest related` para rodar os testes unitários afetados pelos arquivos de código.
 - **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
 - **`pre-push`** — roda `pnpm type-check && pnpm test:e2e` (Playwright): os emuladores precisam estar rodando e o `.env` preenchido.
 

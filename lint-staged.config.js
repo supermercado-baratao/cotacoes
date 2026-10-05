@@ -7,6 +7,6 @@ export default {
     prettier,
     'pnpm exec vitest related --run --passWithNoTests'
   ],
-  '*.md': [eslint, prettier],
-  '*.{json,yml,yaml}': prettier
+  '*.{md,json}': [eslint, prettier],
+  '*.{yml,yaml}': prettier
 }

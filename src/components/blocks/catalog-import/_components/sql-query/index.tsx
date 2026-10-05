@@ -41,9 +41,9 @@ export const SqlQuery = ({ lastImportAt }: TSqlQueryProps) => {
   const query = buildQuery(date)
 
   useEffect(() => {
-    codeToHtml(query, { lang: 'sql', theme: 'dark-plus' }).then(
-      setHighlightedHtml
-    )
+    codeToHtml(query, { lang: 'sql', theme: 'dark-plus' })
+      .then(setHighlightedHtml)
+      .catch(() => setHighlightedHtml(null))
   }, [query])
 
   const handleCopyClick = async () => {
