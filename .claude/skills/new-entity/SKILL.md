@@ -9,8 +9,7 @@ Use uma entidade de CRUD simples já existente como referência e espelhe a estr
 
 - `types.ts`: `T<Entity>` com `id: string`, os campos de domínio (anuláveis como `T | null`), `createdAt: Timestamp` e `updatedAt: Timestamp`.
 - `model.ts`: `const PATH = '<entities>'` e as funções `create`, `findMany`, `update` e `deleteUniqueById` chamando `database` com `getUserPath(PATH)`; sem `async`, retornando a `Promise` do `database`.
-- `index.ts`: `export * from './model'` e `export * from './types'`.
-- Adicione `export * from './<entity>-model'` em `src/models/index.ts`.
+- Sem `index.ts`: importe de `@/models/<entity>-model/model` e `@/models/<entity>-model/types`.
 
 ## 2. Mutations e query — `src/providers/app-provider/`
 
@@ -26,23 +25,21 @@ No tipo `TAppStore`: `<entities>: T<Entity>[] | null`, `set<Entities>`, `create<
 
 Fica em `blocks` porque formulários de entidade são reutilizados na criação rápida pelo Autocomplete. Siga o Padrão de formulários do `AGENTS.md`:
 
-- `schema.ts`: Zod com constantes de tamanho (`MAX_DESCRIPTION_LENGTH` de `@/constants` ou `MAX_*` locais) e `satisfies z.ZodType<TCreateData<T<Entity>>>`.
+- `schema.ts`: Zod com constantes de tamanho (`MAX_DESCRIPTION_LENGTH` de `@/constants/length` ou `MAX_*` locais) e `satisfies z.ZodType<TCreateData<T<Entity>>>`.
 - `use-form-handler.ts`: `defaultValues` com `?? null` nos anuláveis, `reset` no `useEffect`, `setSuccessCallbacks` antes de `create<Entity>`/`update<Entity>`.
 - `style.ts`: `Wrapper` com `'.MuiInputBase-input': { textTransform: 'uppercase' }` e `Actions`.
 - `index.tsx`: `<Modal>` com título `Novo <Entidade>`/`Editar <Entidade>`, `TextField`s com `label`, `onFocus={selectOnFocus}` e `slotProps={{ htmlInput: { maxLength } }}`.
-- Exporte em `src/components/index.ts` (`export * from './blocks/<entity>-form'`, em ordem alfabética).
 
 ## 5. Página — `src/pages/<entities>/`
 
-- `utils.ts`: `filter<Entities>(search, items)` com `matchesSearch` de `@/utils`.
+- `utils.ts`: `filter<Entities>(search, items)` com `matchesSearch` de `@/utils/search`.
 - `use-<entities>-handler.ts`: `useFormState<T<Entity>>()` (renomeando para `form<Entity>`/`setForm<Entity>`), `search`, `filtered<Entities>` via `useMemo`, `isFetching = <entities> === null` e `has<Entities> = !!<entities>?.length`.
-- `_components/table/columns.ts` e `_components/table/index.tsx` envolvendo o `Table` de `@/components` (com `useDeleteHandler<T<Entity>>` + `Dialog` de confirmação, se houver exclusão — ver `pages/families/_components/table`); `_components/index.ts` exportando a tabela.
+- `_components/table/columns.ts` e `_components/table/index.tsx` envolvendo o `Table` de `@/components/blocks/table` (com `useDeleteHandler<T<Entity>>` + `Dialog` de confirmação, se houver exclusão — ver `pages/families/_components/table`).
 - `index.tsx`: `PageHeader` + `DataView` + `Table` + `<Entity>Form`.
-- Exporte a página em `src/pages/index.ts`.
 
 ## 6. Rota e navegação
 
-- `src/Router.tsx`: `<Route path="/<entities>" element={<<Entities> />} />` dentro do bloco de rotas autenticadas (junto de `/dashboard`).
+- `src/Router.tsx`: importe a página de `./pages/<entities>` e adicione `<Route path="/<entities>" element={<<Entities> />} />` dentro do bloco de rotas autenticadas (junto de `/dashboard`).
 - `src/layout/nav-items.ts`: `{ label: '<Entidades>', path: '/<entities>', icon: <Ícone> }` com um ícone de `@mui/icons-material`, na posição que fizer sentido na sidebar.
 
 ## 7. Testes

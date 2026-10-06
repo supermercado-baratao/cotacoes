@@ -22,9 +22,10 @@ import {
 import dayjs from 'dayjs'
 import { useState } from 'react'
 
-import { DeleteDialog, SearchInput } from '@/components'
-import type { TInvoiceVerificationStatus } from '@/models'
-import { formatCNPJ, formatCurrency } from '@/utils'
+import { DeleteDialog } from '@/components/ui/dialog'
+import { SearchInput } from '@/components/ui/search-input'
+import type { TInvoiceVerificationStatus } from '@/models/invoice-model/types'
+import { formatCNPJ, formatCurrency } from '@/utils/formatters'
 
 import { EditOrderDialog } from './edit-order-dialog'
 import { ItemsTable } from './items-table'

@@ -1,6 +1,6 @@
 import z from 'zod'
 
-import { MAX_OBSERVATIONS_LENGTH } from '@/constants'
+import { MAX_OBSERVATIONS_LENGTH } from '@/constants/length'
 
 export const schema = z.object({
   date: z.string().min(1),

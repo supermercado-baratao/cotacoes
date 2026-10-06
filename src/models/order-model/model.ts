@@ -1,8 +1,9 @@
 import { where } from 'firebase/firestore'
 
-import { database, getUserPath } from '@/infra'
-import type { TCreateData, TUpdateData } from '@/types'
-import { chunk, mapWithConcurrencyLimit } from '@/utils'
+import { database } from '@/infra/database'
+import { getUserPath } from '@/infra/firebase-config'
+import type { TCreateData, TUpdateData } from '@/types/generics'
+import { chunk, mapWithConcurrencyLimit } from '@/utils/concurrency'
 
 import type { TOrder } from './types'
 

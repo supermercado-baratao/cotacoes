@@ -1,19 +1,15 @@
 import { Tab, Tabs } from '@mui/material'
 
-import {
-  CatalogImport,
-  DataView,
-  FamilyForm,
-  PageHeader,
-  ProductForm
-} from '@/components'
+import { CatalogImport } from '@/components/blocks/catalog-import'
+import { DataView } from '@/components/blocks/data-view'
+import { FamilyForm } from '@/components/blocks/family-form'
+import { PageHeader } from '@/components/blocks/page-header'
+import { ProductForm } from '@/components/blocks/product-form'
 
-import {
-  AssociateProductDialog,
-  IgnoredTable,
-  Table,
-  UnmatchedTable
-} from './_components'
+import { AssociateProductDialog } from './_components/associate-product-dialog'
+import { IgnoredTable } from './_components/ignored-table'
+import { Table } from './_components/table'
+import { UnmatchedTable } from './_components/unmatched-table'
 import { useProductsHandler } from './use-products-handler'
 
 export const Products = () => {

@@ -6,8 +6,8 @@ import {
 } from 'firebase/auth'
 import { useForm } from 'react-hook-form'
 
-import { auth } from '@/infra'
-import { useAlertStore } from '@/stores'
+import { auth } from '@/infra/firebase-config'
+import { useAlertStore } from '@/stores/use-alert-store'
 
 import { SIGNUP_ERRORS } from './errors'
 import { schema, type TSchema } from './schema'

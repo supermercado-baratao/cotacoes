@@ -19,7 +19,7 @@ import { signOut } from 'firebase/auth'
 import { useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router'
 
-import { auth } from '@/infra'
+import { auth } from '@/infra/firebase-config'
 
 import { navItems } from './nav-items'
 import * as S from './style'

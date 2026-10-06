@@ -1,9 +1,12 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { importModel, type TImportData, type TProduct } from '@/models'
+import { importModel } from '@/models/import-model/model'
+import { type TImportData } from '@/models/import-model/types'
+import { type TProduct } from '@/models/product-model/types'
 import { useImportMutation } from '@/providers/app-provider/use-import-mutation'
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import { createQueryWrapper } from './_utils/create-query-wrapper'
 

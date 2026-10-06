@@ -1,11 +1,9 @@
-import {
-  CatalogImport,
-  DataView,
-  DepartmentForm,
-  PageHeader
-} from '@/components'
+import { CatalogImport } from '@/components/blocks/catalog-import'
+import { DataView } from '@/components/blocks/data-view'
+import { DepartmentForm } from '@/components/blocks/department-form'
+import { PageHeader } from '@/components/blocks/page-header'
 
-import { Table } from './_components'
+import { Table } from './_components/table'
 import { useDepartmentsHandler } from './use-departments-handler'
 
 export const Departments = () => {

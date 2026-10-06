@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
 
-import { orderModel } from '@/models'
+import { orderModel } from '@/models/order-model/model'
 import { useImportDialogHandler } from '@/pages/price-adjustments/_components/import-dialog/use-import-dialog-handler'
 
 import { readMockFile } from './_utils/read-mock-file'

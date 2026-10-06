@@ -3,8 +3,9 @@ import dayjs from 'dayjs'
 import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
-import type { TQuote, TQuoteItem } from '@/models'
-import { useAppStore, useCallbackStore } from '@/stores'
+import type { TQuote, TQuoteItem } from '@/models/quote-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import { schema, type TSchema } from './schema'
 

@@ -2,9 +2,11 @@ import { Search } from '@mui/icons-material'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 
-import { DataView, PageHeader } from '@/components'
+import { DataView } from '@/components/blocks/data-view'
+import { PageHeader } from '@/components/blocks/page-header'
 
-import { ImportDialog, Table } from './_components'
+import { ImportDialog } from './_components/import-dialog'
+import { Table } from './_components/table'
 import * as S from './style'
 import { useInvoicesHandler } from './use-invoices-handler'
 

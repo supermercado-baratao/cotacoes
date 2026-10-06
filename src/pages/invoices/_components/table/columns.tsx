@@ -7,8 +7,8 @@ import type {
   TInvoice,
   TInvoiceItem,
   TInvoiceVerificationStatus
-} from '@/models'
-import { formatCurrency } from '@/utils'
+} from '@/models/invoice-model/types'
+import { formatCurrency } from '@/utils/formatters'
 
 const statusLabel: Record<TInvoiceVerificationStatus, string> = {
   pending: 'Pendente',

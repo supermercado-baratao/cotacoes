@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { ignoredSupplierModel } from '@/models'
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { ignoredSupplierModel } from '@/models/ignored-supplier-model/model'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import { removeFromArrayCache, upsertInArrayCache } from './query-cache'
 

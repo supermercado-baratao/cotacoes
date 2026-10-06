@@ -2,7 +2,7 @@ import { Category, Inventory2 } from '@mui/icons-material'
 import { Box } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 
-import { formatCurrency } from '@/utils'
+import { formatCurrency } from '@/utils/formatters'
 
 import type { TQuoteRow } from '../../utils'
 import * as S from './style'

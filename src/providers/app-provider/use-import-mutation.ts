@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Timestamp } from 'firebase/firestore'
 
-import { importModel, settingsModel } from '@/models'
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { importModel } from '@/models/import-model/model'
+import { settingsModel } from '@/models/settings-model/model'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 export const useImportMutation = () => {
   const { alert } = useAlertStore()

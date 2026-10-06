@@ -15,7 +15,7 @@ import {
   type Path
 } from 'react-hook-form'
 
-import { matchesSearch } from '@/utils'
+import { matchesSearch } from '@/utils/search'
 
 import * as S from './style'
 

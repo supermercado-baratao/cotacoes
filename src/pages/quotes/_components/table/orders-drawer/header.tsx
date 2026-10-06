@@ -1,7 +1,7 @@
 import { Add, Close } from '@mui/icons-material'
 import { Box, Button, IconButton, Typography } from '@mui/material'
 
-import type { TOrder } from '@/models'
+import type { TOrder } from '@/models/order-model/types'
 
 import type { TQuoteRow } from '../../../utils'
 import * as S from './style'

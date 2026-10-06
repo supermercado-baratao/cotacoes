@@ -1,9 +1,11 @@
 import { Box, Button, TextField } from '@mui/material'
 
-import { Autocomplete, Modal, PhoneInput, type TModalProps } from '@/components'
-import { MAX_DESCRIPTION_LENGTH } from '@/constants'
-import type { TSeller } from '@/models'
-import { selectOnFocus } from '@/utils'
+import { Autocomplete } from '@/components/ui/autocomplete'
+import { PhoneInput } from '@/components/ui/masked-input'
+import { Modal, type TModalProps } from '@/components/ui/modal'
+import { MAX_DESCRIPTION_LENGTH } from '@/constants/length'
+import type { TSeller } from '@/models/seller-model/types'
+import { selectOnFocus } from '@/utils/input-handlers'
 
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'

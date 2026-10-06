@@ -1,6 +1,6 @@
 import IMask from 'imask'
 
-import { CNPJ_LENGTH } from '@/constants'
+import { CNPJ_LENGTH } from '@/constants/length'
 
 const numericMaskOpts = {
   mask: Number,

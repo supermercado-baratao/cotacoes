@@ -7,15 +7,13 @@ import {
   Typography
 } from '@mui/material'
 
-import {
-  Autocomplete,
-  CurrencyInput,
-  Modal,
-  type TModalProps
-} from '@/components'
-import type { TAiSuggestion } from '@/infra'
-import type { TQuote, TQuoteItem } from '@/models'
-import { formatCurrency, selectOnFocus } from '@/utils'
+import { Autocomplete } from '@/components/ui/autocomplete'
+import { CurrencyInput } from '@/components/ui/currency-input'
+import { Modal, type TModalProps } from '@/components/ui/modal'
+import type { TAiSuggestion } from '@/infra/gemini'
+import type { TQuote, TQuoteItem } from '@/models/quote-model/types'
+import { formatCurrency } from '@/utils/formatters'
+import { selectOnFocus } from '@/utils/input-handlers'
 
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'

@@ -1,7 +1,8 @@
 import { Alert, Box, Button, Typography } from '@mui/material'
 
-import { Loader, Modal } from '@/components'
-import { useAppStore } from '@/stores'
+import { Loader } from '@/components/ui/loader'
+import { Modal } from '@/components/ui/modal'
+import { useAppStore } from '@/stores/use-app-store'
 
 import { DropZone } from '../drop-zone'
 import * as S from './style'

@@ -1,6 +1,8 @@
-import type { TAiSuggestion } from '@/infra'
-import type { TFamily, TPriceRef, TProduct, TQuote, TQuoteItem } from '@/models'
-import { getFamilyReferencePrice } from '@/utils'
+import type { TAiSuggestion } from '@/infra/gemini'
+import type { TFamily } from '@/models/family-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TPriceRef, TQuote, TQuoteItem } from '@/models/quote-model/types'
+import { getFamilyReferencePrice } from '@/utils/quote-item-match'
 
 import { getReferenceDescription } from '../../utils'
 

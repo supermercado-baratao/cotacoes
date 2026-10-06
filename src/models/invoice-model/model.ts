@@ -8,14 +8,15 @@ import {
   where
 } from 'firebase/firestore'
 
-import { ConflictError, database, firestore, getUserPath } from '@/infra'
-import type { TUpdateData } from '@/types'
+import { database } from '@/infra/database'
+import { ConflictError } from '@/infra/errors'
+import { firestore, getUserPath } from '@/infra/firebase-config'
+import type { TUpdateData } from '@/types/generics'
+import { chunk, mapWithConcurrencyLimit } from '@/utils/concurrency'
 import {
-  chunk,
   completeInvoiceFiscalData,
-  hasMissingFiscalData,
-  mapWithConcurrencyLimit
-} from '@/utils'
+  hasMissingFiscalData
+} from '@/utils/invoice-fiscal-data'
 
 import type { TInvoice, TInvoiceDateRange, TInvoiceImportResult } from './types'
 

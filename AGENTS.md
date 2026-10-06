@@ -58,7 +58,7 @@ VITE_APP_MEASUREMENT_ID
 
 ```text
 src/
-├── components/          # Componentes reutilizáveis (exportados por components/index.ts)
+├── components/          # Componentes reutilizáveis
 │   ├── blocks/          # Componentes específicos do domínio (formulários de entidades, table, data-view, page-header, catalog-import...)
 │   └── ui/              # Primitivos de UI genéricos, sem conhecimento de domínio (alert, autocomplete, currency-input, dialog, loader, masked-input, modal, search-input)
 ├── constants/           # Constantes compartilhadas (length.ts, margin.ts)
@@ -68,7 +68,7 @@ src/
 │   ├── index.tsx        # AppLayout: sidebar + Outlet
 │   ├── nav-items.ts     # Itens de navegação
 │   └── style.ts
-├── models/              # Modelos de domínio, um por entidade (<entidade>-model/{index,model,types}.ts)
+├── models/              # Modelos de domínio, um por entidade (<entidade>-model/{model,types}.ts)
 ├── pages/               # Páginas no nível de rota (cada uma com _components/ privados)
 ├── providers/
 │   └── app-provider/    # Orquestrador da aplicação: queries (use-data-fetch), mutations (use-<entidade>-mutation) e injeção no store (use-app-handler)
@@ -84,7 +84,7 @@ Fora de `src/`: `docs/` (documentação do projeto e da integração com o VR So
 
 ### Camadas
 
-**`src/layout/`** — shell da aplicação. `AppLayout` renderiza a sidebar e o `<Outlet>` para rotas aninhadas. Importado diretamente pelo `Router.tsx` via `@/layout`, não exportado por `@/components`. Uma nova página exige a rota em `Router.tsx` e o item em `nav-items.ts`.
+**`src/layout/`** — shell da aplicação. `AppLayout` renderiza a sidebar e o `<Outlet>` para rotas aninhadas. Importado pelo `Router.tsx` via `@/layout`. Uma nova página exige a rota em `Router.tsx` e o item em `nav-items.ts`.
 
 **`src/hooks/`** — hooks compartilhados entre páginas. `useFormState<T>` centraliza o estado de abertura/edição/fechamento do formulário; `useDeleteHandler<T>` centraliza o estado do dialog de exclusão e chama a mutation.
 
@@ -98,8 +98,9 @@ Fora de `src/`: `docs/` (documentação do projeto e da integração com o VR So
 
 ```typescript
 // models/department-model/model.ts
-import { database, getUserPath } from '@/infra'
-import type { TCreateData, TUpdateData } from '@/types'
+import { database } from '@/infra/database'
+import { getUserPath } from '@/infra/firebase-config'
+import type { TCreateData, TUpdateData } from '@/types/generics'
 
 import { type TDepartment } from './types'
 
@@ -142,7 +143,7 @@ Component → useAppStore.createProduct() → useMutation (React Query)
 ### Padrão de página
 
 - **`pages/<entidade>/use-<entidade>-handler.ts`** — custom hook com a lógica da página: estado de UI local (formulário, item a excluir, busca), dados e mutations do `useAppStore` e handlers seguindo as convenções de nomenclatura.
-- **`pages/<entidade>/_components/`** — componentes privados da página (ex: `table/`), exportados por `_components/index.ts`.
+- **`pages/<entidade>/_components/`** — componentes privados da página (ex: `table/`).
 - Formulários de entidades reutilizados em mais de uma página (criação rápida no Autocomplete) ficam em `components/blocks/<entidade>-form/`.
 
 ### Padrão de formulários
@@ -157,8 +158,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
-import type { TProduct } from '@/models'
-import { useAppStore, useCallbackStore } from '@/stores'
+import type { TProduct } from '@/models/product-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import { schema, type TSchema } from './schema'
 
@@ -224,12 +226,12 @@ const hasProducts = !!products?.length
 
 ### Gerador de componentes
 
-`pnpm generate` cria `src/components/<name>/index.tsx` e `style.ts` e atualiza `src/components/index.ts`. Ele cria na raiz de `components/`: mova o resultado para `blocks/` ou `ui/` e corrija o export (ver a skill `new-component`).
+`pnpm generate` cria `src/components/<name>/index.tsx` e `style.ts` na raiz de `components/`: mova o resultado para `blocks/` ou `ui/` (ver a skill `new-component`).
 
 ## Convenções
 
 - O alias `@/` aponta para `src/`.
-- Cada módulo exporta via `index.ts` na sua pasta, e o código importa pelo barrel (`@/components`, `@/models`, `@/stores`...).
+- Sem barrels: não crie `index.ts` só de reexportação. Importe cada módulo pelo próprio arquivo via `@/` (`@/models/product-model/types`, `@/stores/use-app-store`, `@/components/blocks/data-view`), ou pelo caminho relativo dentro da mesma página ou componente. Barrels causavam imports circulares (`infra` → `utils` → `models` → `infra`).
 - Sempre usar arrow functions.
 - Estilos de componentes ficam em `style.ts`, com `SxProps<Theme>`, importados como `* as S`.
 - Inputs de texto usam `textTransform: 'uppercase'` (no `style.ts`) e `onFocus={selectOnFocus}`.

@@ -1,6 +1,6 @@
-import { Table as _Table } from '@/components'
-import type { TIgnoredSupplier } from '@/models'
-import { useAppStore } from '@/stores'
+import { Table as _Table } from '@/components/blocks/table'
+import type { TIgnoredSupplier } from '@/models/ignored-supplier-model/types'
+import { useAppStore } from '@/stores/use-app-store'
 
 import { columns } from './columns'
 

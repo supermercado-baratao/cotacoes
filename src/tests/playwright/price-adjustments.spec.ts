@@ -3,13 +3,11 @@ import path from 'node:path'
 import { expect, type Page, test } from '@playwright/test'
 import dayjs from 'dayjs'
 
-import {
-  invoiceModel,
-  orderModel,
-  priceAdjustmentModel,
-  quoteModel,
-  supplierModel
-} from '@/models'
+import { invoiceModel } from '@/models/invoice-model/model'
+import { orderModel } from '@/models/order-model/model'
+import { priceAdjustmentModel } from '@/models/price-adjustment-model/model'
+import { quoteModel } from '@/models/quote-model/model'
+import { supplierModel } from '@/models/supplier-model/model'
 
 import { clearData, createUser, populateDatabase } from './orchestrator'
 

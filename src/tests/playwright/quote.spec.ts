@@ -3,8 +3,10 @@ import path from 'node:path'
 
 import { expect, type Locator, type Page, test } from '@playwright/test'
 
-import type { TOrder, TQuoteItem } from '@/models'
-import { orderModel, quoteModel } from '@/models'
+import { orderModel } from '@/models/order-model/model'
+import type { TOrder } from '@/models/order-model/types'
+import { quoteModel } from '@/models/quote-model/model'
+import type { TQuoteItem } from '@/models/quote-model/types'
 
 import { clearData, createUser, populateDatabase } from './orchestrator'
 

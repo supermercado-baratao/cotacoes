@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 
-import { DEFAULT_MARGIN_TOLERANCE } from '@/constants'
-import type { TMarginTolerance } from '@/models'
-import { useAppStore } from '@/stores'
+import { DEFAULT_MARGIN_TOLERANCE } from '@/constants/margin'
+import type { TMarginTolerance } from '@/models/settings-model/types'
+import { useAppStore } from '@/stores/use-app-store'
 
 import {
   buildDepartmentOrder,

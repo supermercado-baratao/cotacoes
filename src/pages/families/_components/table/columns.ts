@@ -1,6 +1,6 @@
 import type { GridColDef } from '@mui/x-data-grid'
 
-import type { TFamily } from '@/models'
+import type { TFamily } from '@/models/family-model/types'
 
 export const columns: GridColDef<TFamily>[] = [
   {

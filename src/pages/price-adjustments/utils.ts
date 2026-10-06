@@ -1,24 +1,24 @@
 import * as xlsx from 'xlsx'
 
+import type { TFamily } from '@/models/family-model/types'
+import type { TInvoice } from '@/models/invoice-model/types'
+import type { TOrder } from '@/models/order-model/types'
 import type {
-  TFamily,
-  TInvoice,
-  TOrder,
   TPriceAdjustment,
   TPriceAdjustmentCostSource,
-  TPriceAdjustmentDateRange,
-  TProduct,
-  TQuote,
-  TSettings,
-  TSupplier
-} from '@/models'
-import type { TCreateDataWithId } from '@/types'
+  TPriceAdjustmentDateRange
+} from '@/models/price-adjustment-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuote } from '@/models/quote-model/types'
+import type { TSettings } from '@/models/settings-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
+import type { TCreateDataWithId } from '@/types/generics'
 import {
   evaluateMargin,
   getMarginTolerance,
-  matchesSearch,
   type TMarginStatus
-} from '@/utils'
+} from '@/utils/margin'
+import { matchesSearch } from '@/utils/search'
 
 export type TRawPriceAdjustmentRow = {
   Código: string

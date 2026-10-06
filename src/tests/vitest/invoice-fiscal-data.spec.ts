@@ -1,10 +1,14 @@
 import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test, vi } from 'vitest'
 
-import { database } from '@/infra'
-import { invoiceModel, type TInvoice, type TInvoiceItem } from '@/models'
+import { database } from '@/infra/database'
+import { invoiceModel } from '@/models/invoice-model/model'
+import { type TInvoice, type TInvoiceItem } from '@/models/invoice-model/types'
 import { parseNfe } from '@/pages/invoices/utils'
-import { completeInvoiceFiscalData, hasMissingFiscalData } from '@/utils'
+import {
+  completeInvoiceFiscalData,
+  hasMissingFiscalData
+} from '@/utils/invoice-fiscal-data'
 
 import { readMockFile } from './_utils/read-mock-file'
 

@@ -1,6 +1,9 @@
-import { DataView, PageHeader, SellerForm, SupplierForm } from '@/components'
+import { DataView } from '@/components/blocks/data-view'
+import { PageHeader } from '@/components/blocks/page-header'
+import { SellerForm } from '@/components/blocks/seller-form'
+import { SupplierForm } from '@/components/blocks/supplier-form'
 
-import { Table } from './_components'
+import { Table } from './_components/table'
 import { useSellersHandler } from './use-sellers-handler'
 
 export const Sellers = () => {

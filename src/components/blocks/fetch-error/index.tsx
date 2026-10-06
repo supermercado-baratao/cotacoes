@@ -1,7 +1,7 @@
 import { Alert, AlertTitle, Box, Button, Typography } from '@mui/material'
 import { signOut } from 'firebase/auth'
 
-import { auth } from '@/infra'
+import { auth } from '@/infra/firebase-config'
 
 import { getFetchErrorMessage } from './messages'
 import * as S from './style'

@@ -1,14 +1,14 @@
 import { expect, type Locator, type Page, test } from '@playwright/test'
 import dayjs from 'dayjs'
 
-import type { TInvoice, TInvoiceItem, TProduct, TQuote } from '@/models'
-import {
-  invoiceModel,
-  productModel,
-  quoteModel,
-  settingsModel,
-  supplierModel
-} from '@/models'
+import { invoiceModel } from '@/models/invoice-model/model'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
+import { productModel } from '@/models/product-model/model'
+import type { TProduct } from '@/models/product-model/types'
+import { quoteModel } from '@/models/quote-model/model'
+import type { TQuote } from '@/models/quote-model/types'
+import { settingsModel } from '@/models/settings-model/model'
+import { supplierModel } from '@/models/supplier-model/model'
 
 import { clearData, createUser } from './orchestrator'
 

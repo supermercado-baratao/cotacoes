@@ -2,23 +2,23 @@ import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { FirebaseError } from 'firebase/app'
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  departmentModel,
-  familyModel,
-  ignoredProductModel,
-  ignoredSupplierModel,
-  invoiceModel,
-  orderModel,
-  packageBarcodeLinkModel,
-  packingDefaultModel,
-  priceAdjustmentModel,
-  productModel,
-  quoteModel,
-  sellerModel,
-  settingsModel,
-  supplierModel
-} from '@/models'
-import { useAlertStore, useAppStore, useAuthStore } from '@/stores'
+import { departmentModel } from '@/models/department-model/model'
+import { familyModel } from '@/models/family-model/model'
+import { ignoredProductModel } from '@/models/ignored-product-model/model'
+import { ignoredSupplierModel } from '@/models/ignored-supplier-model/model'
+import { invoiceModel } from '@/models/invoice-model/model'
+import { orderModel } from '@/models/order-model/model'
+import { packageBarcodeLinkModel } from '@/models/package-barcode-link-model/model'
+import { packingDefaultModel } from '@/models/packing-default-model/model'
+import { priceAdjustmentModel } from '@/models/price-adjustment-model/model'
+import { productModel } from '@/models/product-model/model'
+import { quoteModel } from '@/models/quote-model/model'
+import { sellerModel } from '@/models/seller-model/model'
+import { settingsModel } from '@/models/settings-model/model'
+import { supplierModel } from '@/models/supplier-model/model'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useAppStore } from '@/stores/use-app-store'
+import { useAuthStore } from '@/stores/use-auth-store'
 
 const getErrorCode = (error: unknown) =>
   error instanceof FirebaseError ? error.code : 'unknown'

@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { settingsModel } from '@/models'
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { settingsModel } from '@/models/settings-model/model'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 const QUERY_KEY = ['settings']
 

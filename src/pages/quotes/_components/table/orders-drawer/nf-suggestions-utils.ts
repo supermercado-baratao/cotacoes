@@ -1,11 +1,8 @@
-import type {
-  TInvoice,
-  TInvoiceItem,
-  TProduct,
-  TQuote,
-  TQuoteItem
-} from '@/models'
-import { isLikelyMatch, matchesSearch } from '@/utils'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuote, TQuoteItem } from '@/models/quote-model/types'
+import { isLikelyMatch } from '@/utils/quote-item-match'
+import { matchesSearch } from '@/utils/search'
 
 import { isInvoiceInQuoteWindow } from '../../../utils'
 

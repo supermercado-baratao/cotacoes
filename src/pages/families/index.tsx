@@ -1,6 +1,9 @@
-import { CatalogImport, DataView, FamilyForm, PageHeader } from '@/components'
+import { CatalogImport } from '@/components/blocks/catalog-import'
+import { DataView } from '@/components/blocks/data-view'
+import { FamilyForm } from '@/components/blocks/family-form'
+import { PageHeader } from '@/components/blocks/page-header'
 
-import { Table } from './_components'
+import { Table } from './_components/table'
 import { useFamiliesHandler } from './use-families-handler'
 
 export const Families = () => {

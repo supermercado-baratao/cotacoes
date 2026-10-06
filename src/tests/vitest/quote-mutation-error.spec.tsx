@@ -2,9 +2,11 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { Timestamp } from 'firebase/firestore'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { quoteModel, type TQuote } from '@/models'
+import { quoteModel } from '@/models/quote-model/model'
+import { type TQuote } from '@/models/quote-model/types'
 import { useQuoteMutation } from '@/providers/app-provider/use-quote-mutation'
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import { createQueryWrapper } from './_utils/create-query-wrapper'
 

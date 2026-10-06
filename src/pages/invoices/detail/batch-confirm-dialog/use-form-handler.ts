@@ -9,10 +9,15 @@ import {
   extractPackingInfo,
   getUnitPriceFromPackingPrice
 } from '@/components/blocks/order-form/utils'
-import type { TInvoice, TOrder, TQuote, TSeller, TSupplier } from '@/models'
-import { useAppStore, useCallbackStore } from '@/stores'
-import type { TCreateData } from '@/types'
-import { findGroupPackingDefault } from '@/utils'
+import type { TInvoice } from '@/models/invoice-model/types'
+import type { TOrder } from '@/models/order-model/types'
+import type { TQuote } from '@/models/quote-model/types'
+import type { TSeller } from '@/models/seller-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
+import type { TCreateData } from '@/types/generics'
+import { findGroupPackingDefault } from '@/utils/packing-defaults'
 
 import type { TBatchGroup } from '../../utils'
 

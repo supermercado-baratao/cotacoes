@@ -1,7 +1,8 @@
 import { Add, UploadFile } from '@mui/icons-material'
 import { Box, Button, Typography } from '@mui/material'
 
-import { SearchInput } from '../../ui/search-input'
+import { SearchInput } from '@/components/ui/search-input'
+
 import * as S from './style'
 
 type TPageHeaderProps = {

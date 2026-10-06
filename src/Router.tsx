@@ -1,26 +1,24 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router'
 
 import { AppLayout } from '@/layout'
-import { useAuthStore } from '@/stores'
+import { useAuthStore } from '@/stores/use-auth-store'
 
-import {
-  Dashboard,
-  Departments,
-  Families,
-  InvoiceDetail,
-  Invoices,
-  Landing,
-  NotFound,
-  PriceAdjustments,
-  Products,
-  Quotes,
-  Sellers,
-  Settings,
-  Signin,
-  Signup,
-  Suppliers,
-  VerifyEmail
-} from './pages'
+import { Dashboard } from './pages/dashboard'
+import { Departments } from './pages/departments'
+import { Families } from './pages/families'
+import { Invoices } from './pages/invoices'
+import { InvoiceDetail } from './pages/invoices/detail'
+import { Landing } from './pages/landing'
+import { NotFound } from './pages/not-found'
+import { PriceAdjustments } from './pages/price-adjustments'
+import { Products } from './pages/products'
+import { Quotes } from './pages/quotes'
+import { Sellers } from './pages/sellers'
+import { Settings } from './pages/settings'
+import { Signin } from './pages/signin'
+import { Signup } from './pages/signup'
+import { Suppliers } from './pages/suppliers'
+import { VerifyEmail } from './pages/verify-email'
 
 const PrivateRoute = () => {
   const user = useAuthStore((state) => state.user)

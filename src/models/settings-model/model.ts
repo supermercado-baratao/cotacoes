@@ -1,5 +1,6 @@
-import { database, getUserPath } from '@/infra'
-import type { TCreateData } from '@/types'
+import { database } from '@/infra/database'
+import { getUserPath } from '@/infra/firebase-config'
+import type { TCreateData } from '@/types/generics'
 
 import type { TSettings } from './types'
 

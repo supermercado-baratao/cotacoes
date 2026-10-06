@@ -1,8 +1,8 @@
 import z from 'zod'
 
-import { MAX_DESCRIPTION_LENGTH } from '@/constants'
-import type { TFamily } from '@/models'
-import type { TCreateDataWithId } from '@/types'
+import { MAX_DESCRIPTION_LENGTH } from '@/constants/length'
+import type { TFamily } from '@/models/family-model/types'
+import type { TCreateDataWithId } from '@/types/generics'
 
 export const schema = z.object({
   id: z.string().min(1),

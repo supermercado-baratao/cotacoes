@@ -9,16 +9,16 @@ import {
 } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
-import type {
-  TInvoice,
-  TOrder,
-  TProduct,
-  TQuoteItem,
-  TSeller,
-  TSupplier
-} from '@/models'
-import { useAppStore, useCallbackStore } from '@/stores'
-import { findPackingDefault, findSupplierByCnpj } from '@/utils'
+import type { TInvoice } from '@/models/invoice-model/types'
+import type { TOrder } from '@/models/order-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuoteItem } from '@/models/quote-model/types'
+import type { TSeller } from '@/models/seller-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
+import { findPackingDefault } from '@/utils/packing-defaults'
+import { findSupplierByCnpj } from '@/utils/suppliers'
 
 import { createSchema, type TSchema } from './schema'
 import { useProductHistory } from './use-product-history'

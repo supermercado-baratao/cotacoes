@@ -1,10 +1,13 @@
 import dayjs from 'dayjs'
 import { useEffect, useRef, useState } from 'react'
 
-import { useDeleteHandler, useFormState } from '@/hooks'
-import type { TProduct, TQuote } from '@/models'
-import { useAppStore, useCallbackStore } from '@/stores'
-import { matchesSearch } from '@/utils'
+import { useDeleteHandler } from '@/hooks/use-delete-handler'
+import { useFormState } from '@/hooks/use-form-state'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuote } from '@/models/quote-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
+import { matchesSearch } from '@/utils/search'
 
 import { printQuote } from './pdf/print-quote'
 import {

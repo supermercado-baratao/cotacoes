@@ -1,16 +1,14 @@
 import type {
   TInvoice,
   TInvoiceItem,
-  TInvoiceItemMatchStatus,
-  TPackageBarcodeLink,
-  TProduct,
-  TQuoteItem
-} from '@/models'
-import {
-  buildPackageBarcodeLinkMap,
-  isLikelyMatch,
-  matchesSearch
-} from '@/utils'
+  TInvoiceItemMatchStatus
+} from '@/models/invoice-model/types'
+import type { TPackageBarcodeLink } from '@/models/package-barcode-link-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuoteItem } from '@/models/quote-model/types'
+import { buildPackageBarcodeLinkMap } from '@/utils/package-barcode-links'
+import { isLikelyMatch } from '@/utils/quote-item-match'
+import { matchesSearch } from '@/utils/search'
 
 const hasAllOrdersLinked = (invoice: TInvoice): boolean =>
   invoice.items.every((item) => item.orderId !== null)

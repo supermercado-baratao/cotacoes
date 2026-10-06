@@ -1,7 +1,8 @@
 import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test } from 'vitest'
 
-import type { TInvoice, TInvoiceItem, TProduct } from '@/models'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
+import type { TProduct } from '@/models/product-model/types'
 import { filterInvoices } from '@/pages/invoices/utils'
 import { filterProducts } from '@/pages/products/utils'
 

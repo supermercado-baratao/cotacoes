@@ -2,7 +2,7 @@ import { useIsFetching, useIsMutating } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useShallow } from 'zustand/shallow'
 
-import { useAppStore } from '@/stores'
+import { useAppStore } from '@/stores/use-app-store'
 
 import { useDataFetch } from './use-data-fetch'
 import { useDepartmentMutation } from './use-department-mutation'

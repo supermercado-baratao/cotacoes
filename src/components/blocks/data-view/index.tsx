@@ -1,9 +1,8 @@
 import { Typography } from '@mui/material'
 
-import { useAppStore } from '@/stores'
-
-import { Loader } from '../../ui/loader'
-import { FetchError } from '../fetch-error'
+import { FetchError } from '@/components/blocks/fetch-error'
+import { Loader } from '@/components/ui/loader'
+import { useAppStore } from '@/stores/use-app-store'
 
 type TDataViewProps = {
   isFetching: boolean

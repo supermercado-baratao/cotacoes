@@ -2,8 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
-import type { TSupplier } from '@/models'
-import { useAppStore, useCallbackStore } from '@/stores'
+import type { TSupplier } from '@/models/supplier-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import { schema, type TSchema } from './schema'
 

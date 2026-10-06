@@ -8,8 +8,9 @@ import {
   Typography
 } from '@mui/material'
 
-import { MAX_MARGIN_TOLERANCE } from '@/constants'
-import type { TDepartment, TMarginTolerance } from '@/models'
+import { MAX_MARGIN_TOLERANCE } from '@/constants/margin'
+import type { TDepartment } from '@/models/department-model/types'
+import type { TMarginTolerance } from '@/models/settings-model/types'
 
 import type { TDepartmentMarginOverrideRow } from '../../utils'
 import * as S from './style'

@@ -8,7 +8,7 @@ import {
 } from '@mui/material'
 import { Link as RouterLink } from 'react-router'
 
-import { Loader } from '@/components'
+import { Loader } from '@/components/ui/loader'
 
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'

@@ -1,8 +1,8 @@
 import { AutoFixHigh, Print } from '@mui/icons-material'
 import { Box, Button, MenuItem, Select, Typography } from '@mui/material'
 
-import { SearchInput } from '@/components'
-import type { TQuote } from '@/models'
+import { SearchInput } from '@/components/ui/search-input'
+import type { TQuote } from '@/models/quote-model/types'
 
 import { MONTHS } from './constants'
 import * as S from './style'

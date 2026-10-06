@@ -1,19 +1,17 @@
 import type { Timestamp } from 'firebase/firestore'
 
-import type {
-  TIgnoredProduct,
-  TIgnoredSupplier,
-  TInvoice,
-  TProduct,
-  TSettings
-} from '@/models'
+import type { TIgnoredProduct } from '@/models/ignored-product-model/types'
+import type { TIgnoredSupplier } from '@/models/ignored-supplier-model/types'
+import type { TInvoice } from '@/models/invoice-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TSettings } from '@/models/settings-model/types'
 import {
   evaluateMargin,
   getMarginTolerance,
-  isSupplierCnpjIgnored,
-  matchesSearch,
   type TMarginStatus
-} from '@/utils'
+} from '@/utils/margin'
+import { matchesSearch } from '@/utils/search'
+import { isSupplierCnpjIgnored } from '@/utils/suppliers'
 
 export const filterProducts = (search: string, products: TProduct[]) =>
   products.filter((p) =>

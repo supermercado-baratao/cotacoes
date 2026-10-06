@@ -1,4 +1,5 @@
-import type { TIgnoredSupplier, TSupplier } from '@/models'
+import type { TIgnoredSupplier } from '@/models/ignored-supplier-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
 
 import { normalizeCnpj } from './formatters'
 

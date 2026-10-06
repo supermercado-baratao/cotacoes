@@ -1,7 +1,9 @@
 import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test } from 'vitest'
 
-import type { TInvoice, TInvoiceItem, TProduct, TSettings } from '@/models'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TSettings } from '@/models/settings-model/types'
 import {
   buildLastEntryDateMap,
   buildProductIdsWithEntryInRange,
@@ -12,7 +14,7 @@ import {
   getMarginAlerts,
   getMarginCostOptions
 } from '@/pages/dashboard/utils'
-import type { TEntryCost } from '@/utils'
+import type { TEntryCost } from '@/utils/entry-cost'
 
 const now = Timestamp.now()
 

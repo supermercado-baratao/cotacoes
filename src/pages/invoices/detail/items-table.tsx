@@ -3,14 +3,10 @@ import { Chip } from '@mui/material'
 import { GridActionsCellItem, type GridColDef } from '@mui/x-data-grid'
 import { useMemo } from 'react'
 
-import { Table as _Table } from '@/components'
-import type { TInvoiceItemMatchStatus } from '@/models'
-import {
-  formatCurrency,
-  formatNumericValue,
-  marginStatusConfig,
-  type TMarginStatus
-} from '@/utils'
+import { Table as _Table } from '@/components/blocks/table'
+import type { TInvoiceItemMatchStatus } from '@/models/invoice-model/types'
+import { formatCurrency, formatNumericValue } from '@/utils/formatters'
+import { marginStatusConfig, type TMarginStatus } from '@/utils/margin'
 
 import type { TInvoiceItemRow } from './use-invoice-detail-handler'
 

@@ -1,8 +1,8 @@
 import { Delete } from '@mui/icons-material'
 import { GridActionsCellItem } from '@mui/x-data-grid'
 
-import { Table as _Table } from '@/components'
-import { useAppStore } from '@/stores'
+import { Table as _Table } from '@/components/blocks/table'
+import { useAppStore } from '@/stores/use-app-store'
 
 import type { TIgnoredProductRow } from '../../utils'
 import { columns } from './columns'

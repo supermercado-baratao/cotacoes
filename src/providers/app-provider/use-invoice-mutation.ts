@@ -1,9 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Timestamp } from 'firebase/firestore'
 
-import { ConflictError } from '@/infra'
-import { invoiceModel, settingsModel, type TInvoice } from '@/models'
-import { useAlertStore, useAppStore, useCallbackStore } from '@/stores'
+import { ConflictError } from '@/infra/errors'
+import { invoiceModel } from '@/models/invoice-model/model'
+import { type TInvoice } from '@/models/invoice-model/types'
+import { settingsModel } from '@/models/settings-model/model'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useAppStore } from '@/stores/use-app-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import {
   addInvoicesToCache,

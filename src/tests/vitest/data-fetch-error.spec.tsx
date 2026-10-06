@@ -3,23 +3,21 @@ import { FirebaseError } from 'firebase/app'
 import type { User } from 'firebase/auth'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import {
-  departmentModel,
-  familyModel,
-  ignoredProductModel,
-  ignoredSupplierModel,
-  invoiceModel,
-  packageBarcodeLinkModel,
-  packingDefaultModel,
-  priceAdjustmentModel,
-  productModel,
-  quoteModel,
-  sellerModel,
-  settingsModel,
-  supplierModel
-} from '@/models'
+import { departmentModel } from '@/models/department-model/model'
+import { familyModel } from '@/models/family-model/model'
+import { ignoredProductModel } from '@/models/ignored-product-model/model'
+import { ignoredSupplierModel } from '@/models/ignored-supplier-model/model'
+import { invoiceModel } from '@/models/invoice-model/model'
+import { packageBarcodeLinkModel } from '@/models/package-barcode-link-model/model'
+import { packingDefaultModel } from '@/models/packing-default-model/model'
+import { priceAdjustmentModel } from '@/models/price-adjustment-model/model'
+import { productModel } from '@/models/product-model/model'
+import { quoteModel } from '@/models/quote-model/model'
+import { sellerModel } from '@/models/seller-model/model'
+import { settingsModel } from '@/models/settings-model/model'
+import { supplierModel } from '@/models/supplier-model/model'
 import { useDataFetch } from '@/providers/app-provider/use-data-fetch'
-import { useAuthStore } from '@/stores'
+import { useAuthStore } from '@/stores/use-auth-store'
 
 import { createQueryWrapper } from './_utils/create-query-wrapper'
 
