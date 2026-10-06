@@ -1,6 +1,7 @@
 import path from 'node:path'
 
 import { expect, type Page, test } from '@playwright/test'
+import dayjs from 'dayjs'
 
 import type { TInvoice } from '@/models'
 import {
@@ -325,7 +326,7 @@ test('back button returns to the page it was opened from, and items can be filte
     accessKey: 'access-key-back-test',
     number: 'BACKTEST',
     series: '1',
-    emissionDate: new Date().toISOString().slice(0, 10),
+    emissionDate: dayjs().format('YYYY-MM-DD'),
     supplierCnpj: '11111111000111',
     supplierName: 'FORNECEDOR BACK',
     destinationCnpj: '22222222000122',
