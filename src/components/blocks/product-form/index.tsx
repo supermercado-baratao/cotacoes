@@ -12,19 +12,17 @@ import {
 } from '@mui/material'
 import { useFieldArray } from 'react-hook-form'
 
-import {
-  Autocomplete,
-  CurrencyInput,
-  Modal,
-  type TModalProps
-} from '@/components'
+import { Autocomplete } from '@/components/ui/autocomplete'
+import { CurrencyInput } from '@/components/ui/currency-input'
+import { Modal, type TModalProps } from '@/components/ui/modal'
 import {
   MAX_DESCRIPTION_LENGTH,
   MAX_NUMERIC_VALUE,
   MAX_OBSERVATIONS_LENGTH
-} from '@/constants'
-import type { TProduct } from '@/models'
-import { selectOnFocus, type TMarginStatus } from '@/utils'
+} from '@/constants/length'
+import type { TProduct } from '@/models/product-model/types'
+import { selectOnFocus } from '@/utils/input-handlers'
+import { type TMarginStatus } from '@/utils/margin'
 
 import * as S from './style'
 import { type TProductDraft, useFormHandler } from './use-form-handler'

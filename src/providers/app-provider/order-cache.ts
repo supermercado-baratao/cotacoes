@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 
-import type { TOrder } from '@/models'
+import type { TOrder } from '@/models/order-model/types'
 
 import { removeFromArrayCache, upsertInArrayCache } from './query-cache'
 

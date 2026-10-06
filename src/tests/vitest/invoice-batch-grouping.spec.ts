@@ -1,7 +1,9 @@
 import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test } from 'vitest'
 
-import type { TInvoiceItem, TProduct, TQuoteItem } from '@/models'
+import type { TInvoiceItem } from '@/models/invoice-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuoteItem } from '@/models/quote-model/types'
 import {
   groupInvoiceItemsForBatch,
   type TLinkOrderRow

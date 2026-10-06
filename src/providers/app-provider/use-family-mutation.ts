@@ -1,4 +1,4 @@
-import { familyModel } from '@/models'
+import { familyModel } from '@/models/family-model/model'
 
 import { useEntityMutation } from './use-entity-mutation'
 

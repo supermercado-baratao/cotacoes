@@ -1,8 +1,12 @@
 import { Tab, Tabs } from '@mui/material'
 
-import { CatalogImport, DataView, PageHeader, SupplierForm } from '@/components'
+import { CatalogImport } from '@/components/blocks/catalog-import'
+import { DataView } from '@/components/blocks/data-view'
+import { PageHeader } from '@/components/blocks/page-header'
+import { SupplierForm } from '@/components/blocks/supplier-form'
 
-import { IgnoredTable, Table } from './_components'
+import { IgnoredTable } from './_components/ignored-table'
+import { Table } from './_components/table'
 import { useSuppliersHandler } from './use-suppliers-handler'
 
 export const Suppliers = () => {

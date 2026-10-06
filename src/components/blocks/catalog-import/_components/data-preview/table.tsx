@@ -1,9 +1,9 @@
 import { Chip } from '@mui/material'
 import { type GridColDef } from '@mui/x-data-grid'
 
-import { Table as DataTable } from '@/components'
-import type { TImportData } from '@/models'
-import { formatCurrency, formatNumericValue } from '@/utils'
+import { Table as DataTable } from '@/components/blocks/table'
+import type { TImportData } from '@/models/import-model/types'
+import { formatCurrency, formatNumericValue } from '@/utils/formatters'
 
 import type { TProductImportStatus } from '../../utils'
 

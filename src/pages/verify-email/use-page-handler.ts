@@ -2,8 +2,9 @@ import { sendEmailVerification, signOut } from 'firebase/auth'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { auth } from '@/infra'
-import { useAlertStore, useAuthStore } from '@/stores'
+import { auth } from '@/infra/firebase-config'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useAuthStore } from '@/stores/use-auth-store'
 
 const COOLDOWN_SECONDS = 60
 

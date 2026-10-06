@@ -1,5 +1,6 @@
-import { type TIgnoredSupplier, type TSupplier } from '@/models'
-import { matchesSearch } from '@/utils'
+import { type TIgnoredSupplier } from '@/models/ignored-supplier-model/types'
+import { type TSupplier } from '@/models/supplier-model/types'
+import { matchesSearch } from '@/utils/search'
 
 export const filterSuppliers = (search: string, suppliers: TSupplier[]) =>
   suppliers.filter((s) =>

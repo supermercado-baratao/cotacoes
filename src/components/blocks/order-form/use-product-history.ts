@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
 
-import { useAppStore } from '@/stores'
+import { useAppStore } from '@/stores/use-app-store'
 
 export type THistoryRow = {
   id: string

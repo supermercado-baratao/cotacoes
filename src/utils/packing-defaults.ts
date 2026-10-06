@@ -1,4 +1,4 @@
-import type { TPackingDefault } from '@/models'
+import type { TPackingDefault } from '@/models/packing-default-model/types'
 
 const normalizePacking = (packing: string) => packing.trim().toUpperCase()
 

@@ -1,27 +1,28 @@
 import type { Timestamp } from 'firebase/firestore'
 
-import { COST_DIVERGENCE_ATTENTION_PERCENT } from '@/constants'
+import { COST_DIVERGENCE_ATTENTION_PERCENT } from '@/constants/margin'
 import type {
   TInvoice,
   TInvoiceDateRange,
-  TInvoiceItem,
-  TMarginCostSource,
-  TProduct,
-  TQuote,
-  TSettings,
-  TSupplier
-} from '@/models'
+  TInvoiceItem
+} from '@/models/invoice-model/types'
+import type { TMarginCostSource, TProduct } from '@/models/product-model/types'
+import type { TQuote } from '@/models/quote-model/types'
+import type { TSettings } from '@/models/settings-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
 import {
-  evaluateMargin,
-  findSupplierByCnpj,
   getCostDivergence,
   getEntryUnitCost,
-  getMarginTolerance,
   type TEntryCost,
   type TEntryUnitCost,
-  type TLastPaidEntry,
+  type TLastPaidEntry
+} from '@/utils/entry-cost'
+import {
+  evaluateMargin,
+  getMarginTolerance,
   type TMarginStatus
-} from '@/utils'
+} from '@/utils/margin'
+import { findSupplierByCnpj } from '@/utils/suppliers'
 
 // Uma fonte de custo disponível pro produto — alimenta o select da coluna
 // Custo, com o que for preciso pra identificar de onde o valor vem.

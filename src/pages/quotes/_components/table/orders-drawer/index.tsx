@@ -1,10 +1,14 @@
 import { Drawer } from '@mui/material'
 import { useState } from 'react'
 
-import { DeleteDialog, OrderForm } from '@/components'
-import { useDeleteHandler, useFormState } from '@/hooks'
-import type { TInvoice, TOrder, TQuoteItem } from '@/models'
-import { useAppStore } from '@/stores'
+import { OrderForm } from '@/components/blocks/order-form'
+import { DeleteDialog } from '@/components/ui/dialog'
+import { useDeleteHandler } from '@/hooks/use-delete-handler'
+import { useFormState } from '@/hooks/use-form-state'
+import type { TInvoice } from '@/models/invoice-model/types'
+import type { TOrder } from '@/models/order-model/types'
+import type { TQuoteItem } from '@/models/quote-model/types'
+import { useAppStore } from '@/stores/use-app-store'
 
 import type { TQuoteRow } from '../../../utils'
 import { Content } from './content'

@@ -1,8 +1,9 @@
 import { Box, Button, Typography } from '@mui/material'
 
-import { DataView } from '@/components'
+import { DataView } from '@/components/blocks/data-view'
 
-import { DepartmentOrderList, MarginTolerance } from './_components'
+import { DepartmentOrderList } from './_components/department-order-list'
+import { MarginTolerance } from './_components/margin-tolerance'
 import { useSettingsHandler } from './use-settings-handler'
 
 export const Settings = () => {

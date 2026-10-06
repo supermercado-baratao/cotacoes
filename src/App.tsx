@@ -1,9 +1,10 @@
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-import { AppProvider, AuthProvider } from './providers'
+import { AppProvider } from './providers/app-provider'
+import { AuthProvider } from './providers/auth-provider'
 import { Router } from './Router'
-import { dark } from './themes'
+import { dark } from './themes/dark'
 
 const App = ({ queryClient }: { queryClient: QueryClient }) => (
   <ThemeProvider theme={dark}>

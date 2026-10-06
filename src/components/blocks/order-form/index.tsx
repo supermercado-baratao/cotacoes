@@ -11,19 +11,20 @@ import {
 import dayjs from 'dayjs'
 import { useState } from 'react'
 
-import {
-  Autocomplete,
-  CurrencyInput,
-  FamilyForm,
-  Modal,
-  ProductForm,
-  SellerForm,
-  SupplierForm,
-  type TModalProps
-} from '@/components'
-import { MAX_NUMERIC_VALUE, MAX_OBSERVATIONS_LENGTH } from '@/constants'
-import type { TInvoice, TOrder, TProduct, TQuoteItem } from '@/models'
-import { formatCurrency, formatNumericValue, selectOnFocus } from '@/utils'
+import { FamilyForm } from '@/components/blocks/family-form'
+import { ProductForm } from '@/components/blocks/product-form'
+import { SellerForm } from '@/components/blocks/seller-form'
+import { SupplierForm } from '@/components/blocks/supplier-form'
+import { Autocomplete } from '@/components/ui/autocomplete'
+import { CurrencyInput } from '@/components/ui/currency-input'
+import { Modal, type TModalProps } from '@/components/ui/modal'
+import { MAX_NUMERIC_VALUE, MAX_OBSERVATIONS_LENGTH } from '@/constants/length'
+import type { TInvoice } from '@/models/invoice-model/types'
+import type { TOrder } from '@/models/order-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuoteItem } from '@/models/quote-model/types'
+import { formatCurrency, formatNumericValue } from '@/utils/formatters'
+import { selectOnFocus } from '@/utils/input-handlers'
 
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'

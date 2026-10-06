@@ -1,9 +1,9 @@
 import { Box, Button, TextField } from '@mui/material'
 
-import { Modal, type TModalProps } from '@/components'
-import { MAX_DESCRIPTION_LENGTH } from '@/constants'
-import type { TFamily } from '@/models'
-import { selectOnFocus } from '@/utils'
+import { Modal, type TModalProps } from '@/components/ui/modal'
+import { MAX_DESCRIPTION_LENGTH } from '@/constants/length'
+import type { TFamily } from '@/models/family-model/types'
+import { selectOnFocus } from '@/utils/input-handlers'
 
 import * as S from './style'
 import { useFormHandler } from './use-form-handler'

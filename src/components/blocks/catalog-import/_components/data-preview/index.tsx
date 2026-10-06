@@ -1,4 +1,4 @@
-import type { TImportData } from '@/models'
+import type { TImportData } from '@/models/import-model/types'
 
 import type { TProductImportStatus } from '../../utils'
 import { Header } from './header'

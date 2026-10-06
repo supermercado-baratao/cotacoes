@@ -15,8 +15,11 @@ import {
 import dayjs from 'dayjs'
 import { Link } from 'react-router'
 
-import type { TOrder, TProduct, TSeller, TSupplier } from '@/models'
-import { formatCurrency, formatNumericValue } from '@/utils'
+import type { TOrder } from '@/models/order-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TSeller } from '@/models/seller-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
+import { formatCurrency, formatNumericValue } from '@/utils/formatters'
 
 import * as S from './style'
 import { getProductDescription, getSellerName, getSupplierName } from './utils'

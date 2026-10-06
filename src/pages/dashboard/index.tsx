@@ -13,9 +13,10 @@ import {
   Typography
 } from '@mui/material'
 
-import { DataView } from '@/components'
+import { DataView } from '@/components/blocks/data-view'
 
-import { MarginAlerts, StatCard } from './_components'
+import { MarginAlerts } from './_components/margin-alerts'
+import { StatCard } from './_components/stat-card'
 import * as S from './style'
 import { useDashboardHandler } from './use-dashboard-handler'
 

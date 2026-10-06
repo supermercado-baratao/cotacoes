@@ -1,4 +1,4 @@
-import { supplierModel } from '@/models'
+import { supplierModel } from '@/models/supplier-model/model'
 
 import { useEntityMutation } from './use-entity-mutation'
 

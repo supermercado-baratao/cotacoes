@@ -6,7 +6,7 @@ import {
   Snackbar
 } from '@mui/material'
 
-import { useAlertStore } from '@/stores'
+import { useAlertStore } from '@/stores/use-alert-store'
 
 export const Alert = () => {
   const { params, clear } = useAlertStore()

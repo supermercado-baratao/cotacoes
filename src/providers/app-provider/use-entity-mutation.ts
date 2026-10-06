@@ -4,7 +4,8 @@ import {
   useQueryClient
 } from '@tanstack/react-query'
 
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import { removeFromArrayCache, upsertInArrayCache } from './query-cache'
 

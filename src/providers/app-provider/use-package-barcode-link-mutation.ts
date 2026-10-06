@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { packageBarcodeLinkModel } from '@/models'
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { packageBarcodeLinkModel } from '@/models/package-barcode-link-model/model'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import { upsertInArrayCache } from './query-cache'
 

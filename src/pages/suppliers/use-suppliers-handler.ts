@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 
-import { useFormState } from '@/hooks'
-import type { TSupplier } from '@/models'
-import { useAppStore } from '@/stores'
-import { isSupplierCnpjIgnored } from '@/utils'
+import { useFormState } from '@/hooks/use-form-state'
+import type { TSupplier } from '@/models/supplier-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { isSupplierCnpjIgnored } from '@/utils/suppliers'
 
 import { filterIgnoredSuppliers, filterSuppliers } from './utils'
 

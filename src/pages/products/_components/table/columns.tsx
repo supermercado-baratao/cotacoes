@@ -1,7 +1,8 @@
 import { Chip } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 
-import { formatCurrency, formatNumericValue, marginStatusConfig } from '@/utils'
+import { formatCurrency, formatNumericValue } from '@/utils/formatters'
+import { marginStatusConfig } from '@/utils/margin'
 
 import type { TProductRow } from '../../utils'
 

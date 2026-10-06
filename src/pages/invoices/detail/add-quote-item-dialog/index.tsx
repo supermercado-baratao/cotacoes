@@ -1,9 +1,9 @@
 import { Box, Button, TextField } from '@mui/material'
 import { type FormEvent, useState } from 'react'
 
-import { Modal } from '@/components'
-import { MAX_DESCRIPTION_LENGTH } from '@/constants'
-import { selectOnFocus } from '@/utils'
+import { Modal } from '@/components/ui/modal'
+import { MAX_DESCRIPTION_LENGTH } from '@/constants/length'
+import { selectOnFocus } from '@/utils/input-handlers'
 
 import type { TAddQuoteItemDraft } from '../use-link-orders-dialog-handler'
 import * as S from './style'

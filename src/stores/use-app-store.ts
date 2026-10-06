@@ -1,26 +1,27 @@
 import dayjs from 'dayjs'
 import { create } from 'zustand'
 
-import type { TAiSuggestion } from '@/infra'
+import type { TAiSuggestion } from '@/infra/gemini'
+import type { TDepartment } from '@/models/department-model/types'
+import type { TFamily } from '@/models/family-model/types'
+import type { TIgnoredProduct } from '@/models/ignored-product-model/types'
+import type { TIgnoredSupplier } from '@/models/ignored-supplier-model/types'
+import type { TImportData } from '@/models/import-model/types'
+import type { TInvoice, TInvoiceDateRange } from '@/models/invoice-model/types'
+import type { TOrder } from '@/models/order-model/types'
+import type { TPackageBarcodeLink } from '@/models/package-barcode-link-model/types'
+import type { TPackingDefault } from '@/models/packing-default-model/types'
+import type { TPriceAdjustment } from '@/models/price-adjustment-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuote } from '@/models/quote-model/types'
+import type { TSeller } from '@/models/seller-model/types'
+import type { TSettings } from '@/models/settings-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
 import type {
-  TDepartment,
-  TFamily,
-  TIgnoredProduct,
-  TIgnoredSupplier,
-  TImportData,
-  TInvoice,
-  TInvoiceDateRange,
-  TOrder,
-  TPackageBarcodeLink,
-  TPackingDefault,
-  TPriceAdjustment,
-  TProduct,
-  TQuote,
-  TSeller,
-  TSettings,
-  TSupplier
-} from '@/models'
-import type { TCreateData, TCreateDataWithId, TUpdateData } from '@/types'
+  TCreateData,
+  TCreateDataWithId,
+  TUpdateData
+} from '@/types/generics'
 
 const DEFAULT_INVOICE_LOOKBACK_DAYS = 30
 

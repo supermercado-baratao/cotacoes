@@ -19,9 +19,15 @@ import {
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 
-import { FamilyForm, Modal, OrderForm, ProductForm } from '@/components'
-import type { TInvoice, TProduct, TQuote } from '@/models'
-import { formatCurrency, formatNumericValue, matchesSearch } from '@/utils'
+import { FamilyForm } from '@/components/blocks/family-form'
+import { OrderForm } from '@/components/blocks/order-form'
+import { ProductForm } from '@/components/blocks/product-form'
+import { Modal } from '@/components/ui/modal'
+import type { TInvoice } from '@/models/invoice-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuote } from '@/models/quote-model/types'
+import { formatCurrency, formatNumericValue } from '@/utils/formatters'
+import { matchesSearch } from '@/utils/search'
 
 import { AddQuoteItemDialog } from './add-quote-item-dialog'
 import { BatchConfirmDialog } from './batch-confirm-dialog'

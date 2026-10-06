@@ -2,15 +2,16 @@ import { WarningAmber } from '@mui/icons-material'
 import { Alert, Button } from '@mui/material'
 import { useNavigate } from 'react-router'
 
-import {
-  DataView,
-  DeleteDialog,
-  FamilyForm,
-  Loader,
-  ProductForm
-} from '@/components'
+import { DataView } from '@/components/blocks/data-view'
+import { FamilyForm } from '@/components/blocks/family-form'
+import { ProductForm } from '@/components/blocks/product-form'
+import { DeleteDialog } from '@/components/ui/dialog'
+import { Loader } from '@/components/ui/loader'
 
-import { AiReferenceModal, Form, Header, Table } from './_components'
+import { AiReferenceModal } from './_components/ai-reference-modal'
+import { Header } from './_components/header'
+import { Form } from './_components/quote-form'
+import { Table } from './_components/table'
 import * as S from './style'
 import { useQuotesHandler } from './use-quotes-handler'
 

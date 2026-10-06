@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { productModel, type TProduct } from '@/models'
-import { useAlertStore, useCallbackStore } from '@/stores'
-import type { TUpdateData } from '@/types'
+import { productModel } from '@/models/product-model/model'
+import { type TProduct } from '@/models/product-model/types'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
+import type { TUpdateData } from '@/types/generics'
 
 import { useEntityMutation } from './use-entity-mutation'
 

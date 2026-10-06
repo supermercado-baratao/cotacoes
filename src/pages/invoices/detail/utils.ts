@@ -1,4 +1,4 @@
-import { matchesSearch } from '@/utils'
+import { matchesSearch } from '@/utils/search'
 
 import type { TInvoiceItemRow } from './use-invoice-detail-handler'
 

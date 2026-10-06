@@ -15,8 +15,8 @@ import {
   writeBatch
 } from 'firebase/firestore'
 
-import type { TCreateData, TUpdateData } from '@/types'
-import { chunk, mapWithConcurrencyLimit } from '@/utils'
+import type { TCreateData, TUpdateData } from '@/types/generics'
+import { chunk, mapWithConcurrencyLimit } from '@/utils/concurrency'
 
 import { InternalServerError } from './errors'
 import { firestore } from './firebase-config'

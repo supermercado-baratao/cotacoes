@@ -13,8 +13,8 @@ import {
 } from '@mui/material'
 import dayjs from 'dayjs'
 
-import { useProductHistory } from '@/components'
-import { formatCurrency, formatNumericValue } from '@/utils'
+import { useProductHistory } from '@/components/blocks/order-form/use-product-history'
+import { formatCurrency, formatNumericValue } from '@/utils/formatters'
 
 import * as S from './style'
 

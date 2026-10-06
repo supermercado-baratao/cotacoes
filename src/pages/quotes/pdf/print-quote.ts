@@ -1,7 +1,9 @@
 import { type DocumentProps, pdf } from '@react-pdf/renderer'
 import { createElement, type ReactElement } from 'react'
 
-import type { TFamily, TProduct, TQuote } from '@/models'
+import type { TFamily } from '@/models/family-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuote } from '@/models/quote-model/types'
 
 import {
   QuotePDF,

@@ -26,8 +26,9 @@ import {
 import dayjs from 'dayjs'
 import { useMemo, useRef, useState, useTransition } from 'react'
 
-import { Modal } from '@/components'
-import { findSupplierByCnpj, formatCurrency, formatNumericValue } from '@/utils'
+import { Modal } from '@/components/ui/modal'
+import { formatCurrency, formatNumericValue } from '@/utils/formatters'
+import { findSupplierByCnpj } from '@/utils/suppliers'
 
 import { DuplicateNfes } from './duplicate-nfes'
 import { IgnoredSupplierNfes } from './ignored-supplier-nfes'

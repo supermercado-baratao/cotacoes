@@ -1,4 +1,6 @@
-import type { TInvoice, TInvoiceItem, TProduct, TSupplier } from '@/models'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
+import type { TProduct } from '@/models/product-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
 
 import { normalizeCnpj } from './formatters'
 

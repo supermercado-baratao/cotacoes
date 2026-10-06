@@ -2,18 +2,22 @@ import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 
-import { useDeleteHandler } from '@/hooks'
-import type { TInvoice, TInvoiceItem, TInvoiceItemMatchStatus } from '@/models'
-import { useAppStore, useCallbackStore } from '@/stores'
+import { useDeleteHandler } from '@/hooks/use-delete-handler'
+import type {
+  TInvoice,
+  TInvoiceItem,
+  TInvoiceItemMatchStatus
+} from '@/models/invoice-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
+import { normalizeCnpj } from '@/utils/formatters'
 import {
-  buildPackageBarcodeLinkMap,
   evaluateMargin,
-  findSupplierByCnpj,
   getMarginTolerance,
-  isSupplierCnpjIgnored,
-  normalizeCnpj,
   type TMarginStatus
-} from '@/utils'
+} from '@/utils/margin'
+import { buildPackageBarcodeLinkMap } from '@/utils/package-barcode-links'
+import { findSupplierByCnpj, isSupplierCnpjIgnored } from '@/utils/suppliers'
 
 import { filterInvoiceItemRows } from './utils'
 

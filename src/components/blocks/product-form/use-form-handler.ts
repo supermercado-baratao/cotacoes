@@ -2,9 +2,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
-import type { TProduct } from '@/models'
-import { useAppStore, useCallbackStore } from '@/stores'
-import { evaluateMargin, getMarginTolerance, type TMarginStatus } from '@/utils'
+import type { TProduct } from '@/models/product-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
+import {
+  evaluateMargin,
+  getMarginTolerance,
+  type TMarginStatus
+} from '@/utils/margin'
 
 import { schema, type TSchema } from './schema'
 

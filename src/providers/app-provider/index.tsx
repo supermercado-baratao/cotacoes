@@ -1,4 +1,5 @@
-import { Alert, Loader } from '@/components'
+import { Alert } from '@/components/ui/alert'
+import { Loader } from '@/components/ui/loader'
 
 import { useAppHandler } from './use-app-handler'
 

@@ -1,4 +1,6 @@
-import type { TProduct, TSeller, TSupplier } from '@/models'
+import type { TProduct } from '@/models/product-model/types'
+import type { TSeller } from '@/models/seller-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
 
 export const getProductDescription = (
   productId: string,

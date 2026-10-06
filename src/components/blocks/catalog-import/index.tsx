@@ -1,10 +1,12 @@
 import { CheckCircleOutlined } from '@mui/icons-material'
 import { Box, Button } from '@mui/material'
 
-import { Modal, type TModalProps } from '@/components'
-import { useAppStore } from '@/stores'
+import { Modal, type TModalProps } from '@/components/ui/modal'
+import { useAppStore } from '@/stores/use-app-store'
 
-import { DataPreview, DropZone, SqlQuery } from './_components'
+import { DataPreview } from './_components/data-preview'
+import { DropZone } from './_components/drop-zone'
+import { SqlQuery } from './_components/sql-query'
 import * as S from './style'
 import { useImportHandler } from './use-import-handler'
 

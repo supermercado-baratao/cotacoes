@@ -3,11 +3,12 @@ import { GridActionsCellItem, type GridRowParams } from '@mui/x-data-grid'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
-import { DeleteDialog, Table as _Table } from '@/components'
-import { useDeleteHandler } from '@/hooks'
-import type { TInvoice } from '@/models'
-import { useAppStore } from '@/stores'
-import { findSupplierByCnpj } from '@/utils'
+import { Table as _Table } from '@/components/blocks/table'
+import { DeleteDialog } from '@/components/ui/dialog'
+import { useDeleteHandler } from '@/hooks/use-delete-handler'
+import type { TInvoice } from '@/models/invoice-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { findSupplierByCnpj } from '@/utils/suppliers'
 
 import { columns, type TInvoiceRow } from './columns'
 

@@ -3,7 +3,7 @@ import 'dayjs/locale/pt-br'
 import { Document, Page, Text, View } from '@react-pdf/renderer'
 import dayjs from 'dayjs'
 
-import { formatCurrency } from '@/utils'
+import { formatCurrency } from '@/utils/formatters'
 
 import { COL_NUM, COL_ORDER, COL_PRODUCT, S } from './style'
 

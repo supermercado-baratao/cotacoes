@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router'
 
-import { Table as _Table } from '@/components'
+import { Table as _Table } from '@/components/blocks/table'
 
 import type { TUnmatchedProductItem } from '../../utils'
 import { buildColumns } from './columns'

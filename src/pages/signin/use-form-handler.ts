@@ -2,8 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { useForm } from 'react-hook-form'
 
-import { auth } from '@/infra'
-import { useAlertStore } from '@/stores'
+import { auth } from '@/infra/firebase-config'
+import { useAlertStore } from '@/stores/use-alert-store'
 
 import { SIGNIN_ERRORS } from './errors'
 import { schema, type TSchema } from './schema'

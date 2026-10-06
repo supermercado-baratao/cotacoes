@@ -4,9 +4,9 @@ import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 import type { Timestamp } from 'firebase/firestore'
 
-import { COST_DIVERGENCE_ATTENTION_PERCENT } from '@/constants'
-import type { TMarginCostSource } from '@/models'
-import { formatCurrency } from '@/utils'
+import { COST_DIVERGENCE_ATTENTION_PERCENT } from '@/constants/margin'
+import type { TMarginCostSource } from '@/models/product-model/types'
+import { formatCurrency } from '@/utils/formatters'
 
 import type { TMarginAlert, TMarginCostOption } from '../../utils'
 import * as S from './style'

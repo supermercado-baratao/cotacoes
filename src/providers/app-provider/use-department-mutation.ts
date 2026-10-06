@@ -1,4 +1,4 @@
-import { departmentModel } from '@/models'
+import { departmentModel } from '@/models/department-model/model'
 
 import { useEntityMutation } from './use-entity-mutation'
 

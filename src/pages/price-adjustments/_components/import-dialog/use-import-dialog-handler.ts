@@ -1,8 +1,11 @@
 import { useState } from 'react'
 
-import type { TInvoice, TProduct, TQuote, TSupplier } from '@/models'
-import { orderModel } from '@/models'
-import { useAppStore } from '@/stores'
+import type { TInvoice } from '@/models/invoice-model/types'
+import { orderModel } from '@/models/order-model/model'
+import type { TProduct } from '@/models/product-model/types'
+import type { TQuote } from '@/models/quote-model/types'
+import type { TSupplier } from '@/models/supplier-model/types'
+import { useAppStore } from '@/stores/use-app-store'
 
 import {
   crossReferenceRows,

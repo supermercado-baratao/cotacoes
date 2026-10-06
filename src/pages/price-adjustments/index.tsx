@@ -1,8 +1,11 @@
 import { Box, Button, Tab, Tabs, TextField, Typography } from '@mui/material'
 
-import { DataView, PageHeader } from '@/components'
+import { DataView } from '@/components/blocks/data-view'
+import { PageHeader } from '@/components/blocks/page-header'
 
-import { ImportDialog, ProductList, Table } from './_components'
+import { ImportDialog } from './_components/import-dialog'
+import { ProductList } from './_components/product-list'
+import { Table } from './_components/table'
 import * as S from './style'
 import {
   PRICE_ADJUSTMENTS_TABS,

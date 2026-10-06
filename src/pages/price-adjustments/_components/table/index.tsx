@@ -20,8 +20,9 @@ import {
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 
-import { Table as _Table } from '@/components'
-import { formatCurrency, marginStatusConfig, type TMarginStatus } from '@/utils'
+import { Table as _Table } from '@/components/blocks/table'
+import { formatCurrency } from '@/utils/formatters'
+import { marginStatusConfig, type TMarginStatus } from '@/utils/margin'
 
 import {
   getFamilyMarginStatus,

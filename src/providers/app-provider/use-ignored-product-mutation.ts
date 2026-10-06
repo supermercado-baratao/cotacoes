@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { ignoredProductModel } from '@/models'
-import { useAlertStore, useCallbackStore } from '@/stores'
+import { ignoredProductModel } from '@/models/ignored-product-model/model'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
 
 import { removeFromArrayCache, upsertInArrayCache } from './query-cache'
 

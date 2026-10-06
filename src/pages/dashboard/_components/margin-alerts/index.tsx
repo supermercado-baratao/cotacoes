@@ -3,9 +3,11 @@ import { Paper, Typography } from '@mui/material'
 import { GridActionsCellItem } from '@mui/x-data-grid'
 import { useMemo, useState } from 'react'
 
-import { DataView, Table } from '@/components'
-import type { TInvoiceDateRange, TMarginCostSource } from '@/models'
-import { useAppStore } from '@/stores'
+import { DataView } from '@/components/blocks/data-view'
+import { Table } from '@/components/blocks/table'
+import type { TInvoiceDateRange } from '@/models/invoice-model/types'
+import type { TMarginCostSource } from '@/models/product-model/types'
+import { useAppStore } from '@/stores/use-app-store'
 
 import {
   addEntryUnitCosts,

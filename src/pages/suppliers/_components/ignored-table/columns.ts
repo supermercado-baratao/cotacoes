@@ -2,8 +2,8 @@ import type { GridColDef } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 import type { Timestamp } from 'firebase/firestore'
 
-import type { TIgnoredSupplier } from '@/models'
-import { formatCNPJ } from '@/utils'
+import type { TIgnoredSupplier } from '@/models/ignored-supplier-model/types'
+import { formatCNPJ } from '@/utils/formatters'
 
 export const columns: GridColDef<TIgnoredSupplier>[] = [
   {

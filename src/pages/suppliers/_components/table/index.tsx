@@ -1,11 +1,12 @@
 import { Block } from '@mui/icons-material'
 import { GridActionsCellItem } from '@mui/x-data-grid'
 
-import { DeleteDialog, Table as _Table } from '@/components'
-import { useDeleteHandler } from '@/hooks'
-import type { TSupplier } from '@/models'
-import { useAppStore } from '@/stores'
-import { normalizeCnpj } from '@/utils'
+import { Table as _Table } from '@/components/blocks/table'
+import { DeleteDialog } from '@/components/ui/dialog'
+import { useDeleteHandler } from '@/hooks/use-delete-handler'
+import type { TSupplier } from '@/models/supplier-model/types'
+import { useAppStore } from '@/stores/use-app-store'
+import { normalizeCnpj } from '@/utils/formatters'
 
 import { columns } from './columns'
 

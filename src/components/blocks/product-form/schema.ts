@@ -4,7 +4,7 @@ import {
   MAX_DESCRIPTION_LENGTH,
   MAX_NUMERIC_VALUE,
   MAX_OBSERVATIONS_LENGTH
-} from '@/constants'
+} from '@/constants/length'
 
 const packagingSchema = z.object({
   barcode: z.string(),

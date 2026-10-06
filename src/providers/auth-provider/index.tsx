@@ -2,9 +2,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useEffect, useRef, useState } from 'react'
 
-import { Loader } from '@/components'
-import { auth } from '@/infra'
-import { useAuthStore } from '@/stores'
+import { Loader } from '@/components/ui/loader'
+import { auth } from '@/infra/firebase-config'
+import { useAuthStore } from '@/stores/use-auth-store'
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { setUser } = useAuthStore()

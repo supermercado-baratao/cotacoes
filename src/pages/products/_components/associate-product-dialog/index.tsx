@@ -1,9 +1,9 @@
 import { Autocomplete, Box, Button, TextField } from '@mui/material'
 import { useState } from 'react'
 
-import { Modal } from '@/components'
-import type { TProduct } from '@/models'
-import { matchesSearch } from '@/utils'
+import { Modal } from '@/components/ui/modal'
+import type { TProduct } from '@/models/product-model/types'
+import { matchesSearch } from '@/utils/search'
 
 import type { TUnmatchedProductItem } from '../../utils'
 import * as S from './style'

@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { packingDefaultModel, type TPackingDefault } from '@/models'
-import { findPackingDefault } from '@/utils'
+import { packingDefaultModel } from '@/models/packing-default-model/model'
+import { type TPackingDefault } from '@/models/packing-default-model/types'
+import { findPackingDefault } from '@/utils/packing-defaults'
 
 import { upsertInArrayCache } from './query-cache'
 

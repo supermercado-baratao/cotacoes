@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import type { TOrder } from '@/models'
-import { orderModel } from '@/models'
-import { useAlertStore, useCallbackStore } from '@/stores'
-import type { TCreateData } from '@/types'
+import { orderModel } from '@/models/order-model/model'
+import type { TOrder } from '@/models/order-model/types'
+import { useAlertStore } from '@/stores/use-alert-store'
+import { useCallbackStore } from '@/stores/use-callback-store'
+import type { TCreateData } from '@/types/generics'
 
 import { removeOrderFromCache, upsertOrderInCache } from './order-cache'
 

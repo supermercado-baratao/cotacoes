@@ -1,16 +1,16 @@
 import * as xlsx from 'xlsx'
 
+import { type TDepartment } from '@/models/department-model/types'
+import { type TFamily } from '@/models/family-model/types'
+import { type TImportData } from '@/models/import-model/types'
+import { UPSERT_MANY_UPDATABLE_FIELDS } from '@/models/product-model/model'
 import {
-  type TDepartment,
-  type TFamily,
-  type TImportData,
   type TProduct,
-  type TSupplier,
-  type TSupplierPacking,
-  UPSERT_MANY_UPDATABLE_FIELDS
-} from '@/models'
-import type { TCreateDataWithId } from '@/types'
-import { normalizeCnpj } from '@/utils'
+  type TSupplierPacking
+} from '@/models/product-model/types'
+import { type TSupplier } from '@/models/supplier-model/types'
+import type { TCreateDataWithId } from '@/types/generics'
+import { normalizeCnpj } from '@/utils/formatters'
 
 export type TProductImportStatus = 'new' | 'changed' | 'unchanged'
 

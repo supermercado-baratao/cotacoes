@@ -1,7 +1,7 @@
 import { isCNPJ } from 'validation-br'
 import z from 'zod'
 
-import { PHONE_MAX_LENGTH, PHONE_MIN_LENGTH } from '@/constants'
+import { PHONE_MAX_LENGTH, PHONE_MIN_LENGTH } from '@/constants/length'
 
 export const MAX_LEGAL_NAME_LENGTH = 200
 export const MAX_TRADE_NAME_LENGTH = 200

@@ -16,9 +16,9 @@ import {
   Typography
 } from '@mui/material'
 
-import { Modal, type TModalProps } from '@/components'
-import type { TQuote } from '@/models'
-import { formatCurrency } from '@/utils'
+import { Modal, type TModalProps } from '@/components/ui/modal'
+import type { TQuote } from '@/models/quote-model/types'
+import { formatCurrency } from '@/utils/formatters'
 
 import { ProductReferenceForm } from '../table/product-reference-form'
 import * as S from './style'

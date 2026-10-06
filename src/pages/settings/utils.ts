@@ -1,4 +1,4 @@
-import type { TMarginTolerance } from '@/models'
+import type { TMarginTolerance } from '@/models/settings-model/types'
 
 export const buildDepartmentOrder = (
   departments: string[],

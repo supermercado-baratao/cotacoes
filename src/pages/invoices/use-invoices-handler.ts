@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { useAppStore } from '@/stores'
+import { useAppStore } from '@/stores/use-app-store'
 
 import { filterInvoices } from './utils'
 
