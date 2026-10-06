@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, test } from '@playwright/test'
+import dayjs from 'dayjs'
 
 import type { TInvoice, TInvoiceItem, TProduct, TQuote } from '@/models'
 import {
@@ -45,7 +46,7 @@ const makeQuote = (
 // A tela busca notas dos últimos 30 dias (defaultInvoiceDateRange em
 // use-app-store.ts) — precisa ser uma data recente, não fixa, pra cair
 // dentro dessa janela sempre que o teste rodar.
-const RECENT_EMISSION_DATE = new Date().toISOString().slice(0, 10)
+const RECENT_EMISSION_DATE = dayjs().format('YYYY-MM-DD')
 
 const makeInvoice = (
   overrides: Partial<TInvoice> & { id: string }
@@ -88,11 +89,8 @@ const makeInvoiceItem = (
   ...overrides
 })
 
-const daysAgo = (days: number) => {
-  const date = new Date()
-  date.setDate(date.getDate() - days)
-  return date.toISOString().slice(0, 10)
-}
+const daysAgo = (days: number) =>
+  dayjs().subtract(days, 'day').format('YYYY-MM-DD')
 
 const getRow = (page: Page, description: string): Locator =>
   page
