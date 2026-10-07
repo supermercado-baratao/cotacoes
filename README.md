@@ -1,75 +1,58 @@
-# React + TypeScript + Vite
+# Cotações
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação web para gerenciamento de cotações e controle de pedidos de compra em supermercados, em uso real.
 
-Currently, two official plugins are available:
+- **Dashboard** — indicadores e alertas de margem dos produtos.
+- **Cotações** — cotação de listas de itens entre fornecedores e registro dos pedidos de compra.
+- **Notas de Entrada** — importação de NF-e (XML) e relação dos itens com os produtos.
+- **Reajustes de Preços** — importação dos reajustes exportados do VR Software e avaliação da margem contra o custo.
+- **Cadastros** — produtos, fornecedores, vendedores, famílias e departamentos, com importação do catálogo exportado do VR Software.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+React 19, TypeScript, Vite, MUI, Firebase (Auth + Firestore), React Query, Zustand, Zod e React Hook Form. Testes com Vitest e Playwright.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Setup local
 
-Note: This will impact Vite dev & build performances.
+Pré-requisitos:
 
-## Expanding the ESLint configuration
+- **Node** na versão do `.nvmrc` (`nvm use`).
+- **pnpm** na versão do campo `packageManager` do `package.json` (`corepack enable`). Use apenas pnpm.
+- **Firebase CLI** (`firebase-tools`) e **Java**, para os emuladores do Firebase.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname
-      }
-      // other options...
-    }
-  }
-])
+```bash
+pnpm install
+cp .env.example .env
+pnpm exec playwright install   # browsers do Playwright, só para os testes e2e
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Os valores do `.env.example` bastam para desenvolvimento e testes. As variáveis `VITE_GEMINI_*` só são necessárias para os recursos de IA.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Fora de produção, o app se conecta aos emuladores do Firebase (Auth e Firestore), e não ao projeto real. Inicie-os antes do servidor de desenvolvimento:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname
-      }
-      // other options...
-    }
-  }
-])
+```bash
+pnpm emulators:start   # em outro terminal
+pnpm dev
 ```
+
+## Comandos
+
+| Comando                | O que faz                                          |
+| ---------------------- | -------------------------------------------------- |
+| `pnpm dev`             | Servidor de desenvolvimento                        |
+| `pnpm build`           | Build de produção                                  |
+| `pnpm emulators:start` | Emuladores do Firebase (Auth + Firestore)          |
+| `pnpm test`            | Testes unitários (Vitest)                          |
+| `pnpm test:e2e`        | Testes e2e (Playwright), com os emuladores rodando |
+| `pnpm type-check`      | Verificação de tipos                               |
+| `pnpm eslint:check`    | Lint (`pnpm eslint:fix` para corrigir)             |
+| `pnpm prettier:check`  | Formatação (`pnpm prettier:fix` para corrigir)     |
+| `pnpm generate`        | Gera um novo componente (plop)                     |
+
+Os git hooks repetem essas verificações: o `pre-push` roda o type-check e os testes e2e, por isso os emuladores precisam estar rodando.
+
+## Documentação
+
+- [`AGENTS.md`](./AGENTS.md) — arquitetura, convenções de código, testes, git hooks e CI.
+- [`docs/development-workflow.md`](./docs/development-workflow.md) — fluxo de issues, branches, commits e merge requests.
+- [`docs/contexto-integracao-vr.md`](./docs/contexto-integracao-vr.md) — integração com o VR Software (ERP do supermercado), com [`query-sql.md`](./docs/query-sql.md), [`tabelas-vr.md`](./docs/tabelas-vr.md) e [`relacao-de-produtos-e-notas.md`](./docs/relacao-de-produtos-e-notas.md).
