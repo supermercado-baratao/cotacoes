@@ -14,7 +14,7 @@ import { IMaskInput } from 'react-imask'
 
 type TMaskBaseProps = {
   onChange: (event: { target: { value: string } }) => void
-  value?: string
+  value?: string | null
 }
 
 const CnpjMask = forwardRef<HTMLInputElement, TMaskBaseProps>(
@@ -25,7 +25,9 @@ const CnpjMask = forwardRef<HTMLInputElement, TMaskBaseProps>(
       unmask={true}
       value={value ?? ''}
       inputRef={ref}
-      onAccept={(val) => onChange({ target: { value: val as string } })}
+      onAccept={(accepted) =>
+        onChange({ target: { value: accepted as string } })
+      }
     />
   )
 )
@@ -38,7 +40,9 @@ const PhoneMask = forwardRef<HTMLInputElement, TMaskBaseProps>(
       unmask={true}
       value={value ?? ''}
       inputRef={ref}
-      onAccept={(val) => onChange({ target: { value: val as string } })}
+      onAccept={(accepted) =>
+        onChange({ target: { value: accepted as string } })
+      }
     />
   )
 )

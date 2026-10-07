@@ -43,13 +43,13 @@ type TRowProps = {
 const Row = ({ item, isLast }: TRowProps) => {
   const refLine = [
     item.refDescription,
-    item.salePrice != null ? formatCurrency(item.salePrice) : null
+    item.salePrice == null ? null : formatCurrency(item.salePrice)
   ]
     .filter(Boolean)
     .join('  ·  ')
 
   return (
-    <View wrap={false} style={{ ...S.row, ...(isLast ? S.rowLast : {}) }}>
+    <View wrap={false} style={{ ...S.row, ...(isLast && S.rowLast) }}>
       <View style={S.cellNum}>
         <Text style={S.cellNumText}>{item.index}</Text>
       </View>
@@ -93,8 +93,12 @@ const Group = ({ group }: TGroupProps) => (
         <Row item={group.items[0]} isLast={group.items.length === 1} />
       )}
     </View>
-    {group.items.slice(1).map((item, i) => (
-      <Row key={item.index} item={item} isLast={i === group.items.length - 2} />
+    {group.items.slice(1).map((item, position) => (
+      <Row
+        key={item.index}
+        item={item}
+        isLast={position === group.items.length - 2}
+      />
     ))}
   </View>
 )
@@ -154,11 +158,11 @@ export const QuotePDF = ({ date, totalItems, departments }: TProps) => {
             />
           </View>
         </View>
-        {departments.map((department, i) => (
+        {departments.map((department, index) => (
           <Department
             key={department.label}
             department={department}
-            break={i > 0}
+            break={index > 0}
           />
         ))}
       </Page>

@@ -44,9 +44,9 @@ export const DuplicateNfes = ({
 }: TProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  if (!duplicateNfes.length) return null
+  if (duplicateNfes.length === 0) return null
 
-  const handleToggleExpanded = () => setIsExpanded((prev) => !prev)
+  const handleToggleExpanded = () => setIsExpanded((previous) => !previous)
 
   return (
     <Paper variant="outlined" sx={{ mb: 1 }}>

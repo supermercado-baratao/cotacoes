@@ -57,7 +57,7 @@ export const useQuotesHandler = () => {
   useEffect(() => {
     if (initialized.current || !quotes?.length) return
     initialized.current = true
-    const latest = [...quotes].sort((a, b) =>
+    const latest = quotes.toSorted((a, b) =>
       dayjs(b.date).diff(dayjs(a.date))
     )[0]
     setYear(dayjs(latest.date).year())
@@ -99,8 +99,8 @@ export const useQuotesHandler = () => {
     handleDeleteDialogConfirm
   } = useDeleteHandler<TQuote>((quote) => {
     const remaining = (quotes ?? []).filter((q) => q.id !== quote.id)
-    if (remaining.length) {
-      const latest = [...remaining].sort((a, b) =>
+    if (remaining.length > 0) {
+      const latest = remaining.toSorted((a, b) =>
         dayjs(b.date).diff(dayjs(a.date))
       )[0]
       setSuccessCallbacks([() => handleSuccess(latest.date)])
@@ -170,7 +170,7 @@ export const useQuotesHandler = () => {
   const onDayChange = (day: number) => setDay(day)
 
   const isFetching = quotes === null
-  const hasQuoteRows = !!quoteRows.length
+  const hasQuoteRows = quoteRows.length > 0
 
   const filteredRows = quoteRows.filter((row) =>
     matchesSearch(search, row.description)

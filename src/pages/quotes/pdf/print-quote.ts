@@ -80,32 +80,31 @@ const buildDepartments = (
   const byDesc = (a: TRawItem, b: TRawItem) =>
     a.description.localeCompare(b.description, 'pt-BR')
   const byDepartmentOrder = (a: string, b: string) => {
-    const ia = departmentOrder.indexOf(a)
-    const ib = departmentOrder.indexOf(b)
-    if (ia === -1 && ib === -1) return byLabel(a, b)
-    if (ia === -1) return 1
-    if (ib === -1) return -1
-    return ia - ib
+    const indexA = departmentOrder.indexOf(a)
+    const indexB = departmentOrder.indexOf(b)
+    if (indexA === -1 && indexB === -1) return byLabel(a, b)
+    if (indexA === -1) return 1
+    return indexB === -1 ? -1 : indexA - indexB
   }
 
   let index = 1
   const withIndex = (items: TRawItem[]): TPdfItem[] =>
-    [...items]
-      .sort(byDesc)
+    items
+      .toSorted(byDesc)
       .map((item) => ({ ...item, index: index++ }) satisfies TPdfItem)
 
-  const departments: TPdfDepartment[] = [...departmentMap.entries()]
-    .sort(([a], [b]) => byDepartmentOrder(a, b))
+  const departments: TPdfDepartment[] = [...departmentMap]
+    .toSorted(([a], [b]) => byDepartmentOrder(a, b))
     .map(
       ([departmentLabel, sectionMap]): TPdfDepartment => ({
         label: departmentLabel,
         sections: [...sectionMap.entries()]
-          .sort(([a], [b]) => byLabel(a, b))
+          .toSorted(([a], [b]) => byLabel(a, b))
           .map(
             ([sectionLabel, groupMap]): TPdfSection => ({
               label: sectionLabel,
               groups: [...groupMap.values()]
-                .sort((a, b) => byLabel(a.label, b.label))
+                .toSorted((a, b) => byLabel(a.label, b.label))
                 .map(
                   (g): TPdfGroup => ({
                     label: g.label,

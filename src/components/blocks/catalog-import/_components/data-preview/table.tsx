@@ -40,8 +40,8 @@ export const Table = ({
       field: 'status',
       headerName: 'Status',
       valueGetter: (_value, row) => productStatuses.get(row.id) ?? 'new',
-      renderCell: ({ value }) => {
-        const status = (value ?? 'new') as TProductImportStatus
+      renderCell: ({ value = 'new' }) => {
+        const status = value as TProductImportStatus
         return (
           <Chip
             label={STATUS_LABEL[status]}
@@ -85,17 +85,17 @@ export const Table = ({
       field: 'stock',
       headerName: 'Estoque',
       valueFormatter: (value: number | null) =>
-        value != null ? formatNumericValue(value) : '—'
+        value == null ? '—' : formatNumericValue(value)
     },
     {
       field: 'barcodes',
       headerName: 'Embalagens',
       valueGetter: (value: string[], row) =>
         (value ?? [])
-          .map(
-            (barcode, i) =>
-              `${barcode}${row.packTypes?.[i] ? ` (${row.packTypes[i]})` : ''}`
-          )
+          .map((barcode, index) => {
+            const packType = row.packTypes?.[index]
+            return packType ? `${barcode} (${packType})` : barcode
+          })
           .join(' | ') || '—'
     },
     {

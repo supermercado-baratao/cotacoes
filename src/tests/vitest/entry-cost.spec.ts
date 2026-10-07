@@ -68,7 +68,8 @@ const loadInvoice = async (
   filename: string,
   products: TProduct[]
 ): Promise<TInvoice> => {
-  const xml = (await readMockFile(filename)).toString('utf-8')
+  const file = await readMockFile(filename)
+  const xml = file.toString('utf8')
   return { ...parseNfe(xml, products), createdAt: now, updatedAt: now }
 }
 

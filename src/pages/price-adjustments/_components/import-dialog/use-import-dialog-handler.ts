@@ -49,7 +49,7 @@ export const useImportDialogHandler = (
       )
 
       const productUpdates = getProductPriceUpdates(fileRows, data.products)
-      if (productUpdates.length) updateProductsBatch(productUpdates)
+      if (productUpdates.length > 0) updateProductsBatch(productUpdates)
 
       replacePriceAdjustments(toPersistedPriceAdjustments(rows))
 

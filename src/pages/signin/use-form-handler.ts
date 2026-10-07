@@ -23,8 +23,8 @@ export const useFormHandler = () => {
   const onSubmit = handleSubmit(async (data) => {
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password)
-    } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? ''
+    } catch (error: unknown) {
+      const code = (error as { code?: string }).code ?? ''
       alert({
         title: 'Erro ao fazer login',
         description: SIGNIN_ERRORS[code] ?? 'Tente novamente',

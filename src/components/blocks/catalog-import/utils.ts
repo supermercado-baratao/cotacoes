@@ -50,13 +50,7 @@ type TRawRow = {
 }
 
 export const parseXlsx = async (file: File): Promise<TRawRow[]> => {
-  const reader = new FileReader()
-  const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-    reader.onload = () => resolve(reader.result as ArrayBuffer)
-    reader.onerror = reject
-    reader.readAsArrayBuffer(file)
-  })
-  const workbook = xlsx.read(buffer)
+  const workbook = xlsx.read(await file.arrayBuffer())
   const raw: TRawRow[] = xlsx.utils.sheet_to_json(
     workbook.Sheets[workbook.SheetNames[0]],
     { raw: false }
@@ -89,9 +83,7 @@ const parseSupplierPackings = (row: TRawRow): TSupplierPacking[] => {
     const supplierProductCode = entry.slice(0, separatorIndex).trim()
     const packQuantity = parsePackQuantity(entry.slice(separatorIndex + 1))
     if (!supplierProductCode || !(packQuantity > 0)) return []
-    return [
-      { supplierId: row.id_fornecedor, supplierProductCode, packQuantity }
-    ]
+    return { supplierId: row.id_fornecedor, supplierProductCode, packQuantity }
   })
 }
 
@@ -104,10 +96,10 @@ const slugifyDepartmentId = (description: string): string =>
   description
     .trim()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replaceAll(/[̀-ͯ]/g, '')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'departamento'
+    .replaceAll(/[^a-z0-9]+/g, '-')
+    .replaceAll(/^-+|-+$/g, '') || 'departamento'
 
 const mapProduct = (
   row: TRawRow,
@@ -115,7 +107,7 @@ const mapProduct = (
 ): TCreateDataWithId<TProduct> => ({
   id: row.id_produto,
   description: row.descricaocompleta,
-  price: Number(row.precovenda) / 10000,
+  price: Number(row.precovenda) / 10_000,
   familyId: row.id_familia || null,
   departmentId,
   barcodes: separatePipes(row.codigos_barras),
@@ -125,11 +117,13 @@ const mapProduct = (
   department: row.departamento,
   section: row.secao,
   group: row.grupo,
-  stock: Number(row.estoque.replace(/\./g, '')) / 1000,
+  stock: Number(row.estoque.replaceAll('.', '')) / 1000,
   vrCreatedAt: row.datacadastro_produto,
   tax: null,
   margin: null,
-  costWithTax: row.custocomimposto ? Number(row.custocomimposto) / 10000 : null,
+  costWithTax: row.custocomimposto
+    ? Number(row.custocomimposto) / 10_000
+    : null,
   observations: null
 })
 
@@ -151,12 +145,14 @@ const mapSupplier = (row: TRawRow): TCreateDataWithId<TSupplier> => ({
 
 const isEqualValue = (a: unknown, b: unknown): boolean => {
   if (Array.isArray(a) && Array.isArray(b)) {
-    return a.length === b.length && a.every((v, i) => isEqualValue(v, b[i]))
+    return (
+      a.length === b.length &&
+      a.every((value, index) => isEqualValue(value, b[index]))
+    )
   }
-  if (a && b && typeof a === 'object' && typeof b === 'object') {
-    return JSON.stringify(a) === JSON.stringify(b)
-  }
-  return a === b
+  return a && b && typeof a === 'object' && typeof b === 'object'
+    ? JSON.stringify(a) === JSON.stringify(b)
+    : a === b
 }
 
 export const getProductImportStatus = (
@@ -184,7 +180,7 @@ export const getData = async (file: File): Promise<TImportData> => {
   const supplierMap = new Map<string, TCreateDataWithId<TSupplier>>()
   const departmentMap = new Map<string, TCreateDataWithId<TDepartment>>()
 
-  raw.forEach((row) => {
+  for (const row of raw) {
     const departmentId = row.departamento
       ? slugifyDepartmentId(row.departamento)
       : null
@@ -210,7 +206,7 @@ export const getData = async (file: File): Promise<TImportData> => {
     })
     row.id_familia && familyMap.set(row.id_familia, mapFamily(row))
     supplierMap.set(row.id_fornecedor, mapSupplier(row))
-  })
+  }
 
   return {
     products: [...productMap.values()],

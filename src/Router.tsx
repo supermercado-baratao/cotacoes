@@ -37,8 +37,7 @@ const PublicRoute = () => {
 const VerifyEmailRoute = () => {
   const user = useAuthStore((state) => state.user)
   if (!user) return <Navigate to="/signin" replace />
-  if (user.emailVerified) return <Navigate to="/dashboard" replace />
-  return <Outlet />
+  return user.emailVerified ? <Navigate to="/dashboard" replace /> : <Outlet />
 }
 
 export const Router = () => (

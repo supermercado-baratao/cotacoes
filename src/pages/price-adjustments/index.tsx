@@ -35,7 +35,7 @@ export const PriceAdjustments = () => {
     hasUnregisteredGroups,
     isFirstTab,
     isLastTab,
-    handlePrevTab,
+    handlePreviousTab,
     handleNextTab
   } = usePriceAdjustmentsHandler()
 
@@ -56,7 +56,7 @@ export const PriceAdjustments = () => {
             type="date"
             size="small"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(event) => setStartDate(event.target.value)}
             sx={S.DateField}
             slotProps={{ inputLabel: { shrink: true } }}
           />
@@ -65,7 +65,7 @@ export const PriceAdjustments = () => {
             type="date"
             size="small"
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            onChange={(event) => setEndDate(event.target.value)}
             sx={S.DateField}
             slotProps={{ inputLabel: { shrink: true } }}
           />
@@ -78,7 +78,7 @@ export const PriceAdjustments = () => {
       >
         <Tabs
           value={activeTab}
-          onChange={(_e, value) => setActiveTab(value)}
+          onChange={(_event, value) => setActiveTab(value)}
           sx={{ mb: 2 }}
         >
           {PRICE_ADJUSTMENTS_TABS.map((tab) => (
@@ -112,7 +112,7 @@ export const PriceAdjustments = () => {
           ))}
 
         <Box sx={S.TabNavigation}>
-          <Button disabled={isFirstTab} onClick={handlePrevTab}>
+          <Button disabled={isFirstTab} onClick={handlePreviousTab}>
             Anterior
           </Button>
           <Button disabled={isLastTab} onClick={handleNextTab}>

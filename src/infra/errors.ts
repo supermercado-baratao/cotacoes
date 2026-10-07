@@ -9,13 +9,16 @@ export class InternalServerError extends Error {
   public action: string
   public statusCode: number
 
-  constructor({ cause, statusCode }: ErrorOptions & { statusCode?: number }) {
+  constructor({
+    cause,
+    statusCode = 500
+  }: ErrorOptions & { statusCode?: number }) {
     super('Um erro interno não esperado aconteceu', {
       cause
     })
     this.name = 'InternalServerError'
     this.action = 'Entre em contato com o suporte.'
-    this.statusCode = statusCode || 500
+    this.statusCode = statusCode
   }
 
   toJSON(): TErrorReturn {
@@ -34,14 +37,12 @@ export class ConflictError extends Error {
 
   constructor({
     cause,
-    message,
-    action
+    message = 'Este recurso já existe no sistema.',
+    action = 'Verifique se o recurso já não foi cadastrado.'
   }: ErrorOptions & { message?: string; action?: string }) {
-    super(message || 'Este recurso já existe no sistema.', {
-      cause
-    })
+    super(message, { cause })
     this.name = 'ConflictError'
-    this.action = action || 'Verifique se o recurso já não foi cadastrado.'
+    this.action = action
     this.statusCode = 409
   }
 
@@ -61,15 +62,12 @@ export class NotFoundError extends Error {
 
   constructor({
     cause,
-    message,
-    action
+    message = 'Não foi possível encontrar este recurso no sistema.',
+    action = 'Verifique se os parâmetros enviados na consulta estão certos.'
   }: ErrorOptions & { message?: string; action?: string }) {
-    super(message || 'Não foi possível encontrar este recurso no sistema.', {
-      cause
-    })
+    super(message, { cause })
     this.name = 'NotFoundError'
-    this.action =
-      action || 'Verifique se os parâmetros enviados na consulta estão certos.'
+    this.action = action
     this.statusCode = 404
   }
 

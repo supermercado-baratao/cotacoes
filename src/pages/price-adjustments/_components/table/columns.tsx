@@ -23,11 +23,11 @@ const renderMarginStatus = ({
   )
 
 const joinWithDivider = (items: string[]) =>
-  items.length ? (
+  items.length > 0 ? (
     <Box sx={S.Divider}>
-      {items.map((item, i) => (
-        <Fragment key={i}>
-          {i > 0 && <Divider orientation="vertical" />}
+      {items.map((item, index) => (
+        <Fragment key={index}>
+          {index > 0 && <Divider orientation="vertical" />}
           {item}
         </Fragment>
       ))}

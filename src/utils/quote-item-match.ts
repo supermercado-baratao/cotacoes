@@ -9,19 +9,20 @@ export const getFamilyReferencePrice = (
   const prices = products
     .filter((p) => p.familyId === familyId)
     .map((p) => p.price)
-  if (!prices.length) return null
+  if (prices.length === 0) return null
 
   const counts = new Map<number, number>()
-  prices.forEach((price) => counts.set(price, (counts.get(price) ?? 0) + 1))
+  for (const price of prices) counts.set(price, (counts.get(price) ?? 0) + 1)
 
   let mode = prices[0]
   let maxCount = 0
-  counts.forEach((count, price) => {
-    if (count > maxCount || (count === maxCount && price < mode)) {
-      mode = price
-      maxCount = count
-    }
-  })
+  for (const [price, count] of counts) {
+    const isMoreFrequent =
+      count > maxCount || (count === maxCount && price < mode)
+    if (!isMoreFrequent) continue
+    mode = price
+    maxCount = count
+  }
   return mode
 }
 

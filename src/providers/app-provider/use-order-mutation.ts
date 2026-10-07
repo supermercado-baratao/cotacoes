@@ -18,7 +18,7 @@ export const useOrderMutation = () => {
     mutationFn: (orders: TCreateData<TOrder>[]) =>
       orderModel.createMany(orders),
     onSuccess: (orders) => {
-      orders.forEach((order) => upsertOrderInCache(queryClient, order))
+      for (const order of orders) upsertOrderInCache(queryClient, order)
       const n = orders.length
       alert({
         severity: 'success',

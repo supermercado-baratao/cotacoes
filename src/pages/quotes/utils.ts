@@ -10,9 +10,9 @@ export const getNextQuoteDate = (
   quotes: TQuote[],
   quote: TQuote
 ): string | null => {
-  const sorted = [...quotes].sort((a, b) => a.date.localeCompare(b.date))
-  const idx = sorted.findIndex((q) => q.id === quote.id)
-  return sorted[idx + 1]?.date ?? null
+  const sorted = quotes.toSorted((a, b) => a.date.localeCompare(b.date))
+  const index = sorted.findIndex((q) => q.id === quote.id)
+  return sorted[index + 1]?.date ?? null
 }
 
 export const isInvoiceInQuoteWindow = (
@@ -49,15 +49,11 @@ export const getPendingInvoicesForQuote = (
   )
 
 export const getAvailableYears = (quotes: TQuote[]) => {
-  const years = Array.from(
-    new Set(quotes.map((quote) => dayjs(quote.date).year()))
-  ).sort((a, b) => b - a)
+  const years = [
+    ...new Set(quotes.map((quote) => dayjs(quote.date).year()))
+  ].toSorted((a, b) => b - a)
 
-  if (!quotes.length) {
-    return [new Date().getFullYear()]
-  }
-
-  return years
+  return quotes.length === 0 ? [new Date().getFullYear()] : years
 }
 
 export const getAvailableMonths = (quotes: TQuote[], selectedYear: number) => {
@@ -65,15 +61,11 @@ export const getAvailableMonths = (quotes: TQuote[], selectedYear: number) => {
     (quote) => dayjs(quote.date).year() === selectedYear
   )
 
-  const months = Array.from(
-    new Set(filteredQuotes.map((quote) => dayjs(quote.date).month() + 1))
-  ).sort((a, b) => b - a)
+  const months = [
+    ...new Set(filteredQuotes.map((quote) => dayjs(quote.date).month() + 1))
+  ].toSorted((a, b) => b - a)
 
-  if (!months.length) {
-    return [new Date().getMonth() + 1]
-  }
-
-  return months
+  return months.length === 0 ? [new Date().getMonth() + 1] : months
 }
 
 export const getAvailableDays = (
@@ -87,15 +79,11 @@ export const getAvailableDays = (
       dayjs(quote.date).month() + 1 === selectedMonth
   )
 
-  const days = Array.from(
-    new Set(filteredQuotes.map((quote) => dayjs(quote.date).date()))
-  ).sort((a, b) => b - a)
+  const days = [
+    ...new Set(filteredQuotes.map((quote) => dayjs(quote.date).date()))
+  ].toSorted((a, b) => b - a)
 
-  if (!days.length) {
-    return [new Date().getDate()]
-  }
-
-  return days
+  return days.length === 0 ? [new Date().getDate()] : days
 }
 
 export const getSelectedQuote = (
@@ -164,8 +152,8 @@ export const getQuoteRows = (
         products,
         families
       ),
-      minPrice: prices.length ? Math.min(...prices) : null,
-      maxPrice: prices.length ? Math.max(...prices) : null,
+      minPrice: prices.length > 0 ? Math.min(...prices) : null,
+      maxPrice: prices.length > 0 ? Math.max(...prices) : null,
       supplierCount: getNumberOfSuppliers(itemOrders)
     }
   })

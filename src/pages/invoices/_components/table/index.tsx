@@ -52,8 +52,8 @@ export const Table = ({ invoices }: TProps) => {
         key="delete"
         icon={<Delete />}
         label="Excluir"
-        onClick={(e) => {
-          e.stopPropagation()
+        onClick={(event) => {
+          event.stopPropagation()
           handleDelete(row)
         }}
       />

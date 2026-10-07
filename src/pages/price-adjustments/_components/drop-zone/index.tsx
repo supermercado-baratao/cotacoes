@@ -13,14 +13,14 @@ export const DropZone = ({ onFileSelect }: TDropZoneProps) => {
 
   const openFileDialog = () => inputRef.current?.click()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
     if (file) onFileSelect(file)
-    e.target.value = ''
+    event.target.value = ''
   }
 
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleButtonClick = (event: React.MouseEvent) => {
+    event.stopPropagation()
     openFileDialog()
   }
 

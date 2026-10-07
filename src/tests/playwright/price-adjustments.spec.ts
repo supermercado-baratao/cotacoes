@@ -190,7 +190,7 @@ const seedQuotesOrdersAndInvoice = async () => {
 test('imports, dedupes by code, cross-references the most recent quote prioritizing the invoice, updates prices and saves the report', async ({
   page
 }) => {
-  test.setTimeout(60000)
+  test.setTimeout(60_000)
   const { email, password } = await createUser()
   await populateDatabase()
   await seedQuotesOrdersAndInvoice()
@@ -241,7 +241,7 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
         const adjustments = await priceAdjustmentModel.findMany()
         return adjustments.length
       },
-      { timeout: 10000 }
+      { timeout: 10_000 }
     )
     .toBe(4)
 
@@ -285,7 +285,7 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
 test('the "Não cadastrado" group starts expanded on the "Sem cadastro" tab', async ({
   page
 }) => {
-  test.setTimeout(60000)
+  test.setTimeout(60_000)
   const { email, password } = await createUser()
   await populateDatabase()
   await login(page, email, password)

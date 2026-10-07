@@ -15,13 +15,13 @@ const replaceAll = async (
   data: TCreateDataWithId<TPriceAdjustment>[]
 ): Promise<TPriceAdjustment[]> => {
   const existing = await findMany()
-  if (existing.length) {
+  if (existing.length > 0) {
     await database.deleteMany({
       path: getUserPath(PATH),
       ids: existing.map((item) => item.id)
     })
   }
-  if (!data.length) return []
+  if (data.length === 0) return []
   return database.createManyWithIds<TPriceAdjustment>({
     path: getUserPath(PATH),
     data

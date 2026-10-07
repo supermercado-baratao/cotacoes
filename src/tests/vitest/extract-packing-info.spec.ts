@@ -53,7 +53,7 @@ describe('extractPackingInfo', () => {
     expect(extractPackingInfo('CX')).toBeNull()
     expect(extractPackingInfo('UN')).toBeNull()
     expect(extractPackingInfo('')).toBeNull()
-    expect(extractPackingInfo('   ')).toBeNull()
+    expect(extractPackingInfo(' '.repeat(3))).toBeNull()
   })
 
   test('returns null for a zero quantity', () => {

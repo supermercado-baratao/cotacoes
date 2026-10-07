@@ -80,14 +80,14 @@ export const useFormHandler = (
       ? { type: 'family', id: familyId }
       : productId
         ? { type: 'product', id: productId }
-        : salePrice != null
-          ? { type: 'manual' }
-          : null
+        : salePrice == null
+          ? null
+          : { type: 'manual' }
     setSuccessCallbacks([handleClose])
     updateQuote({
       ...quote,
-      items: quote.items.map((i) =>
-        i.id === quoteItem.id ? { ...i, salePrice, priceRef } : i
+      items: quote.items.map((item) =>
+        item.id === quoteItem.id ? { ...item, salePrice, priceRef } : item
       )
     })
   })
@@ -95,13 +95,12 @@ export const useFormHandler = (
   const priceComparison = (() => {
     const ref = quoteItem?.priceRef
     const quotedPrice = quoteItem?.salePrice
-    if (!ref || ref.type === 'manual' || quotedPrice == null) return null
+    if (!ref || quotedPrice == null || ref.type === 'manual') return null
     const currentPrice =
       ref.type === 'product'
         ? ((products ?? []).find((p) => p.id === ref.id)?.price ?? null)
         : getFamilyReferencePrice(products ?? [], ref.id)
-    if (currentPrice == null) return null
-    return { quotedPrice, currentPrice }
+    return currentPrice == null ? null : { quotedPrice, currentPrice }
   })()
 
   return {

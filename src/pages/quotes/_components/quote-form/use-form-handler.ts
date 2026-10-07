@@ -21,7 +21,7 @@ export const useFormHandler = (
   const defaultValues: TSchema = useMemo(
     () => ({
       date: quote?.date ?? dayjs().format('YYYY-MM-DD'),
-      lines: quote?.items.map((i) => i.description).join('\n') ?? '',
+      lines: quote?.items.map((item) => item.description).join('\n') ?? '',
       observations: quote?.observations ?? null,
       status: quote?.status ?? 'opened',
       orders: quote?.orders ?? []
@@ -42,7 +42,7 @@ export const useFormHandler = (
 
   const parseItems = (lines: string, existing: TQuoteItem[]): TQuoteItem[] => {
     const existingByDesc = new Map(
-      existing.map((i) => [i.description.trim().toLowerCase(), i])
+      existing.map((item) => [item.description.trim().toLowerCase(), item])
     )
     return lines
       .split('\n')
@@ -64,14 +64,15 @@ export const useFormHandler = (
     if (quote) {
       const removedItemIds = new Set(
         quote.items
-          .filter((old) => !items.some((i) => i.id === old.id))
+          .filter((old) => items.every((item) => item.id !== old.id))
           .map((old) => old.id)
       )
-      const ordersToDelete = removedItemIds.size
-        ? (ordersByQuoteId ?? []).filter((o) =>
-            removedItemIds.has(o.quoteItemId)
-          )
-        : []
+      const ordersToDelete =
+        removedItemIds.size > 0
+          ? (ordersByQuoteId ?? []).filter((o) =>
+              removedItemIds.has(o.quoteItemId)
+            )
+          : []
       setSuccessCallbacks([
         handleClose,
         () => setFormQuote(null),

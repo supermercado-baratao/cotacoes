@@ -77,18 +77,21 @@ export const InvoiceDetail = () => {
 
   const [isLinkOrdersOpen, setIsLinkOrdersOpen] = useState(false)
   const [editingRow, setEditingRow] = useState<TInvoiceItemRow | null>(null)
+
+  if (isFetching || !invoice) return null
+
   const editingOrder = editingRow?.orderId
     ? (orderMap.get(editingRow.orderId) ?? null)
     : null
 
-  if (isFetching || !invoice) return null
-
   const summary = {
     total: itemsWithDivergences.length,
-    registered: itemsWithDivergences.filter((i) => i.productId !== null).length,
-    unmatchedProduct: itemsWithDivergences.filter((i) => i.productId === null)
+    registered: itemsWithDivergences.filter((item) => item.productId !== null)
       .length,
-    unmatchedOrder: itemsWithDivergences.filter((i) => i.orderId === null)
+    unmatchedProduct: itemsWithDivergences.filter(
+      (item) => item.productId === null
+    ).length,
+    unmatchedOrder: itemsWithDivergences.filter((item) => item.orderId === null)
       .length
   }
 
@@ -144,7 +147,9 @@ export const InvoiceDetail = () => {
               <Select
                 displayEmpty
                 value={selectedQuoteId ?? ''}
-                onChange={(e) => handleQuoteChange(e.target.value || null)}
+                onChange={(event) =>
+                  handleQuoteChange(event.target.value || null)
+                }
               >
                 <MenuItem value="">
                   <em>Nenhuma</em>
@@ -182,11 +187,11 @@ export const InvoiceDetail = () => {
           </Box>
           <Tooltip
             title={
-              !selectedQuote
-                ? 'Selecione uma cotação para vincular pedidos'
-                : summary.unmatchedOrder === 0
+              selectedQuote
+                ? summary.unmatchedOrder === 0
                   ? 'Todos os itens já estão vinculados a um pedido'
                   : ''
+                : 'Selecione uma cotação para vincular pedidos'
             }
           >
             <span>
@@ -266,7 +271,7 @@ export const InvoiceDetail = () => {
         </Button>
         <Tooltip
           title={
-            invoice.verificationStatus !== 'approved' && hasUnlinkedItems
+            hasUnlinkedItems && invoice.verificationStatus !== 'approved'
               ? 'Todos os itens precisam estar vinculados a um pedido para aprovar a nota'
               : ''
           }

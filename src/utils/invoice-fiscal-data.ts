@@ -46,12 +46,12 @@ export const completeInvoiceFiscalData = (
     const missingFields = FISCAL_ITEM_FIELDS.filter(
       (field) => item[field] === undefined
     )
-    if (!missingFields.length) return item
+    if (missingFields.length === 0) return item
 
     const completion: Partial<Pick<TInvoiceItem, TFiscalItemField>> = {}
-    missingFields.forEach((field) => {
+    for (const field of missingFields) {
       Object.assign(completion, { [field]: parsedItem[field] ?? null })
-    })
+    }
     return { ...item, ...completion }
   })
 

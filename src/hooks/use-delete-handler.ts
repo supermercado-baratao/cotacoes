@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 export const useDeleteHandler = <T extends { id: string }>(
-  deleteFn: (item: T) => void
+  deleteItem: (item: T) => void
 ) => {
   const [itemToDelete, setItemToDelete] = useState<T | null>(null)
 
@@ -14,10 +14,9 @@ export const useDeleteHandler = <T extends { id: string }>(
   }
 
   const handleDeleteDialogConfirm = () => {
-    if (itemToDelete) {
-      deleteFn(itemToDelete)
-      handleDeleteDialogClose()
-    }
+    if (!itemToDelete) return
+    deleteItem(itemToDelete)
+    handleDeleteDialogClose()
   }
 
   return {

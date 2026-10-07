@@ -44,7 +44,7 @@ export const Suppliers = () => {
       />
       <Tabs
         value={activeTab}
-        onChange={(_e, value) => setActiveTab(value)}
+        onChange={(_event, value) => setActiveTab(value)}
         sx={{ mb: 2 }}
       >
         <Tab label="Cadastrados" value="registered" />

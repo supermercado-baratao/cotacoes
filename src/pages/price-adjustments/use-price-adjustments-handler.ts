@@ -121,16 +121,16 @@ export const usePriceAdjustmentsHandler = () => {
     [groups]
   )
 
-  const hasFamilyGroups = !!familyGroups.length
-  const hasNoFamilyRows = !!noFamilyRows.length
-  const hasUnregisteredGroups = !!unregisteredGroups.length
+  const hasFamilyGroups = familyGroups.length > 0
+  const hasNoFamilyRows = noFamilyRows.length > 0
+  const hasUnregisteredGroups = unregisteredGroups.length > 0
 
   const activeTabIndex = PRICE_ADJUSTMENTS_TABS.findIndex(
     (tab) => tab.value === activeTab
   )
   const isFirstTab = activeTabIndex === 0
   const isLastTab = activeTabIndex === PRICE_ADJUSTMENTS_TABS.length - 1
-  const handlePrevTab = () =>
+  const handlePreviousTab = () =>
     setActiveTab(PRICE_ADJUSTMENTS_TABS[activeTabIndex - 1].value)
   const handleNextTab = () =>
     setActiveTab(PRICE_ADJUSTMENTS_TABS[activeTabIndex + 1].value)
@@ -157,7 +157,7 @@ export const usePriceAdjustmentsHandler = () => {
     hasUnregisteredGroups,
     isFirstTab,
     isLastTab,
-    handlePrevTab,
+    handlePreviousTab,
     handleNextTab
   }
 }

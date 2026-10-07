@@ -87,7 +87,7 @@ export const LinkOrdersDialog = ({
   const quoteItemOptions = useMemo(
     () =>
       quote
-        ? [...quote.items].sort((a, b) =>
+        ? quote.items.toSorted((a, b) =>
             a.description.localeCompare(b.description)
           )
         : [],
@@ -95,9 +95,9 @@ export const LinkOrdersDialog = ({
   )
 
   const [isContentReady, setIsContentReady] = useState(false)
-  const [prevIsOpened, setPrevIsOpened] = useState(isOpened)
-  if (isOpened !== prevIsOpened) {
-    setPrevIsOpened(isOpened)
+  const [previousIsOpened, setPreviousIsOpened] = useState(isOpened)
+  if (isOpened !== previousIsOpened) {
+    setPreviousIsOpened(isOpened)
     if (!isOpened) setIsContentReady(false)
   }
 
@@ -115,11 +115,7 @@ export const LinkOrdersDialog = ({
         maxWidth={1000}
         handleClose={handleClose}
       >
-        {!quote ? (
-          <Typography color="text.secondary">
-            Selecione uma cotação para esta nota antes de vincular os pedidos.
-          </Typography>
-        ) : (
+        {quote ? (
           <>
             {!supplier && (
               <Alert severity="warning" sx={{ mb: 2 }}>
@@ -131,11 +127,7 @@ export const LinkOrdersDialog = ({
               <Typography color="text.secondary">
                 Nenhum item pendente de vínculo com pedido nesta nota.
               </Typography>
-            ) : !isContentReady ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                <CircularProgress />
-              </Box>
-            ) : (
+            ) : isContentReady ? (
               <>
                 <Table size="small">
                   <TableHead>
@@ -162,20 +154,19 @@ export const LinkOrdersDialog = ({
                             {formatNumericValue(item.quantity)}
                           </TableCell>
                           <TableCell>
-                            {item.productId !== null ? (
-                              (productMap
-                                .get(item.productId)
-                                ?.description.toUpperCase() ?? '—')
-                            ) : (
+                            {item.productId === null ? (
                               <Box sx={{ display: 'flex', gap: 0.5 }}>
                                 <Autocomplete
                                   size="small"
                                   sx={{ flex: 1, minWidth: 200 }}
                                   options={products}
                                   getOptionLabel={(p) => p.description}
-                                  filterOptions={(opts, { inputValue }) =>
-                                    opts.filter((o) =>
-                                      matchesSearch(inputValue, o.description)
+                                  filterOptions={(options, { inputValue }) =>
+                                    options.filter((option) =>
+                                      matchesSearch(
+                                        inputValue,
+                                        option.description
+                                      )
                                     )
                                   }
                                   isOptionEqualToValue={(o, v) => o.id === v.id}
@@ -208,6 +199,10 @@ export const LinkOrdersDialog = ({
                                   </Button>
                                 </Tooltip>
                               </Box>
+                            ) : (
+                              (productMap
+                                .get(item.productId)
+                                ?.description.toUpperCase() ?? '—')
                             )}
                           </TableCell>
                           <TableCell>
@@ -216,14 +211,14 @@ export const LinkOrdersDialog = ({
                               fullWidth
                               displayEmpty
                               value={quoteItemId}
-                              onChange={(e) => {
-                                if (e.target.value === NEW_ITEM_VALUE) {
+                              onChange={(event) => {
+                                if (event.target.value === NEW_ITEM_VALUE) {
                                   handleOpenAddQuoteItem(row)
                                   return
                                 }
                                 handleRowQuoteItemChange(
                                   item.itemNumber,
-                                  e.target.value
+                                  event.target.value
                                 )
                               }}
                             >
@@ -262,6 +257,10 @@ export const LinkOrdersDialog = ({
                   />
                 )}
               </>
+            ) : (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                <CircularProgress />
+              </Box>
             )}
             <Button
               variant="contained"
@@ -272,6 +271,10 @@ export const LinkOrdersDialog = ({
               Confirmar ({selectedCount})
             </Button>
           </>
+        ) : (
+          <Typography color="text.secondary">
+            Selecione uma cotação para esta nota antes de vincular os pedidos.
+          </Typography>
         )}
       </Modal>
       <ProductForm

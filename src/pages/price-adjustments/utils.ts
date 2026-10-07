@@ -13,6 +13,7 @@ import type { TQuote } from '@/models/quote-model/types'
 import type { TSettings } from '@/models/settings-model/types'
 import type { TSupplier } from '@/models/supplier-model/types'
 import type { TCreateDataWithId } from '@/types/generics'
+import { groupBy } from '@/utils/group-by'
 import {
   evaluateMargin,
   getMarginTolerance,
@@ -69,13 +70,7 @@ export type TPriceAdjustmentRow = Omit<
 export const parseXlsx = async (
   file: File
 ): Promise<TRawPriceAdjustmentRow[]> => {
-  const reader = new FileReader()
-  const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-    reader.onload = () => resolve(reader.result as ArrayBuffer)
-    reader.onerror = reject
-    reader.readAsArrayBuffer(file)
-  })
-  const workbook = xlsx.read(buffer)
+  const workbook = xlsx.read(await file.arrayBuffer())
   return xlsx.utils.sheet_to_json<TRawPriceAdjustmentRow>(
     workbook.Sheets[workbook.SheetNames[0]],
     { raw: false }
@@ -92,6 +87,12 @@ const parseFileNumber = (value: string | undefined): number => {
 // registrado no projeto, e `dayjs`/`Date` sem ele leem "DD/MM" como "MM/DD",
 // invertendo dia e mês silenciosamente — por isso o parse manual via regex.
 const DATETIME_RE = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/
+
+const sortDates = (dates: string[]): string[] =>
+  dates.toSorted((a, b) => a.localeCompare(b))
+
+const getLatestDate = (dates: string[]): string =>
+  sortDates(dates)[dates.length - 1]
 
 const toSortableDateTime = (value: string): string => {
   const match = DATETIME_RE.exec((value ?? '').trim())
@@ -133,9 +134,9 @@ export const dedupeByLatestChange = (
 ): TPriceAdjustmentFileRow[] => {
   const latestByCode = new Map<string, TPriceAdjustmentFileRow>()
 
-  rows.forEach((raw) => {
+  for (const raw of rows) {
     const code = (raw['Código'] ?? '').trim()
-    if (!code) return
+    if (!code) continue
     const mapped = mapRawRow(raw)
     const current = latestByCode.get(code)
     if (
@@ -144,7 +145,7 @@ export const dedupeByLatestChange = (
     ) {
       latestByCode.set(code, mapped)
     }
-  })
+  }
 
   return [...latestByCode.values()]
 }
@@ -160,7 +161,7 @@ const resolveOrderUnitCost = (
 ): { unitCost: number; source: 'invoice' | 'order' } => {
   if (order.invoiceId) {
     const invoice = invoiceById.get(order.invoiceId)
-    const item = invoice?.items.find((i) => i.orderId === order.id)
+    const item = invoice?.items.find((item) => item.orderId === order.id)
     if (item) return { unitCost: item.unitPrice, source: 'invoice' }
   }
   return { unitCost: order.price, source: 'order' }
@@ -176,30 +177,24 @@ export const resolveRecentCost = (
   invoiceById: Map<string, TInvoice>,
   supplierById: Map<string, TSupplier>
 ): TCostResolution => {
-  if (!productOrders.length) {
+  if (productOrders.length === 0) {
     return { averageCost: null, quoteDate: null, entries: [], source: 'file' }
   }
 
-  const byQuoteId = new Map<string, TOrder[]>()
-  productOrders.forEach((order) => {
-    const list = byQuoteId.get(order.quoteId) ?? []
-    list.push(order)
-    byQuoteId.set(order.quoteId, list)
-  })
+  const byQuoteId = groupBy(productOrders, (order) => order.quoteId)
 
-  const groupsWithRef = [...byQuoteId.entries()].map(([quoteId, orders]) => {
+  const groupsWithRef = [...byQuoteId].map(([quoteId, orders]) => {
     const quote = quoteById.get(quoteId)
     const refDate =
-      quote?.date ??
-      orders.reduce((max, o) => (o.date > max ? o.date : max), orders[0].date)
+      quote?.date ?? getLatestDate(orders.map((order) => order.date))
     const refCreatedAtMs = quote?.createdAt?.toMillis() ?? 0
     return { quoteId, orders, refDate, refCreatedAtMs }
   })
 
   groupsWithRef.sort((a, b) =>
-    a.refDate !== b.refDate
-      ? b.refDate.localeCompare(a.refDate)
-      : b.refCreatedAtMs - a.refCreatedAtMs
+    a.refDate === b.refDate
+      ? b.refCreatedAtMs - a.refCreatedAtMs
+      : b.refDate.localeCompare(a.refDate)
   )
   const chosen = groupsWithRef[0]
 
@@ -215,7 +210,7 @@ export const resolveRecentCost = (
   })
 
   const averageCost =
-    entries.reduce((sum, e) => sum + e.unitCost, 0) / entries.length
+    entries.reduce((sum, entry) => sum + entry.unitCost, 0) / entries.length
 
   return { averageCost, quoteDate: chosen.refDate, entries, source: 'quote' }
 }
@@ -230,7 +225,7 @@ export const crossReferenceRows = (
 ): TPriceAdjustmentRow[] => {
   const productById = new Map(products.map((p) => [p.id, p]))
   const quoteById = new Map(quotes.map((q) => [q.id, q]))
-  const invoiceById = new Map(invoices.map((i) => [i.id, i]))
+  const invoiceById = new Map(invoices.map((invoice) => [invoice.id, invoice]))
   const supplierById = new Map(suppliers.map((s) => [s.id, s]))
 
   // findManyByProductIds busca em chunks de até 30 ids — se `orders` vier de
@@ -238,12 +233,7 @@ export const crossReferenceRows = (
   // inflar a contagem de fornecedores/pedidos na resolução de custo.
   const uniqueOrders = [...new Map(orders.map((o) => [o.id, o])).values()]
 
-  const ordersByProductId = new Map<string, TOrder[]>()
-  uniqueOrders.forEach((order) => {
-    const list = ordersByProductId.get(order.productId) ?? []
-    list.push(order)
-    ordersByProductId.set(order.productId, list)
-  })
+  const ordersByProductId = groupBy(uniqueOrders, (order) => order.productId)
 
   return fileRows.map((fileRow) => {
     const product = productById.get(fileRow.code) ?? null
@@ -273,8 +263,8 @@ export const crossReferenceRows = (
       resolvedCost,
       costSource,
       quoteDate: resolution.quoteDate,
-      supplierNames: resolution.entries.map((e) => e.supplierName),
-      supplierCosts: resolution.entries.map((e) => e.unitCost),
+      supplierNames: resolution.entries.map((entry) => entry.supplierName),
+      supplierCosts: resolution.entries.map((entry) => entry.unitCost),
       costDivergence:
         costSource === 'quote' ? resolvedCost - fileRow.fileCost : null
     }
@@ -391,8 +381,7 @@ export const getFamilyMarginStatus = (
       .filter((status): status is TMarginStatus => status !== null)
   )
   if (statuses.size === 0) return null
-  if (statuses.size > 1) return 'mixed'
-  return [...statuses][0]
+  return statuses.size > 1 ? 'mixed' : [...statuses][0]
 }
 
 export type TPriceAdjustmentGroup<TRow = TPriceAdjustmentRow> = {
@@ -419,26 +408,26 @@ export const groupRowsByFamily = <TRow extends { productId: string }>(
   const familyById = new Map(families.map((f) => [f.id, f]))
 
   const groups = new Map<string, TPriceAdjustmentGroup<TRow>>()
-  rows.forEach((row) => {
+  for (const row of rows) {
     const product = productById.get(row.productId)
     const familyId = product?.familyId ?? null
-    const key = !product ? UNREGISTERED_KEY : (familyId ?? NO_FAMILY_KEY)
+    const key = product ? (familyId ?? NO_FAMILY_KEY) : UNREGISTERED_KEY
 
     if (!groups.has(key)) {
       groups.set(key, {
         familyId,
-        familyDescription: !product
-          ? 'Não cadastrado'
-          : familyId
+        familyDescription: product
+          ? familyId
             ? (familyById.get(familyId)?.description ??
               'Família não encontrada')
-            : 'Sem família',
-        kind: !product ? 'unregistered' : familyId ? 'family' : 'no-family',
+            : 'Sem família'
+          : 'Não cadastrado',
+        kind: product ? (familyId ? 'family' : 'no-family') : 'unregistered',
         rows: []
       })
     }
     groups.get(key)!.rows.push(row)
-  })
+  }
 
   // Famílias reais em ordem alfabética primeiro; "Sem família" e "Não
   // cadastrado" (nessa ordem) sempre por último, já que não são famílias de
@@ -450,10 +439,10 @@ export const groupRowsByFamily = <TRow extends { productId: string }>(
     unregistered: 2
   }
 
-  return [...groups.values()].sort((a, b) =>
-    kindRank[a.kind] !== kindRank[b.kind]
-      ? kindRank[a.kind] - kindRank[b.kind]
-      : a.familyDescription.localeCompare(b.familyDescription)
+  return [...groups.values()].toSorted((a, b) =>
+    kindRank[a.kind] === kindRank[b.kind]
+      ? a.familyDescription.localeCompare(b.familyDescription)
+      : kindRank[a.kind] - kindRank[b.kind]
   )
 }
 
@@ -481,10 +470,8 @@ export const getDataDateRange = (
   const dates = priceAdjustments
     .map((item) => item.movementDate)
     .filter((date): date is string => date !== null)
-  if (!dates.length) return null
+  if (dates.length === 0) return null
 
-  return {
-    startDate: dates.reduce((min, d) => (d < min ? d : min), dates[0]),
-    endDate: dates.reduce((max, d) => (d > max ? d : max), dates[0])
-  }
+  const sortedDates = sortDates(dates)
+  return { startDate: sortedDates[0], endDate: sortedDates.at(-1)! }
 }

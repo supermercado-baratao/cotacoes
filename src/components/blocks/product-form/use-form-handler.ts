@@ -41,12 +41,13 @@ export const useFormHandler = (
       tax: product?.tax ?? null,
       margin: product?.margin ?? null,
       stock: product?.stock ?? 0,
-      packagings: barcodes.length
-        ? barcodes.map((barcode, i) => ({
-            barcode,
-            packType: product?.packTypes[i] ?? ''
-          }))
-        : [{ barcode: '', packType: '' }],
+      packagings:
+        barcodes.length > 0
+          ? barcodes.map((barcode, index) => ({
+              barcode,
+              packType: product?.packTypes[index] ?? ''
+            }))
+          : [{ barcode: '', packType: '' }],
       department: product?.department ?? '',
       section: product?.section ?? '',
       group: product?.group ?? '',
@@ -81,33 +82,35 @@ export const useFormHandler = (
     return evaluateMargin(actualMargin, tolerance).status
   }, [price, costWithTax, departmentId, settings])
 
-  const onSubmit = handleSubmit(({ packagings, costWithTax, ...rest }) => {
-    const barcodes = packagings.map((p) => p.barcode)
-    const packTypes = packagings.map((p) => p.packType)
+  const onSubmit = handleSubmit(
+    ({ packagings, costWithTax = null, ...rest }) => {
+      const barcodes = packagings.map((p) => p.barcode)
+      const packTypes = packagings.map((p) => p.packType)
 
-    product
-      ? updateProduct({
-          ...rest,
-          id: product.id,
-          barcodes,
-          packTypes,
-          costWithTax: costWithTax ?? null,
-          vrCreatedAt: product.vrCreatedAt,
-          createdAt: product.createdAt
-        })
-      : createProduct(
-          {
+      product
+        ? updateProduct({
             ...rest,
+            id: product.id,
             barcodes,
             packTypes,
-            vrCreatedAt: '',
-            costWithTax: costWithTax ?? null
-          },
-          onCreated ? { onSuccess: onCreated } : undefined
-        )
+            costWithTax,
+            vrCreatedAt: product.vrCreatedAt,
+            createdAt: product.createdAt
+          })
+        : createProduct(
+            {
+              ...rest,
+              barcodes,
+              packTypes,
+              vrCreatedAt: '',
+              costWithTax
+            },
+            onCreated ? { onSuccess: onCreated } : undefined
+          )
 
-    setSuccessCallbacks([handleClose, () => setFormProduct(null)])
-  })
+      setSuccessCallbacks([handleClose, () => setFormProduct(null)])
+    }
+  )
 
   return {
     register,

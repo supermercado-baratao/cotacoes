@@ -74,11 +74,13 @@ export const Autocomplete = <TOption, TFieldValues extends FieldValues>({
               disableCloseOnSelect={disableCloseOnSelect}
               options={options}
               getOptionLabel={getOptionLabel}
-              filterOptions={(opts, { inputValue }) =>
-                opts.filter((o) => matchesSearch(inputValue, getOptionLabel(o)))
+              filterOptions={(availableOptions, { inputValue }) =>
+                availableOptions.filter((option) =>
+                  matchesSearch(inputValue, getOptionLabel(option))
+                )
               }
-              isOptionEqualToValue={(opt, val) =>
-                getOptionValue(opt) === getOptionValue(val)
+              isOptionEqualToValue={(option, selected) =>
+                getOptionValue(option) === getOptionValue(selected)
               }
               value={
                 (multiple

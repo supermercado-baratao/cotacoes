@@ -105,10 +105,10 @@ export const Content = ({ entries }: TContentProps) => {
                   <Tooltip title="Bonificação: entra no custo médio só com a quantidade">
                     <Chip label="Bonificação" size="small" color="info" />
                   </Tooltip>
-                ) : entryCost?.unitCost != null ? (
-                  formatCurrency(entryCost.unitCost)
-                ) : (
+                ) : entryCost?.unitCost == null ? (
                   '—'
+                ) : (
+                  formatCurrency(entryCost.unitCost)
                 )}
               </TableCell>
               <TableCell align="right">

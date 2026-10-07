@@ -6,6 +6,7 @@ import type {
 import type { TPackageBarcodeLink } from '@/models/package-barcode-link-model/types'
 import type { TProduct } from '@/models/product-model/types'
 import type { TQuoteItem } from '@/models/quote-model/types'
+import { groupBy } from '@/utils/group-by'
 import { buildPackageBarcodeLinkMap } from '@/utils/package-barcode-links'
 import { isLikelyMatch } from '@/utils/quote-item-match'
 import { matchesSearch } from '@/utils/search'
@@ -38,7 +39,7 @@ export const filterInvoices = (
           )
         )
     )
-    .sort((a, b) => invoiceSortRank(a) - invoiceSortRank(b))
+    .toSorted((a, b) => invoiceSortRank(a) - invoiceSortRank(b))
 
 export const findBestQuoteItemMatch = (
   item: TInvoiceItem,
@@ -89,12 +90,7 @@ export const groupInvoiceItemsForBatch = (
   const quoteItemMap = new Map(quoteItems.map((qi) => [qi.id, qi]))
   const productMap = new Map(products.map((p) => [p.id, p]))
 
-  const rowsByQuoteItemId = new Map<string, TLinkOrderRow[]>()
-  for (const row of readyRows) {
-    const group = rowsByQuoteItemId.get(row.quoteItemId) ?? []
-    group.push(row)
-    rowsByQuoteItemId.set(row.quoteItemId, group)
-  }
+  const rowsByQuoteItemId = groupBy(readyRows, (row) => row.quoteItemId)
 
   const batchGroups: TBatchGroup[] = []
   const individualRows: TLinkOrderRow[] = []
@@ -107,16 +103,12 @@ export const groupInvoiceItemsForBatch = (
       continue
     }
 
-    const rowsByFamily = new Map<string, TLinkOrderRow[]>()
-    for (const row of rows) {
+    const rowsByFamily = groupBy(rows, (row) => {
       const familyId = row.productId
         ? productMap.get(row.productId)?.familyId
         : null
-      const familyKey = familyId ?? `product:${row.productId}`
-      const bucket = rowsByFamily.get(familyKey) ?? []
-      bucket.push(row)
-      rowsByFamily.set(familyKey, bucket)
-    }
+      return familyId ?? `product:${row.productId}`
+    })
 
     for (const familyRows of rowsByFamily.values()) {
       if (familyRows.length < 2) {
@@ -124,20 +116,15 @@ export const groupInvoiceItemsForBatch = (
         continue
       }
 
-      const rowsByPacking = new Map<string, TLinkOrderRow[]>()
-      for (const row of familyRows) {
-        const bucket = rowsByPacking.get(row.item.unit) ?? []
-        bucket.push(row)
-        rowsByPacking.set(row.item.unit, bucket)
-      }
+      const rowsByPacking = groupBy(familyRows, (row) => row.item.unit)
 
       let majorityPacking: string | null = null
       let majorityRows: TLinkOrderRow[] = []
       for (const [packing, bucket] of rowsByPacking) {
-        if (bucket.length > majorityRows.length) {
-          majorityPacking = packing
-          majorityRows = bucket
-        }
+        if (bucket.length <= majorityRows.length) continue
+
+        majorityPacking = packing
+        majorityRows = bucket
       }
 
       if (majorityPacking !== null && majorityRows.length >= 2) {
@@ -161,23 +148,23 @@ export const groupInvoiceItemsForBatch = (
 }
 
 const get = (root: Document | Element, tag: string): string =>
-  Array.from(root.getElementsByTagName(tag))[0]?.textContent?.trim() ?? ''
+  root.querySelector(tag)?.textContent?.trim() ?? ''
 
-const parseAccessKey = (doc: Document): string => {
-  const id = doc.getElementsByTagName('infNFe')[0]?.getAttribute('Id') ?? ''
+const parseAccessKey = (xml: Document): string => {
+  const id = xml.querySelector('infNFe')?.getAttribute('Id') ?? ''
   return id.startsWith('NFe') ? id.slice(3) : id
 }
 
 const normalizeBarcode = (raw: string): string | null =>
   !raw || raw === 'SEM GTIN' || raw === '0' ? null : raw
 
-const normalizeCnpj = (cnpj: string): string => cnpj.replace(/\D/g, '')
+const normalizeCnpj = (cnpj: string): string => cnpj.replaceAll(/\D/g, '')
 
 export const calcUnitBarcode = (packingBarcode: string) => {
   const array = packingBarcode.slice(1, -1).split('')
   const sum = array.reduce(
-    (total, number, i) =>
-      total + (i % 2 === 0 ? Number(number) * 1 : Number(number) * 3),
+    (total, number, index) =>
+      total + (index % 2 === 0 ? Number(number) * 1 : Number(number) * 3),
     0
   )
   const lastDigit = ((Math.floor(sum / 10) + 1) * 10 - sum) % 10
@@ -201,16 +188,16 @@ const getNumber = (root: Element | undefined, tag: string): number =>
 // Custo total do item com impostos e despesas acessórias — mesma composição
 // do custo com imposto do VR (sem abater créditos), pra que o custo médio
 // das notas seja comparável ao produtocomplemento.custocomimposto.
-const calcItemTotalCost = (det: Element, prod: Element): number => {
-  const imposto = det.getElementsByTagName('imposto')[0]
-  const ipi = imposto?.getElementsByTagName('IPI')[0]
-  const icms = imposto?.getElementsByTagName('ICMS')[0]
+const calcItemTotalCost = (det: Element, productElement: Element): number => {
+  const imposto = det.querySelector('imposto')
+  const ipi = imposto?.querySelector('IPI') ?? undefined
+  const icms = imposto?.querySelector('ICMS') ?? undefined
   const total =
-    getNumber(prod, 'vProd') -
-    getNumber(prod, 'vDesc') +
-    getNumber(prod, 'vFrete') +
-    getNumber(prod, 'vSeg') +
-    getNumber(prod, 'vOutro') +
+    getNumber(productElement, 'vProd') -
+    getNumber(productElement, 'vDesc') +
+    getNumber(productElement, 'vFrete') +
+    getNumber(productElement, 'vSeg') +
+    getNumber(productElement, 'vOutro') +
     getNumber(ipi, 'vIPI') +
     getNumber(icms, 'vICMSST') +
     getNumber(icms, 'vFCPST')
@@ -218,16 +205,16 @@ const calcItemTotalCost = (det: Element, prod: Element): number => {
 }
 
 const parseItems = (
-  doc: Document,
+  xml: Document,
   barcodeMap: Map<string, TProduct>,
   packageBarcodeLinkMap: Map<string, string>
 ): TInvoiceItem[] =>
-  Array.from(doc.getElementsByTagName('det')).map((det, i) => {
-    const prod = det.getElementsByTagName('prod')[0]
-    const cEAN = normalizeBarcode(get(prod, 'cEAN'))
-    const cEANTrib = normalizeBarcode(get(prod, 'cEANTrib'))
-    const cProd = get(prod, 'cProd')
-    const xProd = get(prod, 'xProd')
+  [...xml.querySelectorAll('det')].map((det, index) => {
+    const productElement = det.querySelector('prod')!
+    const cEAN = normalizeBarcode(get(productElement, 'cEAN'))
+    const cEANTrib = normalizeBarcode(get(productElement, 'cEANTrib'))
+    const supplierProductCode = get(productElement, 'cProd')
+    const description = get(productElement, 'xProd')
 
     const calculatedBarcode =
       cEAN && cEAN.length === 14 ? calcUnitBarcode(cEAN) : null
@@ -248,21 +235,21 @@ const parseItems = (
       : 'unmatched_product'
 
     return {
-      itemNumber: i + 1,
-      supplierProductCode: cProd,
+      itemNumber: index + 1,
+      supplierProductCode,
       barcode: isDuplicatedPackaging ? calculatedBarcode : cEANTrib,
       calculatedBarcode,
       packageBarcode: cEAN,
-      description: xProd,
-      unit: get(prod, 'uCom'),
-      quantity: Number(get(prod, 'qCom')),
-      unitPrice: Number(get(prod, 'vUnCom')),
-      totalPrice: Number(get(prod, 'vProd')),
-      tribUnit: get(prod, 'uTrib'),
-      tribQuantity: Number(get(prod, 'qTrib')),
-      tribUnitPrice: Number(get(prod, 'vUnTrib')),
-      cfop: get(prod, 'CFOP') || null,
-      totalCost: calcItemTotalCost(det, prod),
+      description,
+      unit: get(productElement, 'uCom'),
+      quantity: Number(get(productElement, 'qCom')),
+      unitPrice: Number(get(productElement, 'vUnCom')),
+      totalPrice: Number(get(productElement, 'vProd')),
+      tribUnit: get(productElement, 'uTrib'),
+      tribQuantity: Number(get(productElement, 'qTrib')),
+      tribUnitPrice: Number(get(productElement, 'vUnTrib')),
+      cfop: get(productElement, 'CFOP') || null,
+      totalCost: calcItemTotalCost(det, productElement),
       productId,
       orderId: null,
       matchStatus,
@@ -278,22 +265,22 @@ export const parseNfe = (
   products: TProduct[],
   packageBarcodeLinks: TPackageBarcodeLink[] = []
 ): TParsedNfe => {
-  const doc = new DOMParser().parseFromString(xmlString, 'text/xml')
+  const xml = new DOMParser().parseFromString(xmlString, 'text/xml')
 
-  if (doc.getElementsByTagName('parseerror').length > 0) {
+  if (xml.querySelector('parsererror')) {
     throw new Error('Arquivo XML inválido')
   }
 
-  const accessKey = parseAccessKey(doc)
+  const accessKey = parseAccessKey(xml)
   if (!accessKey || accessKey.length !== 44) {
     throw new Error('Chave de acesso NFe inválida ou ausente no arquivo')
   }
 
-  const cnpjEls = Array.from(doc.getElementsByTagName('CNPJ'))
+  const cnpjEls = [...xml.querySelectorAll('CNPJ')]
   const supplierCnpj = normalizeCnpj(cnpjEls[0]?.textContent?.trim() ?? '')
   const destinationCnpj = normalizeCnpj(cnpjEls[1]?.textContent?.trim() ?? '')
 
-  const supplierName = get(doc, 'xFant') || get(doc, 'xNome')
+  const supplierName = get(xml, 'xFant') || get(xml, 'xNome')
 
   const barcodeMap = buildBarcodeMap(products)
   const packageBarcodeLinkMap = buildPackageBarcodeLinkMap(packageBarcodeLinks)
@@ -301,15 +288,15 @@ export const parseNfe = (
   return {
     id: accessKey,
     accessKey,
-    number: get(doc, 'nNF'),
-    series: get(doc, 'serie'),
-    emissionDate: get(doc, 'dhEmi'),
+    number: get(xml, 'nNF'),
+    series: get(xml, 'serie'),
+    emissionDate: get(xml, 'dhEmi'),
     supplierCnpj,
     supplierName,
-    operationNature: get(doc, 'natOp') || null,
+    operationNature: get(xml, 'natOp') || null,
     destinationCnpj,
-    totalValue: Number(get(doc, 'vNF')),
-    items: parseItems(doc, barcodeMap, packageBarcodeLinkMap),
+    totalValue: Number(get(xml, 'vNF')),
+    items: parseItems(xml, barcodeMap, packageBarcodeLinkMap),
     verificationStatus: 'pending',
     quoteId: null
   }

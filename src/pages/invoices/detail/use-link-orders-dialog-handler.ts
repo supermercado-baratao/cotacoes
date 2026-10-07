@@ -73,7 +73,7 @@ export const useLinkOrdersDialogHandler = (
   )
 
   const unlinkedItems = useMemo(
-    () => invoice.items.filter((i) => i.orderId === null),
+    () => invoice.items.filter((item) => item.orderId === null),
     [invoice.items]
   )
 
@@ -113,8 +113,8 @@ export const useLinkOrdersDialogHandler = (
       ? (productMap.get(changedProductId)?.familyId ?? null)
       : null
 
-    setOverrides((prev) => {
-      const next = { ...prev, [itemNumber]: quoteItemId }
+    setOverrides((previous) => {
+      const next = { ...previous, [itemNumber]: quoteItemId }
       if (!familyId) return next
       for (const row of rows) {
         const rowFamilyId = row.productId
@@ -168,7 +168,10 @@ export const useLinkOrdersDialogHandler = (
   }
 
   const handleRowProductChange = (itemNumber: number, productId: string) =>
-    setProductOverrides((prev) => ({ ...prev, [itemNumber]: productId }))
+    setProductOverrides((previous) => ({
+      ...previous,
+      [itemNumber]: productId
+    }))
 
   const handleQuickCreateProduct = (item: TInvoiceItem) => {
     setQuickCreateDraft({

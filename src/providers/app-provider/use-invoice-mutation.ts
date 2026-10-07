@@ -64,15 +64,15 @@ export const useInvoiceMutation = () => {
       invoiceModel.createMany(data),
     onSuccess: ({ created, completed }) => {
       addInvoicesToCache(queryClient, created, invoiceDateRange)
-      completed.forEach((invoice) =>
+      for (const invoice of completed) {
         upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)
-      )
+      }
       alert({
         severity: 'success',
         title: buildImportSuccessTitle(created.length, completed.length)
       })
       handleSuccessCallbacks()
-      if (!created.length) return
+      if (created.length === 0) return
       settingsModel
         .upsert({ lastInvoiceImportAt: Timestamp.now() })
         .then((settings) => queryClient.setQueryData(['settings'], settings))

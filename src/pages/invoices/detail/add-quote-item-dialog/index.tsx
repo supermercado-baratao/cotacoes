@@ -21,8 +21,8 @@ export const AddQuoteItemDialog = ({
 }: TAddQuoteItemDialogProps) => {
   const [description, setDescription] = useState(draft?.description ?? '')
 
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault()
+  const onSubmit = (event: FormEvent) => {
+    event.preventDefault()
     handleConfirm(description)
   }
 
@@ -36,7 +36,7 @@ export const AddQuoteItemDialog = ({
         <TextField
           label="Descrição"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(event) => setDescription(event.target.value)}
           onFocus={selectOnFocus}
           autoFocus
           fullWidth

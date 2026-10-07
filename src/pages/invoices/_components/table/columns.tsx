@@ -74,7 +74,7 @@ export const columns: GridColDef<TInvoiceRow>[] = [
     field: 'items',
     headerName: 'Cadastro dos Itens',
     valueGetter: (value: TInvoiceItem[]) =>
-      value.filter((i) => i.productId !== null).length,
+      value.filter((item) => item.productId !== null).length,
     renderCell: (params) =>
       renderRatioChip(params.value as number, params.row.items.length)
   },
@@ -82,7 +82,7 @@ export const columns: GridColDef<TInvoiceRow>[] = [
     field: 'linkedOrders',
     headerName: 'Pedidos',
     valueGetter: (_value, row) =>
-      row.items.filter((i) => i.orderId !== null).length,
+      row.items.filter((item) => item.orderId !== null).length,
     renderCell: (params) =>
       renderRatioChip(params.value as number, params.row.items.length)
   },

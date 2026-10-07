@@ -35,8 +35,8 @@ export const useFormHandler = () => {
         updateProfile(firebaseUser, { displayName: data.name }),
         sendEmailVerification(firebaseUser)
       ])
-    } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? ''
+    } catch (error: unknown) {
+      const code = (error as { code?: string }).code ?? ''
       alert({
         title: 'Erro ao criar conta',
         description: SIGNUP_ERRORS[code] ?? 'Tente novamente',

@@ -98,7 +98,7 @@ export const SqlQuery = ({ lastImportAt }: TSqlQueryProps) => {
               type="date"
               size="small"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(event) => setDate(event.target.value)}
               sx={S.DialogDateField}
               slotProps={{ inputLabel: { shrink: true } }}
             />

@@ -17,9 +17,9 @@ export const useSettingsHandler = () => {
 
   const productDepartments = useMemo(
     () =>
-      Array.from(
-        new Set((products ?? []).map((product) => product.department))
-      ).filter(Boolean),
+      [
+        ...new Set((products ?? []).map((product) => product.department))
+      ].filter(Boolean),
     [products]
   )
 
@@ -91,8 +91,8 @@ export const useSettingsHandler = () => {
   }
 
   const handleReorder = (fromIndex: number, toIndex: number) => {
-    setOrder((prev) => {
-      const next = [...prev]
+    setOrder((previous) => {
+      const next = [...previous]
       const [moved] = next.splice(fromIndex, 1)
       next.splice(toIndex, 0, moved)
       return next
@@ -102,11 +102,11 @@ export const useSettingsHandler = () => {
   const handleMarginToleranceChange = (
     field: keyof TMarginTolerance,
     value: number
-  ) => setMarginTolerance((prev) => ({ ...prev, [field]: value }))
+  ) => setMarginTolerance((previous) => ({ ...previous, [field]: value }))
 
   const handleDepartmentOverrideAdd = (departmentId: string) =>
-    setDepartmentOverrides((prev) => [
-      ...prev,
+    setDepartmentOverrides((previous) => [
+      ...previous,
       { departmentId, tolerance: marginTolerance }
     ])
 
@@ -115,8 +115,8 @@ export const useSettingsHandler = () => {
     field: keyof TMarginTolerance,
     value: number
   ) =>
-    setDepartmentOverrides((prev) =>
-      prev.map((row) =>
+    setDepartmentOverrides((previous) =>
+      previous.map((row) =>
         row.departmentId === departmentId
           ? { ...row, tolerance: { ...row.tolerance, [field]: value } }
           : row
@@ -124,8 +124,8 @@ export const useSettingsHandler = () => {
     )
 
   const handleDepartmentOverrideRemove = (departmentId: string) =>
-    setDepartmentOverrides((prev) =>
-      prev.filter((row) => row.departmentId !== departmentId)
+    setDepartmentOverrides((previous) =>
+      previous.filter((row) => row.departmentId !== departmentId)
     )
 
   const handleSave = () => {
@@ -145,9 +145,8 @@ export const useSettingsHandler = () => {
     serializeDepartmentOverrideRows(departmentOverrides) !==
       serializeDepartmentOverrideRows(derivedDepartmentOverrides)
 
-  const availableDepartments = (departments ?? []).filter(
-    (department) =>
-      !departmentOverrides.some((row) => row.departmentId === department.id)
+  const availableDepartments = (departments ?? []).filter((department) =>
+    departmentOverrides.every((row) => row.departmentId !== department.id)
   )
 
   return {

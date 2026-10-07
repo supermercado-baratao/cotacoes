@@ -28,9 +28,9 @@ export const IgnoredSupplierNfes = ({
 }: TProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  if (!ignoredNfes.length) return null
+  if (ignoredNfes.length === 0) return null
 
-  const handleToggleExpanded = () => setIsExpanded((prev) => !prev)
+  const handleToggleExpanded = () => setIsExpanded((previous) => !previous)
 
   return (
     <Paper variant="outlined" sx={{ mb: 1 }}>

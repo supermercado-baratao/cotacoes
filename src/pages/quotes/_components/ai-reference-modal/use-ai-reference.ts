@@ -38,7 +38,7 @@ export const useAiReference = (
   const analysisStarted = useRef(false)
 
   const unreferencedItems = useMemo(
-    () => quote.items.filter((i) => i.priceRef === null),
+    () => quote.items.filter((item) => item.priceRef === null),
     [quote.items]
   )
 
@@ -82,7 +82,7 @@ export const useAiReference = (
     }
 
     let cancelled = false
-    let msgTimeout: ReturnType<typeof setTimeout> | null = null
+    let messageTimeout: ReturnType<typeof setTimeout> | null = null
     let elapsedInterval: ReturnType<typeof setInterval> | null = null
 
     const run = async () => {
@@ -96,7 +96,7 @@ export const useAiReference = (
       const scheduleNext = () => {
         if (cancelled) return
         const isProgress = step < PROGRESS_MESSAGES.length
-        const msg = isProgress
+        const message = isProgress
           ? PROGRESS_MESSAGES[step]
           : TIP_MESSAGES[
               (step - PROGRESS_MESSAGES.length) % TIP_MESSAGES.length
@@ -104,11 +104,11 @@ export const useAiReference = (
         const delay = isProgress
           ? PROGRESS_MESSAGE_INTERVAL_MS
           : TIP_MESSAGE_INTERVAL_MS
-        setStatusMessage(msg)
+        setStatusMessage(message)
         step++
-        msgTimeout = setTimeout(scheduleNext, delay)
+        messageTimeout = setTimeout(scheduleNext, delay)
       }
-      msgTimeout = setTimeout(scheduleNext, PROGRESS_MESSAGE_INTERVAL_MS)
+      messageTimeout = setTimeout(scheduleNext, PROGRESS_MESSAGE_INTERVAL_MS)
 
       let elapsed = 0
       elapsedInterval = setInterval(() => {
@@ -132,7 +132,7 @@ export const useAiReference = (
         if (!cancelled)
           setError('Erro inesperado ao gerar sugestões. Tente novamente.')
       } finally {
-        if (msgTimeout) clearTimeout(msgTimeout)
+        if (messageTimeout) clearTimeout(messageTimeout)
         if (elapsedInterval) clearInterval(elapsedInterval)
         if (!cancelled) {
           setIsAnalyzing(false)
@@ -145,7 +145,7 @@ export const useAiReference = (
     return () => {
       cancelled = true
       analysisStarted.current = false
-      if (msgTimeout) clearTimeout(msgTimeout)
+      if (messageTimeout) clearTimeout(messageTimeout)
       if (elapsedInterval) clearInterval(elapsedInterval)
     }
   }, [
@@ -161,15 +161,15 @@ export const useAiReference = (
   ])
 
   const toggleAccepted = (itemId: string) =>
-    setRows((prev) =>
-      prev.map((r) =>
-        r.item.id === itemId ? { ...r, accepted: !r.accepted } : r
+    setRows((previous) =>
+      previous.map((row) =>
+        row.item.id === itemId ? { ...row, accepted: !row.accepted } : row
       )
     )
 
   const handleEdit = (itemId: string) => {
     const row = rows.find((r) => r.item.id === itemId)
-    setEditingItem(quote.items.find((i) => i.id === itemId) ?? null)
+    setEditingItem(quote.items.find((item) => item.id === itemId) ?? null)
     setEditingSuggestion(row?.suggestion ?? null)
   }
 

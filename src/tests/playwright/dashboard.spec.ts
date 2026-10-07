@@ -279,7 +279,7 @@ test('filters margin alerts by presence in an invoice within the selected period
   await page.getByRole('button', { name: 'Buscar' }).click()
   await page.getByPlaceholder('Buscar por NF, fornecedor ou item...').fill('i2')
   await expect(page.getByText('i2', { exact: true })).toBeVisible({
-    timeout: 10000
+    timeout: 10_000
   })
 
   // De volta ao Dashboard: a nota já está carregada, mas ENTRADA ANTIGA

@@ -39,7 +39,7 @@ export const columns: GridColDef<TQuoteRow>[] = [
     field: 'salePrice',
     headerName: 'Venda',
     valueFormatter: (value: number | null) =>
-      value != null ? formatCurrency(value) : '—'
+      value == null ? '—' : formatCurrency(value)
   },
   {
     field: 'referenceDescription',

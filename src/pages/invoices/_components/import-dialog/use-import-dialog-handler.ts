@@ -47,7 +47,10 @@ export const useImportDialogHandler = (handleClose: () => void) => {
     const newErrors: TParseError[] = []
     const existingById = new Map((invoices ?? []).map((inv) => [inv.id, inv]))
 
-    for (const file of Array.from(files)) {
+    // FileList is live: the input is cleared right after this starts, so
+    // iterating it across awaits would only see the first file.
+    const selectedFiles = [...files]
+    for (const file of selectedFiles) {
       try {
         const xml = await file.text()
         const result = parseNfe(xml, products ?? [], packageBarcodeLinks ?? [])
@@ -67,57 +70,73 @@ export const useImportDialogHandler = (handleClose: () => void) => {
           continue
         }
         newNfes.push(result)
-      } catch (e) {
-        newErrors.push({ filename: file.name, message: (e as Error).message })
+      } catch (error) {
+        newErrors.push({
+          filename: file.name,
+          message: (error as Error).message
+        })
       }
     }
 
-    setParsedNfes((prev) => {
-      const existingKeys = new Set(prev.map((n) => n.accessKey))
-      return [...prev, ...newNfes.filter((n) => !existingKeys.has(n.accessKey))]
-    })
-    setDuplicateNfes((prev) => {
-      const existingKeys = new Set(prev.map((n) => n.accessKey))
+    setParsedNfes((previous) => {
+      const existingKeys = new Set(previous.map((n) => n.accessKey))
       return [
-        ...prev,
+        ...previous,
+        ...newNfes.filter((n) => !existingKeys.has(n.accessKey))
+      ]
+    })
+    setDuplicateNfes((previous) => {
+      const existingKeys = new Set(previous.map((n) => n.accessKey))
+      return [
+        ...previous,
         ...newDuplicates.filter((n) => !existingKeys.has(n.accessKey))
       ]
     })
-    setCompletableNfes((prev) => {
-      const existingKeys = new Set(prev.map((n) => n.accessKey))
+    setCompletableNfes((previous) => {
+      const existingKeys = new Set(previous.map((n) => n.accessKey))
       return [
-        ...prev,
+        ...previous,
         ...newCompletables.filter((n) => !existingKeys.has(n.accessKey))
       ]
     })
-    setIgnoredNfes((prev) => {
-      const existingKeys = new Set(prev.map((n) => n.accessKey))
+    setIgnoredNfes((previous) => {
+      const existingKeys = new Set(previous.map((n) => n.accessKey))
       return [
-        ...prev,
+        ...previous,
         ...newIgnored.filter((n) => !existingKeys.has(n.accessKey))
       ]
     })
-    setParseErrors((prev) => [...prev, ...newErrors])
+    setParseErrors((previous) => [...previous, ...newErrors])
   }
 
   const handleRemoveNfe = (accessKey: string) => {
-    setParsedNfes((prev) => prev.filter((n) => n.accessKey !== accessKey))
+    setParsedNfes((previous) =>
+      previous.filter((nfe) => nfe.accessKey !== accessKey)
+    )
   }
 
   const handleRemoveDuplicate = (accessKey: string) => {
-    setDuplicateNfes((prev) => prev.filter((n) => n.accessKey !== accessKey))
+    setDuplicateNfes((previous) =>
+      previous.filter((nfe) => nfe.accessKey !== accessKey)
+    )
   }
 
   const handleRemoveCompletable = (accessKey: string) => {
-    setCompletableNfes((prev) => prev.filter((n) => n.accessKey !== accessKey))
+    setCompletableNfes((previous) =>
+      previous.filter((nfe) => nfe.accessKey !== accessKey)
+    )
   }
 
   const handleRemoveIgnored = (accessKey: string) => {
-    setIgnoredNfes((prev) => prev.filter((n) => n.accessKey !== accessKey))
+    setIgnoredNfes((previous) =>
+      previous.filter((nfe) => nfe.accessKey !== accessKey)
+    )
   }
 
   const handleRemoveError = (index: number) => {
-    setParseErrors((prev) => prev.filter((_, i) => i !== index))
+    setParseErrors((previous) =>
+      previous.filter((_, errorIndex) => errorIndex !== index)
+    )
   }
 
   const handleIgnoreSupplier = (nfe: TParsedNfe) => {
@@ -133,16 +152,16 @@ export const useImportDialogHandler = (handleClose: () => void) => {
     const movedNfes = parsedNfes.filter(
       (n) => normalizeCnpj(n.supplierCnpj) === normalizeCnpj(nfe.supplierCnpj)
     )
-    setParsedNfes((prev) =>
-      prev.filter(
+    setParsedNfes((previous) =>
+      previous.filter(
         (n) => normalizeCnpj(n.supplierCnpj) !== normalizeCnpj(nfe.supplierCnpj)
       )
     )
-    setIgnoredNfes((prev) => [...prev, ...movedNfes])
+    setIgnoredNfes((previous) => [...previous, ...movedNfes])
   }
 
   const handleImport = () => {
-    if (!parsedNfes.length && !completableNfes.length) return
+    if (parsedNfes.length === 0 && completableNfes.length === 0) return
     setSuccessCallbacks([handleClose, handleReset])
     createInvoicesBatch([...parsedNfes, ...completableNfes])
   }

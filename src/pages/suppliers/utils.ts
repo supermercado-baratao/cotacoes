@@ -9,7 +9,7 @@ export const filterSuppliers = (search: string, suppliers: TSupplier[]) =>
       s.legalName,
       s.tradeName,
       s.cnpj,
-      s.cnpj.replace(/\D/g, '')
+      s.cnpj.replaceAll(/\D/g, '')
     )
   )
 
@@ -18,5 +18,5 @@ export const filterIgnoredSuppliers = (
   ignoredSuppliers: TIgnoredSupplier[]
 ) =>
   ignoredSuppliers.filter((s) =>
-    matchesSearch(search, s.name, s.cnpj, s.cnpj.replace(/\D/g, ''))
+    matchesSearch(search, s.name, s.cnpj, s.cnpj.replaceAll(/\D/g, ''))
   )

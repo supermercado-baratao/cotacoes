@@ -32,7 +32,8 @@ const BONUS_XML =
   'quotes/quote-2-2026-04-01-2026-05-31/NFe29260405853741000139550010009557151161245134.xml'
 
 const loadParsed = async () => {
-  const xml = (await readMockFile(BONUS_XML)).toString('utf-8')
+  const file = await readMockFile(BONUS_XML)
+  const xml = file.toString('utf8')
   return parseNfe(xml, [])
 }
 
@@ -60,7 +61,7 @@ const toLegacyInvoice = (
         orderId: `order-${item.itemNumber}`,
         matchStatus: 'matched'
       } as Partial<TInvoiceItem>
-      LEGACY_MISSING_ITEM_FIELDS.forEach((field) => delete legacyItem[field])
+      for (const field of LEGACY_MISSING_ITEM_FIELDS) delete legacyItem[field]
       return legacyItem
     }),
     createdAt: now,
@@ -98,15 +99,15 @@ describe('completeInvoiceFiscalData', () => {
     expect(completed.operationNature).toBe('BONIFICACAO, DOACAO OU BRINDE')
     expect(completed.verificationStatus).toBe('approved')
     expect(completed.quoteId).toBe('quote-1')
-    completed.items.forEach((item, i) => {
+    for (const [index, item] of completed.items.entries()) {
       expect(item).toMatchObject({
         productId: 'p1',
         orderId: `order-${item.itemNumber}`,
         cfop: '5910',
-        totalCost: parsed.items[i].totalCost,
-        tribUnit: parsed.items[i].tribUnit
+        totalCost: parsed.items[index].totalCost,
+        tribUnit: parsed.items[index].tribUnit
       })
-    })
+    }
     expect(hasMissingFiscalData(completed)).toBe(false)
   })
 

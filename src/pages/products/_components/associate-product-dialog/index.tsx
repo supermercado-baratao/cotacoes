@@ -44,8 +44,10 @@ export const AssociateProductDialog = ({
         <Autocomplete
           options={products}
           getOptionLabel={(p) => p.description}
-          filterOptions={(opts, { inputValue }) =>
-            opts.filter((o) => matchesSearch(inputValue, o.description))
+          filterOptions={(options, { inputValue }) =>
+            options.filter((option) =>
+              matchesSearch(inputValue, option.description)
+            )
           }
           isOptionEqualToValue={(o, v) => o.id === v.id}
           value={product}

@@ -38,7 +38,7 @@ export const columns: GridColDef<TProductRow>[] = [
     field: 'margin',
     headerName: 'Margem Padrão',
     valueFormatter: (value: number | null) =>
-      value != null ? `${value.toFixed(1)}%` : '—'
+      value == null ? '—' : `${value.toFixed(1)}%`
   },
   {
     field: 'marginStatus',
@@ -50,17 +50,17 @@ export const columns: GridColDef<TProductRow>[] = [
     field: 'stock',
     headerName: 'Estoque',
     valueFormatter: (value: number | null) =>
-      value != null ? formatNumericValue(value) : '—'
+      value == null ? '—' : formatNumericValue(value)
   },
   {
     field: 'barcodes',
     headerName: 'Embalagens',
     valueGetter: (value: string[], row: TProductRow) =>
       (value ?? [])
-        .map(
-          (barcode, i) =>
-            `${barcode}${row.packTypes?.[i] ? ` (${row.packTypes[i]})` : ''}`
-        )
+        .map((barcode, index) => {
+          const packType = row.packTypes?.[index]
+          return packType ? `${barcode} (${packType})` : barcode
+        })
         .join(' | ') || '—'
   },
   {

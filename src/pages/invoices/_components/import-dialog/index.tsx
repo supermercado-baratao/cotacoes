@@ -45,7 +45,7 @@ const buildImportLabel = (newCount: number, completableCount: number) => {
       `${newCount ? 'completar' : 'Completar'} ${completableCount} ${completableCount === 1 ? 'nota' : 'notas'}`
     )
   }
-  return parts.length ? parts.join(' e ') : 'Importar'
+  return parts.length > 0 ? parts.join(' e ') : 'Importar'
 }
 
 type TImportDialogProps = {
@@ -88,16 +88,16 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
     handleReset()
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) handleFilesChange(e.target.files)
-    e.target.value = ''
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files?.length) handleFilesChange(event.target.files)
+    event.target.value = ''
   }
 
   const toggleExpanded = (accessKey: string) => {
     setPendingKey(accessKey)
     startTransition(() => {
-      setExpandedKeys((prev) => {
-        const next = new Set(prev)
+      setExpandedKeys((previous) => {
+        const next = new Set(previous)
         next.has(accessKey) ? next.delete(accessKey) : next.add(accessKey)
         return next
       })
@@ -133,18 +133,18 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
           : 'Selecionar arquivos XML'}
       </Button>
 
-      {parseErrors.map((err, i) => (
+      {parseErrors.map((parseError, index) => (
         <Alert
-          key={i}
+          key={index}
           severity="error"
           sx={{ mb: 1 }}
           action={
-            <IconButton size="small" onClick={() => handleRemoveError(i)}>
+            <IconButton size="small" onClick={() => handleRemoveError(index)}>
               <Close fontSize="inherit" />
             </IconButton>
           }
         >
-          <strong>{err.filename}:</strong> {err.message}
+          <strong>{parseError.filename}:</strong> {parseError.message}
         </Alert>
       ))}
 
@@ -165,7 +165,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
       />
 
       {parsedNfes.map((nfe) => {
-        const matchedCount = nfe.items.filter((i) => i.productId).length
+        const matchedCount = nfe.items.filter((item) => item.productId).length
         const totalCount = nfe.items.length
         const isExpanded = expandedKeys.has(nfe.accessKey)
         const supplier = findSupplierByCnpj(nfe.supplierCnpj, suppliers)
@@ -302,7 +302,7 @@ export const ImportDialog = ({ isOpened, handleClose }: TImportDialogProps) => {
         <Button onClick={handleCloseAndReset}>Cancelar</Button>
         <Button
           variant="contained"
-          disabled={!parsedNfes.length && !completableNfes.length}
+          disabled={parsedNfes.length === 0 && completableNfes.length === 0}
           onClick={handleImport}
         >
           {buildImportLabel(parsedNfes.length, completableNfes.length)}

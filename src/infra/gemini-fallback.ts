@@ -8,7 +8,7 @@ const normalize = (s: string): string[] =>
   s
     .toUpperCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replaceAll(/[̀-ͯ]/g, '')
     .split(/\W+/)
     .filter(Boolean)
 
@@ -38,20 +38,24 @@ export const suggestPriceReferencesLocally = (
     let bestProductScore = 0
     for (const p of normalizedProducts) {
       const s = overlap(itemWords, p.words)
-      if (s > bestProductScore) {
-        bestProductScore = s
-        bestProductId = p.id
+      if (!(s > bestProductScore)) {
+        continue
       }
+
+      bestProductScore = s
+      bestProductId = p.id
     }
 
     let bestFamilyId: string | null = null
     let bestFamilyScore = 0
     for (const f of normalizedFamilies) {
       const s = overlap(itemWords, f.words)
-      if (s > bestFamilyScore) {
-        bestFamilyScore = s
-        bestFamilyId = f.id
+      if (!(s > bestFamilyScore)) {
+        continue
       }
+
+      bestFamilyScore = s
+      bestFamilyId = f.id
     }
 
     if (bestProductScore === 0 && bestFamilyScore === 0) {

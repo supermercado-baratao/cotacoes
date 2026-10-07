@@ -24,7 +24,7 @@ export const EditOrderDialog = ({
 
   const quoteItemOptions = useMemo(
     () =>
-      [...quote.items].sort((a, b) =>
+      quote.items.toSorted((a, b) =>
         a.description.localeCompare(b.description)
       ),
     [quote]

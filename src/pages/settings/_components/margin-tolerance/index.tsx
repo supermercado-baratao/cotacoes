@@ -35,8 +35,7 @@ type TMarginToleranceProps = {
 
 const parseToleranceInput = (value: string): number => {
   const n = Number(value)
-  if (!Number.isFinite(n)) return 0
-  return Math.min(Math.max(n, 0), MAX_MARGIN_TOLERANCE)
+  return Number.isFinite(n) ? Math.min(Math.max(n, 0), MAX_MARGIN_TOLERANCE) : 0
 }
 
 export const MarginTolerance = ({
@@ -58,10 +57,10 @@ export const MarginTolerance = ({
           label="Margem mínima aceitável (%)"
           type="number"
           value={marginTolerance.below}
-          onChange={(e) =>
+          onChange={(event) =>
             handleMarginToleranceChange(
               'below',
-              parseToleranceInput(e.target.value)
+              parseToleranceInput(event.target.value)
             )
           }
           slotProps={{ htmlInput: { min: 0, max: MAX_MARGIN_TOLERANCE } }}
@@ -71,10 +70,10 @@ export const MarginTolerance = ({
           label="Margem máxima esperada (%)"
           type="number"
           value={marginTolerance.above}
-          onChange={(e) =>
+          onChange={(event) =>
             handleMarginToleranceChange(
               'above',
-              parseToleranceInput(e.target.value)
+              parseToleranceInput(event.target.value)
             )
           }
           slotProps={{ htmlInput: { min: 0, max: MAX_MARGIN_TOLERANCE } }}
@@ -101,11 +100,11 @@ export const MarginTolerance = ({
                 type="number"
                 size="small"
                 value={row.tolerance.below}
-                onChange={(e) =>
+                onChange={(event) =>
                   handleDepartmentOverrideChange(
                     row.departmentId,
                     'below',
-                    parseToleranceInput(e.target.value)
+                    parseToleranceInput(event.target.value)
                   )
                 }
                 slotProps={{ htmlInput: { min: 0, max: MAX_MARGIN_TOLERANCE } }}
@@ -116,11 +115,11 @@ export const MarginTolerance = ({
                 type="number"
                 size="small"
                 value={row.tolerance.above}
-                onChange={(e) =>
+                onChange={(event) =>
                   handleDepartmentOverrideChange(
                     row.departmentId,
                     'above',
-                    parseToleranceInput(e.target.value)
+                    parseToleranceInput(event.target.value)
                   )
                 }
                 slotProps={{ htmlInput: { min: 0, max: MAX_MARGIN_TOLERANCE } }}

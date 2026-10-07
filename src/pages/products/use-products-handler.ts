@@ -106,10 +106,10 @@ export const useProductsHandler = () => {
   )
 
   const isFetching = products === null
-  const hasProducts = !!registeredProducts.length
+  const hasProducts = registeredProducts.length > 0
   const isFetchingUnmatched = invoices === null
   const isFetchingIgnored = ignoredProducts === null
-  const hasIgnoredProducts = !!ignoredProductRows.length
+  const hasIgnoredProducts = ignoredProductRows.length > 0
 
   const handleFormOpen = (product: TProduct | null = null) => {
     setProductDraft(null)
@@ -170,7 +170,7 @@ export const useProductsHandler = () => {
     setActiveTab,
     unmatchedItems: filteredUnmatchedItems,
     isFetchingUnmatched,
-    hasUnmatchedItems: !!unmatchedItems.length,
+    hasUnmatchedItems: unmatchedItems.length > 0,
     productDraft,
     handleCreateFromUnmatchedItem,
     handleIgnoreUnmatchedItem,
