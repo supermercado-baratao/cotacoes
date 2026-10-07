@@ -40,12 +40,7 @@ export const CatalogImport = ({
       handleClose={handleModalClose}
       maxWidth={1200}
     >
-      {!file ? (
-        <>
-          <SqlQuery lastImportAt={settings?.lastCatalogImportAt ?? null} />
-          <DropZone onFileSelect={handleFileSelect} />
-        </>
-      ) : (
+      {file ? (
         <>
           {importData && (
             <DataPreview
@@ -68,9 +63,14 @@ export const CatalogImport = ({
               onClick={handleImportClick}
             >
               Importar {selectedIds.length} produto
-              {selectedIds.length !== 1 ? 's' : ''}
+              {selectedIds.length === 1 ? '' : 's'}
             </Button>
           </Box>
+        </>
+      ) : (
+        <>
+          <SqlQuery lastImportAt={settings?.lastCatalogImportAt ?? null} />
+          <DropZone onFileSelect={handleFileSelect} />
         </>
       )}
     </Modal>

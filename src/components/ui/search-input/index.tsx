@@ -26,7 +26,7 @@ export const SearchInput = ({
       size="small"
       placeholder={placeholder}
       value={value}
-      onChange={(e) => onValueChange(e.target.value)}
+      onChange={(event) => onValueChange(event.target.value)}
       slotProps={{
         input: {
           startAdornment: (

@@ -766,6 +766,6 @@ describe('getInvoiceEntriesForProduct', () => {
 
     const entries = getInvoiceEntriesForProduct(invoices, 'p1', null)
 
-    expect(entries.map((e) => e.invoice.id)).toEqual(['i2', 'i1'])
+    expect(entries.map((entry) => entry.invoice.id)).toEqual(['i2', 'i1'])
   })
 })

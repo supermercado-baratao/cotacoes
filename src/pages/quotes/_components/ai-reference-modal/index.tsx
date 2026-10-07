@@ -56,12 +56,12 @@ export const AiReferenceModal = ({
   } = useAiReference(quote, isOpened, onClose)
 
   const isAlreadyReferenced = (itemId: string) =>
-    (quote.items.find((i) => i.id === itemId)?.priceRef ?? null) !== null
+    (quote.items.find((item) => item.id === itemId)?.priceRef ?? null) !== null
 
   const hasRows = rows.length > 0
   const allReferenced =
     hasRows && rows.every(({ item }) => isAlreadyReferenced(item.id))
-  const isProgressMsg =
+  const isProgressMessage =
     !statusMessage.startsWith('Dica:') &&
     !statusMessage.startsWith('Curiosidade:')
 
@@ -101,10 +101,10 @@ export const AiReferenceModal = ({
         {isAnalyzing && (
           <Box sx={S.LoaderWrapper}>
             <Box sx={S.MessageBox}>
-              <Box sx={S.MessageAccent(isProgressMsg)} />
+              <Box sx={S.MessageAccent(isProgressMessage)} />
               <Box sx={S.MessageBoxContent}>
                 <Box key={statusMessage} sx={S.MessageContent}>
-                  {isProgressMsg ? (
+                  {isProgressMessage ? (
                     <CircularProgress
                       size={18}
                       thickness={4.5}

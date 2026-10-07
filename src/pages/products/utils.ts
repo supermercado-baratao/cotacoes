@@ -95,7 +95,7 @@ export const getUnmatchedProductItems = (
     }
   }
 
-  return Array.from(itemsByKey.values()).sort((a, b) =>
+  return [...itemsByKey.values()].toSorted((a, b) =>
     b.lastEmissionDate.localeCompare(a.lastEmissionDate)
   )
 }
@@ -104,8 +104,8 @@ export const filterUnmatchedProductItems = (
   search: string,
   items: TUnmatchedProductItem[]
 ): TUnmatchedProductItem[] =>
-  items.filter((i) =>
-    matchesSearch(search, i.description, i.barcode, i.supplierName)
+  items.filter((item) =>
+    matchesSearch(search, item.description, item.barcode, item.supplierName)
   )
 
 export const getUnmatchedProductIgnoreKey = (

@@ -33,7 +33,7 @@ const findManyByProductIds = async (
   productIds: string[]
 ): Promise<TOrder[]> => {
   const uniqueIds = [...new Set(productIds)]
-  if (!uniqueIds.length) return []
+  if (uniqueIds.length === 0) return []
 
   const results = await mapWithConcurrencyLimit(
     chunk(uniqueIds, IN_QUERY_CHUNK_SIZE),

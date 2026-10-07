@@ -82,7 +82,7 @@ export const MarginAlerts = ({
       </Typography>
       <DataView
         isFetching={isFetching}
-        isEmpty={!marginAlerts.length}
+        isEmpty={marginAlerts.length === 0}
         emptyMessage={copy.emptyMessage}
       >
         {/* Grade paginada (até 100 linhas): sem virtualização, a coluna de

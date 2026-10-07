@@ -53,7 +53,7 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         field: 'orderPackingQuantity',
         headerName: 'Qtd. Embalagem',
         valueFormatter: (value: number | null) =>
-          value != null ? formatNumericValue(value) : '—'
+          value == null ? '—' : formatNumericValue(value)
       },
       {
         field: 'quantity',
@@ -69,7 +69,7 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         field: 'tribQuantity',
         headerName: 'Qtd Trib.',
         valueFormatter: (value: number | null) =>
-          value != null ? formatNumericValue(value) : '—'
+          value == null ? '—' : formatNumericValue(value)
       },
       {
         field: 'orderPrice',
@@ -86,7 +86,7 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         field: 'tribUnitPrice',
         headerName: 'Valor Unit. Trib.',
         valueFormatter: (value: number | null) =>
-          value != null ? formatCurrency(value) : '—'
+          value == null ? '—' : formatCurrency(value)
       },
       {
         field: 'totalPrice',
@@ -97,7 +97,7 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         field: 'salePrice',
         headerName: 'Preço de Venda',
         valueFormatter: (value: number | null) =>
-          value != null ? formatCurrency(value) : '—'
+          value == null ? '—' : formatCurrency(value)
       },
       {
         field: 'productDescription',

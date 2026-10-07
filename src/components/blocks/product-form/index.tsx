@@ -27,8 +27,6 @@ import { type TMarginStatus } from '@/utils/margin'
 import * as S from './style'
 import { type TProductDraft, useFormHandler } from './use-form-handler'
 
-export type { TProductDraft }
-
 type TProductFormProps = {
   product: TProduct | null
   draft: TProductDraft | null
@@ -288,3 +286,5 @@ export const ProductForm = ({
     </Modal>
   )
 }
+
+export { type TProductDraft } from './use-form-handler'

@@ -168,8 +168,8 @@ export const Table = ({ groups }: TTableProps) => {
   )
 
   const toggleExpanded = (key: string) =>
-    setExpandedKeys((prev) => {
-      const next = new Set(prev)
+    setExpandedKeys((previous) => {
+      const next = new Set(previous)
       next.has(key) ? next.delete(key) : next.add(key)
       return next
     })

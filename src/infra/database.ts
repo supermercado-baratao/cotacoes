@@ -28,9 +28,8 @@ const findUniqueById = async <T>({
   id: string
   path: string
 }): Promise<T | null> => {
-  const docRef = doc(firestore, path, id)
-  const docSnap = await getDoc(docRef)
-  return docSnap.exists() ? { ...(docSnap.data() as T), id } : null
+  const snapshot = await getDoc(doc(firestore, path, id))
+  return snapshot.exists() ? { ...(snapshot.data() as T), id } : null
 }
 
 const findMany = async <T>({
@@ -42,9 +41,9 @@ const findMany = async <T>({
 }): Promise<T[]> => {
   const q = query(collection(firestore, path), ...(queryConstraints ?? []))
   const { docs } = await getDocs(q)
-  const data = docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data()
+  const data = docs.map((snapshot) => ({
+    id: snapshot.id,
+    ...snapshot.data()
   }))
   return data as T[]
 }
@@ -61,10 +60,10 @@ const create = async <T>({
   data: TCreateData<T>
   path: string
 }): Promise<T> => {
-  const docRef = doc(collection(firestore, path))
+  const ref = doc(collection(firestore, path))
   const now = Timestamp.now()
-  await setDoc(docRef, { ...data, id: docRef.id, ...writeTimestamps() })
-  return { ...data, id: docRef.id, createdAt: now, updatedAt: now } as T
+  await setDoc(ref, { ...data, id: ref.id, ...writeTimestamps() })
+  return { ...data, id: ref.id, createdAt: now, updatedAt: now } as T
 }
 
 const createWithId = async <T>({
@@ -103,7 +102,7 @@ const findExistingIds = async ({
         where(documentId(), 'in', idsChunk)
       )
       const { docs } = await getDocs(q)
-      return docs.map((docSnap) => docSnap.id)
+      return docs.map((snapshot) => snapshot.id)
     }
   )
   return new Set(results.flat())
@@ -115,14 +114,13 @@ const commitInChunks = async (
     ref: ReturnType<typeof doc>
     data: object
     options?: Parameters<ReturnType<typeof writeBatch>['set']>[2]
-  }>,
-  defaultOptions?: Parameters<ReturnType<typeof writeBatch>['set']>[2]
+  }>
 ) => {
-  for (let i = 0; i < items.length; i += BATCH_CHUNK_SIZE) {
+  for (const itemsChunk of chunk(items, BATCH_CHUNK_SIZE)) {
     const batch = writeBatch(firestore)
-    items.slice(i, i + BATCH_CHUNK_SIZE).forEach(({ ref, data, options }) => {
-      batch.set(ref, data, options ?? defaultOptions ?? {})
-    })
+    for (const { ref, data, options = {} } of itemsChunk) {
+      batch.set(ref, data, options)
+    }
     await batch.commit()
   }
 }
@@ -171,7 +169,7 @@ const upsertManyWithIds = async <T>({
         ref: doc(firestore, path, item.id),
         data: {
           ...item,
-          ...(isNew ? { createdAt: serverTimestamp() } : {}),
+          ...(isNew && { createdAt: serverTimestamp() }),
           updatedAt: serverTimestamp()
         },
         options: {
@@ -196,15 +194,15 @@ const createMany = async <T>({
   const now = Timestamp.now()
   const ids = data.map(() => crypto.randomUUID())
   await commitInChunks(
-    data.map((item, i) => ({
-      id: ids[i],
-      ref: doc(firestore, path, ids[i]),
-      data: { ...item, id: ids[i], ...writeTimestamps() }
+    data.map((item, index) => ({
+      id: ids[index],
+      ref: doc(firestore, path, ids[index]),
+      data: { ...item, id: ids[index], ...writeTimestamps() }
     }))
   )
-  return data.map((item, i) => ({
+  return data.map((item, index) => ({
     ...item,
-    id: ids[i],
+    id: ids[index],
     createdAt: now,
     updatedAt: now
   })) as T[]
@@ -236,14 +234,14 @@ const updateMany = async <T>({
   path: string
 }): Promise<T[]> => {
   const now = Timestamp.now()
-  for (let i = 0; i < data.length; i += BATCH_CHUNK_SIZE) {
+  for (const dataChunk of chunk(data, BATCH_CHUNK_SIZE)) {
     const batch = writeBatch(firestore)
-    data.slice(i, i + BATCH_CHUNK_SIZE).forEach((item) => {
+    for (const item of dataChunk) {
       batch.update(doc(firestore, path, item.id), {
         ...item,
         updatedAt: serverTimestamp()
       })
-    })
+    }
     await batch.commit()
   }
   return data.map((item) => ({ ...item, updatedAt: now })) as T[]
@@ -267,11 +265,11 @@ const deleteMany = async ({
   ids: string[]
   path: string
 }): Promise<string[]> => {
-  for (let i = 0; i < ids.length; i += BATCH_CHUNK_SIZE) {
+  for (const idsChunk of chunk(ids, BATCH_CHUNK_SIZE)) {
     const batch = writeBatch(firestore)
-    ids.slice(i, i + BATCH_CHUNK_SIZE).forEach((id) => {
+    for (const id of idsChunk) {
       batch.delete(doc(firestore, path, id))
-    })
+    }
     await batch.commit()
   }
   return ids

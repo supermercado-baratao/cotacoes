@@ -59,10 +59,10 @@ export const Header = ({
         <Box sx={S.DateSelectWrapper}>
           <Select
             value={day}
-            onChange={(e) => onDayChange(Number(e.target.value))}
+            onChange={(event) => onDayChange(Number(event.target.value))}
             size="small"
           >
-            {[...days].reverse().map((d) => (
+            {days.toReversed().map((d) => (
               <MenuItem key={d} value={d} disabled={!availableDays.includes(d)}>
                 {d}
               </MenuItem>
@@ -70,10 +70,10 @@ export const Header = ({
           </Select>
           <Select
             value={month}
-            onChange={(e) => onMonthChange(Number(e.target.value))}
+            onChange={(event) => onMonthChange(Number(event.target.value))}
             size="small"
           >
-            {[...MONTHS].reverse().map((m, reverseIndex) => {
+            {MONTHS.toReversed().map((m, reverseIndex) => {
               const value = MONTHS.length - reverseIndex
               return (
                 <MenuItem
@@ -88,7 +88,7 @@ export const Header = ({
           </Select>
           <Select
             value={year}
-            onChange={(e) => onYearChange(Number(e.target.value))}
+            onChange={(event) => onYearChange(Number(event.target.value))}
             size="small"
           >
             {availableYears.map((y) => (

@@ -53,7 +53,9 @@ export const suggestPriceReferences = async (
   const familyList = families
     .map((f) => `id=${f.id} | ${f.description}`)
     .join('\n')
-  const itemList = items.map((i) => `id=${i.id} | ${i.description}`).join('\n')
+  const itemList = items
+    .map((item) => `id=${item.id} | ${item.description}`)
+    .join('\n')
 
   const prompt = `Você é um assistente especializado em supermercados. Seu trabalho é associar itens de cotação de fornecedor ao catálogo interno.
 
@@ -73,7 +75,7 @@ Para cada item da cotação, encontre a melhor correspondência no catálogo:
 Considere variações de grafia, abreviações e unidades (ex: "5KG", "1L", "CX", "PCT").`
 
   try {
-    const res = await fetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -100,11 +102,11 @@ Considere variações de grafia, abreviações e unidades (ex: "5KG", "1L", "CX"
       })
     })
 
-    if (!res.ok) {
-      throw new Error(`Gemini error: ${res.status} ${res.statusText}`)
+    if (!response.ok) {
+      throw new Error(`Gemini error: ${response.status} ${response.statusText}`)
     }
 
-    const data = await res.json()
+    const data = await response.json()
     const raw: unknown = JSON.parse(data.candidates[0].content.parts[0].text)
     return { suggestions: raw as TAiSuggestion[], isFallback: false }
   } catch (error) {

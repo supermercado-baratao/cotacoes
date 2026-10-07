@@ -56,7 +56,7 @@ test.beforeAll(async () => {
 test('imports an invoice, blocks reimporting it and rejects an XML without an access key', async ({
   page
 }) => {
-  test.setTimeout(60000)
+  test.setTimeout(60_000)
   const { email, password } = await createUser()
   await populateDatabase()
   await login(page, email, password)
@@ -129,7 +129,7 @@ test('imports an invoice, blocks reimporting it and rejects an XML without an ac
 test('completes the fiscal data of an invoice imported before those fields existed', async ({
   page
 }) => {
-  test.setTimeout(60000)
+  test.setTimeout(60_000)
   const { email, password } = await createUser()
   await populateDatabase()
   await login(page, email, password)
@@ -197,7 +197,7 @@ test('completes the fiscal data of an invoice imported before those fields exist
 })
 
 test('links an invoice item to a quote order', async ({ page }) => {
-  test.setTimeout(30000)
+  test.setTimeout(30_000)
   const { email, password } = await createUser()
   await populateDatabase()
   const supplier = await getRegisteredSupplier()
@@ -292,7 +292,7 @@ test('links an invoice item to a quote order', async ({ page }) => {
 test('back button returns to the page it was opened from, and items can be filtered by product', async ({
   page
 }) => {
-  test.setTimeout(30000)
+  test.setTimeout(30_000)
   const { email, password } = await createUser()
 
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
@@ -426,7 +426,7 @@ test('back button returns to the page it was opened from, and items can be filte
 test('confirms a batch of same-family invoice items with matching packaging', async ({
   page
 }) => {
-  test.setTimeout(30000)
+  test.setTimeout(30_000)
   const { email, password } = await createUser()
   await populateDatabase()
   const supplier = await getRegisteredSupplier()
@@ -532,7 +532,7 @@ test('confirms a batch of same-family invoice items with matching packaging', as
 test('splits out a packaging outlier and confirms the rest of the batch individually', async ({
   page
 }) => {
-  test.setTimeout(30000)
+  test.setTimeout(30_000)
   const { email, password } = await createUser()
   await populateDatabase()
   const supplier = await getRegisteredSupplier()

@@ -31,7 +31,7 @@ export const Table = ({ quote, rows }: TTableProps) => {
       updateQuote(
         {
           ...quote,
-          items: quote.items.filter((i) => i.id !== row.id)
+          items: quote.items.filter((item) => item.id !== row.id)
         },
         ordersToDelete
       )
@@ -48,7 +48,7 @@ export const Table = ({ quote, rows }: TTableProps) => {
 
   const handleSalePriceOpen = useCallback(
     (row: TQuoteRow) => {
-      const item = quote.items.find((i) => i.id === row.id) ?? null
+      const item = quote.items.find((item) => item.id === row.id) ?? null
       setSalePriceItem(item)
     },
     [quote.items]

@@ -60,7 +60,7 @@ export const useInvoiceDetailHandler = () => {
   const isFetching = invoices === null
 
   const sortedQuotes = useMemo(
-    () => [...(quotes ?? [])].sort((a, b) => b.date.localeCompare(a.date)),
+    () => (quotes ?? []).toSorted((a, b) => b.date.localeCompare(a.date)),
     [quotes]
   )
 
@@ -72,7 +72,8 @@ export const useInvoiceDetailHandler = () => {
   const hasAutoSelectedQuote = useRef(false)
 
   useEffect(() => {
-    if (hasAutoSelectedQuote.current || !invoice || !sortedQuotes.length) return
+    if (!invoice || hasAutoSelectedQuote.current || sortedQuotes.length === 0)
+      return
     hasAutoSelectedQuote.current = true
     const invoiceDate = dayjs(invoice.emissionDate).format('YYYY-MM-DD')
     const bestGuess = sortedQuotes.find((q) => q.date <= invoiceDate)
@@ -80,7 +81,7 @@ export const useInvoiceDetailHandler = () => {
   }, [invoice, sortedQuotes, setQuoteId])
 
   const productMap = useMemo(
-    () => new Map(products?.map((p) => [p.id, p]) ?? []),
+    () => new Map(products?.map((p) => [p.id, p])),
     [products]
   )
 
@@ -120,11 +121,11 @@ export const useInvoiceDetailHandler = () => {
           ? (packageBarcodeLinkMap.get(item.packageBarcode) ?? null)
           : null)
 
-      const matchStatus: TInvoiceItemMatchStatus = !productId
-        ? 'unmatched_product'
-        : !order
-          ? 'unmatched_order'
-          : 'matched'
+      const matchStatus: TInvoiceItemMatchStatus = productId
+        ? order
+          ? 'matched'
+          : 'unmatched_order'
+        : 'unmatched_product'
 
       const product = productMap.get(productId ?? '') ?? null
       const orderPrice = order?.price ?? null
@@ -170,7 +171,9 @@ export const useInvoiceDetailHandler = () => {
   // Baseado em todos os itens da nota, não só nos filtrados pela busca — a
   // busca é só uma lente sobre a tabela, não deve mudar se a nota pode ser
   // aprovada.
-  const hasUnlinkedItems = itemsWithDivergences.some((i) => i.orderId === null)
+  const hasUnlinkedItems = itemsWithDivergences.some(
+    (item) => item.orderId === null
+  )
 
   const handleApprove = () => {
     if (!invoice || hasUnlinkedItems) return

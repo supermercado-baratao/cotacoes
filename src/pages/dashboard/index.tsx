@@ -77,7 +77,9 @@ export const Dashboard = () => {
           control={
             <Switch
               checked={isPeriodFilterEnabled}
-              onChange={(e) => setIsPeriodFilterEnabled(e.target.checked)}
+              onChange={(event) =>
+                setIsPeriodFilterEnabled(event.target.checked)
+              }
             />
           }
           label="Filtrar por entrada no período"
@@ -90,7 +92,7 @@ export const Dashboard = () => {
           type="date"
           size="small"
           value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+          onChange={(event) => setStartDate(event.target.value)}
           sx={S.DateField}
           disabled={!isPeriodFilterEnabled}
           slotProps={{ inputLabel: { shrink: true } }}
@@ -100,7 +102,7 @@ export const Dashboard = () => {
           type="date"
           size="small"
           value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
+          onChange={(event) => setEndDate(event.target.value)}
           sx={S.DateField}
           disabled={!isPeriodFilterEnabled}
           slotProps={{ inputLabel: { shrink: true } }}

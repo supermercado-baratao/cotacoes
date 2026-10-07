@@ -152,8 +152,9 @@ export const useDataFetch = () => {
   // ou nem se aplica) — ajuste de estado durante a renderização em vez de um
   // efeito, para não disparar setState fora de um evento/efeito de verdade.
   if (readyCount < shouldFetch.length) {
+    const previousIndex = readyCount - 1
     const isSettled =
-      !shouldFetch[readyCount - 1] || queries[readyCount - 1].isFetched
+      !shouldFetch.at(previousIndex) || queries[previousIndex].isFetched
     if (isSettled) setReadyCount(readyCount + 1)
   }
 
@@ -191,7 +192,7 @@ export const useDataFetch = () => {
   // own collection is still queued from flashing another collection's error.
   const isQueueSettled =
     readyCount === shouldFetch.length &&
-    !queries.some((query) => query.isFetching)
+    queries.every((query) => !query.isFetching)
   const failedQuery = queries.find((query) => query.isError)
   const fetchErrorCode =
     isQueueSettled && failedQuery ? getErrorCode(failedQuery.error) : null

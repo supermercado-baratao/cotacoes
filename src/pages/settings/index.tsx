@@ -38,7 +38,7 @@ export const Settings = () => {
       </Typography>
       <DataView
         isFetching={isFetching}
-        isEmpty={!order.length}
+        isEmpty={order.length === 0}
         emptyMessage="Cadastre produtos com departamento para poder ordená-los aqui."
       >
         <DepartmentOrderList

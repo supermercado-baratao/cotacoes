@@ -59,7 +59,7 @@ export const useFormHandler = (
 
   const invoiceItem = invoiceRef
     ? invoiceRef.invoice.items.find(
-        (i) => i.itemNumber === invoiceRef.itemNumber
+        (item) => item.itemNumber === invoiceRef.itemNumber
       )
     : null
 
@@ -123,8 +123,8 @@ export const useFormHandler = (
   const linkedInvoiceItem = useMemo(() => {
     if (invoiceItem) return invoiceItem
     if (!order?.invoiceId) return null
-    const invoice = invoices?.find((i) => i.id === order.invoiceId)
-    return invoice?.items.find((i) => i.orderId === order.id) ?? null
+    const invoice = invoices?.find((invoice) => invoice.id === order.invoiceId)
+    return invoice?.items.find((item) => item.orderId === order.id) ?? null
   }, [invoiceItem, order, invoices])
 
   const invoiceUnitPrice = linkedInvoiceItem?.unitPrice ?? null
@@ -141,15 +141,24 @@ export const useFormHandler = (
     [invoiceUnitPrice, setValue]
   )
 
-  const handlePackingQuantityChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value
-    const packingQuantity = raw === '' ? 1 : Math.max(1, parseInt(raw, 10) || 1)
+  const handlePackingQuantityChange = (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const raw = event.target.value
+    const packingQuantity =
+      raw === '' ? 1 : Math.max(1, Math.trunc(Number(raw)) || 1)
     applyPackingQuantityPrice(packingQuantity, true)
   }
 
   useEffect(() => {
-    if (order || dirtyFields.packingQuantity) return
-    if (!watchedProductId || !watchedSupplierId || !watchedPacking) return
+    if (
+      order ||
+      !watchedProductId ||
+      !watchedSupplierId ||
+      !watchedPacking ||
+      dirtyFields.packingQuantity
+    )
+      return
     const found = findPackingDefault(packingDefaults ?? [], {
       supplierId: watchedSupplierId,
       productId: watchedProductId,

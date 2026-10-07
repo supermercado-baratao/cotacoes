@@ -97,15 +97,15 @@ export const buildLastEntryDateMap = (
   invoices: TInvoice[]
 ): Map<string, string> => {
   const map = new Map<string, string>()
-  invoices.forEach((invoice) => {
-    invoice.items.forEach((item) => {
-      if (!item.productId) return
+  for (const invoice of invoices) {
+    for (const item of invoice.items) {
+      if (!item.productId) continue
       const current = map.get(item.productId)
       if (!current || invoice.emissionDate > current) {
         map.set(item.productId, invoice.emissionDate)
       }
-    })
-  })
+    }
+  }
   return map
 }
 
@@ -135,7 +135,7 @@ export const getMarginAlerts = (
   const below: TMarginAlert[] = []
   const above: TMarginAlert[] = []
 
-  products.forEach((product) => {
+  for (const product of products) {
     const price = product.price
     const entryCost = entryCostMap.get(product.id) ?? null
     const vrCost = product.costWithTax
@@ -144,7 +144,7 @@ export const getMarginAlerts = (
     // !price (não `price == null`) é proposital: preço 0 tornaria a divisão
     // abaixo indefinida. Custo 0 é um valor legítimo (ex: item promocional) e
     // não deve ser tratado como "sem dado".
-    if (!price || !defaultOption) return
+    if (!price || !defaultOption) continue
 
     const selectedOption =
       costOptions.find(
@@ -158,7 +158,7 @@ export const getMarginAlerts = (
     const { actualMargin, status, marginGap } = evaluate(selectedOption.cost)
     const { status: defaultStatus } = evaluate(defaultOption.cost)
     const listStatus = status === 'ok' ? defaultStatus : status
-    if (listStatus === 'ok') return
+    if (listStatus === 'ok') continue
 
     const costDivergence = getCostDivergence(entryCost?.cost ?? null, vrCost)
     const alert: TMarginAlert = {
@@ -187,7 +187,7 @@ export const getMarginAlerts = (
       lastEntryDate: lastEntryDateMap.get(product.id) ?? null
     }
     ;(listStatus === 'below' ? below : above).push(alert)
-  })
+  }
 
   below.sort((a, b) => b.marginGap - a.marginGap)
   above.sort((a, b) => b.marginGap - a.marginGap)
@@ -226,12 +226,12 @@ export const buildProductIdsWithEntryInRange = (
   dateRange: TInvoiceDateRange
 ): Set<string> => {
   const productIds = new Set<string>()
-  invoices.forEach((invoice) => {
-    if (!isEmissionDateInRange(invoice.emissionDate, dateRange)) return
-    invoice.items.forEach((item) => {
+  for (const invoice of invoices) {
+    if (!isEmissionDateInRange(invoice.emissionDate, dateRange)) continue
+    for (const item of invoice.items) {
       if (item.productId) productIds.add(item.productId)
-    })
-  })
+    }
+  }
   return productIds
 }
 
@@ -250,15 +250,15 @@ export const getInvoiceEntriesForProduct = (
   dateRange: TInvoiceDateRange | null
 ): TInvoiceEntry[] => {
   const entries: TInvoiceEntry[] = []
-  invoices.forEach((invoice) => {
+  for (const invoice of invoices) {
     if (dateRange && !isEmissionDateInRange(invoice.emissionDate, dateRange)) {
-      return
+      continue
     }
-    invoice.items.forEach((item) => {
+    for (const item of invoice.items) {
       if (item.productId === productId) entries.push({ invoice, item })
-    })
-  })
-  return entries.sort((a, b) =>
+    }
+  }
+  return entries.toSorted((a, b) =>
     b.invoice.emissionDate.localeCompare(a.invoice.emissionDate)
   )
 }

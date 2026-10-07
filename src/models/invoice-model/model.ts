@@ -47,18 +47,18 @@ const createMany = async (
   const completed = data.flatMap((item) => {
     const current = existingById.get(item.id)
     return current && hasMissingFiscalData(current)
-      ? [{ ...current, ...completeInvoiceFiscalData(current, item) }]
+      ? { ...current, ...completeInvoiceFiscalData(current, item) }
       : []
   })
 
   const [created, updated] = await Promise.all([
-    newData.length
+    newData.length > 0
       ? database.createManyWithIds<TInvoice>({
           path: getUserPath(PATH),
           data: newData
         })
       : Promise.resolve([]),
-    completed.length
+    completed.length > 0
       ? database.updateMany<TInvoice>({
           path: getUserPath(PATH),
           data: completed

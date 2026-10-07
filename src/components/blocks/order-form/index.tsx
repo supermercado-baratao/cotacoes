@@ -90,7 +90,7 @@ export const OrderForm = ({
                 labelId="order-form-quote-item-label"
                 label="Item da cotação"
                 value={quoteItem?.id ?? ''}
-                onChange={(e) => handleQuoteItemChange(e.target.value)}
+                onChange={(event) => handleQuoteItemChange(event.target.value)}
               >
                 {quoteItemOptions.map((option) => (
                   <MenuItem key={option.id} value={option.id}>
@@ -177,10 +177,10 @@ export const OrderForm = ({
           />
           <TextField
             {...register('packingQuantity', {
-              setValueAs: (v) =>
-                v === '' || v === null || v === undefined
+              setValueAs: (value) =>
+                ['', null, undefined].includes(value)
                   ? undefined
-                  : parseInt(v, 10),
+                  : Math.trunc(Number(value)),
               onChange: handlePackingQuantityChange
             })}
             label="Qtd. Embalagem"
@@ -213,7 +213,7 @@ export const OrderForm = ({
           />
           <TextField
             label="Margem"
-            value={margin != null ? `${formatNumericValue(margin)}%` : '—'}
+            value={margin == null ? '—' : `${formatNumericValue(margin)}%`}
             sx={S.ThreeCol}
             slotProps={{ input: { readOnly: true } }}
           />

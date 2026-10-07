@@ -31,7 +31,7 @@ export const getInvoiceSuggestions = (
     if (!isInvoiceInQuoteWindow(invoice, quote, nextQuoteDate)) continue
 
     const unlinkedItems = invoice.items.filter((item) => item.orderId === null)
-    if (!unlinkedItems.length) continue
+    if (unlinkedItems.length === 0) continue
 
     const hasLikelyItem = unlinkedItems.some((item) =>
       isLikelyMatch(item, quoteItem, productMap)

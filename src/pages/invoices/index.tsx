@@ -54,7 +54,7 @@ export const Invoices = () => {
           type="date"
           size="small"
           value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+          onChange={(event) => setStartDate(event.target.value)}
           sx={S.DateField}
           slotProps={{ inputLabel: { shrink: true } }}
         />
@@ -63,7 +63,7 @@ export const Invoices = () => {
           type="date"
           size="small"
           value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
+          onChange={(event) => setEndDate(event.target.value)}
           sx={S.DateField}
           slotProps={{ inputLabel: { shrink: true } }}
         />

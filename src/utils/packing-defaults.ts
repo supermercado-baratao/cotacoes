@@ -23,7 +23,7 @@ export const findGroupPackingDefault = (
   productIds: string[],
   packing: string
 ): number | null => {
-  if (!productIds.length) return null
+  if (productIds.length === 0) return null
   const [first, ...rest] = productIds.map(
     (productId) =>
       findPackingDefault(packingDefaults, { supplierId, productId, packing })

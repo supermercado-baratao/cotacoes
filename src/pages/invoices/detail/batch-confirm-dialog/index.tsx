@@ -95,10 +95,10 @@ export const BatchConfirmDialog = ({
           />
           <TextField
             {...register('packingQuantity', {
-              setValueAs: (v) =>
-                v === '' || v === null || v === undefined
+              setValueAs: (value) =>
+                ['', null, undefined].includes(value)
                   ? undefined
-                  : parseInt(v, 10)
+                  : Math.trunc(Number(value))
             })}
             label="Qtd. Embalagem"
             type="number"
@@ -175,7 +175,7 @@ export const BatchConfirmDialog = ({
                     <TableCell align="right">
                       <TextField
                         value={
-                          salePrice != null ? formatCurrency(salePrice) : '—'
+                          salePrice == null ? '—' : formatCurrency(salePrice)
                         }
                         size="small"
                         sx={S.CellInput}
@@ -193,9 +193,9 @@ export const BatchConfirmDialog = ({
                     <TableCell align="right">
                       <TextField
                         value={
-                          margin != null
-                            ? `${formatNumericValue(margin)}%`
-                            : '—'
+                          margin == null
+                            ? '—'
+                            : `${formatNumericValue(margin)}%`
                         }
                         size="small"
                         sx={S.CellInput}

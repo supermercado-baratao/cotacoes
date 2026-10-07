@@ -61,7 +61,7 @@ export const resolvePackQuantity = (
   if (item.packageBarcode) {
     const index = product.barcodes.indexOf(item.packageBarcode)
     const barcodePackQuantity = product.packQuantities?.[index]
-    if (index >= 0 && barcodePackQuantity && barcodePackQuantity > 1) {
+    if (index !== -1 && barcodePackQuantity && barcodePackQuantity > 1) {
       return { packQuantity: barcodePackQuantity, source: 'barcode' }
     }
   }
@@ -94,8 +94,14 @@ const PRICE_EPSILON = 0.005
 const getTribPackQuantity = (item: TInvoiceItem): TPackQuantity | null => {
   if (UNIT_PATTERN.test(item.unit.trim())) return null
   const { tribQuantity, tribUnitPrice } = item
-  if (!tribQuantity || tribUnitPrice == null || item.quantity <= 0) return null
-  if (Math.abs(tribUnitPrice - item.unitPrice) < PRICE_EPSILON) return null
+  if (
+    !tribQuantity ||
+    tribUnitPrice == null ||
+    item.quantity <= 0 ||
+    Math.abs(tribUnitPrice - item.unitPrice) < PRICE_EPSILON
+  ) {
+    return null
+  }
   return { packQuantity: tribQuantity / item.quantity, source: 'trib' }
 }
 
@@ -176,13 +182,13 @@ export const buildEntryCostMap = (
     }
   >()
 
-  invoices.forEach((invoice) => {
+  for (const invoice of invoices) {
     const supplierId =
       supplierIdByCnpj.get(normalizeCnpj(invoice.supplierCnpj)) ?? null
 
-    invoice.items.forEach((item) => {
+    for (const item of invoice.items) {
       const product = item.productId ? productMap.get(item.productId) : null
-      if (!product) return
+      if (!product) continue
 
       const entry = getEntryUnitCost(invoice, item, product, supplierId)
       const total = totals.get(product.id) ?? {
@@ -213,8 +219,8 @@ export const buildEntryCostMap = (
         }
       }
       totals.set(product.id, total)
-    })
-  })
+    }
+  }
 
   const result = new Map<string, TEntryCost>()
   totals.forEach((total, productId) => {

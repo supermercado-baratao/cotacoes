@@ -88,9 +88,9 @@ export const useInvoiceOrderLinkMutation = () => {
         matches.map((match) => match.order)
       )
       const matchByItemNumber = new Map(
-        matches.map((match, i) => [
+        matches.map((match, index) => [
           match.itemNumber,
-          { order: match.order, createdOrder: createdOrders[i] }
+          { order: match.order, createdOrder: createdOrders[index] }
         ])
       )
       const updatedItems = invoice.items.map((item) => {
@@ -120,7 +120,7 @@ export const useInvoiceOrderLinkMutation = () => {
       }
     },
     onSuccess: ({ orders, invoice, linked }) => {
-      orders.forEach((order) => upsertOrderInCache(queryClient, order))
+      for (const order of orders) upsertOrderInCache(queryClient, order)
       const n = orders.length
       if (linked && invoice) {
         upsertInvoiceInCache(queryClient, invoice, invoiceDateRange)

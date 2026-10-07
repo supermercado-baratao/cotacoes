@@ -27,7 +27,5 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsubscribe()
   }, [setUser, queryClient])
 
-  if (!isInitialized) return <Loader open />
-
-  return children
+  return isInitialized ? children : <Loader open />
 }

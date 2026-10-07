@@ -56,14 +56,16 @@ export const useQuoteMutation = () => {
       quote: TUpdateData<TQuote>
       ordersToDelete: TOrder[]
     }) => {
-      if (ordersToDelete.length) {
+      if (ordersToDelete.length > 0) {
         await orderModel.deleteMany(ordersToDelete.map((o) => o.id))
       }
       const updatedQuote = await quoteModel.update(quote)
       return { quote: updatedQuote, deletedOrders: ordersToDelete }
     },
     onSuccess: ({ quote, deletedOrders }) => {
-      deletedOrders.forEach((order) => removeOrderFromCache(queryClient, order))
+      for (const order of deletedOrders) {
+        removeOrderFromCache(queryClient, order)
+      }
       upsertInArrayCache(queryClient, ['quotes'], quote)
       alert({
         severity: 'success',
@@ -88,14 +90,16 @@ export const useQuoteMutation = () => {
       id: string
       ordersToDelete: TOrder[]
     }) => {
-      if (ordersToDelete.length) {
+      if (ordersToDelete.length > 0) {
         await orderModel.deleteMany(ordersToDelete.map((o) => o.id))
       }
       await quoteModel.deleteUniqueById(id)
       return { id, deletedOrders: ordersToDelete }
     },
     onSuccess: ({ id, deletedOrders }) => {
-      deletedOrders.forEach((order) => removeOrderFromCache(queryClient, order))
+      for (const order of deletedOrders) {
+        removeOrderFromCache(queryClient, order)
+      }
       removeFromArrayCache(queryClient, ['quotes'], id)
       alert({
         severity: 'success',

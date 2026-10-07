@@ -1,8 +1,8 @@
 import fs from 'node:fs'
+import path from 'node:path'
 
 import { faker } from '@faker-js/faker'
 import { expect, type Page, test } from '@playwright/test'
-import path from 'path'
 
 import { clearData, verifyEmail } from './orchestrator'
 
@@ -11,7 +11,7 @@ const QUOTES_DIR = path.join(MOCKS_DIR, 'quotes')
 
 const QUOTE_1_DIR = path.join(QUOTES_DIR, 'quote-1-2026-01-10-2026-03-31')
 const QUOTE_1_ITEMS = fs
-  .readFileSync(path.join(QUOTE_1_DIR, 'quote.txt'), 'utf-8')
+  .readFileSync(path.join(QUOTE_1_DIR, 'quote.txt'), 'utf8')
   .split('\n')
   .map((line) => line.trim())
   .filter(Boolean)
@@ -62,7 +62,7 @@ test.beforeAll(async () => {
 })
 
 test('Full flow', async ({ page }) => {
-  test.setTimeout(240000)
+  test.setTimeout(240_000)
 
   const name = faker.person.fullName()
   const email = faker.internet.email()
@@ -117,7 +117,7 @@ test('Full flow', async ({ page }) => {
     await expect(page.getByText('78 fornecedores')).toBeVisible()
     await page.getByRole('button', { name: 'Importar 495 produtos' }).click()
     await expect(page.getByText('Dados importados com sucesso!')).toBeVisible({
-      timeout: 60000
+      timeout: 60_000
     })
 
     await test.step('Create the first quote and reference all items', async () => {
@@ -135,7 +135,7 @@ test('Full flow', async ({ page }) => {
 
       await expect(
         page.getByRole('button', { name: /Aplicar \d+ aceitos/ })
-      ).toBeVisible({ timeout: 60000 })
+      ).toBeVisible({ timeout: 60_000 })
 
       await openManualReferenceForm(page, 'SH CLEAR MEN')
       await clearAutocomplete(page, 'Produto específico')

@@ -27,7 +27,7 @@ test.beforeAll(async () => {
 test('imports products, families, departments and suppliers into an empty database', async ({
   page
 }) => {
-  test.setTimeout(60000)
+  test.setTimeout(60_000)
   const { email, password } = await createUser()
   await login(page, email, password)
 
@@ -49,7 +49,7 @@ test('imports products, families, departments and suppliers into an empty databa
 
   await page.getByRole('button', { name: 'Importar 495 produtos' }).click()
   await expect(page.getByText('Dados importados com sucesso!')).toBeVisible({
-    timeout: 20000
+    timeout: 20_000
   })
 
   await page.getByPlaceholder('Buscar produto...').fill('PUDIM BRETZKE 50G')
@@ -58,7 +58,7 @@ test('imports products, families, departments and suppliers into an empty databa
 })
 
 test('reimporting a file only selects changed products', async ({ page }) => {
-  test.setTimeout(60000)
+  test.setTimeout(60_000)
   const { email, password } = await createUser()
   // A base de 495 produtos vem do fast-seed (mesmo pipeline de import, sem
   // passar pela UI) — o que este teste exercita de fato é o diff/reimport.
@@ -84,7 +84,7 @@ test('reimporting a file only selects changed products', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Importar 3 produtos' }).click()
   await expect(page.getByText('Dados importados com sucesso!')).toBeVisible({
-    timeout: 20000
+    timeout: 20_000
   })
 
   const search = page.getByPlaceholder('Buscar produto...')

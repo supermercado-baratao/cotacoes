@@ -29,12 +29,14 @@ export const useCallbackStore = create<TCallbackStore>()((set, get) => ({
     }),
   handleSuccessCallbacks: () => {
     const [entry, ...rest] = get().queue
-    entry?.success.forEach((cb) => cb())
+    const callbacks = entry?.success ?? []
+    for (const callback of callbacks) callback()
     set({ queue: rest })
   },
   handleErrorCallbacks: () => {
     const [entry, ...rest] = get().queue
-    entry?.error.forEach((cb) => cb())
+    const callbacks = entry?.error ?? []
+    for (const callback of callbacks) callback()
     set({ queue: rest })
   }
 }))

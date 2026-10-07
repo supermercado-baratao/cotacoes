@@ -21,7 +21,7 @@ export const useProductHistory = () => {
     () =>
       (ordersByProductId ?? [])
         .filter((o) => o.quoteId !== quoteId)
-        .sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf())
+        .toSorted((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf())
         .map((order) => ({
           id: order.id,
           date: order.date,

@@ -13,7 +13,7 @@ import { clearData, createUser, populateDatabase } from './orchestrator'
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 
 const shortageList = fs
-  .readFileSync(path.join(MOCKS_DIR, 'quote-items.txt'), 'utf-8')
+  .readFileSync(path.join(MOCKS_DIR, 'quote-items.txt'), 'utf8')
   .split('\n')
   .map((line) => line.trim())
   .filter(Boolean)
@@ -69,7 +69,7 @@ test.beforeAll(async () => {
 })
 
 test('creates a quote from the full shortage list', async ({ page }) => {
-  test.setTimeout(60000)
+  test.setTimeout(60_000)
   const { email, password } = await createUser()
   await populateDatabase()
   await login(page, email, password)
@@ -80,7 +80,7 @@ test('creates a quote from the full shortage list', async ({ page }) => {
   await page.getByRole('button', { name: 'Salvar' }).click()
 
   await expect(page.getByText('Cotação criada com sucesso!')).toBeVisible({
-    timeout: 15000
+    timeout: 15_000
   })
   await expect(page.getByText('PUDIM BRETZKE')).toBeVisible()
   await expect(page.getByText('SABAO EM PO BRILHANTE 2,4KG')).toBeVisible()
@@ -96,7 +96,7 @@ test('creates a quote from the full shortage list', async ({ page }) => {
 test('references an item manually and the rest via AI, preserving the manual reference', async ({
   page
 }) => {
-  test.setTimeout(60000)
+  test.setTimeout(60_000)
   const { email, password } = await createUser()
   await populateDatabase()
   const quote = await quoteModel.create({
@@ -133,7 +133,7 @@ test('references an item manually and the rest via AI, preserving the manual ref
   await page.getByRole('button', { name: 'Referenciar com IA' }).click()
   await expect(
     page.getByRole('button', { name: /Aplicar \d+ aceitos/ })
-  ).toBeVisible({ timeout: 60000 })
+  ).toBeVisible({ timeout: 60_000 })
 
   const aiModal = page
     .getByText('Sugestões da IA')
@@ -151,13 +151,15 @@ test('references an item manually and the rest via AI, preserving the manual ref
     .poll(async () => {
       const quotes = await quoteModel.findMany()
       const updated = quotes.find((q) => q.id === quote.id)
-      return updated?.items.filter((i) => i.priceRef !== null).length
+      return updated?.items.filter((item) => item.priceRef !== null).length
     })
     .toBe(30)
 
   const quotes = await quoteModel.findMany()
   const updated = quotes.find((q) => q.id === quote.id)
-  const manual = updated?.items.find((i) => i.description === 'PUDIM BRETZKE')
+  const manual = updated?.items.find(
+    (item) => item.description === 'PUDIM BRETZKE'
+  )
   expect(manual?.priceRef).toEqual({ type: 'product', id: '207826' })
   expect(manual?.salePrice).toBe(5)
 })
@@ -165,7 +167,7 @@ test('references an item manually and the rest via AI, preserving the manual ref
 test('edits the shortage list preserving existing references', async ({
   page
 }) => {
-  test.setTimeout(60000)
+  test.setTimeout(60_000)
   const { email, password } = await createUser()
   await populateDatabase()
 
@@ -211,13 +213,13 @@ test('edits the shortage list preserving existing references', async ({
   expect(updated?.items).toHaveLength(2)
 
   const preserved = updated?.items.find(
-    (i) => i.description === 'PUDIM BRETZKE'
+    (item) => item.description === 'PUDIM BRETZKE'
   )
   expect(preserved?.priceRef).toEqual({ type: 'product', id: '207826' })
   expect(preserved?.salePrice).toBe(5)
 
   const created = updated?.items.find(
-    (i) => i.description === 'NOVO ITEM TESTE'
+    (item) => item.description === 'NOVO ITEM TESTE'
   )
   expect(created?.priceRef).toBeNull()
   expect(created?.salePrice).toBeNull()

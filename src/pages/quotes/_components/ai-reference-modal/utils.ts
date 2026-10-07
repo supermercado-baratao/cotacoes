@@ -50,7 +50,7 @@ const getReferenceLabel = (
 
 const getRowOrder = (row: TSuggestionRow): number => {
   if (row.item.priceRef !== null) return 2
-  return row.suggestion.type !== null ? 1 : 0
+  return row.suggestion.type === null ? 0 : 1
 }
 
 export const buildRows = ({
@@ -80,8 +80,8 @@ export const buildRows = ({
     }
   })
 
-  return rows.sort((a, b) => getRowOrder(a) - getRowOrder(b))
+  return rows.toSorted((a, b) => getRowOrder(a) - getRowOrder(b))
 }
 
 export const isAlreadyReferenced = (itemId: string, quote: TQuote) =>
-  (quote.items.find((i) => i.id === itemId)?.priceRef ?? null) !== null
+  (quote.items.find((item) => item.id === itemId)?.priceRef ?? null) !== null

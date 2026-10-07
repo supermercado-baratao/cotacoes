@@ -21,7 +21,7 @@ const queryClient = new QueryClient({
   }
 })
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.querySelector('#root')!).render(
   <StrictMode>
     <BrowserRouter>
       <App queryClient={queryClient} />

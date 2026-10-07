@@ -9,7 +9,7 @@ export const buildDepartmentOrder = (
   )
   const unknown = departments
     .filter((department) => !savedOrder.includes(department))
-    .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+    .toSorted((a, b) => a.localeCompare(b, 'pt-BR'))
 
   return [...known, ...unknown]
 }
@@ -34,8 +34,8 @@ export const fromDepartmentOverrideRows = (
 export const serializeDepartmentOverrideRows = (
   rows: TDepartmentMarginOverrideRow[]
 ): string =>
-  [...rows]
-    .sort((a, b) => a.departmentId.localeCompare(b.departmentId))
+  rows
+    .toSorted((a, b) => a.departmentId.localeCompare(b.departmentId))
     .map(
       (row) =>
         `${row.departmentId}:${row.tolerance.below}:${row.tolerance.above}`

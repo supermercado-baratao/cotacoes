@@ -62,7 +62,7 @@ export const HistoryDrawer = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {!history.length ? (
+            {history.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} sx={S.EmptyCell}>
                   <Typography variant="body2" color="text.secondary">

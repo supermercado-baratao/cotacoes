@@ -22,6 +22,6 @@ export const TIP_MESSAGES = [
   'Curiosidade: a análise é feita de uma vez para todos os itens — quanto mais itens, mais tempo pode levar.'
 ]
 
-export const PROGRESS_MESSAGE_INTERVAL_MS = 4_000
+export const PROGRESS_MESSAGE_INTERVAL_MS = 4000
 
 export const TIP_MESSAGE_INTERVAL_MS = 15_000

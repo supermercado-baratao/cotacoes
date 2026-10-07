@@ -36,7 +36,7 @@ export const addInvoicesToCache = (
   const withinRange = invoices.filter((invoice) =>
     isWithinRange(invoice.emissionDate, range)
   )
-  if (!withinRange.length) return
+  if (withinRange.length === 0) return
   addManyToArrayCache(queryClient, invoicesKey(range), withinRange)
 }
 

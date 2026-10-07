@@ -19,29 +19,6 @@ import { importModel } from '@/models/import-model/model'
 const PROJECT_ID = process.env.VITE_PROJECT_ID!
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 
-// getData() (reaproveitado abaixo pra seed rápido) espera FileReader, que só
-// existe no browser — Node tem File/Blob nativos, então implementamos só o
-// suficiente (readAsArrayBuffer) sobre o Blob.arrayBuffer() nativo.
-if (typeof globalThis.FileReader === 'undefined') {
-  class NodeFileReader {
-    result: ArrayBuffer | null = null
-    onload: (() => void) | null = null
-    onerror: ((error: unknown) => void) | null = null
-
-    async readAsArrayBuffer(file: File) {
-      try {
-        this.result = await file.arrayBuffer()
-        this.onload?.()
-      } catch (error) {
-        this.onerror?.(error)
-      }
-    }
-  }
-
-  // @ts-expect-error polyfill mínimo, não implementa a interface completa
-  globalThis.FileReader = NodeFileReader
-}
-
 const app = initializeApp(
   { apiKey: 'test-api-key', projectId: PROJECT_ID },
   'playwright-orchestrator'
@@ -65,22 +42,21 @@ export const clearData = async (): Promise<void> => {
 
 export const verifyEmail = (email: string): Promise<void> =>
   retry(async () => {
-    const res = await fetch(
+    const response = await fetch(
       `http://localhost:9099/emulator/v1/projects/${PROJECT_ID}/oobCodes`
     )
-    if (!res.ok) throw new Error(`Failed to fetch OOB codes: ${res.statusText}`)
+    if (!response.ok)
+      throw new Error(`Failed to fetch OOB codes: ${response.statusText}`)
 
-    const data = (await res.json()) as {
+    const data = (await response.json()) as {
       oobCodes: { email: string; oobCode: string; requestType: string }[]
     }
 
-    const oobCode = data.oobCodes
-      .filter(
-        (oobCode) =>
-          oobCode.email === email.toLowerCase() &&
-          oobCode.requestType === 'VERIFY_EMAIL'
-      )
-      .at(-1)?.oobCode
+    const oobCode = data.oobCodes.findLast(
+      (oobCode) =>
+        oobCode.email === email.toLowerCase() &&
+        oobCode.requestType === 'VERIFY_EMAIL'
+    )?.oobCode
 
     if (!oobCode)
       throw new Error(`No email verification code found for ${email}`)

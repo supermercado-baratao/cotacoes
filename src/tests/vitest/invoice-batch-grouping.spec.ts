@@ -9,10 +9,13 @@ import {
   type TLinkOrderRow
 } from '@/pages/invoices/utils'
 
-let itemNumber = 0
+const nextItemNumber = (() => {
+  let current = 0
+  return () => (current += 1)
+})()
 
 const makeItem = (unit: string): TInvoiceItem => {
-  itemNumber += 1
+  const itemNumber = nextItemNumber()
   return {
     itemNumber,
     supplierProductCode: String(itemNumber),

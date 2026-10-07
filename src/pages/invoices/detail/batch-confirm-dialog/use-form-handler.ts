@@ -136,14 +136,14 @@ export const useFormHandler = (
       } as TCreateData<TOrder>
     }))
 
-    ;[...new Set(productIds)].forEach((productId) =>
+    const uniqueProductIds = new Set(productIds)
+    for (const productId of uniqueProductIds)
       upsertPackingDefault({
         supplierId: supplier.id,
         productId,
         packing: data.packing,
         packingQuantity: data.packingQuantity
       })
-    )
 
     setSuccessCallbacks([handleClose])
     createOrdersBatchWithInvoiceLink({ invoice, matches })

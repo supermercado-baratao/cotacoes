@@ -42,7 +42,7 @@ export const useSuppliersHandler = () => {
   )
 
   const isFetching = suppliers === null
-  const hasSuppliers = !!registeredSuppliers.length
+  const hasSuppliers = registeredSuppliers.length > 0
   const isFetchingIgnored = ignoredSuppliers === null
   const hasIgnoredSuppliers = !!ignoredSuppliers?.length
 

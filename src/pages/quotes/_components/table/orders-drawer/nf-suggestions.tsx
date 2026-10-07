@@ -46,11 +46,11 @@ const InvoiceGroup = ({
   const { invoice, unlinkedItems } = suggestion
 
   const sortedItems = useMemo(() => {
-    const likely = unlinkedItems.filter((i) =>
-      isLikelyMatch(i, quoteItem, productMap)
+    const likely = unlinkedItems.filter((item) =>
+      isLikelyMatch(item, quoteItem, productMap)
     )
     const others = unlinkedItems.filter(
-      (i) => !isLikelyMatch(i, quoteItem, productMap)
+      (item) => !isLikelyMatch(item, quoteItem, productMap)
     )
     return [...likely, ...others]
   }, [unlinkedItems, quoteItem, productMap])

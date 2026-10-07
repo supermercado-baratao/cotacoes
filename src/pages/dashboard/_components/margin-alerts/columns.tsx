@@ -47,8 +47,9 @@ const describeCostOption = (
   hasPeriod: boolean
 ): string => {
   switch (option.source) {
-    case 'vr':
+    case 'vr': {
       return 'Cadastro do produto no VR (custocomimposto)'
+    }
     case 'entries': {
       const entries = `${option.paidEntryCount} entrada${option.paidEntryCount > 1 ? 's' : ''} paga${option.paidEntryCount > 1 ? 's' : ''}`
       const bonus = option.bonusQuantity
@@ -57,8 +58,9 @@ const describeCostOption = (
       const scope = hasPeriod ? 'notas do período' : 'todas as notas'
       return `${entries} · ${formatQuantity(option.paidQuantity)} un.${bonus} · ${scope}`
     }
-    case 'lastEntry':
+    case 'lastEntry': {
       return `NF ${option.invoiceNumber} · ${option.supplierName} · ${formatDate(new Date(option.emissionDate))}`
+    }
   }
 }
 

@@ -31,7 +31,7 @@ export const extractPackingInfo = (
   const normalized = rawPacking.trim().toUpperCase()
   if (!normalized) return null
 
-  const letters = normalized.replace(/[^A-Z]/g, '')
+  const letters = normalized.replaceAll(/[^A-Z]/g, '')
   const digits = normalized.match(/\d+/)?.[0]
 
   if (letters && digits) {
