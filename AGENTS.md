@@ -277,7 +277,8 @@ Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o suje
 
 ### Lint e formatação
 
-- ESLint em flat config (`eslint.config.js`): `typescript-eslint`, `react-hooks`, `react-refresh`, `simple-import-sort`, `prefer-arrow-functions` (config `all`, como erro), `promise` (`flat/recommended`), `@eslint/markdown`, `@eslint/json` e `eslint-config-prettier`.
+- ESLint em flat config (`eslint.config.js`): `typescript-eslint`, `react-hooks`, `react-refresh`, `simple-import-sort`, `prefer-arrow-functions` (config `all`, como erro), `promise` (`flat/recommended`), `unicorn` (`recommended`), `@eslint/markdown`, `@eslint/json` e `eslint-config-prettier`.
+- `unicorn`: as regras que conflitam com as convenções do projeto ficam desligadas no `eslint.config.js` (ex: `no-null`, `prefer-default-parameters`, `prefer-ternary`). Nomes não usam abreviações (`index`, `event`, `error`, `previous`...); as únicas aceitas são `props`, `ref`, `params`, `utils` e `env`. Arquivos em kebab-case, exceto `App.tsx` e `Router.tsx`.
 - `@eslint/json` lê `tsconfig*.json` e `.vscode/*.json` como JSONC (aceitam comentários) e os demais `*.json` como JSON estrito. As fixtures de `src/tests/_mocks/` ficam fora do lint.
 - `pnpm-lock.yaml` é ignorado pelo Prettier: é gerado pelo pnpm.
 - Prettier: aspas simples, sem ponto e vírgula, sem vírgula final (`.prettierrc`).
