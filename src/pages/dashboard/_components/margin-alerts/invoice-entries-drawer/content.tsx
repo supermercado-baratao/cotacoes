@@ -22,6 +22,8 @@ import type { TInvoiceEntryWithCost } from '../../../utils'
 import * as S from './style'
 
 const packSourceLabel: Record<TPackQuantitySource, string> = {
+  manual:
+    'Corrigida manualmente (detalhes da nota ou conferência de pedidos) para este fornecedor e embalagem',
   trib: 'Conversão da nota: Qtd. Trib. ÷ Qtd. (Valor Unit. Trib. diferente do Valor Unit.)',
   supplier: 'Embalagem cadastrada no VR para o código do fornecedor',
   barcode: 'Embalagem do código de barras da nota no VR',

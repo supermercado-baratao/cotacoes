@@ -6,6 +6,7 @@ import type {
   TInvoiceDateRange,
   TInvoiceItem
 } from '@/models/invoice-model/types'
+import type { TPackingDefault } from '@/models/packing-default-model/types'
 import type { TMarginCostSource, TProduct } from '@/models/product-model/types'
 import type { TQuote } from '@/models/quote-model/types'
 import type { TSettings } from '@/models/settings-model/types'
@@ -55,6 +56,7 @@ export type TMarginAlert = {
   isCostDivergent: boolean
   hasBonus: boolean
   needsPackReview: boolean
+  hasPackCorrection: boolean
   thresholdMargin: number
   actualMargin: number
   marginGap: number
@@ -69,6 +71,8 @@ export type TMarginAlert = {
 
 // Ordem = prioridade do fallback padrão. A última NF não entra no fallback
 // (só existe quando o médio das notas também existe), só como escolha.
+// A manually corrected packing puts the invoice average ahead of the VR cost:
+// the VR cost is usually wrong because of the same packing.
 export const getMarginCostOptions = (
   vrCost: number | null,
   entryCost: TEntryCost | null
@@ -76,13 +80,15 @@ export const getMarginCostOptions = (
   const options: TMarginCostOption[] = []
   if (vrCost != null) options.push({ source: 'vr', cost: vrCost })
   if (entryCost?.cost != null) {
-    options.push({
+    const entriesOption: TMarginCostOption = {
       source: 'entries',
       cost: entryCost.cost,
       paidEntryCount: entryCost.paidEntryCount,
       paidQuantity: entryCost.paidQuantity,
       bonusQuantity: entryCost.bonusQuantity
-    })
+    }
+    if (entryCost.hasPackCorrection) options.unshift(entriesOption)
+    else options.push(entriesOption)
   }
   if (entryCost?.lastPaidEntry) {
     const { unitCost, ...lastPaidEntry } = entryCost.lastPaidEntry
@@ -177,6 +183,7 @@ export const getMarginAlerts = (
         Math.abs(costDivergence) > COST_DIVERGENCE_ATTENTION_PERCENT,
       hasBonus: entryCost?.hasBonus ?? false,
       needsPackReview: entryCost?.needsPackReview ?? false,
+      hasPackCorrection: entryCost?.hasPackCorrection ?? false,
       thresholdMargin:
         listStatus === 'below' ? tolerance.below : tolerance.above,
       actualMargin,
@@ -272,7 +279,8 @@ export type TInvoiceEntryWithCost = TInvoiceEntry & {
 export const addEntryUnitCosts = (
   entries: TInvoiceEntry[],
   product: TProduct | null,
-  suppliers: TSupplier[]
+  suppliers: TSupplier[],
+  packingDefaults: TPackingDefault[]
 ): TInvoiceEntryWithCost[] =>
   entries.map((entry) => ({
     ...entry,
@@ -281,7 +289,8 @@ export const addEntryUnitCosts = (
           entry.invoice,
           entry.item,
           product,
-          findSupplierByCnpj(entry.invoice.supplierCnpj, suppliers)?.id ?? null
+          findSupplierByCnpj(entry.invoice.supplierCnpj, suppliers)?.id ?? null,
+          packingDefaults
         )
       : null
   }))

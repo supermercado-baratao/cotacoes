@@ -1,5 +1,5 @@
-import { Edit } from '@mui/icons-material'
-import { Chip } from '@mui/material'
+import { Edit, Inventory2 } from '@mui/icons-material'
+import { Box, Chip, IconButton, Tooltip } from '@mui/material'
 import { GridActionsCellItem, type GridColDef } from '@mui/x-data-grid'
 import { useMemo } from 'react'
 
@@ -8,6 +8,7 @@ import type { TInvoiceItemMatchStatus } from '@/models/invoice-model/types'
 import { formatCurrency, formatNumericValue } from '@/utils/formatters'
 import { marginStatusConfig, type TMarginStatus } from '@/utils/margin'
 
+import * as S from './style'
 import type { TInvoiceItemRow } from './use-invoice-detail-handler'
 
 const matchStatusConfig: Record<
@@ -19,12 +20,32 @@ const matchStatusConfig: Record<
   unmatched_order: { label: 'Sem pedido', color: 'warning' }
 }
 
-type TProps = {
-  items: TInvoiceItemRow[]
-  handleEditOrder: (row: TInvoiceItemRow) => void
+const getPackCorrectionTooltip = (
+  hasSupplier: boolean,
+  row: TInvoiceItemRow
+): string => {
+  if (!hasSupplier) {
+    return 'Cadastre o fornecedor da nota para corrigir a Qtd. Embalagem'
+  }
+  if (!row.productId) {
+    return 'Vincule o item a um produto para corrigir a Qtd. Embalagem'
+  }
+  return 'Corrigir Qtd. Embalagem'
 }
 
-export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
+type TProps = {
+  items: TInvoiceItemRow[]
+  hasSupplier: boolean
+  handleEditOrder: (row: TInvoiceItemRow) => void
+  handlePackCorrectionDialogOpen: (row: TInvoiceItemRow) => void
+}
+
+export const ItemsTable = ({
+  items,
+  hasSupplier,
+  handleEditOrder,
+  handlePackCorrectionDialogOpen
+}: TProps) => {
   const columns = useMemo<GridColDef<TInvoiceItemRow>[]>(
     () => [
       { field: 'itemNumber', headerName: 'Nº' },
@@ -54,6 +75,29 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         headerName: 'Qtd. Embalagem',
         valueFormatter: (value: number | null) =>
           value == null ? '—' : formatNumericValue(value)
+      },
+      {
+        field: 'correctedPackQuantity',
+        headerName: 'Qtd. Emb. Corrigida',
+        minWidth: 150,
+        renderCell: (params) => (
+          <Box sx={S.PackCorrectionCell}>
+            {params.value == null ? '—' : formatNumericValue(params.value)}
+            <Tooltip title={getPackCorrectionTooltip(hasSupplier, params.row)}>
+              <span>
+                <IconButton
+                  size="small"
+                  tabIndex={params.tabIndex}
+                  disabled={!hasSupplier || !params.row.productId}
+                  aria-label={`Corrigir Qtd. Embalagem de ${params.row.description}`}
+                  onClick={() => handlePackCorrectionDialogOpen(params.row)}
+                >
+                  <Inventory2 fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        )
       },
       {
         field: 'quantity',
@@ -94,6 +138,13 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         valueFormatter: (value: number) => formatCurrency(value)
       },
       {
+        field: 'unitCostWithTax',
+        headerName: 'Custo Unit. c/ Imposto',
+        minWidth: 160,
+        valueFormatter: (value: number | null) =>
+          value == null ? '—' : formatCurrency(value)
+      },
+      {
         field: 'salePrice',
         headerName: 'Preço de Venda',
         valueFormatter: (value: number | null) =>
@@ -126,7 +177,7 @@ export const ItemsTable = ({ items, handleEditOrder }: TProps) => {
         }
       }
     ],
-    []
+    [hasSupplier, handlePackCorrectionDialogOpen]
   )
 
   return (

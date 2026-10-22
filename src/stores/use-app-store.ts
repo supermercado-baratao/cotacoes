@@ -127,6 +127,8 @@ type TAppStore = {
   packingDefaults: TPackingDefault[] | null
   setPackingDefaults: (packingDefaults: TPackingDefault[]) => void
   upsertPackingDefault: (data: TCreateData<TPackingDefault>) => void
+  savePackingCorrection: (data: TCreateData<TPackingDefault>) => void
+  deletePackingDefault: (id: string) => void
 
   quoteId: string | null
   setQuoteId: (id: string | null) => void
@@ -236,6 +238,8 @@ export const useAppStore = create<TAppStore>((set) => ({
   packingDefaults: null,
   setPackingDefaults: (packingDefaults) => set({ packingDefaults }),
   upsertPackingDefault: () => {},
+  savePackingCorrection: () => {},
+  deletePackingDefault: () => {},
 
   quoteId: null,
   setQuoteId: (id) => set({ quoteId: id }),

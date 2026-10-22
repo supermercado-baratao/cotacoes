@@ -35,3 +35,10 @@ export const Actions: SxProps<Theme> = {
   justifyContent: 'flex-end',
   gap: 2
 }
+
+export const PackCorrectionCell: SxProps<Theme> = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 0.5,
+  height: '100%'
+}

@@ -15,4 +15,12 @@ const findMany = (): Promise<TPackingDefault[]> =>
 const update = (data: TUpdateData<TPackingDefault>): Promise<TPackingDefault> =>
   database.update({ path: getUserPath(PATH), data })
 
-export const packingDefaultModel = { create, findMany, update }
+const deleteUniqueById = (id: string): Promise<string> =>
+  database.deleteUniqueById({ path: getUserPath(PATH), id })
+
+export const packingDefaultModel = {
+  create,
+  findMany,
+  update,
+  deleteUniqueById
+}
