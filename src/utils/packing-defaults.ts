@@ -1,6 +1,11 @@
+import { extractPackingInfo } from '@/components/blocks/order-form/utils'
 import type { TPackingDefault } from '@/models/packing-default-model/types'
 
 const normalizePacking = (packing: string) => packing.trim().toUpperCase()
+
+// Same key order checking saves: "CX24" becomes "CX".
+export const getInvoiceItemPacking = (unit: string): string =>
+  extractPackingInfo(unit)?.packing ?? unit
 
 export const findPackingDefault = (
   packingDefaults: TPackingDefault[],

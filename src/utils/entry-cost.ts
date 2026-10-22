@@ -1,8 +1,10 @@
 import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
+import type { TPackingDefault } from '@/models/packing-default-model/types'
 import type { TProduct } from '@/models/product-model/types'
 import type { TSupplier } from '@/models/supplier-model/types'
 
 import { normalizeCnpj } from './formatters'
+import { findPackingDefault, getInvoiceItemPacking } from './packing-defaults'
 
 // CFOPs de remessa em bonificação, doação ou brinde.
 const BONUS_CFOPS = new Set(['5910', '6910'])
@@ -30,7 +32,12 @@ const normalizeSupplierProductCode = (code: string): string =>
     .replace(/^0+(?=.)/, '')
     .toUpperCase()
 
-export type TPackQuantitySource = 'trib' | 'supplier' | 'barcode' | 'default'
+export type TPackQuantitySource =
+  | 'manual'
+  | 'trib'
+  | 'supplier'
+  | 'barcode'
+  | 'default'
 
 export type TPackQuantity = {
   packQuantity: number
@@ -105,34 +112,67 @@ const getTribPackQuantity = (item: TInvoiceItem): TPackQuantity | null => {
   return { packQuantity: tribQuantity / item.quantity, source: 'trib' }
 }
 
+// Manually corrected packing (invoice detail or order checking) wins over the
+// invoice and the VR, which are exactly what is wrong.
+const getManualPackQuantity = (
+  item: TInvoiceItem,
+  productId: string,
+  supplierId: string | null,
+  packingDefaults: TPackingDefault[]
+): TPackQuantity | null => {
+  if (!supplierId) return null
+  const packingDefault = findPackingDefault(packingDefaults, {
+    supplierId,
+    productId,
+    packing: getInvoiceItemPacking(item.unit)
+  })
+  return packingDefault
+    ? { packQuantity: packingDefault.packingQuantity, source: 'manual' }
+    : null
+}
+
 const isPackReviewNeeded = (item: TInvoiceItem): boolean =>
   !UNIT_PATTERN.test(item.unit.trim()) &&
   item.tribUnitPrice != null &&
   Math.abs(item.tribUnitPrice - item.unitPrice) < PRICE_EPSILON
 
+// Notas importadas antes do custo com impostos caem pro valor dos produtos.
+// Com conversão pela unidade tributável, totalCost ÷ Qtd. Trib. é o Valor
+// Unit. Trib. acrescido dos impostos/despesas do item.
+export const getItemUnitCost = (
+  item: Pick<TInvoiceItem, 'quantity' | 'totalCost' | 'totalPrice'>,
+  packQuantity: number
+): number | null => {
+  const unitQuantity = item.quantity * packQuantity
+  return unitQuantity > 0
+    ? (item.totalCost ?? item.totalPrice) / unitQuantity
+    : null
+}
+
 export const getEntryUnitCost = (
   invoice: Pick<TInvoice, 'operationNature'>,
   item: TInvoiceItem,
   product: TProduct,
-  supplierId: string | null
+  supplierId: string | null,
+  packingDefaults: TPackingDefault[]
 ): TEntryUnitCost => {
   const packQuantity =
-    getTribPackQuantity(item) ?? resolvePackQuantity(item, product, supplierId)
+    getManualPackQuantity(item, product.id, supplierId, packingDefaults) ??
+    getTribPackQuantity(item) ??
+    resolvePackQuantity(item, product, supplierId)
   const isBonus = isBonusEntry(invoice, item)
   const unitQuantity = item.quantity * packQuantity.packQuantity
-  // Notas importadas antes do custo com impostos caem pro valor dos produtos.
-  // Com conversão pela unidade tributável, totalCost ÷ Qtd. Trib. é o Valor
-  // Unit. Trib. acrescido dos impostos/despesas do item.
-  const totalCost = item.totalCost ?? item.totalPrice
-  const unitCost =
-    isBonus || unitQuantity <= 0 ? null : totalCost / unitQuantity
+  const unitCost = isBonus
+    ? null
+    : getItemUnitCost(item, packQuantity.packQuantity)
 
   return {
     ...packQuantity,
     isBonus,
     unitQuantity,
     unitCost,
-    needsPackReview: isPackReviewNeeded(item)
+    needsPackReview:
+      packQuantity.source !== 'manual' && isPackReviewNeeded(item)
   }
 }
 
@@ -157,6 +197,9 @@ export type TEntryCost = {
   // Alguma entrada do período precisa de conferência da Qtd. Embalagem (ver
   // TEntryUnitCost.needsPackReview).
   needsPackReview: boolean
+  // Some entry in the period used a manually corrected packing, so the invoice
+  // cost becomes the default margin cost instead of the VR cost.
+  hasPackCorrection: boolean
   lastPaidEntry: TLastPaidEntry | null
 }
 
@@ -164,7 +207,8 @@ export type TEntryCost = {
 export const buildEntryCostMap = (
   invoices: TInvoice[],
   products: TProduct[],
-  suppliers: TSupplier[]
+  suppliers: TSupplier[],
+  packingDefaults: TPackingDefault[]
 ): Map<string, TEntryCost> => {
   const productMap = new Map(products.map((product) => [product.id, product]))
   const supplierIdByCnpj = new Map(
@@ -178,6 +222,7 @@ export const buildEntryCostMap = (
       paidQuantity: number
       bonusQuantity: number
       needsPackReview: boolean
+      hasPackCorrection: boolean
       lastPaidEntry: TLastPaidEntry | null
     }
   >()
@@ -190,16 +235,24 @@ export const buildEntryCostMap = (
       const product = item.productId ? productMap.get(item.productId) : null
       if (!product) continue
 
-      const entry = getEntryUnitCost(invoice, item, product, supplierId)
+      const entry = getEntryUnitCost(
+        invoice,
+        item,
+        product,
+        supplierId,
+        packingDefaults
+      )
       const total = totals.get(product.id) ?? {
         paidCost: 0,
         paidEntryCount: 0,
         paidQuantity: 0,
         bonusQuantity: 0,
         needsPackReview: false,
+        hasPackCorrection: false,
         lastPaidEntry: null
       }
       if (entry.needsPackReview) total.needsPackReview = true
+      if (entry.source === 'manual') total.hasPackCorrection = true
       if (entry.isBonus) {
         total.bonusQuantity += entry.unitQuantity
       } else if (entry.unitCost !== null) {
@@ -234,6 +287,7 @@ export const buildEntryCostMap = (
       bonusQuantity: total.bonusQuantity,
       hasBonus: total.bonusQuantity > 0,
       needsPackReview: total.needsPackReview,
+      hasPackCorrection: total.hasPackCorrection,
       lastPaidEntry: total.lastPaidEntry
     })
   })

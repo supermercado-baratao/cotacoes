@@ -68,6 +68,9 @@ const buildCostTooltip = (row: TMarginAlert): string => {
   const packReview = row.needsPackReview
     ? ' Confira a Qtd. Embalagem: há entrada em embalagem diferente de UN sem conversão na unidade tributável da nota (Valor Unit. Trib. igual ao Valor Unit.).'
     : ''
+  const packCorrection = row.hasPackCorrection
+    ? ' Há entrada com a Qtd. Embalagem corrigida manualmente.'
+    : ''
   const source = {
     vr: 'Custo com imposto do VR.',
     entries: 'Custo médio das notas de entrada do período.',
@@ -80,10 +83,10 @@ const buildCostTooltip = (row: TMarginAlert): string => {
   const marginOk =
     row.status === 'ok' ? ' Com este custo a margem fica dentro da faixa.' : ''
   if (row.vrCost == null) {
-    return `${source} Sem custo com imposto no VR.${choice}${marginOk}${packReview}`
+    return `${source} Sem custo com imposto no VR.${choice}${marginOk}${packCorrection}${packReview}`
   }
   if (row.entryCost == null) {
-    return `${source} Sem entrada paga no período.${choice}${marginOk}`
+    return `${source} Sem entrada paga no período.${choice}${marginOk}${packCorrection}`
   }
   const divergence =
     row.costDivergence === null
@@ -92,7 +95,7 @@ const buildCostTooltip = (row: TMarginAlert): string => {
   const attention = row.isCostDivergent
     ? ` Atenção: diverge mais de ${COST_DIVERGENCE_ATTENTION_PERCENT}% do custo do VR — confira a embalagem, bonificações ou o custo cadastrado no VR.`
     : ''
-  return `${source}${choice} Custo médio das notas do período: ${formatCurrency(row.entryCost)}${divergence}.${attention}${marginOk}${packReview}`
+  return `${source}${choice} Custo médio das notas do período: ${formatCurrency(row.entryCost)}${divergence}.${attention}${marginOk}${packCorrection}${packReview}`
 }
 
 const renderCostValue = (row: TMarginAlert) => (

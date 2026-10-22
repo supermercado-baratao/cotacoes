@@ -36,7 +36,7 @@ export const Modal = ({
           ) : (
             title.component
           )}
-          <IconButton onClick={handleClose}>
+          <IconButton aria-label="Fechar" onClick={handleClose}>
             <Close />
           </IconButton>
         </Box>

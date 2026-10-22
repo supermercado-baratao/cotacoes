@@ -2,6 +2,7 @@ import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test } from 'vitest'
 
 import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
+import type { TPackingDefault } from '@/models/packing-default-model/types'
 import type { TProduct } from '@/models/product-model/types'
 import type { TSupplier } from '@/models/supplier-model/types'
 import { parseNfe } from '@/pages/invoices/utils'
@@ -63,6 +64,19 @@ const supplier: TSupplier = {
   createdAt: now,
   updatedAt: now
 }
+
+const makePackingDefault = (
+  overrides: Partial<TPackingDefault> = {}
+): TPackingDefault => ({
+  id: 'pd1',
+  supplierId: SUPPLIER_ID,
+  productId: '215155',
+  packing: 'CX',
+  packingQuantity: 24,
+  createdAt: now,
+  updatedAt: now,
+  ...overrides
+})
 
 const loadInvoice = async (
   filename: string,
@@ -206,7 +220,7 @@ describe('getEntryUnitCost', () => {
   })
 
   test('uses the taxable quantity when the taxable unit price differs from the commercial one', () => {
-    const entry = getEntryUnitCost(sale, makeItem(), product, SUPPLIER_ID)
+    const entry = getEntryUnitCost(sale, makeItem(), product, SUPPLIER_ID, [])
 
     // Conversão do XML (60 ÷ 5 = 12) prevalece sobre a embalagem do VR (6).
     expect(entry).toMatchObject({
@@ -223,7 +237,8 @@ describe('getEntryUnitCost', () => {
       sale,
       makeItem({ tribUnit: 'CX', tribQuantity: 5, tribUnitPrice: 57.16 }),
       product,
-      SUPPLIER_ID
+      SUPPLIER_ID,
+      []
     )
 
     expect(entry).toMatchObject({
@@ -240,7 +255,8 @@ describe('getEntryUnitCost', () => {
       sale,
       makeItem({ unit: 'UN', unitPrice: 57.16, tribUnitPrice: 4.76 }),
       product,
-      SUPPLIER_ID
+      SUPPLIER_ID,
+      []
     )
 
     expect(entry).toMatchObject({
@@ -255,10 +271,56 @@ describe('getEntryUnitCost', () => {
       sale,
       makeItem({ tribUnit: null, tribQuantity: null, tribUnitPrice: null }),
       product,
-      SUPPLIER_ID
+      SUPPLIER_ID,
+      []
     )
 
     expect(entry).toMatchObject({ source: 'supplier', needsPackReview: false })
+  })
+
+  test('prefers the manually corrected packing over the invoice and the VR', () => {
+    const entry = getEntryUnitCost(
+      sale,
+      makeItem({ tribUnit: 'CX', tribQuantity: 5, tribUnitPrice: 57.16 }),
+      product,
+      SUPPLIER_ID,
+      [makePackingDefault()]
+    )
+
+    expect(entry).toMatchObject({
+      source: 'manual',
+      packQuantity: 24,
+      unitQuantity: 120,
+      needsPackReview: false
+    })
+    expect(entry.unitCost).toBeCloseTo(300 / 120, 6)
+  })
+
+  test('matches the correction by the packing type of the invoice unit', () => {
+    const entry = getEntryUnitCost(
+      sale,
+      makeItem({ unit: 'cx12' }),
+      product,
+      SUPPLIER_ID,
+      [makePackingDefault()]
+    )
+
+    expect(entry).toMatchObject({ source: 'manual', packQuantity: 24 })
+  })
+
+  test('ignores corrections from another supplier or packing', () => {
+    const entry = getEntryUnitCost(
+      sale,
+      makeItem({ tribUnit: 'CX', tribQuantity: 5, tribUnitPrice: 57.16 }),
+      product,
+      SUPPLIER_ID,
+      [
+        makePackingDefault({ supplierId: 'other' }),
+        makePackingDefault({ packing: 'FD' })
+      ]
+    )
+
+    expect(entry).toMatchObject({ source: 'supplier', packQuantity: 6 })
   })
 })
 
@@ -272,7 +334,8 @@ describe('buildEntryCostMap', () => {
     const entryCost = buildEntryCostMap(
       [sale, bonus],
       [product],
-      [supplier]
+      [supplier],
+      []
     ).get(product.id)!
 
     // 100 pacotes pagos + 10 bonificados; o valor da bonificação é ignorado.
@@ -311,7 +374,8 @@ describe('buildEntryCostMap', () => {
         makeSale('101', '2026-09-10', 11)
       ],
       [product],
-      [supplier]
+      [supplier],
+      []
     ).get(product.id)!
 
     expect(entryCost.paidEntryCount).toBe(3)
@@ -321,6 +385,39 @@ describe('buildEntryCostMap', () => {
       supplierName: 'CONCORD',
       emissionDate: '2026-09-20'
     })
+  })
+
+  test('flags the products with a manually corrected packing', () => {
+    const product = makeProduct()
+    const invoice = {
+      id: '1',
+      number: '1',
+      emissionDate: '2026-09-01',
+      supplierCnpj: SUPPLIER_CNPJ,
+      supplierName: 'CONCORD',
+      items: [
+        {
+          productId: product.id,
+          supplierProductCode: '5184',
+          packageBarcode: null,
+          unit: 'CX',
+          quantity: 2,
+          unitPrice: 48,
+          totalPrice: 96
+        }
+      ]
+    } as unknown as TInvoice
+
+    const entryCost = buildEntryCostMap(
+      [invoice],
+      [product],
+      [supplier],
+      [makePackingDefault()]
+    ).get(product.id)!
+
+    expect(entryCost.hasPackCorrection).toBe(true)
+    expect(entryCost.paidQuantity).toBe(48)
+    expect(entryCost.cost).toBeCloseTo(2, 6)
   })
 
   test('converts the invoice quantity by the VR supplier packing', async () => {
@@ -336,7 +433,7 @@ describe('buildEntryCostMap', () => {
     const sale = await loadInvoice(SALE_XML, [product])
     const saleItem = sale.items.find((item) => item.productId === product.id)!
 
-    const entryCost = buildEntryCostMap([sale], [product], [supplier]).get(
+    const entryCost = buildEntryCostMap([sale], [product], [supplier], []).get(
       product.id
     )!
 
@@ -350,7 +447,7 @@ describe('buildEntryCostMap', () => {
     const product = makeProduct()
     const bonus = await loadInvoice(BONUS_XML, [product])
 
-    const entryCost = buildEntryCostMap([bonus], [product], [supplier]).get(
+    const entryCost = buildEntryCostMap([bonus], [product], [supplier], []).get(
       product.id
     )!
 
@@ -382,9 +479,12 @@ describe('buildEntryCostMap', () => {
       ]
     } as unknown as TInvoice
 
-    const entryCost = buildEntryCostMap([invoice], [product], [supplier]).get(
-      product.id
-    )!
+    const entryCost = buildEntryCostMap(
+      [invoice],
+      [product],
+      [supplier],
+      []
+    ).get(product.id)!
 
     expect(entryCost.cost).toBe(10)
   })

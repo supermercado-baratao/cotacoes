@@ -576,3 +576,94 @@ test('recalculates the margin with the cost source selected in the cost column',
   await page.reload()
   await expect(getRow(page, 'PRODUTO CUSTO').getByText('20.0%')).toBeVisible()
 })
+
+test('uses the cost with the packing corrected in the invoice detail as the default margin cost', async ({
+  page
+}) => {
+  const { email, password } = await createUser()
+
+  await settingsModel.upsert({ marginTolerance: { below: 25, above: 35 } })
+
+  // Preço 10. VR 9 -> margem 10%, abaixo do piso de 25%. A nota traz 2 CX a
+  // 69,00 sem a quantidade da embalagem nem embalagem no VR (considerada 1).
+  // Corrigida para 10 unidades: 138 / 20 = 6,90 -> 31%, dentro da faixa.
+  await Promise.all([
+    productModel.create(
+      makeProduct({
+        id: 'p1',
+        description: 'PRODUTO EMBALAGEM',
+        price: 10,
+        costWithTax: 9
+      })
+    ),
+    invoiceModel.create(
+      makeInvoice({
+        id: 'nf-cx',
+        emissionDate: daysAgo(5),
+        items: [
+          makeInvoiceItem({
+            productId: 'p1',
+            description: 'ITEM EM CAIXA',
+            unit: 'CX',
+            quantity: 2,
+            unitPrice: 69,
+            tribUnit: 'CX',
+            tribQuantity: 2,
+            tribUnitPrice: 69,
+            totalPrice: 138,
+            cfop: '5102',
+            totalCost: 138
+          })
+        ]
+      })
+    ),
+    supplierModel.create({
+      id: 's1',
+      legalName: 'FORNECEDOR',
+      tradeName: 'FORNECEDOR',
+      cnpj: '11111111000111',
+      email: null,
+      phone: null,
+      observations: null,
+      vrCreatedAt: '2020-01-01'
+    })
+  ])
+
+  await page.goto('/signin')
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Senha').fill(password)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+  await expect(page).toHaveURL(/\/dashboard/)
+
+  await expect(getRow(page, 'PRODUTO EMBALAGEM')).toBeVisible()
+  await getRow(page, 'PRODUTO EMBALAGEM')
+    .getByRole('menuitem', { name: 'Ver notas' })
+    .click()
+  await page.getByRole('link', { name: 'Ver nota fiscal' }).click()
+  await expect(page).toHaveURL(/\/invoices\/nf-cx/)
+
+  const itemRow = page.getByRole('row').filter({ hasText: 'ITEM EM CAIXA' })
+  await expect(itemRow.getByText('R$ 69,00').first()).toBeVisible()
+  await itemRow
+    .getByRole('button', { name: 'Corrigir Qtd. Embalagem de ITEM EM CAIXA' })
+    .click()
+
+  const dialog = page
+    .getByRole('presentation')
+    .filter({ hasText: 'Corrigir Qtd. Embalagem' })
+  await dialog.getByLabel('Qtd. Embalagem corrigida').fill('10')
+  await expect(dialog.getByText('R$ 6,90')).toBeVisible()
+  await dialog.getByRole('button', { name: 'Salvar' }).click()
+  await expect(dialog).toBeHidden()
+
+  await expect(
+    itemRow.getByRole('gridcell', {
+      name: '10 Corrigir Qtd. Embalagem'
+    })
+  ).toBeVisible()
+
+  await page.getByRole('button', { name: 'Dashboard' }).click()
+  await expect(page).toHaveURL(/\/dashboard/)
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+  await expect(page.getByText('PRODUTO EMBALAGEM')).toBeHidden()
+})

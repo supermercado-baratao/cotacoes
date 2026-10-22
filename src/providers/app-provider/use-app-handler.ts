@@ -99,7 +99,8 @@ export const useAppHandler = () => {
     useInvoiceMutation()
   const { createOrderWithInvoiceLink, createOrdersBatchWithInvoiceLink } =
     useInvoiceOrderLinkMutation()
-  const { upsertPackingDefault } = usePackingDefaultMutation()
+  const { upsertPackingDefault, savePackingCorrection, deletePackingDefault } =
+    usePackingDefaultMutation()
   const { updateSettings } = useSettingsMutation()
   const { replacePriceAdjustments } = usePriceAdjustmentMutation()
 
@@ -204,6 +205,8 @@ export const useAppHandler = () => {
       updateOrder,
       deleteOrder,
       upsertPackingDefault,
+      savePackingCorrection,
+      deletePackingDefault,
       importData,
       createInvoice,
       createInvoicesBatch,
@@ -244,6 +247,8 @@ export const useAppHandler = () => {
     updateOrder,
     deleteOrder,
     upsertPackingDefault,
+    savePackingCorrection,
+    deletePackingDefault,
     importData,
     createInvoice,
     createInvoicesBatch,

@@ -10,9 +10,11 @@ import type {
 } from '@/models/invoice-model/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
+import { getEntryUnitCost, type TPackQuantitySource } from '@/utils/entry-cost'
 import { normalizeCnpj } from '@/utils/formatters'
 import {
   evaluateMargin,
+  getMarginPercent,
   getMarginTolerance,
   type TMarginStatus
 } from '@/utils/margin'
@@ -27,6 +29,11 @@ export type TInvoiceItemRow = TInvoiceItem & {
   orderPackingQuantity: number | null
   productDescription: string | null
   salePrice: number | null
+  packQuantity: number | null
+  packQuantitySource: TPackQuantitySource | null
+  isBonus: boolean
+  correctedPackQuantity: number | null
+  unitCostWithTax: number | null
   marginStatus: TMarginStatus | null
 }
 
@@ -43,6 +50,7 @@ export const useInvoiceDetailHandler = () => {
     quoteId,
     ordersByQuoteId,
     packageBarcodeLinks,
+    packingDefaults,
     ignoredSuppliers,
     settings,
     setQuoteId,
@@ -130,12 +138,27 @@ export const useInvoiceDetailHandler = () => {
       const product = productMap.get(productId ?? '') ?? null
       const orderPrice = order?.price ?? null
       const salePrice = product?.price ?? null
-      const cost = product ? product.costWithTax : null
+      const entryCost = product
+        ? getEntryUnitCost(
+            invoice,
+            item,
+            product,
+            supplier?.id ?? null,
+            packingDefaults ?? []
+          )
+        : null
+      const isPackCorrected = entryCost?.source === 'manual'
+      // Same default as the Dashboard: a corrected packing means the VR cost
+      // is likely wrong too.
+      const cost =
+        isPackCorrected && entryCost.unitCost != null
+          ? entryCost.unitCost
+          : (product?.costWithTax ?? null)
 
       const marginStatus: TMarginStatus | null =
         product && salePrice && cost != null
           ? evaluateMargin(
-              ((salePrice - cost) / salePrice) * 100,
+              getMarginPercent(salePrice, cost),
               getMarginTolerance(settings, product.departmentId)
             ).status
           : null
@@ -152,12 +175,35 @@ export const useInvoiceDetailHandler = () => {
         orderPackingQuantity: order?.packingQuantity ?? null,
         productDescription: product?.description ?? null,
         salePrice,
+        packQuantity: entryCost?.packQuantity ?? null,
+        packQuantitySource: entryCost?.source ?? null,
+        isBonus: entryCost?.isBonus ?? false,
+        correctedPackQuantity: isPackCorrected ? entryCost.packQuantity : null,
+        unitCostWithTax: entryCost?.unitCost ?? null,
         marginStatus
       }
     })
-  }, [invoice, ordersForSupplier, productMap, packageBarcodeLinkMap, settings])
+  }, [
+    invoice,
+    ordersForSupplier,
+    productMap,
+    packageBarcodeLinkMap,
+    supplier,
+    packingDefaults,
+    settings
+  ])
 
   const [search, setSearch] = useState('')
+  const [packCorrectionRow, setPackCorrectionRow] =
+    useState<TInvoiceItemRow | null>(null)
+
+  const handlePackCorrectionDialogOpen = (row: TInvoiceItemRow) => {
+    setPackCorrectionRow(row)
+  }
+
+  const handlePackCorrectionDialogClose = () => {
+    setPackCorrectionRow(null)
+  }
 
   const filteredItems = useMemo(
     () => filterInvoiceItemRows(search, itemsWithDivergences),
@@ -234,9 +280,11 @@ export const useInvoiceDetailHandler = () => {
     setSearch,
     productMap,
     orderMap,
+    supplier,
     hasUnlinkedItems,
     isSupplierIgnored,
     itemToDelete,
+    packCorrectionRow,
     handleQuoteChange,
     handleApprove,
     handleMarkDivergent,
@@ -244,6 +292,8 @@ export const useInvoiceDetailHandler = () => {
     handleDelete,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm,
+    handlePackCorrectionDialogOpen,
+    handlePackCorrectionDialogClose,
     handleBack
   }
 }

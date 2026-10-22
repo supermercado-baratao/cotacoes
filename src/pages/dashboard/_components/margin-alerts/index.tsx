@@ -27,13 +27,13 @@ const copyByDirection: Record<
   below: {
     title: 'Produtos abaixo da margem',
     description:
-      'Produtos cujo preço de venda atual resulta numa margem menor que a margem mínima aceitável definida em Configurações, considerando o custo com imposto do VR ou, se o produto não tiver custo no VR, o custo médio das notas de entrada do período (convertido pela unidade tributável da nota quando a embalagem não é UN, senão pela embalagem do VR, com bonificações entrando só na quantidade). Use o select da coluna Custo para calcular a margem com outra fonte de custo.',
+      'Produtos cujo preço de venda atual resulta numa margem menor que a margem mínima aceitável definida em Configurações, considerando o custo com imposto do VR ou, se o produto não tiver custo no VR ou tiver a Qtd. Embalagem corrigida nos detalhes da nota, o custo médio das notas de entrada do período (convertido pela embalagem corrigida, pela unidade tributável da nota quando a embalagem não é UN ou pela embalagem do VR, com bonificações entrando só na quantidade). Use o select da coluna Custo para calcular a margem com outra fonte de custo.',
     emptyMessage: 'Nenhum produto abaixo da margem mínima no momento.'
   },
   above: {
     title: 'Produtos acima da margem',
     description:
-      'Produtos cujo preço de venda atual resulta numa margem maior que a margem máxima esperada definida em Configurações, considerando o custo com imposto do VR ou, se o produto não tiver custo no VR, o custo médio das notas de entrada do período (convertido pela unidade tributável da nota quando a embalagem não é UN, senão pela embalagem do VR, com bonificações entrando só na quantidade). Use o select da coluna Custo para calcular a margem com outra fonte de custo.',
+      'Produtos cujo preço de venda atual resulta numa margem maior que a margem máxima esperada definida em Configurações, considerando o custo com imposto do VR ou, se o produto não tiver custo no VR ou tiver a Qtd. Embalagem corrigida nos detalhes da nota, o custo médio das notas de entrada do período (convertido pela embalagem corrigida, pela unidade tributável da nota quando a embalagem não é UN ou pela embalagem do VR, com bonificações entrando só na quantidade). Use o select da coluna Custo para calcular a margem com outra fonte de custo.',
     emptyMessage: 'Nenhum produto acima da margem máxima no momento.'
   }
 }
@@ -56,7 +56,7 @@ export const MarginAlerts = ({
   dateRange,
   handleCostSourceChange
 }: TMarginAlertsProps) => {
-  const { invoices, products, suppliers } = useAppStore()
+  const { invoices, products, suppliers, packingDefaults } = useAppStore()
   const [drawerAlert, setDrawerAlert] = useState<TMarginAlert | null>(null)
   const copy = copyByDirection[direction]
   const columns = useMemo(
@@ -68,7 +68,8 @@ export const MarginAlerts = ({
     ? addEntryUnitCosts(
         getInvoiceEntriesForProduct(invoices ?? [], drawerAlert.id, dateRange),
         products?.find((product) => product.id === drawerAlert.id) ?? null,
-        suppliers ?? []
+        suppliers ?? [],
+        packingDefaults ?? []
       )
     : []
 

@@ -30,6 +30,7 @@ import { formatCNPJ, formatCurrency } from '@/utils/formatters'
 import { EditOrderDialog } from './edit-order-dialog'
 import { ItemsTable } from './items-table'
 import { LinkOrdersDialog } from './link-orders-dialog'
+import { PackCorrectionDialog } from './pack-correction-dialog'
 import * as S from './style'
 import {
   type TInvoiceItemRow,
@@ -62,9 +63,11 @@ export const InvoiceDetail = () => {
     selectedQuoteId,
     selectedQuote,
     orderMap,
+    supplier,
     hasUnlinkedItems,
     isSupplierIgnored,
     itemToDelete,
+    packCorrectionRow,
     handleQuoteChange,
     handleApprove,
     handleMarkDivergent,
@@ -72,6 +75,8 @@ export const InvoiceDetail = () => {
     handleDelete,
     handleDeleteDialogClose,
     handleDeleteDialogConfirm,
+    handlePackCorrectionDialogOpen,
+    handlePackCorrectionDialogClose,
     handleBack
   } = useInvoiceDetailHandler()
 
@@ -230,7 +235,9 @@ export const InvoiceDetail = () => {
         </Box>
         <ItemsTable
           items={itemsWithDivergences}
+          hasSupplier={!!supplier}
           handleEditOrder={setEditingRow}
+          handlePackCorrectionDialogOpen={handlePackCorrectionDialogOpen}
         />
       </Paper>
 
@@ -305,6 +312,12 @@ export const InvoiceDetail = () => {
         invoice={invoice}
         quote={selectedQuote}
         handleClose={() => setIsLinkOrdersOpen(false)}
+      />
+
+      <PackCorrectionDialog
+        row={packCorrectionRow}
+        supplier={supplier}
+        handleClose={handlePackCorrectionDialogClose}
       />
 
       {selectedQuote && editingRow && editingOrder && (

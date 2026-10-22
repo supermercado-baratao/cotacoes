@@ -260,6 +260,7 @@ describe('getMarginAlerts', () => {
           bonusQuantity: 0,
           hasBonus: false,
           needsPackReview: false,
+          hasPackCorrection: false,
           lastPaidEntry: null
         }
       ]
@@ -284,6 +285,42 @@ describe('getMarginAlerts', () => {
     expect(below[0].isCostDivergent).toBe(false)
   })
 
+  test('uses the entry cost as default when a packing was manually corrected', () => {
+    // VR cost 80 -> margin 20% (below 25%); corrected entry cost 70 -> 30% (ok)
+    const product = makeProduct({ costWithTax: 80 })
+    const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
+    const entryCosts = new Map<string, TEntryCost>([
+      [
+        'p1',
+        {
+          cost: 70,
+          paidEntryCount: 1,
+          paidQuantity: 10,
+          bonusQuantity: 0,
+          hasBonus: false,
+          needsPackReview: false,
+          hasPackCorrection: true,
+          lastPaidEntry: null
+        }
+      ]
+    ])
+
+    const { below, above } = getMarginAlerts(
+      [product],
+      settings,
+      noEntries,
+      entryCosts
+    )
+
+    expect(below).toEqual([])
+    expect(above).toEqual([])
+    expect(
+      getMarginCostOptions(80, entryCosts.get('p1')!).map(
+        (option) => option.source
+      )
+    ).toEqual(['entries', 'vr'])
+  })
+
   test('flags attention when the entry cost diverges too much from the VR cost', () => {
     // entry cost 90 vs VR 70 -> +28.6% (over the attention threshold); the
     // margin still uses the VR cost -> 30%, below the 35% floor
@@ -299,6 +336,7 @@ describe('getMarginAlerts', () => {
           bonusQuantity: 2,
           hasBonus: true,
           needsPackReview: false,
+          hasPackCorrection: false,
           lastPaidEntry: null
         }
       ]
@@ -332,6 +370,7 @@ describe('getMarginAlerts', () => {
           bonusQuantity: 5,
           hasBonus: true,
           needsPackReview: false,
+          hasPackCorrection: false,
           lastPaidEntry: null
         }
       ]
@@ -367,6 +406,7 @@ describe('getMarginAlerts', () => {
           bonusQuantity: 0,
           hasBonus: false,
           needsPackReview: false,
+          hasPackCorrection: false,
           lastPaidEntry: null
         }
       ]
@@ -401,6 +441,7 @@ describe('getMarginAlerts', () => {
           bonusQuantity: 0,
           hasBonus: false,
           needsPackReview: true,
+          hasPackCorrection: false,
           lastPaidEntry: null
         }
       ]
@@ -430,6 +471,7 @@ describe('getMarginAlerts', () => {
           bonusQuantity: 0,
           hasBonus: false,
           needsPackReview: false,
+          hasPackCorrection: false,
           lastPaidEntry: {
             unitCost: 60,
             invoiceNumber: '123',
@@ -551,6 +593,7 @@ describe('getMarginCostOptions', () => {
         bonusQuantity: 5,
         hasBonus: true,
         needsPackReview: false,
+        hasPackCorrection: false,
         lastPaidEntry: null
       })
     ).toEqual([])
@@ -674,6 +717,7 @@ describe('filterMarginAlertsByEntryPeriod', () => {
     isCostDivergent: false,
     hasBonus: false,
     needsPackReview: false,
+    hasPackCorrection: false,
     thresholdMargin: 25,
     actualMargin: 30,
     marginGap: 0,

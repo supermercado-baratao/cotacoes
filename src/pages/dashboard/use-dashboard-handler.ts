@@ -18,8 +18,15 @@ import {
 const ENTRY_DATE_DEFAULT_WINDOW_DAYS = 30
 
 export const useDashboardHandler = () => {
-  const { products, quotes, invoices, suppliers, settings, updateProduct } =
-    useAppStore()
+  const {
+    products,
+    quotes,
+    invoices,
+    suppliers,
+    packingDefaults,
+    settings,
+    updateProduct
+  } = useAppStore()
 
   const isFetching = products === null || quotes === null || invoices === null
 
@@ -68,9 +75,10 @@ export const useDashboardHandler = () => {
       buildEntryCostMap(
         filterInvoicesByEmissionDate(invoices ?? [], activeDateRange),
         products ?? [],
-        suppliers ?? []
+        suppliers ?? [],
+        packingDefaults ?? []
       ),
-    [invoices, products, suppliers, activeDateRange]
+    [invoices, products, suppliers, packingDefaults, activeDateRange]
   )
 
   const marginAlerts = useMemo(
