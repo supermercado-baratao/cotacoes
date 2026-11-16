@@ -1,3 +1,9 @@
+---
+name: Task
+about: Uma entrega verificável que cabe em um único pull request.
+title: ''
+---
+
 ## Contexto
 
 <!-- Por que esta tarefa existe e qual é o estado atual. Descreva o problema, não a solução. -->
