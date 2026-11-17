@@ -345,7 +345,7 @@ test('opens a drawer with the invoices where a flagged product had an entry with
   await expect(page.getByText('PRODUTO COM NOTA')).toBeVisible()
 
   await getRow(page, 'PRODUTO COM NOTA')
-    .getByRole('menuitem', { name: 'Ver notas' })
+    .getByRole('button', { name: 'Ver notas' })
     .click()
 
   await expect(
@@ -446,7 +446,7 @@ test('prioritizes the VR cost, flagging bonus and divergence from the entry cost
   await expect(row.getByText('R$ 10,00')).toBeVisible()
   await expect(row.getByLabel('Atenção: custo divergente do VR')).toBeVisible()
 
-  await row.getByRole('menuitem', { name: 'Ver notas' }).click()
+  await row.getByRole('button', { name: 'Ver notas' }).click()
   const drawer = page.getByRole('presentation')
   await expect(drawer.getByText('× 12')).toBeVisible()
   await expect(
@@ -637,7 +637,7 @@ test('uses the cost with the packing corrected in the invoice detail as the defa
 
   await expect(getRow(page, 'PRODUTO EMBALAGEM')).toBeVisible()
   await getRow(page, 'PRODUTO EMBALAGEM')
-    .getByRole('menuitem', { name: 'Ver notas' })
+    .getByRole('button', { name: 'Ver notas' })
     .click()
   await page.getByRole('link', { name: 'Ver nota fiscal' }).click()
   await expect(page).toHaveURL(/\/invoices\/nf-cx/)

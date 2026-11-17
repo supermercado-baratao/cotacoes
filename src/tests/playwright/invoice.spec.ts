@@ -387,7 +387,7 @@ test('back button returns to the page it was opened from, and items can be filte
     await page
       .getByText('PRODUTO BACK TEST', { exact: true })
       .locator('xpath=ancestor::*[@role="row"][1]')
-      .getByRole('menuitem', { name: 'Ver notas' })
+      .getByRole('button', { name: 'Ver notas' })
       .click()
     await page.getByRole('link', { name: 'Ver nota fiscal' }).click()
 
