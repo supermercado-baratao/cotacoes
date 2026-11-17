@@ -284,7 +284,7 @@ Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o suje
 - Prettier: aspas simples, sem ponto e vírgula, sem vírgula final (`.prettierrc`).
 - Indentação e espaços (2 espaços, LF) via `.editorconfig`.
 - `.claude/` é ignorado pelo ESLint e pelo Prettier: as skills instaladas de terceiros não seguem o estilo do projeto.
-- As saídas do Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) também são ignoradas pelo ESLint, e o cache do pnpm no CI (`.pnpm-store/`), pelo ESLint e pelo Prettier: os dois rodam no repositório inteiro.
+- As saídas do Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) também são ignoradas pelo ESLint, que roda no repositório inteiro.
 
 ## Testes
 
@@ -321,13 +321,15 @@ O emulador carrega o `firestore.rules` só ao iniciar: reinicie-o depois de alte
 - **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
 - **`pre-push`** — roda `pnpm type-check && pnpm test:e2e` (Playwright): os emuladores precisam estar rodando e o `.env` preenchido.
 
-## CI (GitLab)
+## CI (GitHub Actions)
 
-O `.gitlab-ci.yml` roda só em merge requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. O merge exige o pipeline verde. Todos os jobs usam o `.env.example` como `.env`: os valores dele bastam para os testes e os emuladores, sem segredos.
+O `.github/workflows/ci.yml` roda só em pull requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. Um ruleset da `main` exige os três jobs verdes para o merge. Os jobs `check` e `e2e` usam o `.env.example` como `.env`: os valores dele bastam para os testes e os emuladores, sem segredos.
 
-- **`commitlint`** — valida todos os commits da MR (`--from $CI_MERGE_REQUEST_DIFF_BASE_SHA`).
+- **`commitlint`** — valida todos os commits do PR (`--from` o SHA da base, `--to` o SHA do head).
 - **`check`** — `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check` e `pnpm test`.
-- **`e2e`** — `pnpm test:e2e` dentro de `firebase-tools emulators:exec`, na imagem do Playwright com Java instalado. Ao atualizar o `@playwright/test`, atualize também a tag da imagem.
+- **`e2e`** — instala o Java e o Chromium do Playwright no `ubuntu-latest` e roda `pnpm test:e2e` dentro de `firebase-tools emulators:exec`. Em caso de falha, o `test-results/` fica como artifact do run.
+
+Ao renomear um job, atualize os checks exigidos no ruleset da `main` (Settings → Rules).
 
 ## Ferramentas de IA
 
@@ -342,7 +344,7 @@ O `.gitlab-ci.yml` roda só em merge requests e repete as verificações dos hoo
 
 ## Fluxo de trabalho
 
-O fluxo completo (planejamento com `/grill-me`, issues, branches, commits, merge requests e fechamento) está em [`docs/development-workflow.md`](./docs/development-workflow.md). Siga-o para qualquer issue. As regras abaixo são obrigatórias.
+O fluxo completo (planejamento com `/grill-me`, issues, branches, commits, pull requests e fechamento) está em [`docs/development-workflow.md`](./docs/development-workflow.md). Siga-o para qualquer issue. As regras abaixo são obrigatórias.
 
 ### Regras de tarefa
 
@@ -352,11 +354,11 @@ Nunca comece uma tarefa por conta própria, mesmo quando pedido para seguir para
 
 Todo trabalho é feito em uma branch nova, nunca direto na `main`. Formato: `<prefixo>/<titulo>#<issue>` — o prefixo é o dos commits, sem emoji (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`...); o título é curto, minúsculo e separado por hífens. Exemplos: `feat/relatorio-pedidos#10`, `fix/invoice-race-condition#12`. Use aspas no shell, porque `#` é especial (ex: `git switch -c 'feat/relatorio-pedidos#10'`).
 
-Para um esforço amplo de escopo único (ex: um code review cobrindo várias áreas), prefira uma única branch e uma única MR.
+Para um esforço amplo de escopo único (ex: um code review cobrindo várias áreas), prefira uma única branch e um único PR.
 
 ### Regras de commit
 
-Nunca rode `git commit` por conta própria, mesmo em modo automático. Proponha a mensagem de commit apenas quando o usuário pedir e crie o commit só depois que ele aprovar essa mensagem. O mesmo vale para `git push` e para abrir a merge request.
+Nunca rode `git commit` por conta própria, mesmo em modo automático. Proponha a mensagem de commit apenas quando o usuário pedir e crie o commit só depois que ele aprovar essa mensagem. O mesmo vale para `git push` e para abrir o pull request.
 
 Mensagens de commit em inglês, neste formato:
 
@@ -377,7 +379,7 @@ Issue: #1
 
 ### Regras de issue
 
-Antes de fechar uma issue, marque como concluído (`- [x]`) cada item do checklist da descrição (ex: `glab issue update <número> --description "..."`). Não feche uma issue com itens desmarcados, a menos que tenham sido descartados ou movidos — e diga isso no comentário de fechamento.
+Antes de fechar uma issue, marque como concluído (`- [x]`) cada item do checklist da descrição (ex: `gh issue edit <número> --body-file <arquivo>`). Não feche uma issue com itens desmarcados, a menos que tenham sido descartados ou movidos — e diga isso no comentário de fechamento.
 
 ### Regras de documentação
 

@@ -54,5 +54,5 @@ Os git hooks repetem essas verificações: o `pre-push` roda o type-check e os t
 ## Documentação
 
 - [`AGENTS.md`](./AGENTS.md) — arquitetura, convenções de código, testes, git hooks e CI.
-- [`docs/development-workflow.md`](./docs/development-workflow.md) — fluxo de issues, branches, commits e merge requests.
+- [`docs/development-workflow.md`](./docs/development-workflow.md) — fluxo de issues, branches, commits e pull requests.
 - [`docs/contexto-integracao-vr.md`](./docs/contexto-integracao-vr.md) — integração com o VR Software (ERP do supermercado), com [`query-sql.md`](./docs/query-sql.md), [`tabelas-vr.md`](./docs/tabelas-vr.md) e [`relacao-de-produtos-e-notas.md`](./docs/relacao-de-produtos-e-notas.md).

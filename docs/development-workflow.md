@@ -1,6 +1,6 @@
 # Fluxo de trabalho
 
-Como o trabalho vai de uma ideia a uma mudança na `main`. A maior parte dos passos é sustentada por algo no repositório (templates de issue e MR, git hooks e as regras do [`AGENTS.md`](../AGENTS.md)).
+Como o trabalho vai de uma ideia a uma mudança na `main`. A maior parte dos passos é sustentada por algo no repositório (templates de issue e PR, git hooks, CI e as regras do [`AGENTS.md`](../AGENTS.md)).
 
 ```mermaid
 flowchart LR
@@ -10,8 +10,8 @@ flowchart LR
   D --> E[Implementar e testar]
   E --> F[Commit]
   F --> G[Push]
-  G --> H[Merge request]
-  H --> CI[Pipeline verde]
+  G --> H[Pull request]
+  H --> CI[CI verde]
   CI --> I[Merge fecha a issue]
 ```
 
@@ -19,11 +19,11 @@ flowchart LR
 
 Antes de criar tarefas, rode a skill `/grill-me` e descreva a funcionalidade, a página ou a decisão a planejar. Ela entrevista você em rodadas, com uma resposta recomendada para cada pergunta, e consulta o código em vez de perguntar sempre que o código puder responder.
 
-O resultado da sessão é um conjunto de decisões. Transforme-as em tarefas, cada uma pequena o bastante para caber em uma única merge request.
+O resultado da sessão é um conjunto de decisões. Transforme-as em tarefas, cada uma pequena o bastante para caber em um único pull request.
 
 ## 2. Criar as issues
 
-Crie cada tarefa a partir do template **Task** (`.gitlab/issue_templates/task.md`), na UI do GitLab ou com `glab issue create`:
+Crie cada tarefa a partir do template **Task** (`.github/ISSUE_TEMPLATE/task.md`), na UI do GitHub ou com `gh issue create`:
 
 | Seção    | O que vai nela                                                                                                                                                         |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -91,26 +91,26 @@ git push -u origin 'feat/relatorio-pedidos#10'
 
 `pre-push` roda `pnpm type-check` e `pnpm test:e2e`, então os emuladores precisam estar rodando (`pnpm emulators:start`). O push é rejeitado se algum falhar.
 
-## 8. Abrir a merge request
+## 8. Abrir o pull request
 
-Abra a MR contra a `main` com o template **Default** (`.gitlab/merge_request_templates/default.md`):
+Abra o PR contra a `main`, seguindo o template (`.github/pull_request_template.md`):
 
 ```bash
-glab mr create --source-branch 'feat/relatorio-pedidos#10' --target-branch main \
-  --title "✨ feat: add orders report" --description "$(cat descricao.md)"
+gh pr create --base main --head 'feat/relatorio-pedidos#10' \
+  --title "✨ feat: add orders report" --body-file descricao.md
 ```
 
 - **Título:** segue a convenção de commits (prefixo com emoji, imperativo, minúsculo).
 - **Descrição:** `Resumo` (o que mudou e por quê; num review com vários achados, agrupe por severidade/categoria), `Plano de testes` (o que foi verificado) e `Closes #<issue>`, para que o merge feche a issue.
 
-A MR dispara o pipeline do `.gitlab-ci.yml` (ver CI no [`AGENTS.md`](../AGENTS.md)): `commitlint` nos commits da MR, tipos, lint, formatação, testes unitários e e2e. Acompanhe com `glab ci status`.
+O PR dispara o workflow `.github/workflows/ci.yml` (ver CI no [`AGENTS.md`](../AGENTS.md)): `commitlint` nos commits do PR, tipos, lint, formatação, testes unitários e e2e. Acompanhe com `gh pr checks --watch`.
 
 ## 9. Merge e fechamento
 
-1. Espere o pipeline da MR ficar verde: o GitLab bloqueia o merge enquanto ele falhar.
+1. Espere os checks do PR ficarem verdes: o ruleset da `main` bloqueia o merge enquanto algum falhar.
 2. Na issue, marque cada item concluído do checklist (`- [x]`). Não feche uma issue com itens desmarcados, a menos que tenham sido descartados ou movidos, e diga isso em um comentário.
-3. Faça o merge com **merge commit**, que mantém cada commit da MR como foi validado pelo `commitlint`. O commit de merge (`Merge branch '...' into 'main'`) não precisa seguir as Regras de commit.
-4. Apague a branch e atualize a `main` local:
+3. Faça o merge com **merge commit** (`gh pr merge --merge`), a única opção habilitada no repositório, que mantém cada commit do PR como foi validado pelo `commitlint`. O commit de merge (`Merge pull request #...`) não precisa seguir as Regras de commit.
+4. O GitHub apaga a branch remota após o merge. Atualize a `main` local e apague a branch local:
 
    ```bash
    git switch main && git pull
