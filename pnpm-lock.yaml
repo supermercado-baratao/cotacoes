@@ -230,8 +230,8 @@ importers:
         specifier: 4.6.0
         version: 4.6.0
       validation-br:
-        specifier: 1.6.5
-        version: 1.6.5
+        specifier: 2.0.0
+        version: 2.0.0
       xlsx:
         specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
         version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
@@ -3759,8 +3759,8 @@ packages:
     resolution: {integrity: sha512-fcRLaS4H/hrZk9hYwbdRM35D0U8IYMfEClhXxCivOojl+yTRAZH3Zy2sSy6qVCiGbV9YAtPssP6jaChqC9vPCg==}
     engines: {node: '>= 10.13.0'}
 
-  validation-br@1.6.5:
-    resolution: {integrity: sha512-zQX4Kh4U9PB2zN3lrTnIzUBbLW6hgOnxqVN1aEszix0vV8EaS1dokgrbfDn5f2lvLo78TY4wNgXIGMEg5wtxbg==}
+  validation-br@2.0.0:
+    resolution: {integrity: sha512-5dw6Us6KuTQDKJ0CZs9EtTO+Y9ZLMOLIp7JjuLZ9XMRCLZu0/mkUVzGjUOfJYa5zmxNfW2LD0fCxu1igWxW4ww==}
 
   verkit@0.5.0:
     resolution: {integrity: sha512-u4J1hr6Y+C/hit34GwL3eIcUf3wngT8TlYUjK7tk0jxydKLAq3sYvifjdTDA6U3KCKRcQCQDGf/srjxfZF3l7g==}
@@ -7788,7 +7788,7 @@ snapshots:
 
   v8flags@4.0.1: {}
 
-  validation-br@1.6.5: {}
+  validation-br@2.0.0: {}
 
   verkit@0.5.0: {}
 
