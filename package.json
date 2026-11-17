@@ -3,6 +3,7 @@
   "description": "Aplicação WEB para gerenciamento de cotações e controle de pedidos para supermercados.",
   "private": true,
   "version": "0.0.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -88,8 +89,8 @@
     "vite": "8.0.10",
     "vitest": "4.1.5"
   },
-  "packageManager": "pnpm@11.25.0",
+  "packageManager": "pnpm@12.18.0",
   "engines": {
-    "node": ">=24"
+    "node": "24.x"
   }
 }
