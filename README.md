@@ -18,38 +18,32 @@ Pré-requisitos:
 
 - **Node** na versão do `.nvmrc` (`nvm use`).
 - **pnpm** na versão do campo `packageManager` do `package.json` (`corepack enable`). Use apenas pnpm.
-- **Firebase CLI** (`firebase-tools`) e **Java**, para os emuladores do Firebase.
+- **Java**, para os emuladores do Firebase. A Firebase CLI vem nas dependências do projeto.
 
 ```bash
 pnpm install
-cp .env.example .env
-pnpm exec playwright install   # browsers do Playwright, só para os testes e2e
-```
-
-Os valores do `.env.example` bastam para desenvolvimento e testes. As variáveis `VITE_GEMINI_*` só são necessárias para os recursos de IA.
-
-Fora de produção, o app se conecta aos emuladores do Firebase (Auth e Firestore), e não ao projeto real. Inicie-os antes do servidor de desenvolvimento:
-
-```bash
-pnpm emulators:start   # em outro terminal
+pnpm exec playwright install chromium   # browser do Playwright, só para os testes e2e
 pnpm dev
 ```
 
+Fora de produção, o app se conecta aos emuladores do Firebase (Auth e Firestore), e não ao projeto real. O `pnpm dev` sobe os emuladores em segundo plano e os mantém rodando, com os dados, até o `pnpm services:down`. As variáveis locais ficam no `.env.development`, versionado e sem segredos.
+
 ## Comandos
 
-| Comando                | O que faz                                          |
-| ---------------------- | -------------------------------------------------- |
-| `pnpm dev`             | Servidor de desenvolvimento                        |
-| `pnpm build`           | Build de produção                                  |
-| `pnpm emulators:start` | Emuladores do Firebase (Auth + Firestore)          |
-| `pnpm test`            | Testes unitários (Vitest)                          |
-| `pnpm test:e2e`        | Testes e2e (Playwright), com os emuladores rodando |
-| `pnpm type-check`      | Verificação de tipos                               |
-| `pnpm eslint:check`    | Lint (`pnpm eslint:fix` para corrigir)             |
-| `pnpm prettier:check`  | Formatação (`pnpm prettier:fix` para corrigir)     |
-| `pnpm generate`        | Gera um novo componente (plop)                     |
+| Comando               | O que faz                                                 |
+| --------------------- | --------------------------------------------------------- |
+| `pnpm dev`            | Emuladores do Firebase e servidor de desenvolvimento      |
+| `pnpm build`          | Build de produção                                         |
+| `pnpm services:up`    | Sobe os emuladores do Firebase (Auth + Firestore)         |
+| `pnpm services:down`  | Para os emuladores                                        |
+| `pnpm test`           | Testes unitários (Vitest)                                 |
+| `pnpm test:e2e`       | Testes e2e (Playwright), subindo os emuladores se preciso |
+| `pnpm type-check`     | Verificação de tipos                                      |
+| `pnpm eslint:check`   | Lint (`pnpm eslint:fix` para corrigir)                    |
+| `pnpm prettier:check` | Formatação (`pnpm prettier:fix` para corrigir)            |
+| `pnpm generate`       | Gera um novo componente (plop)                            |
 
-Os git hooks repetem essas verificações: o `pre-push` roda o type-check e os testes e2e, por isso os emuladores precisam estar rodando.
+Os git hooks repetem essas verificações: o `pre-push` roda o type-check e os testes e2e.
 
 ## Documentação
 

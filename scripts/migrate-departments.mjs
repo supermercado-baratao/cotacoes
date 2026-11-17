@@ -3,14 +3,15 @@
 // todo o catálogo. Não faz parte do fluxo do app — rode manualmente uma vez.
 //
 // Uso:
-//   set -a && source .env && set +a
+//   set -a && source .env.production.local && set +a
 //   MIGRATION_EMAIL=seu@email.com MIGRATION_PASSWORD=sua-senha \
 //     node scripts/migrate-departments.mjs --dry-run
 //
 // Rode primeiro com --dry-run pra conferir quantos departamentos/produtos
 // seriam afetados antes de gravar de verdade (sem a flag).
 //
-// Requer as mesmas variáveis VITE_* do .env do app, mais MIGRATION_EMAIL e
+// Requer as variáveis VITE_* do projeto de produção (em um .env.production.local,
+// ignorado pelo git), mais MIGRATION_EMAIL e
 // MIGRATION_PASSWORD de uma conta com acesso aos dados (as coleções ficam em
 // users/{uid}/..., então o script precisa logar como o usuário dono dos
 // dados, igual o app faz).

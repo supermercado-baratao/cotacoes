@@ -9,19 +9,20 @@ Aplicação web para gerenciamento de cotações e controle de pedidos para supe
 ## Comandos
 
 ```bash
-pnpm dev              # iniciar servidor de desenvolvimento
+pnpm dev              # subir os emuladores do Firebase e o servidor de desenvolvimento
 pnpm build            # build de produção (tsc + vite build)
 pnpm test             # executar testes unitários (Vitest) uma vez
 pnpm test:watch       # executar testes Vitest em modo watch
-pnpm test:e2e         # executar testes e2e (Playwright)
-pnpm test:e2e:ui      # executar testes e2e no modo UI do Playwright
+pnpm test:e2e         # subir os emuladores e executar testes e2e (Playwright)
+pnpm test:e2e:ui      # subir os emuladores e executar testes e2e no modo UI do Playwright
 pnpm type-check       # verificar tipos (tsc)
 pnpm eslint:check     # verificar lint
 pnpm eslint:fix       # corrigir problemas de lint automaticamente
 pnpm prettier:check   # verificar formatação
 pnpm prettier:fix     # formatar código
 pnpm generate         # gerar novo componente via plop
-pnpm emulators:start  # iniciar emuladores do Firebase (Auth + Firestore), necessário para pnpm test:e2e (e para o pre-push)
+pnpm services:up      # subir os emuladores do Firebase (Auth + Firestore) em segundo plano, se ainda não estiverem rodando
+pnpm services:down    # parar os emuladores
 ```
 
 Para executar um único arquivo de teste:
@@ -35,22 +36,19 @@ pnpm playwright test src/tests/playwright/quote.spec.ts
 
 - Use apenas **pnpm** (nunca npm/yarn/npx).
 - Versões de `dependencies` e `devDependencies` são fixas (sem `^`/`~`). Instale com `pnpm add -E <pkg>` (ou `pnpm add -D -E <pkg>`) — nunca edite as versões à mão.
+- O `-E` só vale quando a versão não é informada: `pnpm add -E <pkg>@<versão>` e pacotes que já estão no `package.json` ainda ganham `^`. Nesses casos, remova os `^` logo em seguida (`sed -i -E 's/"\^([0-9])/"\1/' package.json`) e rode `pnpm install`.
+- `minimumReleaseAge` no `pnpm-workspace.yaml` (7 dias, em minutos) impede o pnpm de resolver uma versão publicada há menos de uma semana.
 - A regra de versão fixa não vale para servidores MCP (`.mcp.json`) nem para scripts, que podem usar `@latest` (ex: `pnpm dlx @playwright/mcp@latest`), sempre via `pnpm dlx`.
-- A versão do Node fica em `.nvmrc`, e o `engines.node` do `package.json` acompanha a major dela; a do pnpm fica no `packageManager`.
+- A versão do Node fica em `.nvmrc`, e o `engines.node` (`24.x`) do `package.json` acompanha a major dela, para hosts que ignoram o `.nvmrc`; a do pnpm fica no `packageManager`.
+- O `firebase-tools` é uma devDependency: rode a CLI com `pnpm exec firebase`.
 
 ## Configuração do ambiente
 
-Copie `.env.example` para `.env` e preencha as credenciais do Firebase:
+O `.env.development`, versionado, tem os valores locais e não precisa de nenhum segredo: fora de produção, o app sempre usa os emuladores do Firebase e a sugestão local no lugar do Gemini. O project ID `demo-cotacoes` faz o Firebase recusar qualquer acesso a recursos reais. O mesmo arquivo serve ao Vite no `pnpm dev`, ao Vitest (`test.env` no `vite.config.ts`, já que o modo `test` só lê o `.env.test`), ao Playwright e ao `services:up`.
 
-```text
-VITE_API_KEY
-VITE_AUTH_DOMAIN
-VITE_PROJECT_ID
-VITE_STORAGE_BUCKET
-VITE_MESSAGING_SENDER_ID
-VITE_APP_ID
-VITE_APP_MEASUREMENT_ID
-```
+As variáveis de produção (`VITE_API_KEY`, `VITE_AUTH_DOMAIN`, `VITE_PROJECT_ID`, `VITE_STORAGE_BUCKET`, `VITE_MESSAGING_SENDER_ID`, `VITE_APP_ID`, `VITE_APP_MEASUREMENT_ID`, `VITE_GEMINI_MODEL` e `VITE_GEMINI_API_KEY`) ficam no Netlify. Para usá-las localmente (ex: um script em `scripts/`), crie um `.env.production.local`, ignorado pelo git.
+
+Os emuladores precisam de Java. O `pnpm services:up` (`src/infra/scripts/emulators.ts`) inicia os emuladores em segundo plano só quando eles ainda não estão rodando, grava a saída em `firebase-emulators.log` e espera Auth e Firestore responderem. Os dados ficam em memória enquanto os emuladores rodam, então sobrevivem a reinícios do `pnpm dev` e somem no `pnpm services:down`.
 
 ## Arquitetura
 
@@ -304,30 +302,24 @@ O `orchestrator.ts` do Playwright reaproveita os models reais (`@/models`) e o p
 - **Vitest** (`src/tests/vitest/*.spec.ts(x)`) — só testes unitários, que rodam em segundos: funções puras (`evaluateMargin`, `groupInvoiceItemsForBatch`, `extractPackingInfo`...) e cenários de erro que precisam forçar uma rejeição do banco, que não dá para simular contra o emulador. Esses testam o hook (mutation do `AppProvider` ou handler da página) com `renderHook` e `vi.spyOn(<model>, '<método>').mockRejectedValueOnce(...)` — nunca renderize o `App` nem páginas inteiras. Sem rede nem emuladores.
   - Cada arquivo mocka só o que usa (`vi.spyOn` no model ou `vi.mock` local); não há mocks globais. O `vitest.setup.ts` reseta e restaura todos os mocks antes de cada teste.
   - Todos os arquivos rodam no ambiente `jsdom` (padrão do `vite.config.ts`); não declare `// @vitest-environment` por arquivo.
-- **Playwright** (`src/tests/playwright/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores do Firebase. Um arquivo por página; cada `test()` cria seu próprio usuário e semeia só os dados de que precisa (via orchestrator ou chamando os models) — testes independentes, não um roteiro sequencial. Precisa dos emuladores rodando e do `.env` preenchido.
+- **Playwright** (`src/tests/playwright/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores do Firebase. Um arquivo por página; cada `test()` cria seu próprio usuário e semeia só os dados de que precisa (via orchestrator ou chamando os models) — testes independentes, não um roteiro sequencial. O `pnpm test:e2e` sobe os emuladores antes.
 - Teste apenas a lógica que escrevemos (cálculos, filtros, mapeamentos, parsers, regras de negócio). Não teste comportamento de bibliotecas (MUI, zod, React Query) e descarte um teste cujo custo principal é um mock necessário só para renderizar.
 
-Os emuladores são necessários para `pnpm test:e2e` e, portanto, para o `pre-push`:
-
-```bash
-pnpm emulators:start > /tmp/emulators.log 2>&1 &
-```
-
-O emulador carrega o `firestore.rules` só ao iniciar: reinicie-o depois de alterar as regras.
+O emulador carrega o `firestore.rules` só ao iniciar: depois de alterar as regras, rode `pnpm services:down` e suba de novo.
 
 ## Git hooks (husky)
 
 - **`pre-commit`** — roda `lint-staged` (`lint-staged.config.js`) apenas nos arquivos staged: ESLint e Prettier nos arquivos de código, Markdown e JSON, só Prettier em YAML, e `vitest related` para rodar os testes unitários afetados pelos arquivos de código.
 - **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
-- **`pre-push`** — roda `pnpm type-check && pnpm test:e2e` (Playwright): os emuladores precisam estar rodando e o `.env` preenchido.
+- **`pre-push`** — roda `pnpm type-check` e `pnpm test:e2e` (Playwright), que sobe os emuladores se for preciso.
 
 ## CI (GitHub Actions)
 
-O `.github/workflows/ci.yml` roda só em pull requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. Um ruleset da `main` exige os três jobs verdes para o merge. Os jobs `check` e `e2e` usam o `.env.example` como `.env`: os valores dele bastam para os testes e os emuladores, sem segredos.
+O `.github/workflows/ci.yml` roda só em pull requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. Um ruleset da `main` exige os três jobs verdes para o merge. Os jobs usam o `.env.development` versionado, sem segredos.
 
 - **`commitlint`** — valida todos os commits do PR (`--from` o SHA da base, `--to` o SHA do head).
 - **`check`** — `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check` e `pnpm test`.
-- **`e2e`** — instala o Java e o Chromium do Playwright no `ubuntu-latest` e roda `pnpm test:e2e` dentro de `firebase-tools emulators:exec`. Em caso de falha, o `test-results/` fica como artifact do run.
+- **`e2e`** — instala o Java e o Chromium do Playwright no `ubuntu-latest` e roda `pnpm test:e2e`. Em caso de falha, o `test-results/` e o `firebase-emulators.log` ficam como artifact do run.
 
 Ao renomear um job, atualize os checks exigidos no ruleset da `main` (Settings → Rules).
 

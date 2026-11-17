@@ -45,7 +45,7 @@ Fica em `blocks` porque formulários de entidade são reutilizados na criação 
 ## 7. Testes
 
 - **Vitest** (`src/tests/vitest/`): apenas a lógica própria da entidade (ex: um filtro ou cálculo não trivial). Se a busca só usa `matchesSearch`, não há o que testar.
-- **Playwright** (`src/tests/playwright/<entities>.spec.ts`): o fluxo criar → editar → excluir pela UI. Cada `test()` chama `createUser()` do orchestrator, faz login e semeia só o que precisa (chamando o model direto); `clearData()` no `test.beforeAll`. Rode com os emuladores ligados (`pnpm emulators:start`).
+- **Playwright** (`src/tests/playwright/<entities>.spec.ts`): o fluxo criar → editar → excluir pela UI. Cada `test()` chama `createUser()` do orchestrator, faz login e semeia só o que precisa (chamando o model direto); `clearData()` no `test.beforeAll`. Rode com `pnpm test:e2e`, que sobe os emuladores.
 
 ## 8. Verificação
 

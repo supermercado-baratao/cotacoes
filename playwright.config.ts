@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 
-process.loadEnvFile()
+process.loadEnvFile('.env.development')
 
 export default defineConfig({
   testDir: './src/tests/playwright',
