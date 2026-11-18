@@ -24,7 +24,7 @@ import { useState } from 'react'
 
 import { DeleteDialog } from '@/components/ui/dialog'
 import { SearchInput } from '@/components/ui/search-input'
-import type { TInvoiceVerificationStatus } from '@/models/invoice-model/types'
+import type { TInvoiceVerificationStatus } from '@/models/invoice/types'
 import { formatCNPJ, formatCurrency } from '@/utils/formatters'
 
 import { EditOrderDialog } from './edit-order-dialog'

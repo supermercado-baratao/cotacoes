@@ -4,7 +4,7 @@ import { Autocomplete } from '@/components/ui/autocomplete'
 import { PhoneInput } from '@/components/ui/masked-input'
 import { Modal, type TModalProps } from '@/components/ui/modal'
 import { MAX_DESCRIPTION_LENGTH } from '@/constants/length'
-import type { TSeller } from '@/models/seller-model/types'
+import type { TSeller } from '@/models/seller/types'
 import { selectOnFocus } from '@/utils/input-handlers'
 
 import * as S from './style'

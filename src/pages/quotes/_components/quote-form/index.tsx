@@ -2,7 +2,7 @@ import { Box, Button, TextField } from '@mui/material'
 
 import { Modal, type TModalProps } from '@/components/ui/modal'
 import { MAX_OBSERVATIONS_LENGTH } from '@/constants/length'
-import type { TQuote } from '@/models/quote-model/types'
+import type { TQuote } from '@/models/quote/types'
 import { selectOnFocus } from '@/utils/input-handlers'
 
 import * as S from './style'

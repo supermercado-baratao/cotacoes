@@ -1,5 +1,5 @@
 import { Table as _Table } from '@/components/blocks/table'
-import type { TIgnoredSupplier } from '@/models/ignored-supplier-model/types'
+import type { TIgnoredSupplier } from '@/models/ignored-supplier/types'
 import { useAppStore } from '@/stores/use-app-store'
 
 import { columns } from './columns'

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { productModel } from '@/models/product-model/model'
-import { type TProduct } from '@/models/product-model/types'
+import { productModel } from '@/models/product/model'
+import { type TProduct } from '@/models/product/types'
 import { useAlertStore } from '@/stores/use-alert-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import type { TUpdateData } from '@/types/generics'

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { extractPackingInfo } from '@/components/blocks/order-form/utils'
+import { extractPackingInfo } from './packing'
 
 describe('extractPackingInfo', () => {
   test('extracts quantity concatenated after the packing type', () => {

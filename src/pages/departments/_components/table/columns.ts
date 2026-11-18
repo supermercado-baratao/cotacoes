@@ -1,6 +1,6 @@
 import type { GridColDef } from '@mui/x-data-grid'
 
-import type { TDepartment } from '@/models/department-model/types'
+import type { TDepartment } from '@/models/department/types'
 
 export const columns: GridColDef<TDepartment>[] = [
   {

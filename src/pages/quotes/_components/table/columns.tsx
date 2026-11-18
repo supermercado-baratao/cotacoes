@@ -2,9 +2,9 @@ import { Category, Inventory2 } from '@mui/icons-material'
 import { Box } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 
+import type { TQuoteRow } from '@/pages/quotes/utils'
 import { formatCurrency } from '@/utils/formatters'
 
-import type { TQuoteRow } from '../../utils'
 import * as S from './style'
 
 const formatPriceRange = (min: number | null, max: number | null) => {

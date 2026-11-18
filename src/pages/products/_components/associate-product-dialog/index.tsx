@@ -2,10 +2,10 @@ import { Autocomplete, Box, Button, TextField } from '@mui/material'
 import { useState } from 'react'
 
 import { Modal } from '@/components/ui/modal'
-import type { TProduct } from '@/models/product-model/types'
+import type { TProduct } from '@/models/product/types'
+import type { TUnmatchedProductItem } from '@/pages/products/utils'
 import { matchesSearch } from '@/utils/search'
 
-import type { TUnmatchedProductItem } from '../../utils'
 import * as S from './style'
 
 type TAssociateProductDialogProps = {

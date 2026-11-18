@@ -1,10 +1,9 @@
 import { Chip } from '@mui/material'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 
+import type { TProductRow } from '@/pages/products/utils'
 import { formatCurrency, formatNumericValue } from '@/utils/formatters'
 import { marginStatusConfig } from '@/utils/margin'
-
-import type { TProductRow } from '../../utils'
 
 const renderMarginStatus = ({ row }: GridRenderCellParams<TProductRow>) =>
   row.marginStatus ? (

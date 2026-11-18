@@ -17,10 +17,10 @@ import {
 } from '@mui/material'
 
 import { Modal, type TModalProps } from '@/components/ui/modal'
-import type { TQuote } from '@/models/quote-model/types'
+import type { TQuote } from '@/models/quote/types'
+import { ProductReferenceForm } from '@/pages/quotes/_components/table/product-reference-form'
 import { formatCurrency } from '@/utils/formatters'
 
-import { ProductReferenceForm } from '../table/product-reference-form'
 import * as S from './style'
 import { useAiReference } from './use-ai-reference'
 

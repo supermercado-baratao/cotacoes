@@ -3,8 +3,9 @@ import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { useDeleteHandler } from '@/hooks/use-delete-handler'
-import type { TPackingDefault } from '@/models/packing-default-model/types'
-import type { TSupplier } from '@/models/supplier-model/types'
+import type { TPackingDefault } from '@/models/packing-default/types'
+import type { TSupplier } from '@/models/supplier/types'
+import type { TInvoiceItemRow } from '@/pages/invoices/detail/use-invoice-detail-handler'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import { getItemUnitCost } from '@/utils/entry-cost'
@@ -18,7 +19,6 @@ import {
   getInvoiceItemPacking
 } from '@/utils/packing-defaults'
 
-import type { TInvoiceItemRow } from '../use-invoice-detail-handler'
 import { MIN_PACKING_QUANTITY, schema, type TSchema } from './schema'
 
 export const useFormHandler = (

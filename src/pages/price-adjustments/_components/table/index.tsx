@@ -21,15 +21,15 @@ import {
 import { useMemo, useState } from 'react'
 
 import { Table as _Table } from '@/components/blocks/table'
-import { formatCurrency } from '@/utils/formatters'
-import { marginStatusConfig, type TMarginStatus } from '@/utils/margin'
-
 import {
   getFamilyMarginStatus,
   hasDivergentFamilyPrices,
   type TPriceAdjustmentDisplayRow,
   type TPriceAdjustmentGroup
-} from '../../utils'
+} from '@/pages/price-adjustments/utils'
+import { formatCurrency } from '@/utils/formatters'
+import { marginStatusConfig, type TMarginStatus } from '@/utils/margin'
+
 import { columns } from './columns'
 import * as S from './style'
 

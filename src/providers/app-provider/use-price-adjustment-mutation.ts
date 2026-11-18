@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { priceAdjustmentModel } from '@/models/price-adjustment-model/model'
-import { type TPriceAdjustment } from '@/models/price-adjustment-model/types'
+import { priceAdjustmentModel } from '@/models/price-adjustment/model'
+import { type TPriceAdjustment } from '@/models/price-adjustment/types'
 import { useAlertStore } from '@/stores/use-alert-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import type { TCreateDataWithId } from '@/types/generics'

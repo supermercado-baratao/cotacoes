@@ -1,4 +1,4 @@
-import type { TMarginTolerance } from '@/models/settings-model/types'
+import type { TMarginTolerance } from '@/models/settings/types'
 
 // Piso/teto de margem inertes (nunca disparam alerta) até o usuário
 // configurar valores reais em Configurações — 0/0 aqui sinalizaria toda

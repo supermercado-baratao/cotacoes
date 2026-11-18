@@ -1,10 +1,10 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
 
-import { orderModel } from '@/models/order-model/model'
-import { useImportDialogHandler } from '@/pages/price-adjustments/_components/import-dialog/use-import-dialog-handler'
+import { orderModel } from '@/models/order/model'
+import { readMockFile } from '@/tests/_utils/read-mock-file'
 
-import { readMockFile } from './_utils/read-mock-file'
+import { useImportDialogHandler } from './use-import-dialog-handler'
 
 const REAJUSTE_XLSX = 'price-adjustments-small.xlsx'
 

@@ -5,15 +5,15 @@ import { useMemo, useState } from 'react'
 
 import { DataView } from '@/components/blocks/data-view'
 import { Table } from '@/components/blocks/table'
-import type { TInvoiceDateRange } from '@/models/invoice-model/types'
-import type { TMarginCostSource } from '@/models/product-model/types'
-import { useAppStore } from '@/stores/use-app-store'
-
+import type { TInvoiceDateRange } from '@/models/invoice/types'
+import type { TMarginCostSource } from '@/models/product/types'
 import {
   addEntryUnitCosts,
   getInvoiceEntriesForProduct,
   type TMarginAlert
-} from '../../utils'
+} from '@/pages/dashboard/utils'
+import { useAppStore } from '@/stores/use-app-store'
+
 import { buildColumns } from './columns'
 import { InvoiceEntriesDrawer } from './invoice-entries-drawer'
 import * as S from './style'

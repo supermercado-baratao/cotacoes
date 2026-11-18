@@ -15,10 +15,10 @@ import {
 import dayjs from 'dayjs'
 import { Link } from 'react-router'
 
-import type { TOrder } from '@/models/order-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TSeller } from '@/models/seller-model/types'
-import type { TSupplier } from '@/models/supplier-model/types'
+import type { TOrder } from '@/models/order/types'
+import type { TProduct } from '@/models/product/types'
+import type { TSeller } from '@/models/seller/types'
+import type { TSupplier } from '@/models/supplier/types'
 import { formatCurrency, formatNumericValue } from '@/utils/formatters'
 
 import * as S from './style'

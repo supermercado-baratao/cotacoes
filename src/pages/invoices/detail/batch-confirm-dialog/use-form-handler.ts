@@ -5,21 +5,20 @@ import { useForm, useWatch } from 'react-hook-form'
 import type { z } from 'zod'
 
 import { createSchema } from '@/components/blocks/order-form/schema'
-import {
-  extractPackingInfo,
-  getUnitPriceFromPackingPrice
-} from '@/components/blocks/order-form/utils'
-import type { TInvoice } from '@/models/invoice-model/types'
-import type { TOrder } from '@/models/order-model/types'
-import type { TQuote } from '@/models/quote-model/types'
-import type { TSeller } from '@/models/seller-model/types'
-import type { TSupplier } from '@/models/supplier-model/types'
+import type { TInvoice } from '@/models/invoice/types'
+import type { TOrder } from '@/models/order/types'
+import type { TQuote } from '@/models/quote/types'
+import type { TSeller } from '@/models/seller/types'
+import type { TSupplier } from '@/models/supplier/types'
+import type { TBatchGroup } from '@/pages/invoices/utils'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import type { TCreateData } from '@/types/generics'
+import {
+  extractPackingInfo,
+  getUnitPriceFromPackingPrice
+} from '@/utils/packing'
 import { findGroupPackingDefault } from '@/utils/packing-defaults'
-
-import type { TBatchGroup } from '../../utils'
 
 const schema = createSchema('').pick({
   sellerId: true,

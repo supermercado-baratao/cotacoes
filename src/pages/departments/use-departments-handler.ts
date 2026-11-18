@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { useFormState } from '@/hooks/use-form-state'
-import type { TDepartment } from '@/models/department-model/types'
+import type { TDepartment } from '@/models/department/types'
 import { useAppStore } from '@/stores/use-app-store'
 
 import { filterDepartments } from './utils'

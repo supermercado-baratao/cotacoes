@@ -12,6 +12,43 @@ import unicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
+const relativeImportPatterns = [
+  {
+    regex: String.raw`^\.\./`,
+    message: 'Use `@/` to import from outside the current folder.'
+  },
+  {
+    regex: String.raw`^\./[^/]+/[^/]+/`,
+    message: 'Use `./` only for the same folder or a direct subfolder.'
+  }
+]
+
+const layerImportPatterns = (layer, forbiddenLayers, typeOnlyLayers = []) => [
+  ...relativeImportPatterns,
+  ...forbiddenLayers.map((forbiddenLayer) => ({
+    group: [`@/${forbiddenLayer}`, `@/${forbiddenLayer}/**`],
+    message: `\`${layer}\` must not import from \`${forbiddenLayer}\`.`
+  })),
+  ...typeOnlyLayers.map((typeOnlyLayer) => ({
+    group: [`@/${typeOnlyLayer}`, `@/${typeOnlyLayer}/**`],
+    allowTypeImports: true,
+    message: `\`${layer}\` may only import types from \`${typeOnlyLayer}\`.`
+  }))
+]
+
+const layerRules = (layer, forbiddenLayers, typeOnlyLayers) => ({
+  files: [`src/${layer}/**/*.{ts,tsx}`],
+  ignores: ['src/**/*.test.{ts,tsx}'],
+  rules: {
+    '@typescript-eslint/no-restricted-imports': [
+      'error',
+      { patterns: layerImportPatterns(layer, forbiddenLayers, typeOnlyLayers) }
+    ]
+  }
+})
+
+const UPPER_LAYERS = ['pages', 'layout']
+
 export default defineConfig([
   globalIgnores([
     'dist',
@@ -107,7 +144,39 @@ export default defineConfig([
     }
   },
   {
-    files: ['src/tests/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        { patterns: relativeImportPatterns }
+      ]
+    }
+  },
+  layerRules('components', UPPER_LAYERS),
+  layerRules('hooks', UPPER_LAYERS),
+  layerRules('providers', [...UPPER_LAYERS, 'components/blocks', 'hooks']),
+  layerRules('stores', [...UPPER_LAYERS, 'components', 'hooks', 'providers']),
+  layerRules('models', [
+    ...UPPER_LAYERS,
+    'components',
+    'hooks',
+    'providers',
+    'stores'
+  ]),
+  layerRules(
+    'infra',
+    [...UPPER_LAYERS, 'components', 'hooks', 'providers', 'stores'],
+    ['models']
+  ),
+  ...['constants', 'types', 'utils'].map((leaf) =>
+    layerRules(
+      leaf,
+      [...UPPER_LAYERS, 'components', 'hooks', 'providers', 'stores', 'infra'],
+      ['models']
+    )
+  ),
+  {
+    files: ['src/tests/**/*.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
     rules: {
       'unicorn/no-unnecessary-parameters': 'off',
       'unicorn/prefer-dom-node-text-content': 'off'

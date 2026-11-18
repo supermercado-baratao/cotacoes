@@ -1,9 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import {
-  getFamilyMarginStatus,
-  hasDivergentFamilyPrices
-} from '@/pages/price-adjustments/utils'
+import { getFamilyMarginStatus, hasDivergentFamilyPrices } from './utils'
 
 describe('hasDivergentFamilyPrices', () => {
   test('returns false for a single row', () => {

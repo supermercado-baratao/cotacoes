@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import type { TProductDraft } from '@/components/blocks/product-form'
 import { useFormState } from '@/hooks/use-form-state'
-import type { TProduct } from '@/models/product-model/types'
+import type { TProduct } from '@/models/product/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { buildPackageBarcodeLinkMap } from '@/utils/package-barcode-links'
 import { isSupplierCnpjIgnored } from '@/utils/suppliers'

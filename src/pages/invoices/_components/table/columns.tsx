@@ -7,7 +7,7 @@ import type {
   TInvoice,
   TInvoiceItem,
   TInvoiceVerificationStatus
-} from '@/models/invoice-model/types'
+} from '@/models/invoice/types'
 import { formatCurrency } from '@/utils/formatters'
 
 const statusLabel: Record<TInvoiceVerificationStatus, string> = {

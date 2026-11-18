@@ -1,8 +1,9 @@
 import { Box, Chip, Paper, TablePagination, Typography } from '@mui/material'
 import { useMemo, useState } from 'react'
 
-import type { TPriceAdjustmentDisplayRow } from '../../utils'
-import { PriceSummary } from '../table'
+import { PriceSummary } from '@/pages/price-adjustments/_components/table'
+import type { TPriceAdjustmentDisplayRow } from '@/pages/price-adjustments/utils'
+
 import * as S from './style'
 
 const PAGE_SIZE = 50

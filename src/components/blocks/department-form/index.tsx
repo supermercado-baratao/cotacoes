@@ -2,7 +2,7 @@ import { Box, Button, TextField } from '@mui/material'
 
 import { Modal, type TModalProps } from '@/components/ui/modal'
 import { MAX_DESCRIPTION_LENGTH } from '@/constants/length'
-import type { TDepartment } from '@/models/department-model/types'
+import type { TDepartment } from '@/models/department/types'
 import { selectOnFocus } from '@/utils/input-handlers'
 
 import * as S from './style'

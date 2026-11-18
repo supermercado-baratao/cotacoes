@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { useCallback, useMemo, useState } from 'react'
 
-import type { TMarginCostSource } from '@/models/product-model/types'
+import type { TMarginCostSource } from '@/models/product/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { buildEntryCostMap } from '@/utils/entry-cost'
 

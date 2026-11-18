@@ -1,17 +1,17 @@
 import * as xlsx from 'xlsx'
 
-import type { TFamily } from '@/models/family-model/types'
-import type { TInvoice } from '@/models/invoice-model/types'
-import type { TOrder } from '@/models/order-model/types'
+import type { TFamily } from '@/models/family/types'
+import type { TInvoice } from '@/models/invoice/types'
+import type { TOrder } from '@/models/order/types'
 import type {
   TPriceAdjustment,
   TPriceAdjustmentCostSource,
   TPriceAdjustmentDateRange
-} from '@/models/price-adjustment-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TQuote } from '@/models/quote-model/types'
-import type { TSettings } from '@/models/settings-model/types'
-import type { TSupplier } from '@/models/supplier-model/types'
+} from '@/models/price-adjustment/types'
+import type { TProduct } from '@/models/product/types'
+import type { TQuote } from '@/models/quote/types'
+import type { TSettings } from '@/models/settings/types'
+import type { TSupplier } from '@/models/supplier/types'
 import type { TCreateDataWithId } from '@/types/generics'
 import { groupBy } from '@/utils/group-by'
 import {
@@ -60,7 +60,7 @@ export type TCostResolution = {
   source: TPriceAdjustmentCostSource
 }
 
-// Mesma forma persistida em `TPriceAdjustment` (models/price-adjustment-model),
+// Mesma forma persistida em `TPriceAdjustment` (models/price-adjustment),
 // sem os campos que só existem depois de gravar (id, timestamps).
 export type TPriceAdjustmentRow = Omit<
   TPriceAdjustment,

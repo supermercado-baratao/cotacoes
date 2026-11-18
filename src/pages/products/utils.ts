@@ -1,10 +1,10 @@
 import type { Timestamp } from 'firebase/firestore'
 
-import type { TIgnoredProduct } from '@/models/ignored-product-model/types'
-import type { TIgnoredSupplier } from '@/models/ignored-supplier-model/types'
-import type { TInvoice } from '@/models/invoice-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TSettings } from '@/models/settings-model/types'
+import type { TIgnoredProduct } from '@/models/ignored-product/types'
+import type { TIgnoredSupplier } from '@/models/ignored-supplier/types'
+import type { TInvoice } from '@/models/invoice/types'
+import type { TProduct } from '@/models/product/types'
+import type { TSettings } from '@/models/settings/types'
 import {
   evaluateMargin,
   getMarginTolerance,

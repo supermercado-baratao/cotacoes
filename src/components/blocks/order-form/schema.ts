@@ -5,7 +5,7 @@ import {
   MAX_NUMERIC_VALUE,
   MAX_OBSERVATIONS_LENGTH
 } from '@/constants/length'
-import type { TOrder } from '@/models/order-model/types'
+import type { TOrder } from '@/models/order/types'
 import type { TCreateData } from '@/types/generics'
 
 type TOrderFormData = Omit<

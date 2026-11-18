@@ -3,9 +3,9 @@ import { type FormEvent, useState } from 'react'
 
 import { Modal } from '@/components/ui/modal'
 import { MAX_DESCRIPTION_LENGTH } from '@/constants/length'
+import type { TAddQuoteItemDraft } from '@/pages/invoices/detail/use-link-orders-dialog-handler'
 import { selectOnFocus } from '@/utils/input-handlers'
 
-import type { TAddQuoteItemDraft } from '../use-link-orders-dialog-handler'
 import * as S from './style'
 
 type TAddQuoteItemDialogProps = {

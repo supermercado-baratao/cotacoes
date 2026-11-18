@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import type { TAiSuggestion } from '@/infra/gemini'
-import type { TPriceRef, TQuote, TQuoteItem } from '@/models/quote-model/types'
+import type { TPriceRef, TQuote, TQuoteItem } from '@/models/quote/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import { getFamilyReferencePrice } from '@/utils/quote-item-match'

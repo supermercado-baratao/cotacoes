@@ -4,10 +4,10 @@ import { GridActionsCellItem } from '@mui/x-data-grid'
 import { Table as _Table } from '@/components/blocks/table'
 import { DeleteDialog } from '@/components/ui/dialog'
 import { useDeleteHandler } from '@/hooks/use-delete-handler'
-import type { TProduct } from '@/models/product-model/types'
+import type { TProduct } from '@/models/product/types'
+import type { TProductRow } from '@/pages/products/utils'
 import { useAppStore } from '@/stores/use-app-store'
 
-import type { TProductRow } from '../../utils'
 import { columns } from './columns'
 
 type TTableProps = {

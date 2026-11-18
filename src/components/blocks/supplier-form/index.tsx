@@ -10,7 +10,7 @@ import dayjs from 'dayjs'
 import { CnpjInput, PhoneInput } from '@/components/ui/masked-input'
 import { Modal, type TModalProps } from '@/components/ui/modal'
 import { MAX_OBSERVATIONS_LENGTH } from '@/constants/length'
-import type { TSupplier } from '@/models/supplier-model/types'
+import type { TSupplier } from '@/models/supplier/types'
 import { selectOnFocus } from '@/utils/input-handlers'
 
 import { MAX_LEGAL_NAME_LENGTH, MAX_TRADE_NAME_LENGTH } from './schema'

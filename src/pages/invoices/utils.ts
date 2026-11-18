@@ -2,10 +2,10 @@ import type {
   TInvoice,
   TInvoiceItem,
   TInvoiceItemMatchStatus
-} from '@/models/invoice-model/types'
-import type { TPackageBarcodeLink } from '@/models/package-barcode-link-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TQuoteItem } from '@/models/quote-model/types'
+} from '@/models/invoice/types'
+import type { TPackageBarcodeLink } from '@/models/package-barcode-link/types'
+import type { TProduct } from '@/models/product/types'
+import type { TQuoteItem } from '@/models/quote/types'
 import { groupBy } from '@/utils/group-by'
 import { buildPackageBarcodeLinkMap } from '@/utils/package-barcode-links'
 import { isLikelyMatch } from '@/utils/quote-item-match'

@@ -1,9 +1,9 @@
 import { FilePresent } from '@mui/icons-material'
 import { Button, Chip, Paper, Stack, Typography } from '@mui/material'
 
-import type { TImportData } from '@/models/import-model/types'
+import type { TProductImportStatus } from '@/components/blocks/catalog-import/utils'
+import type { TImportData } from '@/models/import/types'
 
-import type { TProductImportStatus } from '../../utils'
 import * as S from './style'
 
 type THeaderProps = {

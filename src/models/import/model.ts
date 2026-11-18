@@ -1,7 +1,7 @@
-import { departmentModel } from '@/models/department-model/model'
-import { familyModel } from '@/models/family-model/model'
-import { productModel } from '@/models/product-model/model'
-import { supplierModel } from '@/models/supplier-model/model'
+import { departmentModel } from '@/models/department/model'
+import { familyModel } from '@/models/family/model'
+import { productModel } from '@/models/product/model'
+import { supplierModel } from '@/models/supplier/model'
 
 import type { TImportData } from './types'
 

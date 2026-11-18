@@ -2,9 +2,9 @@ import { Delete } from '@mui/icons-material'
 import { GridActionsCellItem } from '@mui/x-data-grid'
 
 import { Table as _Table } from '@/components/blocks/table'
+import type { TIgnoredProductRow } from '@/pages/products/utils'
 import { useAppStore } from '@/stores/use-app-store'
 
-import type { TIgnoredProductRow } from '../../utils'
 import { columns } from './columns'
 
 type TIgnoredTableProps = {

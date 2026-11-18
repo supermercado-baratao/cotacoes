@@ -1,16 +1,15 @@
 import { expect, type Locator, type Page, test } from '@playwright/test'
 import dayjs from 'dayjs'
 
-import { invoiceModel } from '@/models/invoice-model/model'
-import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
-import { productModel } from '@/models/product-model/model'
-import type { TProduct } from '@/models/product-model/types'
-import { quoteModel } from '@/models/quote-model/model'
-import type { TQuote } from '@/models/quote-model/types'
-import { settingsModel } from '@/models/settings-model/model'
-import { supplierModel } from '@/models/supplier-model/model'
-
-import { clearData, createUser } from './orchestrator'
+import { invoiceModel } from '@/models/invoice/model'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice/types'
+import { productModel } from '@/models/product/model'
+import type { TProduct } from '@/models/product/types'
+import { quoteModel } from '@/models/quote/model'
+import type { TQuote } from '@/models/quote/types'
+import { settingsModel } from '@/models/settings/model'
+import { supplierModel } from '@/models/supplier/model'
+import { clearData, createUser } from '@/tests/orchestrator'
 
 const makeProduct = (
   overrides: Partial<TProduct> & { id: string; description: string }

@@ -2,15 +2,15 @@ import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test, vi } from 'vitest'
 
 import { database } from '@/infra/database'
-import { invoiceModel } from '@/models/invoice-model/model'
-import { type TInvoice, type TInvoiceItem } from '@/models/invoice-model/types'
+import { invoiceModel } from '@/models/invoice/model'
+import { type TInvoice, type TInvoiceItem } from '@/models/invoice/types'
 import { parseNfe } from '@/pages/invoices/utils'
+import { readMockFile } from '@/tests/_utils/read-mock-file'
+
 import {
   completeInvoiceFiscalData,
   hasMissingFiscalData
-} from '@/utils/invoice-fiscal-data'
-
-import { readMockFile } from './_utils/read-mock-file'
+} from './invoice-fiscal-data'
 
 vi.mock('@/infra/firebase-config', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/infra/firebase-config')>()),
@@ -27,7 +27,7 @@ vi.mock('@/infra/database', () => ({
 
 const now = Timestamp.now()
 
-// Nota de bonificação (CFOP 5910) — a mesma usada em entry-cost.spec.ts.
+// Nota de bonificação (CFOP 5910) — a mesma usada em entry-cost.test.ts.
 const BONUS_XML =
   'quotes/quote-2-2026-04-01-2026-05-31/NFe29260405853741000139550010009557151161245134.xml'
 

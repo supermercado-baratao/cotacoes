@@ -1,9 +1,9 @@
 import { Add, Close } from '@mui/icons-material'
 import { Box, Button, IconButton, Typography } from '@mui/material'
 
-import type { TOrder } from '@/models/order-model/types'
+import type { TOrder } from '@/models/order/types'
+import type { TQuoteRow } from '@/pages/quotes/utils'
 
-import type { TQuoteRow } from '../../../utils'
 import * as S from './style'
 
 type THeaderProps = {

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { useFormState } from '@/hooks/use-form-state'
-import type { TSupplier } from '@/models/supplier-model/types'
+import type { TSupplier } from '@/models/supplier/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { isSupplierCnpjIgnored } from '@/utils/suppliers'
 

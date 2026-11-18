@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { suggestPriceReferences, type TAiSuggestion } from '@/infra/gemini'
-import type { TQuote, TQuoteItem } from '@/models/quote-model/types'
+import type { TQuote, TQuoteItem } from '@/models/quote/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import { getFamilyReferencePrice } from '@/utils/quote-item-match'

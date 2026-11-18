@@ -1,10 +1,10 @@
 import dayjs from 'dayjs'
 
-import type { TFamily } from '@/models/family-model/types'
-import type { TInvoice, TInvoiceDateRange } from '@/models/invoice-model/types'
-import type { TOrder } from '@/models/order-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TPriceRef, TQuote } from '@/models/quote-model/types'
+import type { TFamily } from '@/models/family/types'
+import type { TInvoice, TInvoiceDateRange } from '@/models/invoice/types'
+import type { TOrder } from '@/models/order/types'
+import type { TProduct } from '@/models/product/types'
+import type { TPriceRef, TQuote } from '@/models/quote/types'
 
 export const getNextQuoteDate = (
   quotes: TQuote[],

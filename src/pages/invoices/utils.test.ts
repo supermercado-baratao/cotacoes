@@ -1,14 +1,16 @@
 import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test } from 'vitest'
 
-import type { TInvoiceItem } from '@/models/invoice-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TQuoteItem } from '@/models/quote-model/types'
-import {
-  groupInvoiceItemsForBatch,
-  type TLinkOrderRow
-} from '@/pages/invoices/utils'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice/types'
+import type { TProduct } from '@/models/product/types'
+import type { TQuoteItem } from '@/models/quote/types'
 
+import {
+  filterInvoices,
+  groupInvoiceItemsForBatch,
+  parseNfe,
+  type TLinkOrderRow
+} from './utils'
 const nextItemNumber = (() => {
   let current = 0
   return () => (current += 1)
@@ -183,5 +185,69 @@ describe('groupInvoiceItemsForBatch', () => {
 
     expect(batchGroups).toHaveLength(0)
     expect(individualRows).toEqual(rows)
+  })
+})
+
+describe('parseNfe', () => {
+  test('rejects malformed XML', () => {
+    expect(() => parseNfe('<nfeProc><NFe>', [])).toThrow('Arquivo XML inválido')
+  })
+})
+
+const now = Timestamp.now()
+
+const makeInvoiceItem = (
+  overrides: Partial<TInvoiceItem> = {}
+): TInvoiceItem => ({
+  itemNumber: 1,
+  supplierProductCode: '1',
+  barcode: null,
+  calculatedBarcode: null,
+  packageBarcode: null,
+  description: 'ITEM NF',
+  unit: 'UN',
+  quantity: 1,
+  unitPrice: 10,
+  totalPrice: 10,
+  tribUnit: 'UN',
+  tribQuantity: 1,
+  tribUnitPrice: 10,
+  productId: null,
+  orderId: null,
+  matchStatus: 'unmatched_product',
+  priceDivergence: null,
+  quantityDivergence: null,
+  ...overrides
+})
+
+const makeInvoice = (overrides: Partial<TInvoice> = {}): TInvoice => ({
+  id: 'invoice-1',
+  accessKey: '1'.repeat(44),
+  number: '1',
+  series: '1',
+  emissionDate: '2026-01-01T00:00:00-03:00',
+  supplierCnpj: '00000000000000',
+  supplierName: 'FORNECEDOR TESTE',
+  destinationCnpj: '11111111111111',
+  totalValue: 10,
+  items: [makeInvoiceItem()],
+  verificationStatus: 'pending',
+  quoteId: null,
+  createdAt: now,
+  updatedAt: now,
+  ...overrides
+})
+
+describe('filterInvoices', () => {
+  test('matches by an item codVr (matched product id)', () => {
+    const invoice = makeInvoice({
+      items: [makeInvoiceItem({ productId: '202567', matchStatus: 'matched' })]
+    })
+    const other = makeInvoice({
+      id: 'invoice-2',
+      items: [makeInvoiceItem({ productId: '999999', matchStatus: 'matched' })]
+    })
+
+    expect(filterInvoices('202567', [invoice, other])).toEqual([invoice])
   })
 })

@@ -11,13 +11,12 @@ description: Cria um novo componente compartilhado em src/components/blocks ou s
 
 ## Passos
 
-1. Rode `pnpm generate component <nome-em-kebab-case>`. O plop cria `src/components/<nome>/index.tsx` e `style.ts`.
-2. Mova a pasta para `src/components/ui/<nome>` ou `src/components/blocks/<nome>`. Não há barrel: quem usa o componente importa de `@/components/ui/<nome>` (ou `@/components/blocks/<nome>`).
-3. Implemente seguindo o `AGENTS.md`:
+1. Rode `pnpm generate component <blocks|ui> <nome-em-kebab-case>`. O plop cria `src/components/<blocks|ui>/<nome>/index.tsx` e `style.ts`. Não há barrel: quem usa o componente importa de `@/components/ui/<nome>` (ou `@/components/blocks/<nome>`).
+2. Implemente seguindo o `AGENTS.md`:
    - arrow functions e props tipadas como `T<Nome>Props`;
    - estilos em `style.ts` (`SxProps<Theme>`), importados como `* as S`;
    - props de ação no padrão `handle[Sujeito][Ação]`; `on*` só para eventos DOM repassados;
    - inputs de texto com `textTransform: 'uppercase'`, `onFocus={selectOnFocus}` e `maxLength` a partir de constantes;
    - lógica não trivial em um hook `use-<nome>-handler.ts` (ou `use-form-handler.ts` para formulários, com `schema.ts`).
-4. Rode `pnpm eslint:check` e `pnpm prettier:check`. Se o componente tiver lógica própria (cálculo, filtro, mapeamento), extraia-a para uma função pura e teste em `src/tests/vitest`; fluxos de UI ficam no Playwright.
-5. Rode o subagente `ui-reviewer` sobre a mudança.
+3. Rode `pnpm eslint:check` e `pnpm prettier:check`. Se o componente tiver lógica própria (cálculo, filtro, mapeamento), extraia-a para uma função pura e teste em um `*.test.ts` ao lado dela; fluxos de UI ficam no Playwright.
+4. Rode o subagente `ui-reviewer` sobre a mudança.

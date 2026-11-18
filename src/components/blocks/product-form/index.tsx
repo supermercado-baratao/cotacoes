@@ -20,7 +20,7 @@ import {
   MAX_NUMERIC_VALUE,
   MAX_OBSERVATIONS_LENGTH
 } from '@/constants/length'
-import type { TProduct } from '@/models/product-model/types'
+import type { TProduct } from '@/models/product/types'
 import { selectOnFocus } from '@/utils/input-handlers'
 import { type TMarginStatus } from '@/utils/margin'
 

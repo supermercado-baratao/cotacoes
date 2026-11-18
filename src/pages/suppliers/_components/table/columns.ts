@@ -1,6 +1,6 @@
 import type { GridColDef } from '@mui/x-data-grid'
 
-import type { TSupplier } from '@/models/supplier-model/types'
+import type { TSupplier } from '@/models/supplier/types'
 import { formatCNPJ, formatPhone } from '@/utils/formatters'
 
 export const columns: GridColDef<TSupplier>[] = [

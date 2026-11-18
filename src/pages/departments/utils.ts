@@ -1,4 +1,4 @@
-import { type TDepartment } from '@/models/department-model/types'
+import { type TDepartment } from '@/models/department/types'
 import { matchesSearch } from '@/utils/search'
 
 export const filterDepartments = (search: string, departments: TDepartment[]) =>

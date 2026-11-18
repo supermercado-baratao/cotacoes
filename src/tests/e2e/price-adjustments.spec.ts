@@ -3,13 +3,12 @@ import path from 'node:path'
 import { expect, type Page, test } from '@playwright/test'
 import dayjs from 'dayjs'
 
-import { invoiceModel } from '@/models/invoice-model/model'
-import { orderModel } from '@/models/order-model/model'
-import { priceAdjustmentModel } from '@/models/price-adjustment-model/model'
-import { quoteModel } from '@/models/quote-model/model'
-import { supplierModel } from '@/models/supplier-model/model'
-
-import { clearData, createUser, populateDatabase } from './orchestrator'
+import { invoiceModel } from '@/models/invoice/model'
+import { orderModel } from '@/models/order/model'
+import { priceAdjustmentModel } from '@/models/price-adjustment/model'
+import { quoteModel } from '@/models/quote/model'
+import { supplierModel } from '@/models/supplier/model'
+import { clearData, createUser, populateDatabase } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 const REAJUSTE_XLSX = 'price-adjustments-small.xlsx'

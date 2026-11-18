@@ -1,10 +1,9 @@
-import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TQuote, TQuoteItem } from '@/models/quote-model/types'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice/types'
+import type { TProduct } from '@/models/product/types'
+import type { TQuote, TQuoteItem } from '@/models/quote/types'
+import { isInvoiceInQuoteWindow } from '@/pages/quotes/utils'
 import { isLikelyMatch } from '@/utils/quote-item-match'
 import { matchesSearch } from '@/utils/search'
-
-import { isInvoiceInQuoteWindow } from '../../../utils'
 
 export type TInvoiceSuggestion = {
   invoice: TInvoice

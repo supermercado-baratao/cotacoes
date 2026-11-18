@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { useFormState } from '@/hooks/use-form-state'
-import type { TSeller } from '@/models/seller-model/types'
+import type { TSeller } from '@/models/seller/types'
 import { useAppStore } from '@/stores/use-app-store'
 
 import { filterSellers } from './utils'
