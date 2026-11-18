@@ -111,7 +111,7 @@ test('references an item manually and the rest via AI, preserving the manual ref
   await expect(page.getByText('PUDIM BRETZKE', { exact: true })).toBeVisible()
 
   await getRow(page, 'PUDIM BRETZKE')
-    .getByRole('menuitem', { name: 'Referenciar' })
+    .getByRole('button', { name: 'Referenciar' })
     .click()
 
   const productInput = page.getByLabel('Produto específico')
@@ -260,7 +260,7 @@ test('removes an item from the quote and deletes its linked orphan order', async
   await expect(page.getByText('POLVILHO AZEDO')).toBeVisible()
 
   await getRow(page, 'POLVILHO AZEDO')
-    .getByRole('menuitem', { name: 'Excluir' })
+    .getByRole('button', { name: 'Excluir' })
     .click()
 
   const dialog = page.getByRole('dialog')
@@ -295,7 +295,10 @@ test('deletes the whole quote and its linked orders', async ({ page }) => {
   await login(page, email, password)
   await expect(page.getByRole('button', { name: 'Editar' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Excluir' }).click()
+  await page
+    .getByRole('button', { name: 'Excluir' })
+    .filter({ hasText: 'Excluir' })
+    .click()
   const dialog = page.getByRole('dialog')
   await dialog.getByRole('button', { name: 'Excluir' }).click()
 

@@ -33,11 +33,7 @@ const normalizeSupplierProductCode = (code: string): string =>
     .toUpperCase()
 
 export type TPackQuantitySource =
-  | 'manual'
-  | 'trib'
-  | 'supplier'
-  | 'barcode'
-  | 'default'
+  'manual' | 'trib' | 'supplier' | 'barcode' | 'default'
 
 export type TPackQuantity = {
   packQuantity: number

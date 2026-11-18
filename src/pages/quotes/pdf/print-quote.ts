@@ -95,26 +95,20 @@ const buildDepartments = (
 
   const departments: TPdfDepartment[] = [...departmentMap]
     .toSorted(([a], [b]) => byDepartmentOrder(a, b))
-    .map(
-      ([departmentLabel, sectionMap]): TPdfDepartment => ({
-        label: departmentLabel,
-        sections: [...sectionMap.entries()]
-          .toSorted(([a], [b]) => byLabel(a, b))
-          .map(
-            ([sectionLabel, groupMap]): TPdfSection => ({
-              label: sectionLabel,
-              groups: [...groupMap.values()]
-                .toSorted((a, b) => byLabel(a.label, b.label))
-                .map(
-                  (g): TPdfGroup => ({
-                    label: g.label,
-                    items: withIndex(g.items)
-                  })
-                )
-            })
-          )
-      })
-    )
+    .map(([departmentLabel, sectionMap]): TPdfDepartment => ({
+      label: departmentLabel,
+      sections: [...sectionMap.entries()]
+        .toSorted(([a], [b]) => byLabel(a, b))
+        .map(([sectionLabel, groupMap]): TPdfSection => ({
+          label: sectionLabel,
+          groups: [...groupMap.values()]
+            .toSorted((a, b) => byLabel(a.label, b.label))
+            .map((g): TPdfGroup => ({
+              label: g.label,
+              items: withIndex(g.items)
+            }))
+        }))
+    }))
 
   if (uncategorized.length > 0) {
     departments.push({

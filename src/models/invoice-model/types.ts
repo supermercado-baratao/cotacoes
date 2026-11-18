@@ -8,9 +8,7 @@ export type TInvoiceDateRange = {
 export type TInvoiceVerificationStatus = 'pending' | 'approved' | 'divergent'
 
 export type TInvoiceItemMatchStatus =
-  | 'matched'
-  | 'unmatched_product'
-  | 'unmatched_order'
+  'matched' | 'unmatched_product' | 'unmatched_order'
 
 export type TInvoiceItem = {
   itemNumber: number

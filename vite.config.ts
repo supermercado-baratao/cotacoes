@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 import babel from '@rolldown/plugin-babel'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -14,6 +14,8 @@ export default defineConfig({
     ...(process.env.VITEST ? [] : [babel({ presets: [reactCompilerPreset()] })])
   ],
   test: {
+    // Vitest runs in the `test` mode, which only loads `.env.test`
+    env: loadEnv('development', process.cwd(), 'VITE_'),
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/tests/vitest/**/*.spec.{ts,tsx}']
