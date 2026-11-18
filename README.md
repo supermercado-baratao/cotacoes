@@ -30,18 +30,18 @@ Fora de produção, o app se conecta aos emuladores do Firebase (Auth e Firestor
 
 ## Comandos
 
-| Comando               | O que faz                                                 |
-| --------------------- | --------------------------------------------------------- |
-| `pnpm dev`            | Emuladores do Firebase e servidor de desenvolvimento      |
-| `pnpm build`          | Build de produção                                         |
-| `pnpm services:up`    | Sobe os emuladores do Firebase (Auth + Firestore)         |
-| `pnpm services:down`  | Para os emuladores                                        |
-| `pnpm test`           | Testes unitários (Vitest)                                 |
-| `pnpm test:e2e`       | Testes e2e (Playwright), subindo os emuladores se preciso |
-| `pnpm type-check`     | Verificação de tipos                                      |
-| `pnpm eslint:check`   | Lint (`pnpm eslint:fix` para corrigir)                    |
-| `pnpm prettier:check` | Formatação (`pnpm prettier:fix` para corrigir)            |
-| `pnpm generate`       | Gera um novo componente (plop)                            |
+| Comando               | O que faz                                            |
+| --------------------- | ---------------------------------------------------- |
+| `pnpm dev`            | Emuladores do Firebase e servidor de desenvolvimento |
+| `pnpm build`          | Build de produção                                    |
+| `pnpm services:up`    | Sobe os emuladores do Firebase (Auth + Firestore)    |
+| `pnpm services:down`  | Para os emuladores                                   |
+| `pnpm test`           | Testes unitários (Vitest)                            |
+| `pnpm test:e2e`       | Testes e2e (Playwright), reiniciando os emuladores   |
+| `pnpm type-check`     | Verificação de tipos                                 |
+| `pnpm eslint:check`   | Lint (`pnpm eslint:fix` para corrigir)               |
+| `pnpm prettier:check` | Formatação (`pnpm prettier:fix` para corrigir)       |
+| `pnpm generate`       | Gera um novo componente (plop)                       |
 
 Os git hooks repetem essas verificações: o `pre-push` roda o type-check e os testes e2e.
 

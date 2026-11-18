@@ -1,10 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { faker } from '@faker-js/faker'
 import { expect, type Page, test } from '@playwright/test'
 
-import { clearData, verifyEmail } from '@/tests/orchestrator'
+import { createUserData, verifyEmail } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 const QUOTES_DIR = path.join(MOCKS_DIR, 'quotes')
@@ -57,16 +56,10 @@ const saveManualReferenceForm = async (page: Page) => {
   await expect(formHeading).not.toBeVisible()
 }
 
-test.beforeAll(async () => {
-  await clearData()
-})
-
 test('Full flow', async ({ page }) => {
   test.setTimeout(240_000)
 
-  const name = faker.person.fullName()
-  const email = faker.internet.email()
-  const password = faker.internet.password()
+  const { name, email, password } = createUserData()
 
   await test.step('Create account, verify email and logout', async () => {
     // trying to access a private route

@@ -8,7 +8,7 @@ import { orderModel } from '@/models/order/model'
 import { priceAdjustmentModel } from '@/models/price-adjustment/model'
 import { quoteModel } from '@/models/quote/model'
 import { supplierModel } from '@/models/supplier/model'
-import { clearData, createUser, populateDatabase } from '@/tests/orchestrator'
+import { createUser, populateDatabase } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 const REAJUSTE_XLSX = 'price-adjustments-small.xlsx'
@@ -41,10 +41,6 @@ const getCellText = async (
   row: import('@playwright/test').Locator,
   field: string
 ) => row.locator(`[data-field="${field}"]`).innerText()
-
-test.beforeAll(async () => {
-  await clearData()
-})
 
 // Seeda cotações/pedidos/nota necessários pra cruzar '198954' (AZEITE
 // ANDORINHA, sem família) com um custo real: pedido A (fornecedor A, 17.00)

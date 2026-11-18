@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import { expect, test } from '@playwright/test'
 
-import { clearData, createUser, populateDatabase } from '@/tests/orchestrator'
+import { createUser, populateDatabase } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 
@@ -19,10 +19,6 @@ const login = async (
   await page.getByRole('button', { name: 'Produtos' }).click()
   await expect(page).toHaveURL(/\/products/)
 }
-
-test.beforeAll(async () => {
-  await clearData()
-})
 
 test('imports products, families, departments and suppliers into an empty database', async ({
   page

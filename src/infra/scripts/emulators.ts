@@ -76,7 +76,7 @@ const up = async (): Promise<void> => {
   process.stdout.write(' ready\n')
 }
 
-const down = (): void => {
+const down = async (): Promise<void> => {
   const pid = readPid()
   rmSync(PID_FILE, { force: true })
   if (!pid) return
@@ -86,9 +86,16 @@ const down = (): void => {
   } catch {
     // Already stopped
   }
+
+  const deadline = Date.now() + TIMEOUT_MS
+  while (await areEmulatorsUp()) {
+    if (Date.now() > deadline)
+      throw new Error('Firebase emulators did not stop in time')
+    await setTimeout(INTERVAL_MS)
+  }
 }
 
-const commands: Record<string, () => Promise<void> | void> = { up, down }
+const commands: Record<string, () => Promise<void>> = { up, down }
 const run = commands[process.argv[2]]
 
 if (!run) throw new Error('Usage: emulators.ts <up|down>')
