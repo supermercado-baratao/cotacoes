@@ -1,6 +1,10 @@
 import { Drawer } from '@mui/material'
 
-import type { TInvoiceEntryWithCost, TMarginAlert } from '../../../utils'
+import type {
+  TInvoiceEntryWithCost,
+  TMarginAlert
+} from '@/pages/dashboard/utils'
+
 import { Content } from './content'
 import { Header } from './header'
 import * as S from './style'

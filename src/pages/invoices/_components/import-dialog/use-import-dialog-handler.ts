@@ -1,12 +1,11 @@
 import { useState } from 'react'
 
+import { parseNfe, type TParsedNfe } from '@/pages/invoices/utils'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import { normalizeCnpj } from '@/utils/formatters'
 import { hasMissingFiscalData } from '@/utils/invoice-fiscal-data'
 import { findSupplierByCnpj, isSupplierCnpjIgnored } from '@/utils/suppliers'
-
-import { parseNfe, type TParsedNfe } from '../../utils'
 
 type TParseError = { filename: string; message: string }
 

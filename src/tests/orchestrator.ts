@@ -14,10 +14,10 @@ import {
 
 import { getData } from '@/components/blocks/catalog-import/utils'
 import { auth as appAuth } from '@/infra/firebase-config'
-import { importModel } from '@/models/import-model/model'
+import { importModel } from '@/models/import/model'
 
 const PROJECT_ID = process.env.VITE_PROJECT_ID!
-const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
+const MOCKS_DIR = path.join(import.meta.dirname, '_mocks')
 
 const app = initializeApp(
   { apiKey: 'test-api-key', projectId: PROJECT_ID },

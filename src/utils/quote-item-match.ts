@@ -1,6 +1,6 @@
-import type { TInvoiceItem } from '@/models/invoice-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TQuoteItem } from '@/models/quote-model/types'
+import type { TInvoiceItem } from '@/models/invoice/types'
+import type { TProduct } from '@/models/product/types'
+import type { TQuoteItem } from '@/models/quote/types'
 
 export const getFamilyReferencePrice = (
   products: TProduct[],

@@ -11,7 +11,7 @@ import { Autocomplete } from '@/components/ui/autocomplete'
 import { CurrencyInput } from '@/components/ui/currency-input'
 import { Modal, type TModalProps } from '@/components/ui/modal'
 import type { TAiSuggestion } from '@/infra/gemini'
-import type { TQuote, TQuoteItem } from '@/models/quote-model/types'
+import type { TQuote, TQuoteItem } from '@/models/quote/types'
 import { formatCurrency } from '@/utils/formatters'
 import { selectOnFocus } from '@/utils/input-handlers'
 

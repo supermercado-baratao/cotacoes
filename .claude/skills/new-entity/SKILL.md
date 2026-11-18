@@ -5,11 +5,11 @@ description: Adiciona uma nova entidade de ponta a ponta neste app (model no Fir
 
 Use uma entidade de CRUD simples já existente como referência e espelhe a estrutura dela: `department` (só descrição) ou `family`/`seller` (mais campos). Leia os arquivos equivalentes da referência antes de escrever cada passo. Nos exemplos abaixo, `<entity>`/`<Entity>`/`<entities>` são o nome em inglês (singular, PascalCase, plural) e o texto de interface fica em português.
 
-## 1. Model — `src/models/<entity>-model/`
+## 1. Model — `src/models/<entity>/`
 
 - `types.ts`: `T<Entity>` com `id: string`, os campos de domínio (anuláveis como `T | null`), `createdAt: Timestamp` e `updatedAt: Timestamp`.
 - `model.ts`: `const PATH = '<entities>'` e as funções `create`, `findMany`, `update` e `deleteUniqueById` chamando `database` com `getUserPath(PATH)`; sem `async`, retornando a `Promise` do `database`.
-- Sem `index.ts`: importe de `@/models/<entity>-model/model` e `@/models/<entity>-model/types`.
+- Sem `index.ts`: importe de `@/models/<entity>/model` e `@/models/<entity>/types`.
 
 ## 2. Mutations e query — `src/providers/app-provider/`
 
@@ -39,17 +39,17 @@ Fica em `blocks` porque formulários de entidade são reutilizados na criação 
 
 ## 6. Rota e navegação
 
-- `src/Router.tsx`: importe a página de `./pages/<entities>` e adicione `<Route path="/<entities>" element={<<Entities> />} />` dentro do bloco de rotas autenticadas (junto de `/dashboard`).
+- `src/Router.tsx`: importe a página de `@/pages/<entities>` e adicione `<Route path="/<entities>" element={<<Entities> />} />` dentro do bloco de rotas autenticadas (junto de `/dashboard`).
 - `src/layout/nav-items.ts`: `{ label: '<Entidades>', path: '/<entities>', icon: <Ícone> }` com um ícone de `@mui/icons-material`, na posição que fizer sentido na sidebar.
 
 ## 7. Testes
 
-- **Vitest** (`src/tests/vitest/`): apenas a lógica própria da entidade (ex: um filtro ou cálculo não trivial). Se a busca só usa `matchesSearch`, não há o que testar.
-- **Playwright** (`src/tests/playwright/<entities>.spec.ts`): o fluxo criar → editar → excluir pela UI. Cada `test()` chama `createUser()` do orchestrator, faz login e semeia só o que precisa (chamando o model direto); `clearData()` no `test.beforeAll`. Rode com `pnpm test:e2e`, que sobe os emuladores.
+- **Vitest** (`*.test.ts` ao lado do código, ex: `src/pages/<entities>/utils.test.ts`): apenas a lógica própria da entidade (ex: um filtro ou cálculo não trivial). Se a busca só usa `matchesSearch`, não há o que testar.
+- **Playwright** (`src/tests/e2e/<entities>.spec.ts`): o fluxo criar → editar → excluir pela UI. Cada `test()` chama `createUser()` do orchestrator, faz login e semeia só o que precisa (chamando o model direto); `clearData()` no `test.beforeAll`. Rode com `pnpm test:e2e`, que sobe os emuladores.
 
 ## 8. Verificação
 
 1. `pnpm eslint:check && pnpm prettier:check && pnpm test`.
-2. `pnpm test:e2e src/tests/playwright/<entities>.spec.ts` com os emuladores rodando.
+2. `pnpm test:e2e src/tests/e2e/<entities>.spec.ts` com os emuladores rodando.
 3. Rode o subagente `ui-reviewer` sobre a mudança.
 4. Se a entidade criou uma convenção nova, atualize o `AGENTS.md`.

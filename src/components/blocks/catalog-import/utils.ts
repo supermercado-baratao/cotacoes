@@ -1,14 +1,11 @@
 import * as xlsx from 'xlsx'
 
-import { type TDepartment } from '@/models/department-model/types'
-import { type TFamily } from '@/models/family-model/types'
-import { type TImportData } from '@/models/import-model/types'
-import { UPSERT_MANY_UPDATABLE_FIELDS } from '@/models/product-model/model'
-import {
-  type TProduct,
-  type TSupplierPacking
-} from '@/models/product-model/types'
-import { type TSupplier } from '@/models/supplier-model/types'
+import { type TDepartment } from '@/models/department/types'
+import { type TFamily } from '@/models/family/types'
+import { type TImportData } from '@/models/import/types'
+import { UPSERT_MANY_UPDATABLE_FIELDS } from '@/models/product/model'
+import { type TProduct, type TSupplierPacking } from '@/models/product/types'
+import { type TSupplier } from '@/models/supplier/types'
 import type { TCreateDataWithId } from '@/types/generics'
 import { normalizeCnpj } from '@/utils/formatters'
 

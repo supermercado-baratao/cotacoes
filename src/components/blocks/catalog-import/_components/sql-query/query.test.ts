@@ -1,9 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import {
-  buildQuery,
-  MAX_QUERY_LENGTH
-} from '@/components/blocks/catalog-import/_components/sql-query/query'
+import { buildQuery, MAX_QUERY_LENGTH } from './query'
 
 describe('catalog SQL query', () => {
   test('fits the VR query text limit', () => {

@@ -7,7 +7,7 @@ import type {
   TInvoice,
   TInvoiceItem,
   TInvoiceItemMatchStatus
-} from '@/models/invoice-model/types'
+} from '@/models/invoice/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import { getEntryUnitCost, type TPackQuantitySource } from '@/utils/entry-cost'

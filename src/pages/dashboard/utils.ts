@@ -5,12 +5,12 @@ import type {
   TInvoice,
   TInvoiceDateRange,
   TInvoiceItem
-} from '@/models/invoice-model/types'
-import type { TPackingDefault } from '@/models/packing-default-model/types'
-import type { TMarginCostSource, TProduct } from '@/models/product-model/types'
-import type { TQuote } from '@/models/quote-model/types'
-import type { TSettings } from '@/models/settings-model/types'
-import type { TSupplier } from '@/models/supplier-model/types'
+} from '@/models/invoice/types'
+import type { TPackingDefault } from '@/models/packing-default/types'
+import type { TMarginCostSource, TProduct } from '@/models/product/types'
+import type { TQuote } from '@/models/quote/types'
+import type { TSettings } from '@/models/settings/types'
+import type { TSupplier } from '@/models/supplier/types'
 import {
   getCostDivergence,
   getEntryUnitCost,

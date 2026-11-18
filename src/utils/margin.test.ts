@@ -1,8 +1,9 @@
 import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test } from 'vitest'
 
-import type { TSettings } from '@/models/settings-model/types'
-import { evaluateMargin, getMarginTolerance } from '@/utils/margin'
+import type { TSettings } from '@/models/settings/types'
+
+import { evaluateMargin, getMarginTolerance } from './margin'
 
 const now = Timestamp.now()
 

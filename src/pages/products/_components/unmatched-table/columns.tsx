@@ -7,7 +7,7 @@ import {
 import { GridActionsCellItem, type GridColDef } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 
-import type { TUnmatchedProductItem } from '../../utils'
+import type { TUnmatchedProductItem } from '@/pages/products/utils'
 
 export const buildColumns = (
   handleViewInvoice: (item: TUnmatchedProductItem) => void,

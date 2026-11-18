@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { DEFAULT_MARGIN_TOLERANCE } from '@/constants/margin'
-import type { TMarginTolerance } from '@/models/settings-model/types'
+import type { TMarginTolerance } from '@/models/settings/types'
 import { useAppStore } from '@/stores/use-app-store'
 
 import {

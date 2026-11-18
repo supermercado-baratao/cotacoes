@@ -1,5 +1,5 @@
 import { DEFAULT_MARGIN_TOLERANCE } from '@/constants/margin'
-import type { TMarginTolerance, TSettings } from '@/models/settings-model/types'
+import type { TMarginTolerance, TSettings } from '@/models/settings/types'
 
 export type TMarginStatus = 'below' | 'ok' | 'above'
 

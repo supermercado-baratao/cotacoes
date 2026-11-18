@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import { expect, test } from '@playwright/test'
 
-import { clearData, createUser, populateDatabase } from './orchestrator'
+import { clearData, createUser, populateDatabase } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 

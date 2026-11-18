@@ -3,15 +3,14 @@ import path from 'node:path'
 import { expect, type Page, test } from '@playwright/test'
 import dayjs from 'dayjs'
 
-import { invoiceModel } from '@/models/invoice-model/model'
-import type { TInvoice } from '@/models/invoice-model/types'
-import { orderModel } from '@/models/order-model/model'
-import { productModel } from '@/models/product-model/model'
-import { quoteModel } from '@/models/quote-model/model'
-import { settingsModel } from '@/models/settings-model/model'
-import { supplierModel } from '@/models/supplier-model/model'
-
-import { clearData, createUser, populateDatabase } from './orchestrator'
+import { invoiceModel } from '@/models/invoice/model'
+import type { TInvoice } from '@/models/invoice/types'
+import { orderModel } from '@/models/order/model'
+import { productModel } from '@/models/product/model'
+import { quoteModel } from '@/models/quote/model'
+import { settingsModel } from '@/models/settings/model'
+import { supplierModel } from '@/models/supplier/model'
+import { clearData, createUser, populateDatabase } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 const QUOTE_DIR = 'quotes/quote-3-2026-06-01-2026-07-09'

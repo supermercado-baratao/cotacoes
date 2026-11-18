@@ -28,8 +28,8 @@ pnpm services:down    # parar os emuladores
 Para executar um único arquivo de teste:
 
 ```bash
-pnpm vitest run src/tests/vitest/margin-utils.spec.ts
-pnpm playwright test src/tests/playwright/quote.spec.ts
+pnpm vitest run src/utils/margin.test.ts
+pnpm playwright test src/tests/e2e/quote.spec.ts
 ```
 
 ## Gerenciador de pacotes
@@ -66,12 +66,12 @@ src/
 │   ├── index.tsx        # AppLayout: sidebar + Outlet
 │   ├── nav-items.ts     # Itens de navegação
 │   └── style.ts
-├── models/              # Modelos de domínio, um por entidade (<entidade>-model/{model,types}.ts)
+├── models/              # Modelos de domínio, um por entidade (<entidade>/{model,types}.ts)
 ├── pages/               # Páginas no nível de rota (cada uma com _components/ privados)
 ├── providers/
 │   └── app-provider/    # Orquestrador da aplicação: queries (use-data-fetch), mutations (use-<entidade>-mutation) e injeção no store (use-app-handler)
 ├── stores/              # Estado global com Zustand (app, alert, auth, callback)
-├── tests/               # Suítes Vitest e Playwright (ver Testes)
+├── tests/               # Suíte e2e, orchestrator, fixtures e helpers de teste (ver Testes)
 ├── themes/              # Tema MUI (dark/light)
 ├── types/               # Tipos genéricos
 ├── utils/               # Funções utilitárias
@@ -81,6 +81,17 @@ src/
 Fora de `src/`: `docs/` (documentação do projeto e da integração com o VR Software), `generators/` (templates do plop) e `scripts/` (scripts de migração executados manualmente).
 
 ### Camadas
+
+As camadas só importam das que estão abaixo delas, e o ESLint (`no-restricted-imports`) aplica essa direção:
+
+```text
+pages, layout → components, hooks → providers → stores → models → infra
+```
+
+- `constants`, `types` e `utils` são folhas: não importam de nenhuma camada, só de outras folhas.
+- `infra` e as folhas podem importar tipos de `@/models/*/types` (`import type`), mas não código.
+- `providers` pode importar de `components/ui` (o `Loader` e o `Alert` do provider), mas não de `components/blocks`.
+- Os testes (`*.test.ts(x)` e `src/tests/`) ficam fora da regra de camadas.
 
 **`src/layout/`** — shell da aplicação. `AppLayout` renderiza a sidebar e o `<Outlet>` para rotas aninhadas. Importado pelo `Router.tsx` via `@/layout`. Uma nova página exige a rota em `Router.tsx` e o item em `nav-items.ts`.
 
@@ -95,7 +106,7 @@ Fora de `src/`: `docs/` (documentação do projeto e da integração com o VR So
 **`src/models/`** — modelos de domínio. Cada model define as operações de negócio chamando `database` com o caminho da coleção. As funções não são marcadas com `async` — retornam diretamente a `Promise` do `database`. Parâmetros de tipo só são passados ao `database` quando o TypeScript não consegue inferi-los.
 
 ```typescript
-// models/department-model/model.ts
+// models/department/model.ts
 import { database } from '@/infra/database'
 import { getUserPath } from '@/infra/firebase-config'
 import type { TCreateData, TUpdateData } from '@/types/generics'
@@ -156,7 +167,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
-import type { TProduct } from '@/models/product-model/types'
+import type { TProduct } from '@/models/product/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 
@@ -224,12 +235,12 @@ const hasProducts = !!products?.length
 
 ### Gerador de componentes
 
-`pnpm generate` cria `src/components/<name>/index.tsx` e `style.ts` na raiz de `components/`: mova o resultado para `blocks/` ou `ui/` (ver a skill `new-component`).
+`pnpm generate` pergunta se o componente vai em `blocks/` ou `ui/` e cria `src/components/<blocks|ui>/<nome>/index.tsx` e `style.ts` (ver a skill `new-component`).
 
 ## Convenções
 
-- O alias `@/` aponta para `src/`.
-- Sem barrels: não crie `index.ts` só de reexportação. Importe cada módulo pelo próprio arquivo via `@/` (`@/models/product-model/types`, `@/stores/use-app-store`, `@/components/blocks/data-view`), ou pelo caminho relativo dentro da mesma página ou componente. Barrels causavam imports circulares (`infra` → `utils` → `models` → `infra`).
+- O alias `@/` aponta para `src/`. Use `./` só para a mesma pasta ou uma subpasta direta (`./style`, `./_components/table`) e `@/` no resto; o ESLint proíbe `../`.
+- Sem barrels: não crie `index.ts` só de reexportação. Importe cada módulo pelo próprio arquivo via `@/` (`@/models/product/types`, `@/stores/use-app-store`, `@/components/blocks/data-view`), ou pelo caminho relativo dentro da mesma página ou componente. Barrels causavam imports circulares (`infra` → `utils` → `models` → `infra`).
 - Sempre usar arrow functions.
 - Estilos de componentes ficam em `style.ts`, com `SxProps<Theme>`, importados como `* as S`.
 - Inputs de texto usam `textTransform: 'uppercase'` (no `style.ts`) e `onFocus={selectOnFocus}`.
@@ -287,22 +298,21 @@ Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o suje
 ## Testes
 
 ```text
-src/tests/
-├── _mocks/              # fixtures compartilhadas entre as duas suítes (xlsx/xml/txt)
-├── vitest/              # suíte unitária (Vitest)
-│   ├── _utils/          # helpers (ex: read-mock-file.ts, create-query-wrapper.tsx)
-│   └── *.spec.ts(x)
-└── playwright/          # suíte e2e (Playwright)
-    ├── orchestrator.ts  # createUser / populateDatabase / clearData / verifyEmail contra o emulador real do Firebase
-    └── *.spec.ts
+src/
+├── **/*.test.ts(x)      # testes unitários (Vitest), ao lado do código que testam
+└── tests/
+    ├── _mocks/          # fixtures compartilhadas entre as duas suítes (xlsx/xml/txt)
+    ├── _utils/          # helpers dos testes unitários (ex: read-mock-file.ts, create-query-wrapper.tsx)
+    ├── e2e/             # suíte e2e (Playwright), *.spec.ts
+    └── orchestrator.ts  # createUser / populateDatabase / clearData / verifyEmail contra o emulador real do Firebase
 ```
 
-O `orchestrator.ts` do Playwright reaproveita os models reais (`@/models`) e o parser de import (`getData`) em Node puro contra os emuladores — bem mais rápido que popular via UI. Isso só funciona porque `src/infra/firebase-config.ts` e `src/infra/gemini.ts` caem para `process.env` quando `import.meta.env` não existe (fora do Vite).
+O `orchestrator.ts` reaproveita os models reais (`@/models`) e o parser de import (`getData`) em Node puro contra os emuladores — bem mais rápido que popular via UI. Isso só funciona porque `src/infra/firebase-config.ts` e `src/infra/gemini.ts` caem para `process.env` quando `import.meta.env` não existe (fora do Vite).
 
-- **Vitest** (`src/tests/vitest/*.spec.ts(x)`) — só testes unitários, que rodam em segundos: funções puras (`evaluateMargin`, `groupInvoiceItemsForBatch`, `extractPackingInfo`...) e cenários de erro que precisam forçar uma rejeição do banco, que não dá para simular contra o emulador. Esses testam o hook (mutation do `AppProvider` ou handler da página) com `renderHook` e `vi.spyOn(<model>, '<método>').mockRejectedValueOnce(...)` — nunca renderize o `App` nem páginas inteiras. Sem rede nem emuladores.
+- **Vitest** (`*.test.ts(x)` ao lado do módulo testado, com o mesmo nome: `utils.ts` → `utils.test.ts`; um arquivo de teste por módulo) — só testes unitários, que rodam em segundos: funções puras (`evaluateMargin`, `groupInvoiceItemsForBatch`, `extractPackingInfo`...) e cenários de erro que precisam forçar uma rejeição do banco, que não dá para simular contra o emulador. Esses testam o hook (mutation do `AppProvider` ou handler da página) com `renderHook` e `vi.spyOn(<model>, '<método>').mockRejectedValueOnce(...)` — nunca renderize o `App` nem páginas inteiras. Sem rede nem emuladores.
   - Cada arquivo mocka só o que usa (`vi.spyOn` no model ou `vi.mock` local); não há mocks globais. O `vitest.setup.ts` reseta e restaura todos os mocks antes de cada teste.
   - Todos os arquivos rodam no ambiente `jsdom` (padrão do `vite.config.ts`); não declare `// @vitest-environment` por arquivo.
-- **Playwright** (`src/tests/playwright/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores do Firebase. Um arquivo por página; cada `test()` cria seu próprio usuário e semeia só os dados de que precisa (via orchestrator ou chamando os models) — testes independentes, não um roteiro sequencial. O `pnpm test:e2e` sobe os emuladores antes.
+- **Playwright** (`src/tests/e2e/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores do Firebase. Um arquivo por página; cada `test()` cria seu próprio usuário e semeia só os dados de que precisa (via orchestrator ou chamando os models) — testes independentes, não um roteiro sequencial. O `pnpm test:e2e` sobe os emuladores antes.
 - Teste apenas a lógica que escrevemos (cálculos, filtros, mapeamentos, parsers, regras de negócio). Não teste comportamento de bibliotecas (MUI, zod, React Query) e descarte um teste cujo custo principal é um mock necessário só para renderizar.
 
 O emulador carrega o `firestore.rules` só ao iniciar: depois de alterar as regras, rode `pnpm services:down` e suba de novo.

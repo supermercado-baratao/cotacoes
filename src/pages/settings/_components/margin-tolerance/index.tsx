@@ -9,10 +9,10 @@ import {
 } from '@mui/material'
 
 import { MAX_MARGIN_TOLERANCE } from '@/constants/margin'
-import type { TDepartment } from '@/models/department-model/types'
-import type { TMarginTolerance } from '@/models/settings-model/types'
+import type { TDepartment } from '@/models/department/types'
+import type { TMarginTolerance } from '@/models/settings/types'
+import type { TDepartmentMarginOverrideRow } from '@/pages/settings/utils'
 
-import type { TDepartmentMarginOverrideRow } from '../../utils'
 import * as S from './style'
 
 type TMarginToleranceProps = {

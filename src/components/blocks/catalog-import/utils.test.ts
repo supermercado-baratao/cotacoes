@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import * as xlsx from 'xlsx'
 
-import { getData } from '@/components/blocks/catalog-import/utils'
+import { getData } from './utils'
 
 const baseRow = {
   id_produto: '215155',

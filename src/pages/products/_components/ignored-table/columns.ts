@@ -1,7 +1,7 @@
 import type { GridColDef } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 
-import type { TIgnoredProductRow } from '../../utils'
+import type { TIgnoredProductRow } from '@/pages/products/utils'
 
 export const columns: GridColDef<TIgnoredProductRow>[] = [
   {

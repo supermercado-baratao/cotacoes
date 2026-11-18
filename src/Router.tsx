@@ -1,13 +1,13 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router'
 
 import { AppLayout } from '@/layout'
+import { InvoiceDetail } from '@/pages/invoices/detail'
 import { useAuthStore } from '@/stores/use-auth-store'
 
 import { Dashboard } from './pages/dashboard'
 import { Departments } from './pages/departments'
 import { Families } from './pages/families'
 import { Invoices } from './pages/invoices'
-import { InvoiceDetail } from './pages/invoices/detail'
 import { Landing } from './pages/landing'
 import { NotFound } from './pages/not-found'
 import { PriceAdjustments } from './pages/price-adjustments'

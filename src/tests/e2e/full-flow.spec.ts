@@ -4,7 +4,7 @@ import path from 'node:path'
 import { faker } from '@faker-js/faker'
 import { expect, type Page, test } from '@playwright/test'
 
-import { clearData, verifyEmail } from './orchestrator'
+import { clearData, verifyEmail } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 const QUOTES_DIR = path.join(MOCKS_DIR, 'quotes')

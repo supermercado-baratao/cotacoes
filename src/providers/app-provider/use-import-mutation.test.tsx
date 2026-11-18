@@ -1,14 +1,14 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { importModel } from '@/models/import-model/model'
-import { type TImportData } from '@/models/import-model/types'
-import { type TProduct } from '@/models/product-model/types'
-import { useImportMutation } from '@/providers/app-provider/use-import-mutation'
+import { importModel } from '@/models/import/model'
+import { type TImportData } from '@/models/import/types'
+import { type TProduct } from '@/models/product/types'
 import { useAlertStore } from '@/stores/use-alert-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
+import { createQueryWrapper } from '@/tests/_utils/create-query-wrapper'
 
-import { createQueryWrapper } from './_utils/create-query-wrapper'
+import { useImportMutation } from './use-import-mutation'
 
 const PRODUCTS = [{ id: '217823', price: 17.58 }] as TProduct[]
 

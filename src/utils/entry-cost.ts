@@ -1,7 +1,7 @@
-import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
-import type { TPackingDefault } from '@/models/packing-default-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TSupplier } from '@/models/supplier-model/types'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice/types'
+import type { TPackingDefault } from '@/models/packing-default/types'
+import type { TProduct } from '@/models/product/types'
+import type { TSupplier } from '@/models/supplier/types'
 
 import { normalizeCnpj } from './formatters'
 import { findPackingDefault, getInvoiceItemPacking } from './packing-defaults'

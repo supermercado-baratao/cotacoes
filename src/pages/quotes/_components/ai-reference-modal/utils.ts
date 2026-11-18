@@ -1,10 +1,9 @@
 import type { TAiSuggestion } from '@/infra/gemini'
-import type { TFamily } from '@/models/family-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TPriceRef, TQuote, TQuoteItem } from '@/models/quote-model/types'
+import type { TFamily } from '@/models/family/types'
+import type { TProduct } from '@/models/product/types'
+import type { TPriceRef, TQuote, TQuoteItem } from '@/models/quote/types'
+import { getReferenceDescription } from '@/pages/quotes/utils'
 import { getFamilyReferencePrice } from '@/utils/quote-item-match'
-
-import { getReferenceDescription } from '../../utils'
 
 export type TSuggestionRow = {
   item: TQuoteItem

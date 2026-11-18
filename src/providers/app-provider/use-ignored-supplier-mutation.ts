@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { ignoredSupplierModel } from '@/models/ignored-supplier-model/model'
+import { ignoredSupplierModel } from '@/models/ignored-supplier/model'
 import { useAlertStore } from '@/stores/use-alert-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 

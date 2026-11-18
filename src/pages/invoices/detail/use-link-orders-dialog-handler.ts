@@ -1,19 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { TProductDraft } from '@/components/blocks/product-form'
-import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TQuote, TQuoteItem } from '@/models/quote-model/types'
-import { useAppStore } from '@/stores/use-app-store'
-import { getFamilyReferencePrice } from '@/utils/quote-item-match'
-import { findSupplierByCnpj } from '@/utils/suppliers'
-
+import type { TInvoice, TInvoiceItem } from '@/models/invoice/types'
+import type { TProduct } from '@/models/product/types'
+import type { TQuote, TQuoteItem } from '@/models/quote/types'
 import {
   findBestQuoteItemMatch,
   groupInvoiceItemsForBatch,
   type TBatchGroup,
   type TLinkOrderRow
-} from '../utils'
+} from '@/pages/invoices/utils'
+import { useAppStore } from '@/stores/use-app-store'
+import { getFamilyReferencePrice } from '@/utils/quote-item-match'
+import { findSupplierByCnpj } from '@/utils/suppliers'
 
 export type TAddQuoteItemDraft = {
   itemNumber: number

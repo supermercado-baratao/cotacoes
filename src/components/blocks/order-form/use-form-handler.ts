@@ -9,20 +9,23 @@ import {
 } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
-import type { TInvoice } from '@/models/invoice-model/types'
-import type { TOrder } from '@/models/order-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TQuoteItem } from '@/models/quote-model/types'
-import type { TSeller } from '@/models/seller-model/types'
-import type { TSupplier } from '@/models/supplier-model/types'
+import type { TInvoice } from '@/models/invoice/types'
+import type { TOrder } from '@/models/order/types'
+import type { TProduct } from '@/models/product/types'
+import type { TQuoteItem } from '@/models/quote/types'
+import type { TSeller } from '@/models/seller/types'
+import type { TSupplier } from '@/models/supplier/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
+import {
+  extractPackingInfo,
+  getUnitPriceFromPackingPrice
+} from '@/utils/packing'
 import { findPackingDefault } from '@/utils/packing-defaults'
 import { findSupplierByCnpj } from '@/utils/suppliers'
 
 import { createSchema, type TSchema } from './schema'
 import { useProductHistory } from './use-product-history'
-import { extractPackingInfo, getUnitPriceFromPackingPrice } from './utils'
 
 type TInvoiceRef = { invoice: TInvoice; itemNumber: number }
 

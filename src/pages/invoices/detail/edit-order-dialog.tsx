@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 
 import { OrderForm } from '@/components/blocks/order-form'
-import type { TInvoice } from '@/models/invoice-model/types'
-import type { TOrder } from '@/models/order-model/types'
-import type { TQuote } from '@/models/quote-model/types'
+import type { TInvoice } from '@/models/invoice/types'
+import type { TOrder } from '@/models/order/types'
+import type { TQuote } from '@/models/quote/types'
 
 type TEditOrderDialogProps = {
   invoice: TInvoice

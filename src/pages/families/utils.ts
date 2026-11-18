@@ -1,4 +1,4 @@
-import { type TFamily } from '@/models/family-model/types'
+import { type TFamily } from '@/models/family/types'
 import { matchesSearch } from '@/utils/search'
 
 export const filterFamilies = (search: string, families: TFamily[]) =>

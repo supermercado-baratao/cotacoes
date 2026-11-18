@@ -1,7 +1,7 @@
 import z from 'zod'
 
 import { MAX_DESCRIPTION_LENGTH } from '@/constants/length'
-import type { TFamily } from '@/models/family-model/types'
+import type { TFamily } from '@/models/family/types'
 import type { TCreateDataWithId } from '@/types/generics'
 
 export const schema = z.object({

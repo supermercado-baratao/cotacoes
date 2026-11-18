@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { invoiceModel } from '@/models/invoice-model/model'
+import { invoiceModel } from '@/models/invoice/model'
 import {
   type TInvoice,
   type TInvoiceItemMatchStatus
-} from '@/models/invoice-model/types'
-import { orderModel } from '@/models/order-model/model'
-import { type TOrder } from '@/models/order-model/types'
+} from '@/models/invoice/types'
+import { orderModel } from '@/models/order/model'
+import { type TOrder } from '@/models/order/types'
 import { useAlertStore } from '@/stores/use-alert-store'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'

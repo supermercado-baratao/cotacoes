@@ -1,6 +1,6 @@
-import type { TImportData } from '@/models/import-model/types'
+import type { TProductImportStatus } from '@/components/blocks/catalog-import/utils'
+import type { TImportData } from '@/models/import/types'
 
-import type { TProductImportStatus } from '../../utils'
 import { Header } from './header'
 import { Table } from './table'
 

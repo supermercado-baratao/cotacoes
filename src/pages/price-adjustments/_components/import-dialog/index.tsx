@@ -2,9 +2,9 @@ import { Alert, Box, Button, Typography } from '@mui/material'
 
 import { Loader } from '@/components/ui/loader'
 import { Modal } from '@/components/ui/modal'
+import { DropZone } from '@/pages/price-adjustments/_components/drop-zone'
 import { useAppStore } from '@/stores/use-app-store'
 
-import { DropZone } from '../drop-zone'
 import * as S from './style'
 import { useImportDialogHandler } from './use-import-dialog-handler'
 

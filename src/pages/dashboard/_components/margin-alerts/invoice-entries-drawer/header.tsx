@@ -1,7 +1,8 @@
 import { Close } from '@mui/icons-material'
 import { Box, IconButton, Typography } from '@mui/material'
 
-import type { TMarginAlert } from '../../../utils'
+import type { TMarginAlert } from '@/pages/dashboard/utils'
+
 import * as S from './style'
 
 type THeaderProps = {

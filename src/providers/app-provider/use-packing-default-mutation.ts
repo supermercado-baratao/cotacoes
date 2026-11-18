@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { packingDefaultModel } from '@/models/packing-default-model/model'
-import { type TPackingDefault } from '@/models/packing-default-model/types'
+import { packingDefaultModel } from '@/models/packing-default/model'
+import { type TPackingDefault } from '@/models/packing-default/types'
 import { useAlertStore } from '@/stores/use-alert-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import { findPackingDefault } from '@/utils/packing-defaults'

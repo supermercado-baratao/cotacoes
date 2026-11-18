@@ -1,5 +1,5 @@
-import { extractPackingInfo } from '@/components/blocks/order-form/utils'
-import type { TPackingDefault } from '@/models/packing-default-model/types'
+import type { TPackingDefault } from '@/models/packing-default/types'
+import { extractPackingInfo } from '@/utils/packing'
 
 const normalizePacking = (packing: string) => packing.trim().toUpperCase()
 

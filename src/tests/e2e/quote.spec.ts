@@ -3,12 +3,11 @@ import path from 'node:path'
 
 import { expect, type Locator, type Page, test } from '@playwright/test'
 
-import { orderModel } from '@/models/order-model/model'
-import type { TOrder } from '@/models/order-model/types'
-import { quoteModel } from '@/models/quote-model/model'
-import type { TQuoteItem } from '@/models/quote-model/types'
-
-import { clearData, createUser, populateDatabase } from './orchestrator'
+import { orderModel } from '@/models/order/model'
+import type { TOrder } from '@/models/order/types'
+import { quoteModel } from '@/models/quote/model'
+import type { TQuoteItem } from '@/models/quote/types'
+import { clearData, createUser, populateDatabase } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { orderModel } from '@/models/order-model/model'
-import type { TOrder } from '@/models/order-model/types'
+import { orderModel } from '@/models/order/model'
+import type { TOrder } from '@/models/order/types'
 import { useAlertStore } from '@/stores/use-alert-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import type { TCreateData } from '@/types/generics'

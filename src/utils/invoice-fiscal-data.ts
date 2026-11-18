@@ -1,4 +1,4 @@
-import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice/types'
 
 // Campos extraídos do XML que foram adicionados depois que parte das notas já
 // estava no Firestore. `undefined` = campo nunca gravado (nota antiga); `null`

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import type { TImportData } from '@/models/import-model/types'
+import type { TImportData } from '@/models/import/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router'
 import { Table as _Table } from '@/components/blocks/table'
 import { DeleteDialog } from '@/components/ui/dialog'
 import { useDeleteHandler } from '@/hooks/use-delete-handler'
-import type { TInvoice } from '@/models/invoice-model/types'
+import type { TInvoice } from '@/models/invoice/types'
 import { useAppStore } from '@/stores/use-app-store'
 import { findSupplierByCnpj } from '@/utils/suppliers'
 

@@ -15,10 +15,10 @@ import {
 import dayjs from 'dayjs'
 import { Link } from 'react-router'
 
+import type { TInvoiceEntryWithCost } from '@/pages/dashboard/utils'
 import type { TPackQuantitySource } from '@/utils/entry-cost'
 import { formatCurrency, formatNumericValue } from '@/utils/formatters'
 
-import type { TInvoiceEntryWithCost } from '../../../utils'
 import * as S from './style'
 
 const packSourceLabel: Record<TPackQuantitySource, string> = {

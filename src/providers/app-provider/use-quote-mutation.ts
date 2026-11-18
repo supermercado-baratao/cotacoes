@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { orderModel } from '@/models/order-model/model'
-import type { TOrder } from '@/models/order-model/types'
-import { quoteModel } from '@/models/quote-model/model'
-import type { TQuote } from '@/models/quote-model/types'
+import { orderModel } from '@/models/order/model'
+import type { TOrder } from '@/models/order/types'
+import { quoteModel } from '@/models/quote/model'
+import type { TQuote } from '@/models/quote/types'
 import { useAlertStore } from '@/stores/use-alert-store'
 import { useCallbackStore } from '@/stores/use-callback-store'
 import type { TCreateData, TUpdateData } from '@/types/generics'

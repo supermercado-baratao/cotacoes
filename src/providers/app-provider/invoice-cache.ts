@@ -1,7 +1,7 @@
 import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 
-import type { TInvoice, TInvoiceDateRange } from '@/models/invoice-model/types'
+import type { TInvoice, TInvoiceDateRange } from '@/models/invoice/types'
 
 import {
   addManyToArrayCache,

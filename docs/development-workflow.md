@@ -58,7 +58,7 @@ git switch -c 'feat/relatorio-pedidos#10'
 - Depois de mudar algo em `src/components`, `src/pages` ou `src/layout`, rode o subagente `ui-reviewer`.
 - Para conferir a mudança no browser, use o MCP Playwright com `pnpm dev`.
 - Instale dependências com `pnpm add -E <pkg>` (ou `pnpm add -D -E <pkg>`), para manter as versões fixas.
-- Adicione ou atualize os testes junto com o código: unitários em `src/tests/vitest` e e2e em `src/tests/playwright` (ver Testes no [`AGENTS.md`](../AGENTS.md)).
+- Adicione ou atualize os testes junto com o código: unitários em `*.test.ts(x)` ao lado do código e e2e em `src/tests/e2e` (ver Testes no [`AGENTS.md`](../AGENTS.md)).
 - Se a tarefa muda uma convenção, atualize o `AGENTS.md` na mesma branch.
 
 Verifique localmente antes de commitar:

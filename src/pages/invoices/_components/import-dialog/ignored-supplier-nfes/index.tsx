@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 
-import type { TParsedNfe } from '../../../utils'
+import type { TParsedNfe } from '@/pages/invoices/utils'
 
 type TProps = {
   ignoredNfes: TParsedNfe[]

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { useFormState } from '@/hooks/use-form-state'
-import type { TFamily } from '@/models/family-model/types'
+import type { TFamily } from '@/models/family/types'
 import { useAppStore } from '@/stores/use-app-store'
 
 import { filterFamilies } from './utils'

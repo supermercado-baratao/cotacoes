@@ -1,7 +1,7 @@
 import { Table as _Table } from '@/components/blocks/table'
 import { DeleteDialog } from '@/components/ui/dialog'
 import { useDeleteHandler } from '@/hooks/use-delete-handler'
-import type { TSeller } from '@/models/seller-model/types'
+import type { TSeller } from '@/models/seller/types'
 import { useAppStore } from '@/stores/use-app-store'
 
 import { columns } from './columns'

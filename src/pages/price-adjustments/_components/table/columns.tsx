@@ -3,10 +3,10 @@ import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import dayjs from 'dayjs'
 import { Fragment } from 'react'
 
+import type { TPriceAdjustmentDisplayRow as TPriceAdjustmentRow } from '@/pages/price-adjustments/utils'
 import { formatCurrency } from '@/utils/formatters'
 import { marginStatusConfig } from '@/utils/margin'
 
-import type { TPriceAdjustmentDisplayRow as TPriceAdjustmentRow } from '../../utils'
 import * as S from './style'
 
 const renderMarginStatus = ({

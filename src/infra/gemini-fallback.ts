@@ -1,6 +1,6 @@
-import type { TFamily } from '@/models/family-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TQuoteItem } from '@/models/quote-model/types'
+import type { TFamily } from '@/models/family/types'
+import type { TProduct } from '@/models/product/types'
+import type { TQuoteItem } from '@/models/quote/types'
 
 import type { TAiSuggestion } from './gemini'
 

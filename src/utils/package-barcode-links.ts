@@ -1,4 +1,4 @@
-import type { TPackageBarcodeLink } from '@/models/package-barcode-link-model/types'
+import type { TPackageBarcodeLink } from '@/models/package-barcode-link/types'
 
 export const buildPackageBarcodeLinkMap = (
   links: TPackageBarcodeLink[]

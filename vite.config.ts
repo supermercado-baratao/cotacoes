@@ -18,7 +18,7 @@ export default defineConfig({
     env: loadEnv('development', process.cwd(), 'VITE_'),
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
-    include: ['src/tests/vitest/**/*.spec.{ts,tsx}']
+    include: ['src/**/*.test.{ts,tsx}']
   },
   resolve: {
     alias: {

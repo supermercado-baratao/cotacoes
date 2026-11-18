@@ -12,14 +12,14 @@ import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 
 import { SearchInput } from '@/components/ui/search-input'
-import type { TInvoice, TInvoiceItem } from '@/models/invoice-model/types'
-import type { TProduct } from '@/models/product-model/types'
-import type { TQuoteItem } from '@/models/quote-model/types'
+import type { TInvoice, TInvoiceItem } from '@/models/invoice/types'
+import type { TProduct } from '@/models/product/types'
+import type { TQuoteItem } from '@/models/quote/types'
+import { getNextQuoteDate } from '@/pages/quotes/utils'
 import { useAppStore } from '@/stores/use-app-store'
 import { formatCurrency, formatNumericValue } from '@/utils/formatters'
 import { isLikelyMatch } from '@/utils/quote-item-match'
 
-import { getNextQuoteDate } from '../../../utils'
 import {
   filterSuggestionsBySearch,
   getInvoiceSuggestions,

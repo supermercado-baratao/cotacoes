@@ -5,7 +5,7 @@ import {
   PHONE_MAX_LENGTH,
   PHONE_MIN_LENGTH
 } from '@/constants/length'
-import type { TSeller } from '@/models/seller-model/types'
+import type { TSeller } from '@/models/seller/types'
 import type { TCreateData } from '@/types/generics'
 
 export const schema = z.object({
