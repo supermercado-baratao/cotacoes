@@ -56,7 +56,8 @@ git switch -c 'feat/relatorio-pedidos#10'
 - Novo componente compartilhado? Use a skill `new-component`.
 - Desenhando ou reformulando interface? Use as skills `frontend-design` e `impeccable`.
 - Depois de mudar algo em `src/components`, `src/pages` ou `src/layout`, rode o subagente `ui-reviewer`.
-- Para conferir a mudança no browser, use o MCP Playwright com `pnpm dev`.
+- Para conferir a mudança no browser, rode `pnpm db:seed` e `pnpm dev` e siga o [`docs/local-testing.md`](./local-testing.md), à mão ou com o MCP Playwright.
+- Se a mudança altera o que o usuário vê ou faz, atualize o `docs/local-testing.md` na mesma branch.
 - Instale dependências com `pnpm add -E <pkg>` (ou `pnpm add -D -E <pkg>`), para manter as versões fixas.
 - Adicione ou atualize os testes junto com o código: unitários em `*.test.ts(x)` ao lado do código e e2e em `src/tests/e2e` (ver Testes no [`AGENTS.md`](../AGENTS.md)).
 - Se a tarefa muda uma convenção, atualize o `AGENTS.md` na mesma branch.

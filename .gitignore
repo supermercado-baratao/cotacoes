@@ -11,3 +11,4 @@ blob-report
 .impeccable/*.local.json
 .impeccable/hook.cache.json
 .playwright-mcp
+seed-credentials.json
