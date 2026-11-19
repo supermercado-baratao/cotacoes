@@ -36,10 +36,8 @@ export const useDashboardHandler = () => {
   const [endDate, setEndDate] = useState(() => dayjs().format('YYYY-MM-DD'))
   const [isPeriodFilterEnabled, setIsPeriodFilterEnabled] = useState(true)
 
-  // Fonte de custo escolhida no select da coluna Custo — salva no produto, pra
-  // valer em outras sessões. Voltar pro padrão grava `null`, pra seguir o
-  // fallback (VR → médio das notas) se o VR ganhar/perder custo depois. A
-  // margem é recalculada quando a query de produtos é invalidada.
+  // Going back to the default stores `null`, so the fallback (VR -> invoice
+  // average) follows the VR gaining or losing a cost later.
   const handleCostSourceChange = useCallback(
     (alert: TMarginAlert, source: TMarginCostSource) => {
       const product = products?.find((item) => item.id === alert.id)
@@ -57,10 +55,6 @@ export const useDashboardHandler = () => {
     [invoices]
   )
 
-  // `null` significa "sem restrição de período" — filtro desligado pelo
-  // usuário ou intervalo inválido. Também é o valor passado pro drawer "Ver
-  // notas" de cada alerta, pra manter a mesma noção de período em toda a
-  // tela.
   const activeDateRange = useMemo(() => {
     if (!isPeriodFilterEnabled) return null
     return startDate && endDate && startDate <= endDate
@@ -68,8 +62,6 @@ export const useDashboardHandler = () => {
       : null
   }, [isPeriodFilterEnabled, startDate, endDate])
 
-  // Custo médio de entrada só com as notas do período ativo — o mesmo
-  // período que decide quais alertas aparecem.
   const entryCostMap = useMemo(
     () =>
       buildEntryCostMap(

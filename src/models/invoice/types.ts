@@ -21,13 +21,13 @@ export type TInvoiceItem = {
   quantity: number
   unitPrice: number
   totalPrice: number
-  // Notas importadas antes da adição desses campos não os possuem no Firestore.
+  // Missing in invoices imported before these fields were added.
   tribUnit: string | null
   tribQuantity: number | null
   tribUnitPrice: number | null
-  // CFOP do item e custo total com impostos/despesas (vProd - vDesc + vFrete
-  // + vSeg + vOutro + vIPI + vICMSST + vFCPST). Ausentes em notas importadas
-  // antes da adição desses campos.
+  // Total cost with taxes and expenses (vProd - vDesc + vFrete + vSeg + vOutro
+  // + vIPI + vICMSST + vFCPST). Missing in invoices imported before these
+  // fields were added.
   cfop?: string | null
   totalCost?: number | null
   productId: string | null
@@ -45,7 +45,7 @@ export type TInvoice = {
   emissionDate: string
   supplierCnpj: string
   supplierName: string
-  // <natOp> — ausente em notas importadas antes da adição do campo.
+  // <natOp>; missing in invoices imported before the field was added.
   operationNature?: string | null
   destinationCnpj: string
   totalValue: number
@@ -58,8 +58,5 @@ export type TInvoice = {
 
 export type TInvoiceImportResult = {
   created: TInvoice[]
-  // Notas já gravadas que estavam sem os dados fiscais adicionados depois
-  // (CFOP, natureza da operação, custo com impostos...) e foram completadas
-  // com o XML reenviado, preservando vínculos e conferência.
   completed: TInvoice[]
 }

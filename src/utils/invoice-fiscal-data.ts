@@ -1,8 +1,8 @@
 import type { TInvoice, TInvoiceItem } from '@/models/invoice/types'
 
-// Campos extraídos do XML que foram adicionados depois que parte das notas já
-// estava no Firestore. `undefined` = campo nunca gravado (nota antiga); `null`
-// é um valor legítimo vindo do XML (ex: item sem CFOP) e não é sobrescrito.
+// Fields added after some invoices were already stored. `undefined` = never
+// stored (old invoice); `null` is a legitimate XML value (e.g. an item without
+// CFOP) and is not overwritten.
 const FISCAL_ITEM_FIELDS = [
   'tribUnit',
   'tribQuantity',
@@ -21,11 +21,9 @@ export const hasMissingFiscalData = (
     FISCAL_ITEM_FIELDS.some((field) => item[field] === undefined)
   )
 
-// Completa só os campos fiscais ausentes da nota já gravada com os do XML
-// reenviado — vínculos (productId/orderId), divergências e a situação de
-// conferência feitos no app são preservados. Itens são pareados pelo número
-// do item e conferidos pelo código do fornecedor, pra nunca misturar dados
-// de itens diferentes.
+// Items are paired by item number and checked against the supplier code, so
+// data from different items is never mixed, and the links, divergences and
+// checking done in the app are kept.
 export const completeInvoiceFiscalData = (
   existing: TInvoice,
   parsed: Pick<TInvoice, 'operationNature' | 'items'>

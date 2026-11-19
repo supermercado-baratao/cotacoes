@@ -56,9 +56,8 @@ export const useSettingsHandler = () => {
     derivedDepartmentOverrides
   )
 
-  // Só resincroniza com o servidor quando o usuário não tem edições
-  // pendentes — evita que um refetch em segundo plano (ex: import
-  // concluindo) sobrescreva alterações ainda não salvas no formulário.
+  // Only resyncs when there are no pending edits, so a background refetch (e.g.
+  // an import finishing) does not overwrite unsaved changes.
   const hasUnsavedChanges =
     order.join('|') !== syncedOrderedDepartments.join('|') ||
     marginTolerance.below !== syncedMarginTolerance.below ||

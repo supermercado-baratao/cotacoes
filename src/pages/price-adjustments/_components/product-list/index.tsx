@@ -25,9 +25,6 @@ export const ProductList = ({ rows }: TProductListProps) => {
 
   return (
     <Box>
-      {/* Produto sem família não compartilha preço com mais ninguém — usa o
-          mesmo modelo visual dos grupos de família (título + quadro-resumo),
-          mas sem DataGrid, já que não há outros itens do grupo pra listar. */}
       {pagedRows.map((row) => (
         <Paper key={row.code} variant="outlined" sx={S.Card}>
           <Box sx={S.CardHeader}>

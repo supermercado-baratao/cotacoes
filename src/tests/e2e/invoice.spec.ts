@@ -24,9 +24,8 @@ const login = async (page: Page, email: string, password: string) => {
   await expect(page).toHaveURL(/\/dashboard/)
   await page.getByRole('button', { name: 'Notas de Entrada' }).click()
   await expect(page).toHaveURL(/\/invoices/)
-  // A lista mostra por padrão só os últimos 90 dias a partir de hoje — fixa
-  // o início do período pra que as notas dos fixtures (2026) continuem
-  // visíveis independentemente da data em que o teste roda.
+  // The list defaults to the last 90 days; pin the start so the 2026 fixtures
+  // stay visible whenever the test runs.
   await page.getByLabel('De', { exact: true }).fill('2026-01-01')
   await page.getByRole('button', { name: 'Buscar' }).click()
 }
@@ -40,9 +39,8 @@ const uploadXml = (page: Page, relativePath: string) =>
     .locator('input[type="file"]')
     .setInputFiles(path.join(MOCKS_DIR, relativePath))
 
-// Pedidos só podem ser criados pra notas de um fornecedor já cadastrado no
-// catálogo — reaproveita um fornecedor real do import-data.xlsx em vez de um
-// CNPJ inventado, senão o botão "Confirmar" fica desabilitado.
+// Orders can only be created for invoices from a registered supplier, so reuse
+// a real one from import-data.xlsx instead of a made-up CNPJ.
 const getRegisteredSupplier = async () => {
   const suppliers = await supplierModel.findMany()
   return suppliers[0]
@@ -106,18 +104,18 @@ test('imports an invoice, blocks reimporting it and rejects an XML without an ac
     const invalidXml =
       '<?xml version="1.0"?><nfeProc><NFe><infNFe><ide><nNF>1</nNF></ide></infNFe></NFe></nfeProc>'
     await page.locator('input[type="file"]').setInputFiles({
-      name: 'invalido.xml',
+      name: 'invalid.xml',
       mimeType: 'text/xml',
       buffer: Buffer.from(invalidXml)
     })
 
-    await expect(page.getByText('invalido.xml:')).toBeVisible()
+    await expect(page.getByText('invalid.xml:')).toBeVisible()
     await expect(
       page.getByText('Chave de acesso NFe inválida ou ausente no arquivo')
     ).toBeVisible()
 
     await page.getByRole('alert').getByRole('button').click()
-    await expect(page.getByText('invalido.xml:')).not.toBeVisible()
+    await expect(page.getByText('invalid.xml:')).not.toBeVisible()
   })
 })
 
@@ -134,8 +132,8 @@ test('completes the fiscal data of an invoice imported before those fields exist
   await page.getByRole('button', { name: 'Importar 1 nota' }).click()
   await expect(page.getByText('1 nota importada com sucesso!')).toBeVisible()
 
-  // Regrava a nota como ficaria antes dos campos fiscais (sem natOp, CFOP,
-  // custo com impostos e unidade tributável), já conferida no app.
+  // Rewrites the invoice as it was before the fiscal fields (no natOp, CFOP,
+  // cost with taxes or taxable unit), already checked in the app.
   const [imported] = await invoiceModel.findMany({
     startDate: '2026-06-01',
     endDate: '2026-06-30'
@@ -271,8 +269,8 @@ test('links an invoice item to a quote order', async ({ page }) => {
 
   await expect(page.getByText('Pedido criado com sucesso!')).toBeVisible()
 
-  // Salvar o pedido navega pra tela de cotações — confirma o vínculo direto
-  // pelo model em vez de disputar com essa navegação na UI.
+  // Saving the order navigates to the quotes page, so check the link through
+  // the model instead of racing that navigation.
   await expect
     .poll(async () => {
       const orders = await orderModel.findManyByQuoteId(quote.id)
@@ -290,8 +288,8 @@ test('back button returns to the page it was opened from, and items can be filte
 
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
 
-  // preço 100, custo 80 -> margem 20%; piso 25% -> abaixo, aparece no
-  // Dashboard.
+  // price 100, cost 80 -> margin 20%; floor 25% -> below, shows up on the
+  // Dashboard
   await productModel.create({
     id: 'pback1',
     description: 'PRODUTO BACK TEST',

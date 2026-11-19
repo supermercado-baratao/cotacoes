@@ -86,9 +86,8 @@ export const MarginAlerts = ({
         isEmpty={marginAlerts.length === 0}
         emptyMessage={copy.emptyMessage}
       >
-        {/* Grade paginada (até 100 linhas): sem virtualização, a coluna de
-            ações continua renderizada mesmo quando as colunas passam da
-            largura da tela e exigem rolagem horizontal. */}
+        {/* Paginated (up to 100 rows): without virtualization, the actions
+           column stays rendered when the columns overflow the screen width. */}
         <Table
           items={marginAlerts}
           columns={columns}

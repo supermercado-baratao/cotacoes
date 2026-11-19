@@ -62,8 +62,8 @@ export const useImportHandler = (handleClose: () => void) => {
     runImport({
       products: selectedProducts,
       families: importData.families.filter((f) => selectedFamilyIds.has(f.id)),
-      // Exclui departamentos já cadastrados: gravá-los de novo sobrescreveria
-      // uma renomeação manual feita pela tela de Departamentos (ver utils.ts).
+      // Saving existing departments again would overwrite a manual rename (see
+      // utils.ts).
       departments: importData.departments.filter(
         (d) =>
           selectedDepartmentIds.has(d.id) && !existingDepartmentIds.has(d.id)

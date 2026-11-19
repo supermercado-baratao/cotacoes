@@ -6,11 +6,10 @@ export const chunk = <T>(items: T[], size: number): T[][] => {
   return chunks
 }
 
-// Roda `mapper` sobre `items` com no máximo `limit` chamadas em voo ao mesmo
-// tempo — usado nas queries "in" em chunks (ver database.ts, models/invoice,
-// models/order), onde um catálogo grande gera centenas de chunks e disparar
-// todos de uma vez satura a conexão com o Firestore (emulador trava, stream
-// WebChannel derruba).
+// Used by the chunked "in" queries (database.ts, models/invoice, models/order):
+// a large catalog yields hundreds of chunks, and firing them all at once
+// saturates the Firestore connection (the emulator hangs, the WebChannel stream
+// drops).
 export const mapWithConcurrencyLimit = async <T, R>(
   items: T[],
   limit: number,

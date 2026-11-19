@@ -1,7 +1,7 @@
-// O VR grava o texto da query executada numa coluna varchar(3000) — acima
-// disso a consulta roda mas termina com "value too long for type character
-// varying(3000)". Por isso a query é compacta (sem alinhamento nem
-// comentários); ver MAX_QUERY_LENGTH e o teste que garante o limite.
+// The VR stores the executed query in a varchar(3000) column: above that, the
+// query runs but fails with "value too long for type character varying(3000)".
+// Hence the compact query, with no alignment or comments (see MAX_QUERY_LENGTH
+// and its test).
 export const MAX_QUERY_LENGTH = 3000
 
 export const buildQuery = (date: string) => `SELECT

@@ -15,7 +15,7 @@ export const schema = z.object({
   id: z.string().min(1),
   description: z.string().min(1).max(MAX_DESCRIPTION_LENGTH),
   price: z.number().nonnegative().max(MAX_NUMERIC_VALUE),
-  // CurrencyInput emite `undefined` quando o campo é limpo
+  // CurrencyInput emits `undefined` when the field is cleared
   costWithTax: z.number().nonnegative().max(MAX_NUMERIC_VALUE).nullish(),
   tax: z.number().min(0).max(MAX_NUMERIC_VALUE).nullable(),
   margin: z.number().min(0).max(MAX_NUMERIC_VALUE).nullable(),

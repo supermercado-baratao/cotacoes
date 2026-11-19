@@ -62,10 +62,8 @@ test('Full flow', async ({ page }) => {
   const { name, email, password } = createUserData()
 
   await test.step('Create account, verify email and logout', async () => {
-    // trying to access a private route
     await page.goto('/dashboard')
 
-    // automatically redirected to the signin page
     await expect(page).toHaveURL(/\/signin/)
     await page.getByRole('link', { name: 'Criar conta' }).click()
 
@@ -83,7 +81,6 @@ test('Full flow', async ({ page }) => {
     await expect(page).toHaveURL(/\/dashboard/)
     await page.getByRole('button', { name: 'Sair' }).click()
 
-    // after logout, the user is automatically redirected to the signin page
     await expect(page).toHaveURL(/\/signin/)
   })
 

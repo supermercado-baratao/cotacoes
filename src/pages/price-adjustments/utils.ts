@@ -60,8 +60,6 @@ export type TCostResolution = {
   source: TPriceAdjustmentCostSource
 }
 
-// Mesma forma persistida em `TPriceAdjustment` (models/price-adjustment),
-// sem os campos que só existem depois de gravar (id, timestamps).
 export type TPriceAdjustmentRow = Omit<
   TPriceAdjustment,
   'id' | 'createdAt' | 'updatedAt'
@@ -83,9 +81,8 @@ const parseFileNumber = (value: string | undefined): number => {
   return Number.isFinite(n) ? n : 0
 }
 
-// Formato do arquivo é "DD/MM/YYYY HH:mm:ss". Não há plugin customParseFormat
-// registrado no projeto, e `dayjs`/`Date` sem ele leem "DD/MM" como "MM/DD",
-// invertendo dia e mês silenciosamente — por isso o parse manual via regex.
+// The format is "DD/MM/YYYY HH:mm:ss". Without the customParseFormat plugin,
+// dayjs/Date read "DD/MM" as "MM/DD", silently swapping day and month.
 const DATETIME_RE = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/
 
 const sortDates = (dates: string[]): string[] =>
@@ -101,8 +98,8 @@ const toSortableDateTime = (value: string): string => {
   return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`
 }
 
-// "Data Movimento" vem como "DD/MM/YYYY - DOW" (ex: "27/07/2026 - SEG").
-// Mesmo cuidado de não usar dayjs/Date direto (ver DATETIME_RE acima).
+// "Data Movimento" comes as "DD/MM/YYYY - DOW" (e.g. "27/07/2026 - SEG");
+// parsed by hand for the same reason as DATETIME_RE.
 const MOVEMENT_DATE_RE = /^(\d{2})\/(\d{2})\/(\d{4})/
 
 const parseMovementDate = (value: string | undefined): string | null => {
@@ -125,10 +122,9 @@ const mapRawRow = (row: TRawPriceAdjustmentRow): TPriceAdjustmentFileRow => ({
   user: row['Usuário'] ?? ''
 })
 
-// O arquivo é um log de auditoria: o mesmo Código pode aparecer várias vezes
-// no mesmo dia (correções sucessivas). Só a mudança mais recente interessa
-// para a conferência — usa `>=` no empate para manter a última ocorrência do
-// arquivo quando duas linhas têm o mesmo segundo de timestamp.
+// The file is an audit log: the same code can show up several times on the same
+// day (successive corrections). `>=` keeps the last occurrence when two rows
+// share the same second.
 export const dedupeByLatestChange = (
   rows: TRawPriceAdjustmentRow[]
 ): TPriceAdjustmentFileRow[] => {
@@ -167,10 +163,9 @@ const resolveOrderUnitCost = (
   return { unitCost: order.price, source: 'order' }
 }
 
-// "Recente" = a cotação mais recente que teve pedido do produto (não uma
-// janela de dias fixa). Nota fiscal vinculada a um pedido sempre vence sobre
-// o preço do próprio pedido; múltiplos fornecedores na mesma cotação viram
-// média simples.
+// "Recent" = the latest quote with an order for the product, not a fixed window
+// of days. An invoice linked to an order always wins over the order price;
+// several suppliers in the same quote are averaged.
 export const resolveRecentCost = (
   productOrders: TOrder[],
   quoteById: Map<string, TQuote>,
@@ -228,9 +223,8 @@ export const crossReferenceRows = (
   const invoiceById = new Map(invoices.map((invoice) => [invoice.id, invoice]))
   const supplierById = new Map(suppliers.map((s) => [s.id, s]))
 
-  // findManyByProductIds busca em chunks de até 30 ids — se `orders` vier de
-  // chamadas concorrentes cujos resultados se sobrepõem, dedupe por id evita
-  // inflar a contagem de fornecedores/pedidos na resolução de custo.
+  // findManyByProductIds fetches in chunks of 30 ids, and concurrent calls can
+  // overlap: deduping by id keeps the supplier/order count from inflating.
   const uniqueOrders = [...new Map(orders.map((o) => [o.id, o])).values()]
 
   const ordersByProductId = groupBy(uniqueOrders, (order) => order.productId)
@@ -272,10 +266,8 @@ export const crossReferenceRows = (
   })
 }
 
-// Usa o próprio código do produto como id do documento — só existe uma
-// linha por código depois do dedupe, e simplifica o "substituir tudo" do
-// próximo import (o id novo já corresponde ao antigo, quando o produto
-// se repete entre importações).
+// The product code is the document id: there is one row per code after dedupe,
+// and the next import replaces the previous one in place.
 export const toPersistedPriceAdjustments = (
   rows: TPriceAdjustmentRow[]
 ): TCreateDataWithId<TPriceAdjustment>[] =>
@@ -287,9 +279,8 @@ export const filterPriceAdjustmentRows = (
 ): TPriceAdjustmentRow[] =>
   rows.filter((row) => matchesSearch(search, row.code, row.description))
 
-// Filtro de visualização pela Data Movimento de cada linha — não afeta o que
-// fica salvo, só o que aparece na tela. Linha sem Data Movimento reconhecível
-// não some, já que não dá pra saber se está dentro ou fora do período.
+// A row without a recognizable Data Movimento stays, since there is no way to
+// tell whether it is within the period.
 export const filterRowsByMovementDate = (
   rows: TPriceAdjustmentRow[],
   dateRange: TPriceAdjustmentDateRange | null
@@ -309,15 +300,11 @@ export type TPriceAdjustmentDisplayRow = TPriceAdjustmentRow & {
   marginGap: number | null
 }
 
-// Situação de margem usa o custo com imposto cadastrado no produto
-// (custocomimposto), não o `resolvedCost` da linha (esse é específico da
-// conferência do relatório REP contra cotação/pedido, ver costDivergence) e
-// não uma média de notas fiscais (quantidade por nota não é confiável pra
-// sustentar isso). O preço usado é `newSalePrice` — o import grava esse
-// valor direto em `product.price` (ver getProductPriceUpdates), então é ele
-// que já reflete o preço atual do produto, não um snapshot separado do
-// catálogo. O alvo de margem não é mais por produto: `tolerance.below`/
-// `.above` (Configurações) são o piso/teto aplicados a todo o catálogo.
+// Uses the cost with tax registered on the product (custocomimposto), not the
+// row `resolvedCost` (specific to checking the REP against quotes/orders) nor
+// an invoice average (the quantity per invoice is not reliable enough).
+// `newSalePrice` already is the current product price, since the import writes
+// it to `product.price`.
 export const attachMarginStatus = (
   rows: TPriceAdjustmentRow[],
   products: TProduct[],
@@ -352,10 +339,9 @@ export const attachMarginStatus = (
   })
 }
 
-// Preço Ant. e Preço Atual vêm do REP e deveriam ser idênticos para todo
-// produto de uma mesma família — divergência aqui é sinal de cadastro de
-// família incorreto (ou produto preso à família errada no REP), não de
-// variação esperada.
+// Previous and current prices come from the REP and should match across a
+// family: a divergence means a wrong family registration, not an expected
+// variation.
 export const hasDivergentFamilyPrices = (
   rows: Pick<TPriceAdjustmentRow, 'previousPrice' | 'newSalePrice'>[]
 ): boolean => {
@@ -368,10 +354,8 @@ export const hasDivergentFamilyPrices = (
   )
 }
 
-// Diferente dos preços (amarrados no REP por família), a margem varia por
-// produto (depende do custo real de cada um) — por isso aqui o resultado
-// pode ser "mixed" quando os produtos da família não convergem pra uma
-// única situação de margem.
+// Unlike the prices, the margin depends on the real cost of each product, so
+// the family result can be "mixed".
 export const getFamilyMarginStatus = (
   rows: Pick<TPriceAdjustmentDisplayRow, 'marginStatus'>[]
 ): TMarginStatus | 'mixed' | null => {
@@ -394,11 +378,9 @@ export type TPriceAdjustmentGroup<TRow = TPriceAdjustmentRow> = {
 const NO_FAMILY_KEY = '__no_family__'
 const UNREGISTERED_KEY = '__unregistered__'
 
-// Exibir ~2400 produtos numa lista só (ordem do arquivo) não é navegável —
-// agrupa por família do catálogo. "Sem família" (produto cadastrado, sem
-// família definida) e "Não cadastrado" (produto do arquivo que não existe
-// no catálogo) são grupos separados: são causas diferentes de não termos
-// uma família pra mostrar.
+// "Sem família" (registered product without a family) and "Não cadastrado"
+// (product missing from the catalog) are separate groups: they are different
+// reasons for not having a family to show.
 export const groupRowsByFamily = <TRow extends { productId: string }>(
   rows: TRow[],
   products: TProduct[],
@@ -429,10 +411,9 @@ export const groupRowsByFamily = <TRow extends { productId: string }>(
     groups.get(key)!.rows.push(row)
   }
 
-  // Famílias reais em ordem alfabética primeiro; "Sem família" e "Não
-  // cadastrado" (nessa ordem) sempre por último, já que não são famílias de
-  // verdade — misturá-las na ordenação alfabética as jogaria em qualquer
-  // posição da lista.
+  // Real families first, alphabetically; "Sem família" and "Não cadastrado"
+  // always last, since sorting them alphabetically would put them anywhere in
+  // the list.
   const kindRank: Record<TPriceAdjustmentGroup['kind'], number> = {
     family: 0,
     'no-family': 1,
@@ -446,9 +427,6 @@ export const groupRowsByFamily = <TRow extends { productId: string }>(
   )
 }
 
-// Grava o Preço Venda do arquivo em todos os produtos do relatório que já
-// existem no catálogo (o relatório é só leitura para o restante dos dados —
-// custo real, divergência etc. —, mas o preço de venda é atualizado direto).
 export const getProductPriceUpdates = (
   fileRows: TPriceAdjustmentFileRow[],
   products: TProduct[]
@@ -462,8 +440,6 @@ export const getProductPriceUpdates = (
     .filter((update): update is TProduct => update !== null)
 }
 
-// Padrão do filtro de período: menor e maior Data Movimento entre os dados
-// já salvos (não é algo digitado — é calculado a partir do próprio dado).
 export const getDataDateRange = (
   priceAdjustments: TPriceAdjustment[]
 ): TPriceAdjustmentDateRange | null => {

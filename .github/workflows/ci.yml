@@ -37,6 +37,7 @@ jobs:
       - run: pnpm type-check
       - run: pnpm eslint:check
       - run: pnpm prettier:check
+      - run: pnpm spell:check
       - run: pnpm test
 
   e2e:

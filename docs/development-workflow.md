@@ -64,7 +64,7 @@ git switch -c 'feat/relatorio-pedidos#10'
 Verifique localmente antes de commitar:
 
 ```bash
-pnpm type-check && pnpm eslint:check && pnpm prettier:check && pnpm test
+pnpm type-check && pnpm eslint:check && pnpm prettier:check && pnpm spell:check && pnpm test
 ```
 
 E, se a mudança toca fluxos de UI, a suíte e2e, que reinicia os emuladores:
@@ -96,7 +96,7 @@ Abra o PR contra a `main`, seguindo o template (`.github/pull_request_template.m
 
 ```bash
 gh pr create --base main --head 'feat/relatorio-pedidos#10' \
-  --title "✨ feat: add orders report" --body-file descricao.md
+  --title "✨ feat: add orders report" --body-file pr-body.md
 ```
 
 - **Título:** segue a convenção de commits (prefixo com emoji, imperativo, minúsculo).

@@ -185,9 +185,8 @@ const buildBarcodeMap = (products: TProduct[]): Map<string, TProduct> => {
 const getNumber = (root: Element | undefined, tag: string): number =>
   root ? Number(get(root, tag)) || 0 : 0
 
-// Custo total do item com impostos e despesas acessórias — mesma composição
-// do custo com imposto do VR (sem abater créditos), pra que o custo médio
-// das notas seja comparável ao produtocomplemento.custocomimposto.
+// Same composition as the VR cost with tax (no tax credits deducted), so the
+// invoice average is comparable to produtocomplemento.custocomimposto.
 const calcItemTotalCost = (det: Element, productElement: Element): number => {
   const imposto = det.querySelector('imposto')
   const ipi = imposto?.querySelector('IPI') ?? undefined

@@ -1,17 +1,15 @@
 import { Timestamp } from 'firebase/firestore'
 
-// Código do produto no fornecedor (<cProd> da NF-e) e quantas unidades de
-// venda cada embalagem desse código contém — vem de produtofornecedor /
-// produtofornecedorcodigoexterno no VR, os mesmos dados que o VR usa pra
-// converter a quantidade ao lançar a nota.
+// Supplier product code (<cProd> in the NF-e) and how many sale units each
+// packing of that code holds. Comes from produtofornecedor /
+// produtofornecedorcodigoexterno in the VR, the same data the VR uses to
+// convert quantities when entering the invoice.
 export type TSupplierPacking = {
   supplierId: string
   supplierProductCode: string
   packQuantity: number
 }
 
-// Fonte de custo usada na margem do Dashboard — cadastro do VR, médio das
-// notas do período ou última nota paga.
 export type TMarginCostSource = 'vr' | 'entries' | 'lastEntry'
 
 export type TProduct = {
@@ -20,16 +18,15 @@ export type TProduct = {
   price: number
   barcodes: string[]
   packTypes: string[]
-  // Alinhado a `barcodes` (produtoautomacao.qtdembalagem). Produtos
-  // importados antes da adição desses campos não os possuem no Firestore.
+  // Aligned with `barcodes` (produtoautomacao.qtdembalagem). Missing in
+  // products imported before these fields were added.
   packQuantities?: number[]
   supplierPackings?: TSupplierPacking[]
   tax: number | null
   margin: number | null
   costWithTax: number | null
-  // Fonte escolhida no select da coluna Custo do Dashboard. `null`/ausente =
-  // padrão (VR, senão médio das notas). Fica fora de
-  // UPSERT_MANY_UPDATABLE_FIELDS pra sobreviver à reimportação do catálogo.
+  // `null`/missing = default (VR, else the invoice average). Kept out of
+  // UPSERT_MANY_UPDATABLE_FIELDS to survive a catalog reimport.
   marginCostSource?: TMarginCostSource | null
   observations: string | null
   familyId: string | null

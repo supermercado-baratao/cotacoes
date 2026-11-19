@@ -57,12 +57,9 @@ const marginConfig: Record<
   mixed: { label: 'Margem variada entre os produtos', color: 'warning' }
 }
 
-// Preço Anterior e Preço Atual vêm do REP e são amarrados ao produto no
-// arquivo/sistema de origem — todo produto de uma mesma família compartilha
-// esses dois valores, então basta ler da primeira linha do grupo (com uma
-// única linha, caso de um produto sem família, o resultado é simplesmente os
-// dados desse produto). Já a margem depende do custo real de cada produto,
-// então é resumida à parte (pode divergir dentro da mesma família).
+// Previous and current prices come from the REP and are shared by every product
+// of a family, so reading the first row is enough. The margin depends on the
+// real cost of each product, so it is summarized separately.
 export const PriceSummary = ({
   rows
 }: {
@@ -144,12 +141,9 @@ export const PriceSummary = ({
 }
 
 export const Table = ({ groups }: TTableProps) => {
-  // Grupos de família já mostram os preços no quadro-resumo, então a tabela
-  // de produtos (que só traz campos que variam por item) começa retraída.
-  // "Não cadastrado" começa expandido — é a única tabela da aba "Sem
-  // cadastro", sem quadro-resumo pra compensar, então esconder por padrão só
-  // atrapalharia a conferência. Produtos sem família não passam mais por
-  // aqui (viram cards individuais na aba "Produtos", ver product-list).
+  // Family groups already show the prices in the summary box, so the product
+  // table starts collapsed. "Não cadastrado" has no summary box to make up for
+  // it, so hiding it would only get in the way of checking.
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(
     () =>
       new Set(groups.filter((g) => g.kind === 'unregistered').map(getGroupKey))
@@ -202,8 +196,8 @@ export const Table = ({ groups }: TTableProps) => {
               </Box>
             </AccordionSummary>
             <AccordionDetails>
-              {/* Só monta o DataGrid quando expandido — com muitos grupos,
-                  instanciar todos de uma vez (mesmo colapsados) é caro. */}
+              {/* Mounting every DataGrid at once, even collapsed, is expensive
+                 with many groups. */}
               {isExpanded && (
                 <_Table
                   columns={columns}

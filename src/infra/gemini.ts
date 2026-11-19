@@ -4,8 +4,8 @@ import type { TQuoteItem } from '@/models/quote/types'
 
 import { suggestPriceReferencesLocally } from './gemini-fallback'
 
-// Fora do Vite (ex: seed de dados do Playwright rodando em Node puro),
-// import.meta.env não é populado — cai pra process.env nesse caso.
+// Outside Vite (e.g. the e2e orchestrator in plain Node), import.meta.env is
+// not populated.
 const env = import.meta.env ?? process.env
 
 const API_KEY = env.VITE_GEMINI_API_KEY as string
@@ -20,7 +20,7 @@ export type TAiSuggestion = {
 
 export type TSuggestPriceReferencesResult = {
   suggestions: TAiSuggestion[]
-  /** true quando a IA não pôde ser usada e as sugestões vieram da correspondência local */
+  /** true when the AI was unavailable and the suggestions came from local matching */
   isFallback: boolean
 }
 

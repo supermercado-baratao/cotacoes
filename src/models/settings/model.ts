@@ -30,8 +30,8 @@ const upsert = async (
     data: {
       id: SETTINGS_ID,
       pdfDepartmentOrder: [],
-      // Mantém consistência com DEFAULT_MARGIN_TOLERANCE (src/constants) —
-      // piso/teto inertes até o usuário configurar valores reais na tela.
+      // Matches DEFAULT_MARGIN_TOLERANCE: inert floor/ceiling until the user
+      // sets real values.
       marginTolerance: { below: 0, above: 100 },
       departmentMarginTolerances: {},
       lastCatalogImportAt: null,

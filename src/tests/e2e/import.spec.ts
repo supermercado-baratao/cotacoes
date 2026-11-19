@@ -56,8 +56,8 @@ test('imports products, families, departments and suppliers into an empty databa
 test('reimporting a file only selects changed products', async ({ page }) => {
   test.setTimeout(60_000)
   const { email, password } = await createUser()
-  // A base de 495 produtos vem do fast-seed (mesmo pipeline de import, sem
-  // passar pela UI) — o que este teste exercita de fato é o diff/reimport.
+  // The 495-product base comes from populateDatabase (same import pipeline,
+  // without the UI); this test covers the diff/reimport.
   await populateDatabase()
   await login(page, email, password)
 

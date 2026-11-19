@@ -214,9 +214,8 @@ export const useInvoiceDetailHandler = () => {
     setQuoteId(quoteId)
   }
 
-  // Baseado em todos os itens da nota, não só nos filtrados pela busca — a
-  // busca é só uma lente sobre a tabela, não deve mudar se a nota pode ser
-  // aprovada.
+  // Based on all items, not the searched ones: the search must not change
+  // whether the invoice can be approved.
   const hasUnlinkedItems = itemsWithDivergences.some(
     (item) => item.orderId === null
   )
@@ -245,11 +244,8 @@ export const useInvoiceDetailHandler = () => {
     })
   }
 
-  // `location.key === 'default'` só ocorre na entrada inicial do histórico
-  // desta aba (acesso direto pela URL, sem navegação prévia dentro do app) —
-  // nesses casos não há pra onde voltar, então cai na lista. Nos demais, back
-  // navega pro histórico real: lista de Notas ou o botão "ver nota" de onde
-  // o usuário veio (Dashboard, cotações, etc.).
+  // `location.key === 'default'` only on the first history entry of the tab
+  // (direct URL access), where there is nowhere to go back to.
   const handleBack = () => {
     if (location.key === 'default') {
       navigate('/invoices')

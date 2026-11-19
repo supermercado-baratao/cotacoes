@@ -40,8 +40,6 @@ const costSourceLabels: Record<
   lastEntry: { name: 'Última NF paga', shortName: 'Últ. NF' }
 }
 
-// De onde vem o valor de cada opção do select — campo do cadastro no VR ou
-// as notas que entraram na conta.
 const describeCostOption = (
   option: TMarginCostOption,
   hasPeriod: boolean
@@ -120,10 +118,9 @@ const renderCostValue = (row: TMarginAlert) => (
   </Tooltip>
 )
 
-// Select da fonte de custo usada na margem: cada opção traz o nome do campo,
-// o valor e de onde ele vem. O valor na célula é compacto (custo + sigla da
-// fonte + ícone de atenção) pra grade caber na tela sem esconder a coluna de
-// ações; o detalhe de divergência fica no tooltip.
+// The cell value is compact (cost + source abbreviation + attention icon) so
+// the grid fits without hiding the actions column; the divergence detail goes
+// in the tooltip.
 const buildRenderCost =
   (
     handleCostSourceChange: (
@@ -133,8 +130,8 @@ const buildRenderCost =
     hasPeriod: boolean
   ) =>
   ({ row }: GridRenderCellParams<TMarginAlert>) => (
-    // Setas/espaço dentro do select (e do menu, que borbulha pela árvore do
-    // React) não devem mover o foco entre as células da grade.
+    // Arrows/space inside the select (and the menu, which bubbles through the
+    // React tree) must not move the focus between grid cells.
     <Box sx={S.CostCell} onKeyDown={(event) => event.stopPropagation()}>
       <Select
         variant="standard"
@@ -177,8 +174,6 @@ const renderMarginGap = ({ row }: GridRenderCellParams<TMarginAlert>) => {
   return `${row.status === 'below' ? '-' : '+'}${row.marginGap.toFixed(1)} p.p.`
 }
 
-// `hasPeriod`: o custo das notas considera só o período filtrado (senão, todas
-// as notas carregadas) — entra na descrição das opções do select.
 export const buildColumns = (
   handleCostSourceChange: (
     alert: TMarginAlert,
