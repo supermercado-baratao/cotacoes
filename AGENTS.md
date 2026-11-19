@@ -1,111 +1,124 @@
 # AGENTS.md
 
-Orientações para agentes de IA (Claude Code e outros) ao trabalhar neste repositório. O `CLAUDE.md` apenas importa este arquivo.
+Guidance for AI agents (Claude Code and others) working in this repository. `CLAUDE.md` only imports this file.
 
-## Sobre o projeto
+## Project Conventions
 
-Aplicação web para gerenciamento de cotações e controle de pedidos para supermercados, **em uso real**. Stack: React 19 + TypeScript + Vite + MUI + Firebase (Auth + Firestore), com React Query e Zustand.
+### Scope
 
-## Comandos
+This is **Cotações**, the web app Supermercado Baratão uses, **in production**, to manage purchase quotes and track purchase orders. It holds the catalog (products, suppliers, sellers, families and departments, imported from the VR Software ERP), the quotes and their orders, the incoming invoices (NF-e XML) linked to those orders, the price adjustments exported from VR and a dashboard of product margins. The stack: React 19 + TypeScript + Vite + MUI, with Firebase (Auth + Firestore) as the backend, React Query and Zustand. There is no server of our own: the browser talks to Firestore directly, and `firestore.rules` is what keeps each user's data private.
+
+### Language
+
+- **Portuguese (pt-BR):** GitHub issues (titles and bodies), the issue template, `README.md` and everything users see: UI copy, alerts and error messages. Routes are in English (`/signin`, `/dashboard`).
+- **English:** code (identifiers and comments), test descriptions, commit messages, branch names, pull requests (title and body), `AGENTS.md`, `docs/` and the AI setup under `.claude/`. The VR Software documents in `docs/` (`contexto-integracao-vr.md`, `query-sql.md`, `tabelas-vr.md`, `relacao-de-produtos-e-notas.md`) are the exception: they follow VR's schema and stay as they are.
+
+### Package manager
+
+- Use **pnpm** only (never npm/yarn/npx).
+- Versions are pinned exact (no `^`/`~`) for `dependencies` and `devDependencies` in `package.json`. Install new deps with `pnpm add -E <pkg>` (or `pnpm add -D -E <pkg>`) — never hand-edit version strings.
+- `-E` only takes effect when no version is given. `pnpm add -E <pkg>@<version>` and packages already in `package.json` still get a `^`. In those cases, remove the carets right after (`sed -i -E 's/"\^([0-9])/"\1/' package.json`) and run `pnpm install`.
+- `minimumReleaseAge` in `pnpm-workspace.yaml` (7 days, in minutes) keeps pnpm from resolving a version published less than a week ago.
+- The exact-version rule does not apply to MCP servers (`.mcp.json`) or scripts, which may use `@latest` (e.g. `pnpm dlx @playwright/mcp@latest`). They must still run through `pnpm dlx`.
+- The Node version is pinned in `.nvmrc`, and `engines.node` (`24.x`) in `package.json` follows its major, for hosts that ignore `.nvmrc`. The pnpm version is in `packageManager`.
+- `firebase-tools` is a devDependency: run its CLI with `pnpm exec firebase`.
+- `@/*` resolves to `src/*`.
+
+### Commands
 
 ```bash
-pnpm dev              # subir os emuladores do Firebase e o servidor de desenvolvimento
-pnpm build            # build de produção (tsc + vite build)
-pnpm test             # executar testes unitários (Vitest) uma vez
-pnpm test:watch       # executar testes Vitest em modo watch
-pnpm test:e2e         # reiniciar os emuladores e executar testes e2e (Playwright)
-pnpm test:e2e:ui      # reiniciar os emuladores e executar testes e2e no modo UI do Playwright
-pnpm type-check       # verificar tipos (tsc)
-pnpm eslint:check     # verificar lint
-pnpm eslint:fix       # corrigir problemas de lint automaticamente
-pnpm prettier:check   # verificar formatação
-pnpm prettier:fix     # formatar código
-pnpm spell:check      # verificar ortografia (cspell)
-pnpm generate         # gerar novo componente via plop
-pnpm services:up      # subir os emuladores do Firebase (Auth + Firestore) em segundo plano, se ainda não estiverem rodando
-pnpm services:down    # parar os emuladores
-pnpm db:seed          # criar um usuário verificado com dados de exemplo nos emuladores (ver docs/local-testing.md)
+pnpm dev              # start the Firebase emulators and the dev server
+pnpm build            # production build (tsc + vite build)
+pnpm test             # run the Vitest unit tests once
+pnpm test:watch       # run the Vitest unit tests in watch mode
+pnpm test:e2e         # restart the emulators and run the Playwright e2e tests
+pnpm test:e2e:ui      # restart the emulators and run the e2e tests in Playwright's UI mode
+pnpm type-check       # type-check (tsc)
+pnpm eslint:check     # lint
+pnpm eslint:fix       # lint and auto-fix
+pnpm prettier:check   # check formatting
+pnpm prettier:fix     # format
+pnpm spell:check      # check spelling (cspell)
+pnpm generate         # generate a new component (plop)
+pnpm services:up      # start the Firebase emulators (Auth + Firestore) in the background, unless they are already running
+pnpm services:down    # stop the emulators
+pnpm db:seed          # create a verified user with sample data in the emulators (see docs/local-testing.md)
 ```
 
-Para executar um único arquivo de teste:
+To run a single test file:
 
 ```bash
 pnpm vitest run src/utils/margin.test.ts
 pnpm playwright test src/tests/e2e/quote.spec.ts
 ```
 
-## Gerenciador de pacotes
+### Environment & local services
 
-- Use apenas **pnpm** (nunca npm/yarn/npx).
-- Versões de `dependencies` e `devDependencies` são fixas (sem `^`/`~`). Instale com `pnpm add -E <pkg>` (ou `pnpm add -D -E <pkg>`) — nunca edite as versões à mão.
-- O `-E` só vale quando a versão não é informada: `pnpm add -E <pkg>@<versão>` e pacotes que já estão no `package.json` ainda ganham `^`. Nesses casos, remova os `^` logo em seguida (`sed -i -E 's/"\^([0-9])/"\1/' package.json`) e rode `pnpm install`.
-- `minimumReleaseAge` no `pnpm-workspace.yaml` (7 dias, em minutos) impede o pnpm de resolver uma versão publicada há menos de uma semana.
-- A regra de versão fixa não vale para servidores MCP (`.mcp.json`) nem para scripts, que podem usar `@latest` (ex: `pnpm dlx @playwright/mcp@latest`), sempre via `pnpm dlx`.
-- A versão do Node fica em `.nvmrc`, e o `engines.node` (`24.x`) do `package.json` acompanha a major dela, para hosts que ignoram o `.nvmrc`; a do pnpm fica no `packageManager`.
-- O `firebase-tools` é uma devDependency: rode a CLI com `pnpm exec firebase`.
+- The committed `.env.development` holds the local values and needs no secret: outside production, the app always uses the Firebase emulators and the local fallback instead of Gemini. The `demo-cotacoes` project ID makes Firebase refuse any access to real resources. The same file serves Vite in `pnpm dev`, Vitest (`test.env` in `vite.config.ts`, since the `test` mode only reads `.env.test`), Playwright and `services:up`.
+- The production variables (`VITE_API_KEY`, `VITE_AUTH_DOMAIN`, `VITE_PROJECT_ID`, `VITE_STORAGE_BUCKET`, `VITE_MESSAGING_SENDER_ID`, `VITE_APP_ID`, `VITE_APP_MEASUREMENT_ID`, `VITE_GEMINI_MODEL` and `VITE_GEMINI_API_KEY`) live in Netlify and are listed in the "Variáveis de ambiente" section of `README.md`; keep that table in sync when adding one. To use them locally (e.g. a script in `scripts/`), create a git-ignored `.env.production.local`.
+- The emulators need Java. `pnpm services:up` (`src/infra/scripts/emulators.ts`) starts them in the background only when they aren't running yet, writes their output to `firebase-emulators.log` and waits for Auth and Firestore to answer.
+- The emulator data lives in memory while the emulators run, so it survives restarts of `pnpm dev` and is gone after `pnpm services:down` and `pnpm test:e2e`, which restarts the emulators before the suite: the Firestore emulator's memory only grows, even when documents are deleted, and makes the parallel suite slow and flaky.
+- The emulator loads `firestore.rules` only on start: after changing the rules, run `pnpm services:down` and start it again.
 
-## Configuração do ambiente
+### Production & deployment
 
-O `.env.development`, versionado, tem os valores locais e não precisa de nenhum segredo: fora de produção, o app sempre usa os emuladores do Firebase e a sugestão local no lugar do Gemini. O project ID `demo-cotacoes` faz o Firebase recusar qualquer acesso a recursos reais. O mesmo arquivo serve ao Vite no `pnpm dev`, ao Vitest (`test.env` no `vite.config.ts`, já que o modo `test` só lê o `.env.test`), ao Playwright e ao `services:up`.
+- The app is a static SPA hosted on **Netlify**, linked to the GitHub repository: a merge to `main` deploys to production, and each pull request gets a deploy preview. `netlify.toml` sets the build (`pnpm build`, publishing `dist`) and the SPA fallback (every path rewritten to `/index.html` with status `200`, so the routes of `Router.tsx` work on a reload).
+- Netlify reads the Node version from `.nvmrc` and installs with pnpm, detected from `pnpm-lock.yaml`.
+- `vite build` runs in `production` mode, so `.env.development` is not loaded: the build takes the `VITE_*` variables set in the Netlify site settings, and with them the app connects to the real Firebase project and Gemini (`src/infra/firebase-config.ts` only connects to the emulators when `MODE` is not `production`). The `VITE_*` values end up in the public bundle: they identify the Firebase project, and the access control is in `firestore.rules`.
+- `firestore.rules` is not deployed by Netlify: publish it with `pnpm exec firebase deploy --only firestore:rules` after merging a change to it.
 
-As variáveis de produção (`VITE_API_KEY`, `VITE_AUTH_DOMAIN`, `VITE_PROJECT_ID`, `VITE_STORAGE_BUCKET`, `VITE_MESSAGING_SENDER_ID`, `VITE_APP_ID`, `VITE_APP_MEASUREMENT_ID`, `VITE_GEMINI_MODEL` e `VITE_GEMINI_API_KEY`) ficam no Netlify. Para usá-las localmente (ex: um script em `scripts/`), crie um `.env.production.local`, ignorado pelo git.
-
-Os emuladores precisam de Java. O `pnpm services:up` (`src/infra/scripts/emulators.ts`) inicia os emuladores em segundo plano só quando eles ainda não estão rodando, grava a saída em `firebase-emulators.log` e espera Auth e Firestore responderem. Os dados ficam em memória enquanto os emuladores rodam, então sobrevivem a reinícios do `pnpm dev` e somem no `pnpm services:down` e no `pnpm test:e2e`, que reinicia os emuladores antes da suíte: a memória do emulador do Firestore só cresce, mesmo apagando os documentos, e deixa a suíte em paralelo lenta e instável.
-
-## Arquitetura
-
-### Estrutura de diretórios
+### Project structure
 
 ```text
 src/
-├── components/          # Componentes reutilizáveis
-│   ├── blocks/          # Componentes específicos do domínio (formulários de entidades, table, data-view, page-header, catalog-import...)
-│   └── ui/              # Primitivos de UI genéricos, sem conhecimento de domínio (alert, autocomplete, currency-input, dialog, loader, masked-input, modal, search-input)
-├── constants/           # Constantes compartilhadas (length.ts, margin.ts)
-├── hooks/               # React hooks compartilhados (use-delete-handler.ts, use-form-state.ts)
-├── infra/               # Infraestrutura: Firestore (database.ts), Firebase config, Gemini
-├── layout/              # Shell da aplicação (AppLayout + navegação lateral)
+├── components/          # Reusable components
+│   ├── blocks/          # Domain components (entity forms, table, data-view, page-header, catalog-import...)
+│   └── ui/              # Generic UI primitives, with no domain knowledge (alert, autocomplete, currency-input, dialog, loader, masked-input, modal, search-input)
+├── constants/           # Shared constants (length.ts, margin.ts)
+├── hooks/               # Shared React hooks (use-delete-handler.ts, use-form-state.ts)
+├── infra/               # Infrastructure: Firestore (database.ts), Firebase config, Gemini, local scripts
+├── layout/              # App shell (AppLayout + side navigation)
 │   ├── index.tsx        # AppLayout: sidebar + Outlet
-│   ├── nav-items.ts     # Itens de navegação
+│   ├── nav-items.ts     # Navigation items
 │   └── style.ts
-├── models/              # Modelos de domínio, um por entidade (<entidade>/{model,types}.ts)
-├── pages/               # Páginas no nível de rota (cada uma com _components/ privados)
+├── models/              # Domain models, one per entity (<entity>/{model,types}.ts)
+├── pages/               # Route-level pages (each with its private _components/)
 ├── providers/
-│   └── app-provider/    # Orquestrador da aplicação: queries (use-data-fetch), mutations (use-<entidade>-mutation) e injeção no store (use-app-handler)
-├── stores/              # Estado global com Zustand (app, alert, auth, callback)
-├── tests/               # Suíte e2e, orchestrator, fixtures e helpers de teste (ver Testes)
-├── themes/              # Tema MUI (dark/light)
-├── types/               # Tipos genéricos
-├── utils/               # Funções utilitárias
-└── Router.tsx           # Rotas
+│   └── app-provider/    # App orchestrator: queries (use-data-fetch), mutations (use-<entity>-mutation) and store injection (use-app-handler)
+├── stores/              # Global state with Zustand (app, alert, auth, callback)
+├── tests/               # e2e suite, orchestrator, fixtures and test helpers (see Testing)
+├── themes/              # MUI theme (dark/light)
+├── types/               # Generic types
+├── utils/               # Utility functions
+└── Router.tsx           # Routes
 ```
 
-Fora de `src/`: `docs/` (documentação do projeto e da integração com o VR Software), `generators/` (templates do plop) e `scripts/` (scripts de migração executados manualmente).
+Outside `src/`: `docs/` (project docs and the VR Software integration docs), `generators/` (plop templates) and `scripts/` (migration scripts run by hand).
 
-### Camadas
+#### Layers
 
-As camadas só importam das que estão abaixo delas, e o ESLint (`no-restricted-imports`) aplica essa direção:
+Layers only import from the ones below them, and ESLint (`no-restricted-imports`) enforces the direction:
 
 ```text
 pages, layout → components, hooks → providers → stores → models → infra
 ```
 
-- `constants`, `types` e `utils` são folhas: não importam de nenhuma camada, só de outras folhas.
-- `infra` e as folhas podem importar tipos de `@/models/*/types` (`import type`), mas não código.
-- `providers` pode importar de `components/ui` (o `Loader` e o `Alert` do provider), mas não de `components/blocks`.
-- Os testes (`*.test.ts(x)` e `src/tests/`) ficam fora da regra de camadas.
+- `constants`, `types` and `utils` are leaves: they import from no layer, only from other leaves.
+- `infra` and the leaves may import types from `@/models/*/types` (`import type`), but not code.
+- `providers` may import from `components/ui` (the provider's `Loader` and `Alert`), but not from `components/blocks`.
+- Tests (`*.test.ts(x)` and `src/tests/`) are outside the layer rule.
 
-**`src/layout/`** — shell da aplicação. `AppLayout` renderiza a sidebar e o `<Outlet>` para rotas aninhadas. Importado pelo `Router.tsx` via `@/layout`. Uma nova página exige a rota em `Router.tsx` e o item em `nav-items.ts`.
+**`src/layout/`** — the app shell. `AppLayout` renders the sidebar and the `<Outlet>` for nested routes, imported by `Router.tsx` through `@/layout`. A new page needs the route in `Router.tsx` and the item in `nav-items.ts`.
 
-**`src/hooks/`** — hooks compartilhados entre páginas. `useFormState<T>` centraliza o estado de abertura/edição/fechamento do formulário; `useDeleteHandler<T>` centraliza o estado do dialog de exclusão e chama a mutation.
+**`src/hooks/`** — hooks shared across pages. `useFormState<T>` holds the form's open/edit/close state; `useDeleteHandler<T>` holds the delete dialog's state and calls the mutation.
 
-**`src/constants/`** — constantes organizadas por domínio. Centralize aqui apenas restrições compartilhadas entre múltiplos schemas ou que representam convenções da aplicação (`MAX_DESCRIPTION_LENGTH`, `MAX_NUMERIC_VALUE`). Restrições técnicas específicas de domínio (ex: `MAX_BARCODE_LENGTH`) permanecem locais ao seu schema.
+**`src/constants/`** — constants grouped by domain. Only centralize here constraints shared by several schemas or that stand for an app-wide convention (`MAX_DESCRIPTION_LENGTH`, `MAX_NUMERIC_VALUE`). Technical constraints of a single domain (e.g. `MAX_BARCODE_LENGTH`) stay local to their schema.
 
-**`src/infra/`** — `database.ts` expõe um objeto genérico `database` (`findMany`, `create`, `update`, `deleteUniqueById`, `upsertManyWithIds`, etc.) sobre o Firestore. Todos os documentos recebem automaticamente `id`, `createdAt` e `updatedAt`. Os dados ficam por usuário: os models montam o caminho com `getUserPath(PATH)`.
+**`src/infra/`** — `database.ts` exposes a generic `database` object (`findMany`, `create`, `update`, `deleteUniqueById`, `upsertManyWithIds`, etc.) over Firestore. Every document automatically gets `id`, `createdAt` and `updatedAt`. Data is per user: the models build the path with `getUserPath(PATH)`.
 
-**`firestore.rules`** — regras de segurança do Firestore, aplicadas pelo emulador (via `firebase.json`) e publicadas em produção com `firebase deploy --only firestore:rules`. Só o próprio usuário, com e-mail verificado, lê e escreve em `users/{uid}/...`. Como a regra lê a claim `email_verified` do ID token, renove o token (`getIdToken(true)`) sempre que o e-mail for verificado durante a sessão — `reload()` não basta.
+**`firestore.rules`** — the Firestore security rules, applied by the emulator (through `firebase.json`) and published to production by hand (see Production & deployment). Only the user, with a verified email, reads and writes `users/{uid}/...`. Since the rule reads the `email_verified` claim from the ID token, refresh the token (`getIdToken(true)`) whenever the email is verified during the session — `reload()` is not enough.
 
-**`src/models/`** — modelos de domínio. Cada model define as operações de negócio chamando `database` com o caminho da coleção. As funções não são marcadas com `async` — retornam diretamente a `Promise` do `database`. Parâmetros de tipo só são passados ao `database` quando o TypeScript não consegue inferi-los.
+**`src/models/`** — domain models. Each model defines the business operations by calling `database` with the collection path. The functions are not marked `async` — they return the `database` `Promise` directly. Type parameters are only passed to `database` when TypeScript can't infer them.
 
 ```typescript
 // models/department/model.ts
@@ -132,16 +145,16 @@ const deleteUniqueById = (id: string): Promise<string> =>
 export const departmentModel = { create, findMany, update, deleteUniqueById }
 ```
 
-**`src/providers/app-provider/`** — orquestrador central. `use-data-fetch.ts` busca os dados com React Query; cada `use-<entidade>-mutation.ts` cria as mutations (entidades de CRUD simples usam `useEntityMutation`, que já cuida de invalidação, alertas e callbacks); `use-app-handler.ts` injeta dados e mutations no store Zustand via `useEffect`. Assim qualquer componente dispara mutations pelo store, sem hooks do React Query.
+**`src/providers/app-provider/`** — the central orchestrator. `use-data-fetch.ts` fetches the data with React Query; each `use-<entity>-mutation.ts` creates the mutations (simple CRUD entities use `useEntityMutation`, which already handles invalidation, alerts and callbacks); `use-app-handler.ts` injects data and mutations into the Zustand store through `useEffect`. Any component then fires mutations through the store, with no React Query hooks.
 
-**`src/stores/`** — estado global com Zustand:
+**`src/stores/`** — global state with Zustand:
 
-- `useAppStore` — dados da aplicação e funções de mutation (`createProduct`, `updateProduct`, ...), populadas pelo `AppProvider`
-- `useAlertStore` — notificações globais via snackbar/alert
-- `useAuthStore` — usuário autenticado
-- `useCallbackStore` — callbacks de sucesso/erro registrados por componentes antes de disparar mutations
+- `useAppStore` — app data and mutation functions (`createProduct`, `updateProduct`, ...), filled in by the `AppProvider`
+- `useAlertStore` — global snackbar/alert notifications
+- `useAuthStore` — the signed-in user
+- `useCallbackStore` — success/error callbacks registered by components before firing mutations
 
-### Fluxo de dados
+### Data flow
 
 ```text
 Component → useAppStore.createProduct() → useMutation (React Query)
@@ -149,20 +162,37 @@ Component → useAppStore.createProduct() → useMutation (React Query)
                                          → onError: alert + callbacks
 ```
 
-**Padrão de callbacks** (`useCallbackStore`): o componente registra o que deve acontecer após o sucesso ou a falha de uma mutation (ex: fechar o modal) sem se acoplar ao provider.
+**Callback pattern** (`useCallbackStore`): the component registers what must happen after a mutation succeeds or fails (e.g. closing the modal) without coupling itself to the provider.
 
-### Padrão de página
+### Pages
 
-- **`pages/<entidade>/use-<entidade>-handler.ts`** — custom hook com a lógica da página: estado de UI local (formulário, item a excluir, busca), dados e mutations do `useAppStore` e handlers seguindo as convenções de nomenclatura.
-- **`pages/<entidade>/_components/`** — componentes privados da página (ex: `table/`).
-- Formulários de entidades reutilizados em mais de uma página (criação rápida no Autocomplete) ficam em `components/blocks/<entidade>-form/`.
+- **`pages/<entity>/use-<entity>-handler.ts`** — a custom hook with the page logic: local UI state (form, item to delete, search), data and mutations from `useAppStore` and handlers following the naming conventions.
+- **`pages/<entity>/_components/`** — the page's private components (e.g. `table/`).
+- Entity forms reused by more than one page (quick create in the Autocomplete) live in `components/blocks/<entity>-form/`.
 
-### Padrão de formulários
+#### Loading and empty states
 
-1. **`schema.ts`** — schema Zod com regras de validação e constantes `MAX_*` exportadas; quando o schema espelha a entidade, use `satisfies z.ZodType<TCreateData<T>>`
-2. **`use-form-handler.ts`** — defaults, validação e submissão
-3. **`style.ts`** — propriedades `sx` do MUI
-4. **`index.tsx`** — renderização com componentes MUI
+Data starts as `null` (before the first fetch) and becomes `[]` when the list is empty. Derive the `isFetching` and `hasX` flags from these values and use `DataView`:
+
+```tsx
+const isFetching = products === null
+const hasProducts = !!products?.length
+
+<DataView isFetching={isFetching} isEmpty={!hasProducts} emptyMessage="Você ainda não tem nenhum produto...">
+  <Table products={filteredProducts ?? []} handleEdit={handleFormOpen} />
+</DataView>
+```
+
+#### Shared table
+
+`components/blocks/table/` provides a generic `<Table>` over the MUI DataGrid, with edit/delete action columns. Each page's `_components/table/` wraps it with the entity's typing and columns (`columns.ts`).
+
+### Forms
+
+1. **`schema.ts`** — Zod schema with the validation rules and exported `MAX_*` constants; when the schema mirrors the entity, use `satisfies z.ZodType<TCreateData<T>>`
+2. **`use-form-handler.ts`** — defaults, validation and submission
+3. **`style.ts`** — MUI `sx` props
+4. **`index.tsx`** — rendering with MUI components
 
 ```typescript
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -218,160 +248,158 @@ export const useFormHandler = (
 }
 ```
 
-### Estado de carregamento e vazio
+- Text inputs use `textTransform: 'uppercase'` (in `style.ts`) and `onFocus={selectOnFocus}`.
+- Text inputs have a `maxLength`, and numeric inputs a `min`/`max`, set from the schema constants.
+- Firestore IDs are validated with `z.string()`, not `z.uuid()`: Firestore doesn't generate UUIDs.
+- Nullable fields default to `null` in `defaultValues` (not `0` or `''`), to keep the database semantics.
 
-Os dados começam como `null` (antes do primeiro fetch) e viram `[]` quando a lista está vazia. Derive as flags `isFetching` e `hasX` desses valores e use o `DataView`:
+### Code style
 
-```tsx
-const isFetching = products === null
-const hasProducts = !!products?.length
+- `./` imports are only for the same folder or a direct subfolder (`./style`, `./_components/table`); use `@/` for everything else. ESLint forbids `../`.
+- No barrels: don't create an `index.ts` that only re-exports. Import each module from its own file through `@/` (`@/models/product/types`, `@/stores/use-app-store`, `@/components/blocks/data-view`), or by relative path inside the same page or component. Barrels caused circular imports (`infra` → `utils` → `models` → `infra`).
+- Always use arrow functions.
+- Component styles live in `style.ts`, typed as `SxProps<Theme>` and imported as `* as S`.
+- Collection path constants in models use `SCREAMING_SNAKE_CASE` (e.g. `const PATH = 'products'`).
+- Type aliases start with `T` (`TProduct`, `TSchema`, `TTableProps`).
+- `pnpm generate` asks whether the component goes in `blocks/` or `ui/` and creates `src/components/<blocks|ui>/<name>/index.tsx` and `style.ts` (see the `new-component` skill).
 
-<DataView isFetching={isFetching} isEmpty={!hasProducts} emptyMessage="Você ainda não tem nenhum produto...">
-  <Table products={filteredProducts ?? []} handleEdit={handleFormOpen} />
-</DataView>
-```
+#### Naming
 
-### Tabela compartilhada
+Handler and variable names follow the **`[Subject][Action]`** order — the subject (component or element) comes before the action (event or verb).
 
-`components/blocks/table/` fornece um `<Table>` genérico sobre o MUI DataGrid, com colunas de ações de editar/excluir. O `_components/table/` de cada página envolve esse componente com a tipagem e as colunas (`columns.ts`) da entidade.
+**Handlers — `handle[Subject][Action]`**
 
-### Gerador de componentes
+| Pattern                        | Example                                                                          | Rule                           |
+| ------------------------------ | -------------------------------------------------------------------------------- | ------------------------------ |
+| UI element + DOM event         | `handleAddClick`                                                                 | Add = element, Click = event   |
+| Form modal + action            | `handleFormOpen`, `handleFormEdit`, `handleFormClose`                            | Form = the modal component     |
+| DeleteDialog + action          | `handleDeleteDialogOpen`, `handleDeleteDialogClose`, `handleDeleteDialogConfirm` | Use the component name         |
+| Table action props             | `handleEdit`, `handleDelete`                                                     | Short; the action describes it |
+| Add button in the Autocomplete | `handleAddClick`                                                                 |                                |
 
-`pnpm generate` pergunta se o componente vai em `blocks/` ou `ui/` e cria `src/components/<blocks|ui>/<nome>/index.tsx` e `style.ts` (ver a skill `new-component`).
+**Exception:** `onSubmit` — it matches the native `<form onSubmit>` prop and doesn't clash with react-hook-form's `handleSubmit`.
 
-## Convenções
+**State variables**
 
-- O alias `@/` aponta para `src/`. Use `./` só para a mesma pasta ou uma subpasta direta (`./style`, `./_components/table`) e `@/` no resto; o ESLint proíbe `../`.
-- Sem barrels: não crie `index.ts` só de reexportação. Importe cada módulo pelo próprio arquivo via `@/` (`@/models/product/types`, `@/stores/use-app-store`, `@/components/blocks/data-view`), ou pelo caminho relativo dentro da mesma página ou componente. Barrels causavam imports circulares (`infra` → `utils` → `models` → `infra`).
-- Sempre usar arrow functions.
-- Estilos de componentes ficam em `style.ts`, com `SxProps<Theme>`, importados como `* as S`.
-- Inputs de texto usam `textTransform: 'uppercase'` (no `style.ts`) e `onFocus={selectOnFocus}`.
-- Inputs de texto têm `maxLength`, e inputs numéricos têm `min`/`max`, definidos a partir das constantes do schema.
-- Constantes de caminho de coleção em models usam `SCREAMING_SNAKE_CASE` (ex: `const PATH = 'products'`).
-- IDs do Firestore são validados com `z.string()`, não `z.uuid()`: o Firestore não gera UUIDs.
-- Campos anuláveis têm `null` como padrão em `defaultValues` (não `0` nem `''`), para preservar a semântica do banco.
-- Tipos começam com `T` (`TProduct`, `TSchema`, `TTableProps`).
-- Textos da interface em português; código, nomes e commits em inglês.
+| Pattern              | Example                                    | Rule                                       |
+| -------------------- | ------------------------------------------ | ------------------------------------------ |
+| Entity in the form   | `formProduct`, `formSeller`                | `form[Entity]` — context before the entity |
+| Entity being deleted | `productToDelete`, `sellerToDelete`        | `[entity]ToDelete`                         |
+| Boolean state        | `isFormOpen`, `isFetching`, `hasProducts`  | `is[Subject][State]`, `has[Subject]`       |
+| Quick create flag    | `quickCreateFamily`, `quickCreateSupplier` | `quickCreate[Entity]`                      |
 
-### Nomenclatura
+**Component props** follow the same `handle[Subject][Action]` rule. Use `on*` only for native DOM events (e.g. `onFocus`, `onChange`) passed down to HTML elements.
 
-Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o sujeito (componente ou elemento) vem antes da ação (evento ou verbo).
+### Linting & formatting
 
-**Handlers — `handle[Sujeito][Ação]`**
+- ESLint uses flat config (`eslint.config.js`): `typescript-eslint`, `react-hooks`, `react-refresh`, `simple-import-sort`, `prefer-arrow-functions` (config `all`, as errors), `promise` (`flat/recommended`), `unicorn` (`recommended`), `@eslint/markdown`, `@eslint/json` and `eslint-config-prettier`.
+- `unicorn`: the rules that clash with the project conventions are off in `eslint.config.js` (e.g. `no-null`, `prefer-default-parameters`, `prefer-ternary` and `prefer-smaller-scope`, which would move the `T*` types into the functions). Names don't use abbreviations (`index`, `event`, `error`, `previous`...); the only accepted ones are `props`, `ref`, `params`, `utils` and `env`. Files are kebab-case, except `App.tsx` and `Router.tsx`.
+- `@eslint/json` reads `tsconfig*.json` and `.vscode/*.json` as JSONC (comments allowed) and the other `*.json` as strict JSON. The fixtures in `src/tests/_mocks/` are not linted.
+- Spelling: `cspell` (`cspell.config.yaml`) with the `en` and `pt_BR` dictionaries. Project terms (VR tables and columns, tax acronyms, product names from the fixtures) go in `.cspell/project-words.txt`, one per line, lowercase. `flagWords` flags common Portuguese words written without their accents. The fixtures, the SQL query, the VR Software docs and `.claude/` are skipped.
+- The `review-copy` skill (`.claude/skills/review-copy/`) reviews the text in the code (naming, comments, test descriptions, UI copy, docs); use it on a diff before opening a pull request.
+- Prettier: single quotes, no semicolons, no trailing commas (`.prettierrc`). Base whitespace rules (2 spaces, LF) are in `.editorconfig`.
+- `pnpm-lock.yaml` is ignored by Prettier: pnpm generates it.
+- `.claude/` is ignored by ESLint and Prettier: the third-party skills installed there don't follow the project style.
+- The Playwright outputs (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) are also ignored by ESLint, which runs over the whole repository.
 
-| Padrão                             | Exemplo                                                                          | Regra                          |
-| ---------------------------------- | -------------------------------------------------------------------------------- | ------------------------------ |
-| Elemento de UI + evento DOM        | `handleAddClick`                                                                 | Add = elemento, Click = evento |
-| Modal de formulário + ação         | `handleFormOpen`, `handleFormEdit`, `handleFormClose`                            | Form = o componente modal      |
-| DeleteDialog + ação                | `handleDeleteDialogOpen`, `handleDeleteDialogClose`, `handleDeleteDialogConfirm` | Usar o nome do componente      |
-| Props de ação de tabela            | `handleEdit`, `handleDelete`                                                     | Curto; a ação se descreve      |
-| Botão de adicionar no Autocomplete | `handleAddClick`                                                                 |                                |
+### Code comments
 
-**Exceção:** `onSubmit` — corresponde à prop nativa `<form onSubmit>` e não conflita com o `handleSubmit` do react-hook-form.
+- Comments only record **why** a decision was made, ideally with a reference (docs link, issue number, upstream bug). Never write comments that explain what the code does or how it works.
+- Default to no comment. Add one only for a non-obvious choice that someone might "fix" by mistake.
+- Write comments in English.
 
-**Variáveis de estado**
+### Git hooks (husky)
 
-| Padrão                  | Exemplo                                    | Regra                                         |
-| ----------------------- | ------------------------------------------ | --------------------------------------------- |
-| Entidade no formulário  | `formProduct`, `formSeller`                | `form[Entidade]` — contexto antes da entidade |
-| Entidade sendo excluída | `productToDelete`, `sellerToDelete`        | `[entidade]ToDelete`                          |
-| Estado booleano         | `isFormOpen`, `isFetching`, `hasProducts`  | `is[Sujeito][Estado]`, `has[Sujeito]`         |
-| Flag de criação rápida  | `quickCreateFamily`, `quickCreateSupplier` | `quickCreate[Entidade]`                       |
+- `pre-commit`: runs `lint-staged` (`lint-staged.config.js`) on the staged files only: ESLint, Prettier and cspell on code, Markdown and JSON files, Prettier and cspell on YAML, and `vitest related` to run the unit tests affected by the code files.
+- `commit-msg`: rewrites plain prefixes (`feat:`, `fix:`...) to the emoji version from the Commit Rules below and validates them with `commitlint`. Type the plain word and let the hook add the emoji.
+- `pre-push`: runs `pnpm type-check` and `pnpm test:e2e` (Playwright), which restarts the emulators.
 
-**Props de componentes:** seguem a mesma regra `handle[Sujeito][Ação]`. Use `on*` apenas para eventos DOM nativos (ex: `onFocus`, `onChange`) repassados a elementos HTML.
-
-### Comentários no código
-
-- Comentários registram apenas **por que** uma decisão foi tomada, de preferência com uma referência (link de documentação, número de issue, bug upstream). Nunca explique o que o código faz ou como funciona.
-- O padrão é não comentar. Comente só uma escolha não óbvia que alguém poderia "corrigir" por engano.
-- Comentários em inglês.
-
-### Lint e formatação
-
-- ESLint em flat config (`eslint.config.js`): `typescript-eslint`, `react-hooks`, `react-refresh`, `simple-import-sort`, `prefer-arrow-functions` (config `all`, como erro), `promise` (`flat/recommended`), `unicorn` (`recommended`), `@eslint/markdown`, `@eslint/json` e `eslint-config-prettier`.
-- `unicorn`: as regras que conflitam com as convenções do projeto ficam desligadas no `eslint.config.js` (ex: `no-null`, `prefer-default-parameters`, `prefer-ternary` e `prefer-smaller-scope`, que moveria os tipos `T*` para dentro das funções). Nomes não usam abreviações (`index`, `event`, `error`, `previous`...); as únicas aceitas são `props`, `ref`, `params`, `utils` e `env`. Arquivos em kebab-case, exceto `App.tsx` e `Router.tsx`.
-- `@eslint/json` lê `tsconfig*.json` e `.vscode/*.json` como JSONC (aceitam comentários) e os demais `*.json` como JSON estrito. As fixtures de `src/tests/_mocks/` ficam fora do lint.
-- `pnpm-lock.yaml` é ignorado pelo Prettier: é gerado pelo pnpm.
-- Ortografia: `cspell` (`cspell.config.yaml`) com os dicionários `en` e `pt_BR`. Termos do projeto (tabelas e colunas do VR, siglas fiscais, nomes de produtos das fixtures) vão em `.cspell/project-words.txt`, um por linha, em minúsculas. `flagWords` acusa as palavras comuns escritas sem acento. Ficam de fora as fixtures, a query SQL e os documentos do VR Software, que usam o schema do VR.
-- Prettier: aspas simples, sem ponto e vírgula, sem vírgula final (`.prettierrc`).
-- Indentação e espaços (2 espaços, LF) via `.editorconfig`.
-- `.claude/` é ignorado pelo ESLint e pelo Prettier: as skills instaladas de terceiros não seguem o estilo do projeto.
-- As saídas do Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright-mcp/`) também são ignoradas pelo ESLint, que roda no repositório inteiro.
-
-## Testes
+### Testing
 
 ```text
 src/
-├── **/*.test.ts(x)      # testes unitários (Vitest), ao lado do código que testam
+├── **/*.test.ts(x)      # unit tests (Vitest), next to the code they test
 └── tests/
-    ├── _mocks/          # fixtures compartilhadas entre as duas suítes (xlsx/xml/txt)
-    ├── _utils/          # helpers dos testes unitários (ex: read-mock-file.ts, create-query-wrapper.tsx)
-    ├── e2e/             # suíte e2e (Playwright), *.spec.ts
-    ├── orchestrator.ts  # createUserData / createUser / populateDatabase / verifyEmail contra o emulador real do Firebase
-    └── seed.ts          # dados do `pnpm db:seed`, carregado pelo src/infra/scripts/seed.ts via runnerImport do Vite
+    ├── _mocks/          # fixtures shared by both suites (xlsx/xml/txt)
+    ├── _utils/          # unit test helpers (e.g. read-mock-file.ts, create-query-wrapper.tsx)
+    ├── e2e/             # e2e suite (Playwright), *.spec.ts
+    ├── orchestrator.ts  # createUserData / createUser / populateDatabase / verifyEmail against the real Firebase emulator
+    └── seed.ts          # data of `pnpm db:seed`, loaded by src/infra/scripts/seed.ts through Vite's runnerImport
 ```
 
-O `orchestrator.ts` reaproveita os models reais (`@/models`) e o parser de import (`getData`) em Node puro contra os emuladores — bem mais rápido que popular via UI. Isso só funciona porque `src/infra/firebase-config.ts` e `src/infra/gemini.ts` caem para `process.env` quando `import.meta.env` não existe (fora do Vite).
+`orchestrator.ts` reuses the real models (`@/models`) and the import parser (`getData`) in plain Node against the emulators — much faster than filling the data through the UI. This only works because `src/infra/firebase-config.ts` and `src/infra/gemini.ts` fall back to `process.env` when `import.meta.env` doesn't exist (outside Vite).
 
-- **Vitest** (`*.test.ts(x)` ao lado do módulo testado, com o mesmo nome: `utils.ts` → `utils.test.ts`; um arquivo de teste por módulo) — só testes unitários, que rodam em segundos: funções puras (`evaluateMargin`, `groupInvoiceItemsForBatch`, `extractPackingInfo`...) e cenários de erro que precisam forçar uma rejeição do banco, que não dá para simular contra o emulador. Esses testam o hook (mutation do `AppProvider` ou handler da página) com `renderHook` e `vi.spyOn(<model>, '<método>').mockRejectedValueOnce(...)` — nunca renderize o `App` nem páginas inteiras. Sem rede nem emuladores.
-  - Cada arquivo mocka só o que usa (`vi.spyOn` no model ou `vi.mock` local); não há mocks globais. O `vitest.setup.ts` reseta e restaura todos os mocks antes de cada teste.
-  - Todos os arquivos rodam no ambiente `jsdom` (padrão do `vite.config.ts`); não declare `// @vitest-environment` por arquivo.
-- **Playwright** (`src/tests/e2e/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores do Firebase. Um arquivo por página; cada `test()` cria seu próprio usuário (`createUser`, ou `createUserData` quando o cadastro passa pela UI) e semeia só os dados de que precisa (via orchestrator ou chamando os models) — testes independentes, não um roteiro sequencial. Como os dados de cada usuário ficam isolados em `users/{uid}`, os testes rodam em paralelo (`fullyParallel`) e nunca limpam o emulador. Não há retries globais: use `test.describe.configure({ mode: 'serial' })` ou `retries` só no teste que precisar, com um comentário explicando o motivo. O `pnpm test:e2e` reinicia os emuladores antes.
-- Teste apenas a lógica que escrevemos (cálculos, filtros, mapeamentos, parsers, regras de negócio). Não teste comportamento de bibliotecas (MUI, zod, React Query) e descarte um teste cujo custo principal é um mock necessário só para renderizar.
+- **Vitest** (`*.test.ts(x)` next to the module it tests, with the same name: `utils.ts` → `utils.test.ts`; one test file per module) — unit tests only, which run in seconds: pure functions (`evaluateMargin`, `groupInvoiceItemsForBatch`, `extractPackingInfo`...) and error scenarios that need to force a database rejection, which can't be simulated against the emulator. Those test the hook (an `AppProvider` mutation or a page handler) with `renderHook` and `vi.spyOn(<model>, '<method>').mockRejectedValueOnce(...)` — never render the `App` or whole pages. No network and no emulators.
+  - Each file mocks only what it uses (`vi.spyOn` on the model or a local `vi.mock`); there are no global mocks. `vitest.setup.ts` resets and restores every mock before each test.
+  - Every file runs in the `jsdom` environment (the default in `vite.config.ts`); don't declare `// @vitest-environment` per file.
+- **Playwright** (`src/tests/e2e/*.spec.ts`) — every end-to-end UI flow (create → edit → delete), in a real browser, against the Firebase emulators. One file per page; each `test()` creates its own user (`createUser`, or `createUserData` when the sign-up goes through the UI) and seeds only the data it needs (through the orchestrator or by calling the models) — independent tests, not a sequential script. Since each user's data is isolated under `users/{uid}`, the tests run in parallel (`fullyParallel`) and never clear the emulator. There are no global retries: use `test.describe.configure({ mode: 'serial' })` or `retries` only on the test that needs it, with a comment explaining why. `pnpm test:e2e` restarts the emulators first.
+- Only test logic we wrote (calculations, filters, mappings, parsers, business rules). Don't test library behavior (MUI, zod, React Query), and drop a test whose main cost is a mock needed only to render.
 
-O emulador carrega o `firestore.rules` só ao iniciar: depois de alterar as regras, rode `pnpm services:down` e suba de novo.
+### CI (GitHub Actions)
 
-## Git hooks (husky)
+`.github/workflows/ci.yml` runs only on pull requests and repeats the hooks' checks, which can be skipped with `--no-verify`. A ruleset on `main` requires the three jobs to pass before merging. The jobs use the committed `.env.development`, with no secrets.
 
-- **`pre-commit`** — roda `lint-staged` (`lint-staged.config.js`) apenas nos arquivos staged: ESLint, Prettier e cspell nos arquivos de código, Markdown e JSON, Prettier e cspell em YAML, e `vitest related` para rodar os testes unitários afetados pelos arquivos de código.
-- **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
-- **`pre-push`** — roda `pnpm type-check` e `pnpm test:e2e` (Playwright), que reinicia os emuladores.
+- **`commitlint`** — validates every commit of the PR (`--from` the base SHA, `--to` the head SHA).
+- **`check`** — `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check`, `pnpm spell:check` and `pnpm test`.
+- **`e2e`** — installs Java and Playwright's Chromium on `ubuntu-latest` and runs `pnpm test:e2e`. On failure, `test-results/` and `firebase-emulators.log` are kept as artifacts of the run.
 
-## CI (GitHub Actions)
+When renaming a job, update the required checks in the `main` ruleset (Settings → Rules).
 
-O `.github/workflows/ci.yml` roda só em pull requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. Um ruleset da `main` exige os três jobs verdes para o merge. Os jobs usam o `.env.development` versionado, sem segredos.
+### AI tooling
 
-- **`commitlint`** — valida todos os commits do PR (`--from` o SHA da base, `--to` o SHA do head).
-- **`check`** — `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check`, `pnpm spell:check` e `pnpm test`.
-- **`e2e`** — instala o Java e o Chromium do Playwright no `ubuntu-latest` e roda `pnpm test:e2e`. Em caso de falha, o `test-results/` e o `firebase-emulators.log` ficam como artifact do run.
-
-Ao renomear um job, atualize os checks exigidos no ruleset da `main` (Settings → Rules).
-
-## Ferramentas de IA
-
-- **MCPs** (`.mcp.json`): **Context7** para a documentação de bibliotecas (MUI, React Query, Firebase, Zod, Vite...); **Playwright** para abrir o app no browser e conferir uma mudança; **Firebase** (`firestore`, `auth`) para inspecionar dados. O Firebase MCP usa a conta logada no `firebase` CLI, ou seja, o projeto **de produção**: só leia dados quando o usuário pedir e nunca escreva ou exclua nada por ele.
+- **MCPs** (`.mcp.json`): **Context7** for library docs (MUI, React Query, Firebase, Zod, Vite...); **Playwright** to open the app in the browser and check a change; **Firebase** (`firestore`, `auth`) to inspect data. The Firebase MCP uses the account signed in to the `firebase` CLI, that is, the **production** project: only read data when the user asks, and never write or delete anything on their behalf.
 - **Skills** (`.claude/skills/`):
-  - `grill-me` — sessão de perguntas para fechar as decisões de um plano antes de criar issues.
-  - `impeccable` — design, revisão e polimento de interface (`/impeccable audit`, `polish`, `critique`...). Atualize com `.claude/skills/impeccable/scripts/impeccable update`.
-  - `new-component` — novo componente compartilhado em `components/blocks` ou `components/ui`.
-  - `new-entity` — nova entidade de ponta a ponta (model, provider, store, página, formulário, rota e testes).
-- **Subagentes** (`.claude/agents/`): `ui-reviewer` revisa componentes e páginas alterados contra as convenções deste arquivo; os `impeccable-*` são usados pela skill `impeccable`.
-- `grill-me` e `grilling` são instaladas pelo CLI `skills` (`pnpm dlx skills add mattpocock/skills --skill <nome> -a claude-code`), registradas em `skills-lock.json`. A `impeccable` usa o próprio instalador e baixa seu binário (`scripts/bin/`, ignorado no git) no primeiro uso.
+  - `grill-me` — a round of questions to settle the decisions of a plan before creating issues.
+  - `impeccable` — interface design, review and polish (`/impeccable audit`, `polish`, `critique`...). Update it with `.claude/skills/impeccable/scripts/impeccable update`.
+  - `new-component` — a new shared component in `components/blocks` or `components/ui`.
+  - `new-entity` — a new end-to-end entity (model, provider, store, page, form, route and tests).
+  - `review-copy` — reviews naming, comments, test descriptions, UI copy and docs.
+- **Subagents** (`.claude/agents/`): `ui-reviewer` reviews the changed components and pages against the conventions in this file; the `impeccable-*` ones are used by the `impeccable` skill.
+- `grill-me` and `grilling` are installed by the `skills` CLI (`pnpm dlx skills add mattpocock/skills --skill <name> -a claude-code`) and pinned in `skills-lock.json`. `impeccable` uses its own installer and downloads its binary (`scripts/bin/`, git-ignored) on first use. These third-party skills and agents are committed as they come: don't edit or translate them.
+- `.claude/settings.json` asks for confirmation before every `git commit`, `git push`, `gh pr create` and Firebase MCP call.
 
-## Fluxo de trabalho
+## Development Workflow
 
-O fluxo completo (planejamento com `/grill-me`, issues, branches, commits, pull requests e fechamento) está em [`docs/development-workflow.md`](./docs/development-workflow.md). Siga-o para qualquer issue. As regras abaixo são obrigatórias.
+The end-to-end flow (planning with `/grill-me`, issues, branches, commits, pull requests and closing) is described in [`docs/development-workflow.md`](./docs/development-workflow.md). Follow it for any issue. The rules below are mandatory.
 
-### Regras de tarefa
+## Branch Rules
 
-Nunca comece uma tarefa por conta própria, mesmo quando pedido para seguir para a próxima ou em modo automático. Primeiro apresente um resumo do plano (issue, nome da branch, passos, arquivos afetados e decisões em aberto) e espere aprovação explícita antes de criar a branch, instalar dependências ou editar código. Investigação somente leitura (issues, docs, código) não precisa de aprovação.
+Work for an issue is committed on a new branch, never directly on `main`. Branch names follow `<scope>/<title>#<issue>`:
 
-### Regras de branch
+- `<scope>` is one of the semantic prefixes from the Commit Rules below, without the emoji (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`, ...).
+- `<title>` is a short, lowercase, hyphen-separated summary in English.
+- `#<issue>` is the number of the associated issue.
 
-Todo trabalho é feito em uma branch nova, nunca direto na `main`. Formato: `<prefixo>/<titulo>#<issue>` — o prefixo é o dos commits, sem emoji (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`...); o título é curto, minúsculo e separado por hífens. Exemplos: `feat/relatorio-pedidos#10`, `fix/invoice-race-condition#12`. Use aspas no shell, porque `#` é especial (ex: `git switch -c 'feat/relatorio-pedidos#10'`).
+Examples: `feat/orders-report#10`, `fix/invoice-race-condition#12`. `#` is special in shells, so quote the branch name in commands (e.g. `git switch -c 'feat/orders-report#10'`).
 
-Para um esforço amplo de escopo único (ex: um code review cobrindo várias áreas), prefira uma única branch e um único PR.
+For a broad effort with a single scope (e.g. a code review covering several areas), prefer a single branch and a single pull request.
 
-### Regras de commit
+## Issue Rules
 
-Nunca rode `git commit` por conta própria, mesmo em modo automático. Proponha a mensagem de commit apenas quando o usuário pedir e crie o commit só depois que ele aprovar essa mensagem. O mesmo vale para `git push` e para abrir o pull request.
+Before closing an issue, tick every completed checklist item (`- [x]`) in its body, e.g. with `gh issue edit <number> --body-file <file>`. Don't close an issue that still has unchecked items unless they were dropped or moved, and say so in the closing comment.
 
-Mensagens de commit em inglês, neste formato:
+## Documentation Rules
 
-- Prefixos semânticos: `🎉 init, ✨ feat, 🐛 fix, 📚 docs, 💎 style, 📦 refactor, 🚀 perf, 🚨 test, 🛠 build, ⚙️ ci, ♻️ chore, 🗑 revert`
-- Assunto no imperativo e em letras minúsculas.
-- Corpo como lista.
-- Referência à issue no formato `Issue: #<número>`, se existir.
+`AGENTS.md` and `README.md` record only project conventions: what to do, where things live and how to handle a given case. Answers to the user's one-off questions (e.g. "why don't we use X?") stay in the conversation. Keep a "why" only when it prevents a likely mistaken "fix". If a task changes a convention, update `AGENTS.md` (and `README.md`, when it covers it) in the same branch.
+
+If a task changes what the user sees or does (a page, a flow, a button, an imported file), update [`docs/local-testing.md`](./docs/local-testing.md) in the same branch. If it changes the data the manual test needs, also update `src/tests/seed.ts`.
+
+## Task Rules
+
+Never start working on a task on your own, even when asked to move on to the next one or in auto/agentic mode. First present a summary of the plan (the issue, branch name, steps, files touched and any open decisions) and wait for explicit approval before creating the branch, installing dependencies or editing code. Read-only investigation (issues, docs, code) needs no approval.
+
+## Commit Rules
+
+Never run `git commit` on your own, even in auto/agentic mode. Only propose a commit message when the user asks for one, and create the commit only after explicit approval of that message. The same applies to `git push` and to opening the pull request.
+
+Commit messages must be in English and follow this format:
+
+- Use the following semantic prefixes: `🎉 init, ✨ feat, 🐛 fix, 📚 docs, 💎 style, 📦 refactor, 🚀 perf, 🚨 test, 🛠 build, ⚙️ ci, ♻️ chore, 🗑 revert`
+- The subject must be in the imperative mood and in lowercase.
+- Write the body as a list.
+- Reference an associated issue by number, if it exists, using the format `Issue: #<number>`.
+
+Example:
 
 ```text
 ✨ feat: add products page
@@ -382,13 +410,3 @@ Mensagens de commit em inglês, neste formato:
 
 Issue: #1
 ```
-
-### Regras de issue
-
-Antes de fechar uma issue, marque como concluído (`- [x]`) cada item do checklist da descrição (ex: `gh issue edit <número> --body-file <arquivo>`). Não feche uma issue com itens desmarcados, a menos que tenham sido descartados ou movidos — e diga isso no comentário de fechamento.
-
-### Regras de documentação
-
-`AGENTS.md` e `README.md` registram apenas convenções do projeto: o que fazer, onde as coisas ficam e como lidar com cada caso. Respostas a perguntas pontuais do usuário (ex: "por que não usamos X?") ficam na conversa. Mantenha um "porquê" apenas quando ele evita uma "correção" equivocada provável. Se uma tarefa muda uma convenção, atualize o `AGENTS.md` na mesma branch.
-
-Se uma tarefa muda o que o usuário vê ou faz (uma página, um fluxo, um botão, um arquivo importado), atualize o [`docs/local-testing.md`](./docs/local-testing.md) na mesma branch. Se ela muda os dados de que o teste manual precisa, atualize também o `src/tests/seed.ts`.
