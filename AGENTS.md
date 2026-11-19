@@ -13,8 +13,8 @@ pnpm dev              # subir os emuladores do Firebase e o servidor de desenvol
 pnpm build            # build de produção (tsc + vite build)
 pnpm test             # executar testes unitários (Vitest) uma vez
 pnpm test:watch       # executar testes Vitest em modo watch
-pnpm test:e2e         # subir os emuladores e executar testes e2e (Playwright)
-pnpm test:e2e:ui      # subir os emuladores e executar testes e2e no modo UI do Playwright
+pnpm test:e2e         # reiniciar os emuladores e executar testes e2e (Playwright)
+pnpm test:e2e:ui      # reiniciar os emuladores e executar testes e2e no modo UI do Playwright
 pnpm type-check       # verificar tipos (tsc)
 pnpm eslint:check     # verificar lint
 pnpm eslint:fix       # corrigir problemas de lint automaticamente
@@ -48,7 +48,7 @@ O `.env.development`, versionado, tem os valores locais e não precisa de nenhum
 
 As variáveis de produção (`VITE_API_KEY`, `VITE_AUTH_DOMAIN`, `VITE_PROJECT_ID`, `VITE_STORAGE_BUCKET`, `VITE_MESSAGING_SENDER_ID`, `VITE_APP_ID`, `VITE_APP_MEASUREMENT_ID`, `VITE_GEMINI_MODEL` e `VITE_GEMINI_API_KEY`) ficam no Netlify. Para usá-las localmente (ex: um script em `scripts/`), crie um `.env.production.local`, ignorado pelo git.
 
-Os emuladores precisam de Java. O `pnpm services:up` (`src/infra/scripts/emulators.ts`) inicia os emuladores em segundo plano só quando eles ainda não estão rodando, grava a saída em `firebase-emulators.log` e espera Auth e Firestore responderem. Os dados ficam em memória enquanto os emuladores rodam, então sobrevivem a reinícios do `pnpm dev` e somem no `pnpm services:down`.
+Os emuladores precisam de Java. O `pnpm services:up` (`src/infra/scripts/emulators.ts`) inicia os emuladores em segundo plano só quando eles ainda não estão rodando, grava a saída em `firebase-emulators.log` e espera Auth e Firestore responderem. Os dados ficam em memória enquanto os emuladores rodam, então sobrevivem a reinícios do `pnpm dev` e somem no `pnpm services:down` e no `pnpm test:e2e`, que reinicia os emuladores antes da suíte: a memória do emulador do Firestore só cresce, mesmo apagando os documentos, e deixa a suíte em paralelo lenta e instável.
 
 ## Arquitetura
 
@@ -304,7 +304,7 @@ src/
     ├── _mocks/          # fixtures compartilhadas entre as duas suítes (xlsx/xml/txt)
     ├── _utils/          # helpers dos testes unitários (ex: read-mock-file.ts, create-query-wrapper.tsx)
     ├── e2e/             # suíte e2e (Playwright), *.spec.ts
-    └── orchestrator.ts  # createUser / populateDatabase / clearData / verifyEmail contra o emulador real do Firebase
+    └── orchestrator.ts  # createUserData / createUser / populateDatabase / verifyEmail contra o emulador real do Firebase
 ```
 
 O `orchestrator.ts` reaproveita os models reais (`@/models`) e o parser de import (`getData`) em Node puro contra os emuladores — bem mais rápido que popular via UI. Isso só funciona porque `src/infra/firebase-config.ts` e `src/infra/gemini.ts` caem para `process.env` quando `import.meta.env` não existe (fora do Vite).
@@ -312,7 +312,7 @@ O `orchestrator.ts` reaproveita os models reais (`@/models`) e o parser de impor
 - **Vitest** (`*.test.ts(x)` ao lado do módulo testado, com o mesmo nome: `utils.ts` → `utils.test.ts`; um arquivo de teste por módulo) — só testes unitários, que rodam em segundos: funções puras (`evaluateMargin`, `groupInvoiceItemsForBatch`, `extractPackingInfo`...) e cenários de erro que precisam forçar uma rejeição do banco, que não dá para simular contra o emulador. Esses testam o hook (mutation do `AppProvider` ou handler da página) com `renderHook` e `vi.spyOn(<model>, '<método>').mockRejectedValueOnce(...)` — nunca renderize o `App` nem páginas inteiras. Sem rede nem emuladores.
   - Cada arquivo mocka só o que usa (`vi.spyOn` no model ou `vi.mock` local); não há mocks globais. O `vitest.setup.ts` reseta e restaura todos os mocks antes de cada teste.
   - Todos os arquivos rodam no ambiente `jsdom` (padrão do `vite.config.ts`); não declare `// @vitest-environment` por arquivo.
-- **Playwright** (`src/tests/e2e/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores do Firebase. Um arquivo por página; cada `test()` cria seu próprio usuário e semeia só os dados de que precisa (via orchestrator ou chamando os models) — testes independentes, não um roteiro sequencial. O `pnpm test:e2e` sobe os emuladores antes.
+- **Playwright** (`src/tests/e2e/*.spec.ts`) — todos os fluxos de UI de ponta a ponta (criar → editar → excluir), em browser real, contra os emuladores do Firebase. Um arquivo por página; cada `test()` cria seu próprio usuário (`createUser`, ou `createUserData` quando o cadastro passa pela UI) e semeia só os dados de que precisa (via orchestrator ou chamando os models) — testes independentes, não um roteiro sequencial. Como os dados de cada usuário ficam isolados em `users/{uid}`, os testes rodam em paralelo (`fullyParallel`) e nunca limpam o emulador. Não há retries globais: use `test.describe.configure({ mode: 'serial' })` ou `retries` só no teste que precisar, com um comentário explicando o motivo. O `pnpm test:e2e` reinicia os emuladores antes.
 - Teste apenas a lógica que escrevemos (cálculos, filtros, mapeamentos, parsers, regras de negócio). Não teste comportamento de bibliotecas (MUI, zod, React Query) e descarte um teste cujo custo principal é um mock necessário só para renderizar.
 
 O emulador carrega o `firestore.rules` só ao iniciar: depois de alterar as regras, rode `pnpm services:down` e suba de novo.
@@ -321,7 +321,7 @@ O emulador carrega o `firestore.rules` só ao iniciar: depois de alterar as regr
 
 - **`pre-commit`** — roda `lint-staged` (`lint-staged.config.js`) apenas nos arquivos staged: ESLint e Prettier nos arquivos de código, Markdown e JSON, só Prettier em YAML, e `vitest related` para rodar os testes unitários afetados pelos arquivos de código.
 - **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
-- **`pre-push`** — roda `pnpm type-check` e `pnpm test:e2e` (Playwright), que sobe os emuladores se for preciso.
+- **`pre-push`** — roda `pnpm type-check` e `pnpm test:e2e` (Playwright), que reinicia os emuladores.
 
 ## CI (GitHub Actions)
 

@@ -1,7 +1,8 @@
+import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { faker } from '@faker-js/faker'
+import { fakerPT_BR } from '@faker-js/faker'
 import retry from 'async-retry'
 import { initializeApp } from 'firebase/app'
 import {
@@ -28,17 +29,13 @@ const auth = getAuth(app)
 
 connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true })
 
-export const clearData = async (): Promise<void> => {
-  await Promise.all([
-    fetch(`http://localhost:9099/emulator/v1/projects/${PROJECT_ID}/accounts`, {
-      method: 'DELETE'
-    }),
-    fetch(
-      `http://localhost:8080/emulator/v1/projects/${PROJECT_ID}/databases/(default)/documents`,
-      { method: 'DELETE' }
-    )
-  ])
-}
+type TUserData = { name: string; email: string; password: string }
+
+export const createUserData = (): TUserData => ({
+  name: fakerPT_BR.person.fullName(),
+  email: `${randomUUID()}@example.com`,
+  password: fakerPT_BR.internet.password()
+})
 
 export const verifyEmail = (email: string): Promise<void> =>
   retry(async () => {
@@ -68,14 +65,8 @@ export const verifyEmail = (email: string): Promise<void> =>
 // fluxo de signup + verify-email pela UI. O e-mail já sai verificado via
 // chamada admin ao emulator (`Authorization: Bearer owner`), então o único
 // passo de UI necessário depois é o login.
-export const createUser = async (): Promise<{
-  name: string
-  email: string
-  password: string
-}> => {
-  const name = faker.person.fullName()
-  const email = faker.internet.email()
-  const password = faker.internet.password()
+export const createUser = async (): Promise<TUserData> => {
+  const { name, email, password } = createUserData()
 
   const { user } = await createUserWithEmailAndPassword(
     appAuth,

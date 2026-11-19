@@ -10,7 +10,7 @@ import { productModel } from '@/models/product/model'
 import { quoteModel } from '@/models/quote/model'
 import { settingsModel } from '@/models/settings/model'
 import { supplierModel } from '@/models/supplier/model'
-import { clearData, createUser, populateDatabase } from '@/tests/orchestrator'
+import { createUser, populateDatabase } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 const QUOTE_DIR = 'quotes/quote-3-2026-06-01-2026-07-09'
@@ -47,10 +47,6 @@ const getRegisteredSupplier = async () => {
   const suppliers = await supplierModel.findMany()
   return suppliers[0]
 }
-
-test.beforeAll(async () => {
-  await clearData()
-})
 
 test('imports an invoice, blocks reimporting it and rejects an XML without an access key', async ({
   page
@@ -196,7 +192,6 @@ test('completes the fiscal data of an invoice imported before those fields exist
 })
 
 test('links an invoice item to a quote order', async ({ page }) => {
-  test.setTimeout(30_000)
   const { email, password } = await createUser()
   await populateDatabase()
   const supplier = await getRegisteredSupplier()
@@ -291,7 +286,6 @@ test('links an invoice item to a quote order', async ({ page }) => {
 test('back button returns to the page it was opened from, and items can be filtered by product', async ({
   page
 }) => {
-  test.setTimeout(30_000)
   const { email, password } = await createUser()
 
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
@@ -425,7 +419,6 @@ test('back button returns to the page it was opened from, and items can be filte
 test('confirms a batch of same-family invoice items with matching packaging', async ({
   page
 }) => {
-  test.setTimeout(30_000)
   const { email, password } = await createUser()
   await populateDatabase()
   const supplier = await getRegisteredSupplier()
@@ -531,7 +524,6 @@ test('confirms a batch of same-family invoice items with matching packaging', as
 test('splits out a packaging outlier and confirms the rest of the batch individually', async ({
   page
 }) => {
-  test.setTimeout(30_000)
   const { email, password } = await createUser()
   await populateDatabase()
   const supplier = await getRegisteredSupplier()

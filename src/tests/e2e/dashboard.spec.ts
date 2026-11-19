@@ -9,7 +9,7 @@ import { quoteModel } from '@/models/quote/model'
 import type { TQuote } from '@/models/quote/types'
 import { settingsModel } from '@/models/settings/model'
 import { supplierModel } from '@/models/supplier/model'
-import { clearData, createUser } from '@/tests/orchestrator'
+import { createUser } from '@/tests/orchestrator'
 
 const makeProduct = (
   overrides: Partial<TProduct> & { id: string; description: string }
@@ -95,10 +95,6 @@ const getRow = (page: Page, description: string): Locator =>
   page
     .getByText(description, { exact: true })
     .locator('xpath=ancestor::*[@role="row"][1]')
-
-test.beforeAll(async () => {
-  await clearData()
-})
 
 test('shows aggregate stats and flags products outside the configured margin range', async ({
   page

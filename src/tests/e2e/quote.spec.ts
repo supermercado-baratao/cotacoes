@@ -7,7 +7,7 @@ import { orderModel } from '@/models/order/model'
 import type { TOrder } from '@/models/order/types'
 import { quoteModel } from '@/models/quote/model'
 import type { TQuoteItem } from '@/models/quote/types'
-import { clearData, createUser, populateDatabase } from '@/tests/orchestrator'
+import { createUser, populateDatabase } from '@/tests/orchestrator'
 
 const MOCKS_DIR = path.join(import.meta.dirname, '../_mocks')
 
@@ -63,10 +63,6 @@ const seedOrder = (
     ...overrides
   })
 
-test.beforeAll(async () => {
-  await clearData()
-})
-
 test('creates a quote from the full shortage list', async ({ page }) => {
   test.setTimeout(60_000)
   const { email, password } = await createUser()
@@ -95,7 +91,8 @@ test('creates a quote from the full shortage list', async ({ page }) => {
 test('references an item manually and the rest via AI, preserving the manual reference', async ({
   page
 }) => {
-  test.setTimeout(60_000)
+  // The AI suggestion alone waits DEV_SIMULATED_DELAY_MS (30s) outside production
+  test.setTimeout(90_000)
   const { email, password } = await createUser()
   await populateDatabase()
   const quote = await quoteModel.create({

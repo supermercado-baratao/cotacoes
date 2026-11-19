@@ -67,7 +67,7 @@ Verifique localmente antes de commitar:
 pnpm type-check && pnpm eslint:check && pnpm prettier:check && pnpm test
 ```
 
-E, se a mudança toca fluxos de UI, a suíte e2e, que sobe os emuladores se for preciso:
+E, se a mudança toca fluxos de UI, a suíte e2e, que reinicia os emuladores:
 
 ```bash
 pnpm test:e2e
@@ -88,7 +88,7 @@ Siga as Regras de commit do [`AGENTS.md`](../AGENTS.md): inglês, imperativo, mi
 git push -u origin 'feat/relatorio-pedidos#10'
 ```
 
-`pre-push` roda `pnpm type-check` e `pnpm test:e2e`, que sobe os emuladores se for preciso. O push é rejeitado se algum falhar.
+`pre-push` roda `pnpm type-check` e `pnpm test:e2e`, que reinicia os emuladores. O push é rejeitado se algum falhar.
 
 ## 8. Abrir o pull request
 

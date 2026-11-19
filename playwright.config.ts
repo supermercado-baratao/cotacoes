@@ -4,19 +4,13 @@ process.loadEnvFile('.env.development')
 
 export default defineConfig({
   testDir: './src/tests/e2e',
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  // Todos os specs compartilham o mesmo projeto do emulador (um único Auth +
-  // Firestore) e cada arquivo limpa esses dados no seu beforeAll — rodar
-  // arquivos em paralelo faz um deles apagar/sobrescrever dados que outro
-  // ainda está usando. Sempre 1 worker, não só em CI.
-  workers: 1,
   timeout: 60_000,
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:5173',
-    trace: 'on-first-retry'
+    trace: 'retain-on-failure'
   },
   projects: [
     {
