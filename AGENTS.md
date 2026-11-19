@@ -24,6 +24,7 @@ pnpm spell:check      # verificar ortografia (cspell)
 pnpm generate         # gerar novo componente via plop
 pnpm services:up      # subir os emuladores do Firebase (Auth + Firestore) em segundo plano, se ainda não estiverem rodando
 pnpm services:down    # parar os emuladores
+pnpm db:seed          # criar um usuário verificado com dados de exemplo nos emuladores (ver docs/local-testing.md)
 ```
 
 Para executar um único arquivo de teste:
@@ -306,7 +307,8 @@ src/
     ├── _mocks/          # fixtures compartilhadas entre as duas suítes (xlsx/xml/txt)
     ├── _utils/          # helpers dos testes unitários (ex: read-mock-file.ts, create-query-wrapper.tsx)
     ├── e2e/             # suíte e2e (Playwright), *.spec.ts
-    └── orchestrator.ts  # createUserData / createUser / populateDatabase / verifyEmail contra o emulador real do Firebase
+    ├── orchestrator.ts  # createUserData / createUser / populateDatabase / verifyEmail contra o emulador real do Firebase
+    └── seed.ts          # dados do `pnpm db:seed`, carregado pelo src/infra/scripts/seed.ts via runnerImport do Vite
 ```
 
 O `orchestrator.ts` reaproveita os models reais (`@/models`) e o parser de import (`getData`) em Node puro contra os emuladores — bem mais rápido que popular via UI. Isso só funciona porque `src/infra/firebase-config.ts` e `src/infra/gemini.ts` caem para `process.env` quando `import.meta.env` não existe (fora do Vite).
@@ -388,3 +390,5 @@ Antes de fechar uma issue, marque como concluído (`- [x]`) cada item do checkli
 ### Regras de documentação
 
 `AGENTS.md` e `README.md` registram apenas convenções do projeto: o que fazer, onde as coisas ficam e como lidar com cada caso. Respostas a perguntas pontuais do usuário (ex: "por que não usamos X?") ficam na conversa. Mantenha um "porquê" apenas quando ele evita uma "correção" equivocada provável. Se uma tarefa muda uma convenção, atualize o `AGENTS.md` na mesma branch.
+
+Se uma tarefa muda o que o usuário vê ou faz (uma página, um fluxo, um botão, um arquivo importado), atualize o [`docs/local-testing.md`](./docs/local-testing.md) na mesma branch. Se ela muda os dados de que o teste manual precisa, atualize também o `src/tests/seed.ts`.
