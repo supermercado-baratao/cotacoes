@@ -139,6 +139,7 @@ export default defineConfig([
       'unicorn/prefer-await': 'off',
       'unicorn/prefer-default-parameters': 'off',
       'unicorn/prefer-iterator-to-array': 'off',
+      'unicorn/prefer-smaller-scope': 'off',
       'unicorn/prefer-ternary': 'off',
       'unicorn/single-line-block-comment-style': 'off'
     }
