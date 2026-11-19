@@ -1,20 +1,13 @@
-// Migração única: cria entidades `departments` a partir do texto livre já
-// existente em `product.department` e preenche `product.departmentId` em
-// todo o catálogo. Não faz parte do fluxo do app — rode manualmente uma vez.
+// One-off migration: creates `departments` from the free text in
+// `product.department` and fills `product.departmentId` across the catalog.
 //
-// Uso:
+// Usage:
 //   set -a && source .env.production.local && set +a
-//   MIGRATION_EMAIL=seu@email.com MIGRATION_PASSWORD=sua-senha \
+//   MIGRATION_EMAIL=you@example.com MIGRATION_PASSWORD=your-password \
 //     node scripts/migrate-departments.mjs --dry-run
 //
-// Rode primeiro com --dry-run pra conferir quantos departamentos/produtos
-// seriam afetados antes de gravar de verdade (sem a flag).
-//
-// Requer as variáveis VITE_* do projeto de produção (em um .env.production.local,
-// ignorado pelo git), mais MIGRATION_EMAIL e
-// MIGRATION_PASSWORD de uma conta com acesso aos dados (as coleções ficam em
-// users/{uid}/..., então o script precisa logar como o usuário dono dos
-// dados, igual o app faz).
+// Run with --dry-run first, then without the flag to write. The account must
+// own the data, since collections live under users/{uid}/...
 
 import { initializeApp } from 'firebase/app'
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
@@ -59,10 +52,9 @@ const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const firestore = getFirestore(app)
 
-// Mesma normalização usada em src/components/blocks/catalog-import/utils.ts
-// (normalizeDepartmentKey/slugifyDepartmentId) — precisa gerar os mesmos ids
-// que a importação de catálogo vai gerar dali pra frente, senão a próxima
-// importação cria departamentos duplicados dos que essa migração criar aqui.
+// Must match normalizeDepartmentKey/slugifyDepartmentId in
+// src/components/blocks/catalog-import/utils.ts, or the next catalog import
+// duplicates the departments created here.
 const normalizeDepartmentKey = (description) =>
   description.trim().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 

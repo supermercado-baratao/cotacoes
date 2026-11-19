@@ -25,8 +25,6 @@ import {
 } from '@/utils/margin'
 import { findSupplierByCnpj } from '@/utils/suppliers'
 
-// Uma fonte de custo disponível pro produto — alimenta o select da coluna
-// Custo, com o que for preciso pra identificar de onde o valor vem.
 export type TMarginCostOption =
   | { source: 'vr'; cost: number }
   | {
@@ -42,16 +40,12 @@ export type TMarginAlert = {
   id: string
   description: string
   price: number
-  // Custo usado na margem: o escolhido no select da coluna Custo ou, sem
-  // escolha, o padrão (custo com imposto do VR quando houver, senão o médio
-  // das notas de entrada do período).
   cost: number
   costSource: TMarginCostSource
   defaultCostSource: TMarginCostSource
   costOptions: TMarginCostOption[]
   vrCost: number | null
   entryCost: number | null
-  // Divergência (%) do custo das notas em relação ao custo do VR.
   costDivergence: number | null
   isCostDivergent: boolean
   hasBonus: boolean
@@ -60,19 +54,18 @@ export type TMarginAlert = {
   thresholdMargin: number
   actualMargin: number
   marginGap: number
-  // 'ok' só quando o custo escolhido no select põe a margem dentro da faixa —
-  // a linha continua na tabela em que o custo padrão a colocou, pra poder
-  // voltar a escolha.
+  // 'ok' only when the chosen cost puts the margin within range: the row stays
+  // in the table the default cost put it in, so the choice can be reverted.
   status: TMarginStatus
   updatedAt: Timestamp
   vrCreatedAt: string
   lastEntryDate: string | null
 }
 
-// Ordem = prioridade do fallback padrão. A última NF não entra no fallback
-// (só existe quando o médio das notas também existe), só como escolha.
-// A manually corrected packing puts the invoice average ahead of the VR cost:
-// the VR cost is usually wrong because of the same packing.
+// Order = default fallback priority. The last invoice is never a fallback (it
+// only exists when the invoice average does), only a choice. A manually
+// corrected packing puts the invoice average ahead of the VR cost: the VR cost
+// is usually wrong because of the same packing.
 export const getMarginCostOptions = (
   vrCost: number | null,
   entryCost: TEntryCost | null
@@ -97,8 +90,6 @@ export const getMarginCostOptions = (
   return options
 }
 
-// Última data de emissão entre as notas com item vinculado ao produto — base
-// pro filtro de período por "última entrada" no Dashboard.
 export const buildLastEntryDateMap = (
   invoices: TInvoice[]
 ): Map<string, string> => {
@@ -120,18 +111,10 @@ export type TMarginAlerts = {
   above: TMarginAlert[]
 }
 
-// Avalia todo o catálogo (não só produtos que já passaram por reajuste de
-// preços). Custo padrão: custo com imposto cadastrado no VR
-// (custocomimposto), o mais próximo do real, com fallback pro médio das notas
-// de entrada do período (ver buildEntryCostMap — quantidade convertida pela
-// unidade tributável da nota (embalagem diferente de UN) ou pela embalagem do
-// VR, e bonificação entrando só na quantidade) quando o produto não tem custo
-// no VR. `product.marginCostSource` troca a fonte pela escolhida (e salva) no
-// select da coluna Custo (ignorada se a fonte não estiver disponível). O custo das
-// notas segue calculado pra sinalizar divergência com o VR.
-// O alvo de margem não é por produto: `tolerance.below`/`.above`
-// (Configurações, global ou por departamento) são o piso/teto aplicados a
-// todo o catálogo.
+// The default cost is the VR cost with tax (custocomimposto), the closest to
+// the real cost; the invoice cost is still computed to flag a divergence from
+// it. The margin target is not per product: tolerance.below/.above are the
+// floor/ceiling for the whole catalog.
 export const getMarginAlerts = (
   products: TProduct[],
   settings: TSettings | null,
@@ -147,9 +130,9 @@ export const getMarginAlerts = (
     const vrCost = product.costWithTax
     const costOptions = getMarginCostOptions(vrCost, entryCost)
     const defaultOption = costOptions[0]
-    // !price (não `price == null`) é proposital: preço 0 tornaria a divisão
-    // abaixo indefinida. Custo 0 é um valor legítimo (ex: item promocional) e
-    // não deve ser tratado como "sem dado".
+    // !price (not `price == null`) on purpose: a price of 0 would make the
+    // division undefined, while a cost of 0 is legitimate (e.g. a promotional
+    // item).
     if (!price || !defaultOption) continue
 
     const selectedOption =
@@ -202,8 +185,8 @@ export const getMarginAlerts = (
   return { below, above }
 }
 
-// `emissionDate` é o <dhEmi> completo (com hora e fuso) — compara só a data,
-// senão uma nota emitida no próprio dia final ficaria de fora
+// `emissionDate` is the full <dhEmi> (with time and offset): compare only the
+// date, or an invoice issued on the last day would be left out
 // ("2026-05-30T12:51..." > "2026-05-30").
 const isEmissionDateInRange = (
   emissionDate: string,
@@ -213,7 +196,6 @@ const isEmissionDateInRange = (
   return date >= dateRange.startDate && date <= dateRange.endDate
 }
 
-// `dateRange === null` mantém todas as notas (filtro de período desligado).
 export const filterInvoicesByEmissionDate = (
   invoices: TInvoice[],
   dateRange: TInvoiceDateRange | null
@@ -224,10 +206,9 @@ export const filterInvoicesByEmissionDate = (
       )
     : invoices
 
-// Produtos com item vinculado em alguma nota emitida dentro do intervalo —
-// base pro filtro de período: presença numa nota do período, não a última
-// entrada global do produto (que pode cair fora do período mesmo que o
-// produto tenha sido recebido dentro dele).
+// Presence in an invoice within the period, not the product's latest entry
+// overall, which can fall outside the period even when the product was received
+// within it.
 export const buildProductIdsWithEntryInRange = (
   invoices: TInvoice[],
   dateRange: TInvoiceDateRange
@@ -247,10 +228,6 @@ export type TInvoiceEntry = {
   item: TInvoiceItem
 }
 
-// Notas (e o item correspondente) em que um produto teve entrada — base do
-// drawer "Ver notas" de um alerta de margem. `dateRange === null` traz todas
-// as notas carregadas com o produto, sem restringir por período (reflete o
-// filtro de período desligado ou um período inválido).
 export const getInvoiceEntriesForProduct = (
   invoices: TInvoice[],
   productId: string,
@@ -274,8 +251,6 @@ export type TInvoiceEntryWithCost = TInvoiceEntry & {
   entryCost: TEntryUnitCost | null
 }
 
-// Embalagem, bonificação e custo por unidade de cada entrada — mesma conta
-// usada no custo médio do alerta, pra o drawer mostrar de onde ele veio.
 export const addEntryUnitCosts = (
   entries: TInvoiceEntry[],
   product: TProduct | null,
@@ -295,11 +270,9 @@ export const addEntryUnitCosts = (
       : null
   }))
 
-// Filtro de período: mantém só os alertas cujo produto apareceu em alguma
-// nota emitida dentro do intervalo. `productIdsInPeriod === null` desativa o
-// filtro (período inválido ou desligado pelo usuário na tela) e mantém tudo
-// — inclusive produtos sem nenhuma entrada casada a uma nota, que senão
-// sempre sumiriam com o filtro ligado.
+// `productIdsInPeriod === null` keeps everything, including products without
+// any entry matched to an invoice, which would otherwise always disappear with
+// the filter on.
 export const filterMarginAlertsByEntryPeriod = (
   alerts: TMarginAlerts,
   productIdsInPeriod: Set<string> | null
@@ -332,8 +305,6 @@ export const getDashboardStats = (
   pendingInvoiceCount: invoices.filter(
     (invoice) => invoice.verificationStatus === 'pending'
   ).length,
-  // Linhas que o custo escolhido pôs dentro da margem ficam na tabela, mas não
-  // contam como alerta.
   belowMarginCount: marginAlerts.below.filter((alert) => alert.status !== 'ok')
     .length,
   aboveMarginCount: marginAlerts.above.filter((alert) => alert.status !== 'ok')

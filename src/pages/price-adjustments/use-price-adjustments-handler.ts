@@ -41,16 +41,10 @@ export const usePriceAdjustmentsHandler = () => {
     [priceAdjustments]
   )
 
-  // Preenche o filtro com a menor/maior Data Movimento encontrada nos dados
-  // assim que carrega (uma vez por conjunto de dados novo) — o usuário pode
-  // estreitar depois. Ajuste de estado durante o render (não em useEffect)
-  // evita o flash de um render extra. O gatilho é a referência de
-  // `priceAdjustments` (não `dataDateRange`) e o sentinel inicial é
-  // `undefined` — nunca igual a um `priceAdjustments` real (`null` ou array)
-  // — pra garantir que o preenchimento rode mesmo quando a página monta com
-  // os dados já carregados no store (ex: navegar de volta pra cá depois da
-  // busca global já ter resolvido), não só quando eles chegam durante a
-  // sessão da página.
+  // State adjusted during render (not in useEffect) to avoid an extra render
+  // flash. Keyed on the `priceAdjustments` reference with an `undefined`
+  // sentinel, never equal to a real value (`null` or array), so the autofill
+  // also runs when the page mounts with the data already in the store.
   const [syncedPriceAdjustments, setSyncedPriceAdjustments] = useState<
     typeof priceAdjustments | undefined
   >(undefined)
@@ -69,8 +63,8 @@ export const usePriceAdjustmentsHandler = () => {
     suppliers !== null &&
     families !== null
 
-  // Evita cruzar o arquivo contra dados globais ainda não carregados
-  // (produziria "sem cotação recente" para tudo, silenciosamente errado).
+  // Matching the file against global data not loaded yet would silently yield
+  // "sem cotação recente" for everything.
   const handleImportOpen = () => {
     if (isGlobalDataReady) setIsImportOpen(true)
   }
@@ -105,9 +99,6 @@ export const usePriceAdjustmentsHandler = () => {
   const isFetching = priceAdjustments === null || !isGlobalDataReady
   const hasRows = !!priceAdjustments?.length
 
-  // A aba "Famílias de Preços" e a aba "Sem cadastro" reaproveitam o mesmo
-  // componente de accordion (só a "Produtos", sem família, vira uma lista de
-  // cards individuais) — por isso os grupos já saem separados por aba aqui.
   const familyGroups = useMemo(
     () => groups?.filter((group) => group.kind === 'family') ?? [],
     [groups]

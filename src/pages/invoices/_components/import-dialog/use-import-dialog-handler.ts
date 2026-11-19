@@ -23,9 +23,9 @@ export const useImportDialogHandler = (handleClose: () => void) => {
 
   const [parsedNfes, setParsedNfes] = useState<TParsedNfe[]>([])
   const [duplicateNfes, setDuplicateNfes] = useState<TParsedNfe[]>([])
-  // Já importadas, mas gravadas antes dos dados fiscais atuais (CFOP, natureza
-  // da operação, custo com impostos) — o reenvio do XML completa esses campos
-  // sem mexer em vínculos nem na conferência.
+  // Already imported, but stored before the current fiscal data (CFOP,
+  // operation nature, cost with taxes): uploading the XML again fills these
+  // fields without touching links or checking.
   const [completableNfes, setCompletableNfes] = useState<TParsedNfe[]>([])
   const [ignoredNfes, setIgnoredNfes] = useState<TParsedNfe[]>([])
   const [parseErrors, setParseErrors] = useState<TParseError[]>([])

@@ -30,17 +30,11 @@ export const useDataFetch = () => {
   const invoiceDateRange = useAppStore((state) => state.invoiceDateRange)
   const isEmailVerified = useAuthStore((state) => !!state.user?.emailVerified)
 
-  // Todas as coleções compartilham uma única conexão WebChannel com o
-  // Firestore — disparar as 15 buscas de uma vez faz o servidor tentar
-  // empurrar os documentos de todas simultaneamente por esse canal. Com um
-  // catálogo grande (milhares de produtos/famílias) isso estoura o buffer de
-  // saída do canal, que é abortado, e o SDK silenciosamente resolve as
-  // queries com o cache local vazio (sem erro visível — só "nenhum produto
-  // cadastrado" depois do reload). Buscar uma coleção de cada vez elimina
-  // esse acúmulo.
-  // Condição própria de cada query (independente da posição na sequência) —
-  // usada tanto para computar `enabled` quanto para saber, no efeito abaixo,
-  // se uma query pulada (ex: sem quoteId) deve liberar a próxima da fila.
+  // All collections share a single WebChannel connection: firing the 15 fetches
+  // at once overflows its output buffer on a large catalog, and the SDK
+  // silently resolves the queries with the empty local cache ("nenhum produto
+  // cadastrado" after a reload). Each condition is independent of the queue
+  // position, so a skipped query (e.g. no quoteId) releases the next one.
   const shouldFetch = [
     true, // products
     true, // ignored-products
@@ -53,7 +47,7 @@ export const useDataFetch = () => {
     true, // quotes
     !!quoteId, // orders (by quote)
     !!historyProductId, // orders (by product)
-    true, // invoices (período da tela de Notas)
+    true, // invoices (Invoices page period)
     true, // packing-defaults
     true, // settings
     true // price-adjustments
@@ -148,9 +142,8 @@ export const useDataFetch = () => {
     ]
   })
 
-  // Avança a sequência assim que a query da vez estabiliza (sucesso, erro,
-  // ou nem se aplica) — ajuste de estado durante a renderização em vez de um
-  // efeito, para não disparar setState fora de um evento/efeito de verdade.
+  // State adjusted during render instead of an effect, so setState never fires
+  // outside a real event/effect.
   if (readyCount < shouldFetch.length) {
     const previousIndex = readyCount - 1
     const isSettled =

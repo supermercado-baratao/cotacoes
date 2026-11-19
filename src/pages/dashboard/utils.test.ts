@@ -459,8 +459,8 @@ describe('getMarginAlerts', () => {
   })
 
   describe('cost source selection', () => {
-    // VR 80 -> 20% (below 25%); NF média 70 -> 30% (ok); última NF 60 -> 40%
-    // (above 35%)
+    // VR 80 -> 20% (below 25%); invoice average 70 -> 30% (ok); last invoice 60
+    // -> 40% (above 35%)
     const settings = makeSettings({ marginTolerance: { below: 25, above: 35 } })
     const entryCosts = new Map<string, TEntryCost>([
       [

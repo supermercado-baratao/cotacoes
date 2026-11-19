@@ -61,10 +61,6 @@ export const verifyEmail = (email: string): Promise<void> =>
     await applyActionCode(auth, oobCode)
   })
 
-// Cria e autentica um usuário direto contra o Auth emulator, pulando o
-// fluxo de signup + verify-email pela UI. O e-mail já sai verificado via
-// chamada admin ao emulator (`Authorization: Bearer owner`), então o único
-// passo de UI necessário depois é o login.
 export const createUser = async (): Promise<TUserData> => {
   const { name, email, password } = createUserData()
 
@@ -92,10 +88,7 @@ export const createUser = async (): Promise<TUserData> => {
   return { name, email, password }
 }
 
-// Popula produtos/famílias/departamentos/fornecedores direto no Firestore
-// emulator reaproveitando o pipeline real de import (mesmo fixture usado
-// pelo full-flow.spec.ts), sem passar pela UI de importação — precisa ser
-// chamado depois de createUser(), já que o import grava sob o uid logado.
+// Call after createUser(): the import writes under the signed-in uid.
 export const populateDatabase = async (): Promise<void> => {
   const buffer = fs.readFileSync(path.join(MOCKS_DIR, 'import-data.xlsx'))
   const file = new File([new Uint8Array(buffer)], 'import-data.xlsx')

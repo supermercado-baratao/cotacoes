@@ -19,8 +19,8 @@ import {
 const now = Timestamp.now()
 
 const QUOTE_2_DIR = 'quotes/quote-2-2026-04-01-2026-05-31'
-// Mesma entrega do fornecedor CONCORD: 955716 é a venda (CFOP 5102) e 955715
-// a bonificação (CFOP 5910) do mesmo sabão.
+// Same delivery from supplier CONCORD: 955716 is the sale (CFOP 5102) and
+// 955715 the bonus (CFOP 5910) of the same soap.
 const SALE_XML = `${QUOTE_2_DIR}/NFe29260405853741000139550010009557161392431151.xml`
 const BONUS_XML = `${QUOTE_2_DIR}/NFe29260405853741000139550010009557151161245134.xml`
 
@@ -222,7 +222,7 @@ describe('getEntryUnitCost', () => {
   test('uses the taxable quantity when the taxable unit price differs from the commercial one', () => {
     const entry = getEntryUnitCost(sale, makeItem(), product, SUPPLIER_ID, [])
 
-    // Conversão do XML (60 ÷ 5 = 12) prevalece sobre a embalagem do VR (6).
+    // The XML conversion (60 / 5 = 12) wins over the VR packing (6).
     expect(entry).toMatchObject({
       source: 'trib',
       packQuantity: 12,
@@ -338,7 +338,7 @@ describe('buildEntryCostMap', () => {
       []
     ).get(product.id)!
 
-    // 100 pacotes pagos + 10 bonificados; o valor da bonificação é ignorado.
+    // 100 paid packs + 10 bonus ones; the bonus value is ignored.
     expect(entryCost.paidQuantity).toBe(100)
     expect(entryCost.bonusQuantity).toBe(10)
     expect(entryCost.hasBonus).toBe(true)
@@ -439,7 +439,8 @@ describe('buildEntryCostMap', () => {
 
     expect(entryCost.paidQuantity).toBe(500)
     expect(entryCost.cost).toBeCloseTo(saleItem.totalCost! / 500, 6)
-    // PT com Valor Unit. Trib. igual ao Valor Unit.: sem conversão no XML.
+    // PT with the taxable unit price equal to the unit price: no conversion in
+    // the XML.
     expect(entryCost.needsPackReview).toBe(true)
   })
 

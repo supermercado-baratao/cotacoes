@@ -80,10 +80,9 @@ const createWithId = async <T>({
 
 const BATCH_CHUNK_SIZE = 500
 const IN_QUERY_CHUNK_SIZE = 30
-// Um catálogo grande (ex: 9 mil produtos) gera centenas de chunks de 30 ids —
-// disparar todos de uma vez satura a conexão com o Firestore (emulador trava,
-// stream WebChannel derruba). Limita quantas queries ficam em voo ao mesmo
-// tempo, sem perder o paralelismo entre chunks.
+// A large catalog (e.g. 9k products) yields hundreds of 30-id chunks, and
+// firing them all at once saturates the Firestore connection (the emulator
+// hangs, the WebChannel stream drops).
 const CONCURRENT_QUERY_LIMIT = 10
 
 const findExistingIds = async ({

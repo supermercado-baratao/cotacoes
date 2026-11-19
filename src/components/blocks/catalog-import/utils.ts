@@ -18,7 +18,8 @@ type TRawRow = {
   datacadastro_produto: string
   codigos_barras: string
   tipos_embalagem: string
-  // Ausentes em planilhas exportadas antes da adição dessas colunas à query.
+  // Missing in spreadsheets exported before these columns were added to the
+  // query.
   qtds_embalagem?: string
   embalagens_fornecedor?: string
 
@@ -59,9 +60,9 @@ const separatePipes = (text: string): string[] => {
   return text.split('|').map((s) => s.trim())
 }
 
-// Quantidades de embalagem chegam como texto já concatenado pelo SQL
-// (string_agg), então usam ponto decimal do Postgres (ex: "12" ou "12.000"),
-// sem a formatação de milhar que a planilha aplica às colunas numéricas.
+// Pack quantities come as text already joined by SQL (string_agg), so they use
+// the Postgres decimal point (e.g. "12" or "12.000"), without the thousands
+// formatting the spreadsheet applies to numeric columns.
 const parsePackQuantity = (value: string): number => Number(value.trim())
 
 const parsePackQuantities = (row: TRawRow): number[] =>
@@ -71,7 +72,7 @@ const parsePackQuantities = (row: TRawRow): number[] =>
       )
     : []
 
-// `embalagens_fornecedor` vem como "codigo:qtd|codigo:qtd" (ver query.ts).
+// `embalagens_fornecedor` comes as "code:qty|code:qty" (see query.ts).
 const parseSupplierPackings = (row: TRawRow): TSupplierPacking[] => {
   if (!row.embalagens_fornecedor) return []
   return separatePipes(row.embalagens_fornecedor).flatMap((entry) => {
@@ -84,11 +85,9 @@ const parseSupplierPackings = (row: TRawRow): TSupplierPacking[] => {
   })
 }
 
-// Departamento não tem código externo no arquivo (diferente de família, que
-// traz id_familia) — o id é derivado deterministicamente da própria descrição
-// bruta do ERP, pra reconhecer o mesmo departamento em reimportações futuras
-// mesmo que o usuário tenha renomeado a descrição pela tela de Departamentos
-// (o id do documento nunca muda, só o texto que ele guarda).
+// Departments have no external code in the file (unlike families, which have
+// id_familia): the id is derived from the raw ERP description, so the same
+// department is recognized on later imports even after the user renames it.
 const slugifyDepartmentId = (description: string): string =>
   description
     .trim()
@@ -164,12 +163,9 @@ export const getProductImportStatus = (
   return hasChanges ? 'changed' : 'unchanged'
 }
 
-// `departments` no retorno lista TODOS os departamentos encontrados no
-// arquivo (novos e já cadastrados) — usado pro resumo do preview, no mesmo
-// espírito de `products`/`families`/`suppliers`. Cabe a quem consome esse
-// resultado pra gravar no Firestore (ver use-import-handler.ts) excluir os
-// já existentes antes de persistir, pra não sobrescrever uma renomeação
-// manual feita pela tela de Departamentos.
+// Lists every department in the file, new or not, for the preview summary. The
+// caller must skip the existing ones before saving, or a manual rename is
+// overwritten (see use-import-handler.ts).
 export const getData = async (file: File): Promise<TImportData> => {
   const raw = await parseXlsx(file)
   const productMap = new Map<string, TCreateDataWithId<TProduct>>()
@@ -187,8 +183,8 @@ export const getData = async (file: File): Promise<TImportData> => {
         description: row.departamento
       })
     }
-    // Uma linha por (produto × fornecedor): os demais campos do produto se
-    // repetem, mas as embalagens por fornecedor precisam ser acumuladas.
+    // One row per (product x supplier): the other product fields repeat, but
+    // the supplier packings must be accumulated.
     const product = mapProduct(row, departmentId)
     const previousSupplierPackings =
       productMap.get(row.id_produto)?.supplierPackings ?? []

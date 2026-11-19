@@ -35,17 +35,16 @@ const uploadReajusteFile = (page: Page, filename: string) =>
     .locator('input[type="file"]')
     .setInputFiles(path.join(MOCKS_DIR, filename))
 
-// A célula de fornecedores/custo junta valores por data-field, não texto
-// isolado — mesma ideia do teste antigo em vitest.
+// The suppliers/cost cell joins values by data-field, not by isolated text.
 const getCellText = async (
   row: import('@playwright/test').Locator,
   field: string
 ) => row.locator(`[data-field="${field}"]`).innerText()
 
-// Seeda cotações/pedidos/nota necessários pra cruzar '198954' (AZEITE
-// ANDORINHA, sem família) com um custo real: pedido A (fornecedor A, 17.00)
-// e pedido B (fornecedor B, 16.00) vinculado à nota (unitPrice 15.50, que
-// prevalece sobre o preço do pedido) -> custo real = média(17.00, 15.50).
+// Seeds the quotes/orders/invoice needed to give '198954' (AZEITE ANDORINHA, no
+// family) a real cost: order A (supplier A, 17.00) and order B (supplier B,
+// 16.00) linked to the invoice (unitPrice 15.50, which wins over the order
+// price) -> real cost = average(17.00, 15.50).
 const seedQuotesOrdersAndInvoice = async () => {
   const oldQuoteItemId = crypto.randomUUID()
   const recentQuoteItemId = crypto.randomUUID()
@@ -147,9 +146,9 @@ const seedQuotesOrdersAndInvoice = async () => {
     accessKey: 'fake-access-key-198954',
     number: '9500',
     series: '1',
-    // A tela busca notas dos últimos 30 dias a partir de "hoje" (ver
-    // defaultInvoiceDateRange em use-app-store.ts) — precisa ser uma data
-    // recente, não a data fixa da cotação, pra sempre cair dentro da janela.
+    // The page fetches invoices from the last 30 days (defaultInvoiceDateRange
+    // in use-app-store.ts), so the date must be recent, not the fixed quote
+    // date.
     emissionDate: dayjs().subtract(3, 'day').format('YYYY-MM-DD'),
     supplierCnpj: supplierB.cnpj,
     supplierName: supplierB.tradeName ?? supplierB.legalName,
@@ -194,8 +193,8 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
   await openImportDialog(page)
   await uploadReajusteFile(page, REAJUSTE_XLSX)
 
-  // CHA LEAO CAMOMILA pertence à família 'CHA LEAO CX' — a aba "Famílias de
-  // Preços" é a padrão, mas o grupo começa retraído.
+  // CHA LEAO CAMOMILA belongs to the 'CHA LEAO CX' family; "Famílias de Preços"
+  // is the default tab, but the group starts collapsed.
   await expect(page.getByText('CHA LEAO CX')).toBeVisible()
   await page.getByText('CHA LEAO CX').click()
   await expect(page.getByText('CHA LEAO CAMOMILA 10UN')).toBeVisible()
@@ -203,19 +202,19 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
   const chaRow = page
     .getByText('CHA LEAO CAMOMILA 10UN')
     .locator('xpath=ancestor::*[@role="row"][1]')
-  // Sem pedido/cotação recente, o custo real cai no custo do arquivo (REP).
+  // Without a recent order/quote, the real cost falls back to the file cost
+  // (REP).
   expect(await getCellText(chaRow, 'fileCost')).toContain('R$ 2,56')
   expect(await getCellText(chaRow, 'resolvedCost')).toContain('R$ 2,56')
   await expect(chaRow.getByText('Sem cotação recente')).toBeVisible()
 
-  // AZEITE ANDORINHA não tem família — fica na aba "Produtos", como card.
   await page.getByRole('tab', { name: 'Produtos' }).click()
   await expect(
     page.getByText('AZEITE ANDORINHA EXTRA VIRGEM 250ML VD')
   ).toBeVisible()
 
-  // '198954' aparece 2x no arquivo (mesma correção no mesmo dia) — só um
-  // card deve sobrar, com os dados da linha mais recente (21.98, não 99.99).
+  // '198954' shows up twice in the file (same correction on the same day): only
+  // one card is left, with the latest row (21.98, not 99.99).
   await expect(
     page.getByText('AZEITE ANDORINHA EXTRA VIRGEM 250ML VD')
   ).toHaveCount(1)
@@ -226,10 +225,8 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
   await expect(azeiteCard.getByText('R$ 21,98')).toBeVisible()
   await expect(azeiteCard.getByText('R$ 99,99')).toHaveCount(0)
 
-  // A coleção price-adjustments guarda o relatório inteiro. Custo real,
-  // divergência e fornecedores não aparecem na aba "Produtos" (sem
-  // DataGrid) pra um produto sem família — confirmados direto no documento
-  // persistido (mesmo pipeline real, só que sem UI pra esse campo).
+  // The "Produtos" tab shows no real cost, divergence or suppliers for a
+  // product without a family, so check the stored document.
   await expect
     .poll(
       async () => {
@@ -243,23 +240,23 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
   const adjustments = await priceAdjustmentModel.findMany()
   const azeite = adjustments.find((p) => p.code === '198954')
   expect(azeite?.movementDate).toBe('2026-06-10')
-  // Custo real = média(17.00 do pedido A, 15.50 da nota vinculada ao pedido
-  // B) — não 16.89 (custo do arquivo) nem 16.00 (preço do pedido B, que a
-  // nota vence).
+  // Real cost = average(17.00 from order A, 15.50 from the invoice linked to
+  // order B): not 16.89 (file cost) nor 16.00 (order B price, which the invoice
+  // overrides).
   expect(azeite?.resolvedCost).toBeCloseTo(16.25)
   expect(azeite?.costDivergence).toBeCloseTo(-0.64)
   expect(azeite?.supplierNames).toEqual(
     expect.arrayContaining(['FORNECEDOR A', 'FORNECEDOR B'])
   )
 
-  // Período padrão = menor/maior Data Movimento do relatório importado
-  // ('198954'/'199770'/'000427' em 10/06, '217636' em 11/06).
+  // Default period = earliest/latest Data Movimento in the imported report
+  // ('198954'/'199770'/'000427' on 06/10, '217636' on 06/11).
   await expect(page.getByLabel('Início do período')).toHaveValue('2026-06-10')
   await expect(page.getByLabel('Fim do período')).toHaveValue('2026-06-11')
 
-  // O import atualiza direto o preço de venda de todo produto do relatório
-  // já cadastrado, sem etapa de confirmação. '217636' tem 5.48 no catálogo e
-  // 5.55 no arquivo de reajuste — verificado na tela de Produtos.
+  // The import updates the sale price of every registered product in the
+  // report, with no confirmation step. '217636' is 5.48 in the catalog and 5.55
+  // in the file.
   await page.getByRole('button', { name: 'Produtos' }).click()
   await expect(page).toHaveURL(/\/products/)
   await page
@@ -267,10 +264,8 @@ test('imports, dedupes by code, cross-references the most recent quote prioritiz
     .fill('SALG DORITOS 60G DINAMITA PIMENTA MEXICANA PCT')
   await expect(page.getByText('R$ 5,55')).toBeVisible()
 
-  // Remonta a página com `priceAdjustments` já carregado no store (a busca
-  // global resolveu na primeira visita) — o preenchimento automático do
-  // período precisa disparar de novo nesse caso, não só na primeira vez que
-  // os dados chegam.
+  // Remounts the page with `priceAdjustments` already in the store: the period
+  // autofill must fire again, not only when the data first arrives.
   await page.getByRole('button', { name: 'Reajustes de Preços' }).click()
   await expect(page).toHaveURL(/\/price-adjustments/)
   await expect(page.getByLabel('Início do período')).toHaveValue('2026-06-10')
@@ -291,8 +286,8 @@ test('the "Não cadastrado" group starts expanded on the "Sem cadastro" tab', as
 
   await page.getByRole('tab', { name: 'Sem cadastro' }).click()
 
-  // Sem quadro-resumo pra compensar (só existe pra grupos de família), o
-  // grupo já vem expandido.
+  // With no summary box (only family groups have one), the group starts
+  // expanded.
   await expect(
     page.getByText('VINAGRE MARATA 750ML VINHO TINTO PET')
   ).toBeVisible()

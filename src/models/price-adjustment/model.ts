@@ -9,8 +9,8 @@ const PATH = 'price-adjustments'
 const findMany = (): Promise<TPriceAdjustment[]> =>
   database.findMany<TPriceAdjustment>({ path: getUserPath(PATH) })
 
-// A coleção guarda só o resultado da última importação — cada nova
-// importação substitui o período anterior por inteiro, não acumula.
+// The collection only keeps the last import: each import replaces the previous
+// period entirely.
 const replaceAll = async (
   data: TCreateDataWithId<TPriceAdjustment>[]
 ): Promise<TPriceAdjustment[]> => {

@@ -6,11 +6,10 @@ import type { TSupplier } from '@/models/supplier/types'
 import { normalizeCnpj } from './formatters'
 import { findPackingDefault, getInvoiceItemPacking } from './packing-defaults'
 
-// CFOPs de remessa em bonificação, doação ou brinde.
 const BONUS_CFOPS = new Set(['5910', '6910'])
-// Vendas (5.1xx/6.1xx e, com ST, 5.4xx/6.4xx) nunca são bonificação, mesmo
-// que a natureza da operação da nota mencione — uma nota mista ("venda e
-// bonificação") traz o CFOP certo em cada item.
+// Sales (5.1xx/6.1xx and, with ST, 5.4xx/6.4xx) are never a bonus, even when
+// the operation nature mentions it: a mixed invoice ("venda e bonificação") has
+// the right CFOP on each item.
 const SALE_CFOP_PATTERN = /^[56][14]\d\d$/
 const BONUS_OPERATION_NATURE_PATTERN = /BONIFICA|DOA[CÇ][AÃ]O|BRINDE/i
 
@@ -24,8 +23,8 @@ export const isBonusEntry = (
   return BONUS_OPERATION_NATURE_PATTERN.test(invoice.operationNature ?? '')
 }
 
-// O VR pode guardar o código externo sem os zeros à esquerda que o
-// fornecedor coloca no <cProd> (ou vice-versa).
+// The VR may store the external code without the leading zeros the supplier
+// puts in <cProd> (or vice versa).
 const normalizeSupplierProductCode = (code: string): string =>
   code
     .trim()
@@ -40,10 +39,9 @@ export type TPackQuantity = {
   source: TPackQuantitySource
 }
 
-// Quantas unidades de venda cada unidade comercial do item da nota contém.
-// Prioridade: embalagem cadastrada no VR para o código do fornecedor (mesma
-// conversão aplicada ao lançar a nota no VR) → quantidade da embalagem do
-// código de barras da nota (produtoautomacao) → 1.
+// Priority: the VR packing for the supplier code (the same conversion the VR
+// applies when entering the invoice) -> the pack quantity of the invoice
+// barcode (produtoautomacao) -> 1.
 export const resolvePackQuantity = (
   item: Pick<TInvoiceItem, 'supplierProductCode' | 'packageBarcode'>,
   product: Pick<TProduct, 'barcodes' | 'packQuantities' | 'supplierPackings'>,
@@ -74,26 +72,24 @@ export const resolvePackQuantity = (
 
 export type TEntryUnitCost = TPackQuantity & {
   isBonus: boolean
-  // Quantidade em unidades de venda (quantidade da nota × embalagem).
   unitQuantity: number
-  // Custo por unidade de venda, com impostos. `null` em bonificação — o
-  // valor da nota de bonificação não é custo real.
+  // `null` for a bonus: its invoice value is not a real cost.
   unitCost: number | null
-  // Embalagem comercial diferente de UN sem conversão na unidade tributável
-  // (Valor Unit. Trib. igual ao Valor Unit.): o custo depende da Qtd.
-  // Embalagem cadastrada, que provavelmente precisa ser conferida.
+  // Commercial packing other than UN without conversion in the taxable unit
+  // (same unit price): the cost depends on the registered pack quantity, which
+  // probably needs checking.
   needsPackReview: boolean
 }
 
 const UNIT_PATTERN = /^UN(D|ID)?$/i
 
-// Valores do XML vêm com até 10 casas; diferenças abaixo de meio centavo são
-// arredondamento, não conversão de embalagem.
+// XML values have up to 10 decimals; differences under half a cent are
+// rounding, not a packing conversion.
 const PRICE_EPSILON = 0.005
 
-// Embalagem comercial (CX, DP, FD...) com a unidade tributável convertida
-// pelo fornecedor: Valor Unit. Trib. diferente do Valor Unit. indica que a
-// Qtd. Trib. já está em unidades — mais confiável que a embalagem do VR.
+// A taxable unit price different from the unit price means the supplier
+// converted the taxable quantity to units, which is more reliable than the VR
+// packing.
 const getTribPackQuantity = (item: TInvoiceItem): TPackQuantity | null => {
   if (UNIT_PATTERN.test(item.unit.trim())) return null
   const { tribQuantity, tribUnitPrice } = item
@@ -132,9 +128,7 @@ const isPackReviewNeeded = (item: TInvoiceItem): boolean =>
   item.tribUnitPrice != null &&
   Math.abs(item.tribUnitPrice - item.unitPrice) < PRICE_EPSILON
 
-// Notas importadas antes do custo com impostos caem pro valor dos produtos.
-// Com conversão pela unidade tributável, totalCost ÷ Qtd. Trib. é o Valor
-// Unit. Trib. acrescido dos impostos/despesas do item.
+// Invoices imported before the cost with taxes fall back to the product value.
 export const getItemUnitCost = (
   item: Pick<TInvoiceItem, 'quantity' | 'totalCost' | 'totalPrice'>,
   packQuantity: number
@@ -172,8 +166,6 @@ export const getEntryUnitCost = (
   }
 }
 
-// Entrada paga mais recente do produto (maior data de emissão) — alternativa
-// ao custo médio quando o custo mudou dentro do período.
 export type TLastPaidEntry = {
   unitCost: number
   invoiceNumber: string
@@ -182,16 +174,13 @@ export type TLastPaidEntry = {
 }
 
 export type TEntryCost = {
-  // Custo médio por unidade de venda: valor pago nas notas ÷ quantidade
-  // total recebida, incluindo a bonificada. `null` quando só há bonificação
-  // (sem entrada paga pra servir de base).
+  // Paid value / total quantity received, bonus included. `null` when there is
+  // only bonus (no paid entry to use as a base).
   cost: number | null
   paidEntryCount: number
   paidQuantity: number
   bonusQuantity: number
   hasBonus: boolean
-  // Alguma entrada do período precisa de conferência da Qtd. Embalagem (ver
-  // TEntryUnitCost.needsPackReview).
   needsPackReview: boolean
   // Some entry in the period used a manually corrected packing, so the invoice
   // cost becomes the default margin cost instead of the VR cost.
@@ -199,7 +188,6 @@ export type TEntryCost = {
   lastPaidEntry: TLastPaidEntry | null
 }
 
-// `invoices` já deve vir filtrado pro período desejado.
 export const buildEntryCostMap = (
   invoices: TInvoice[],
   products: TProduct[],
@@ -290,9 +278,8 @@ export const buildEntryCostMap = (
   return result
 }
 
-// Divergência percentual do custo calculado pelas notas em relação ao custo
-// com imposto cadastrado no VR. `null` sem um dos dois custos (ou custo VR
-// zerado, que tornaria o percentual indefinido).
+// `null` without one of the costs, or with a zero VR cost (undefined
+// percentage).
 export const getCostDivergence = (
   entryCost: number | null,
   vrCost: number | null

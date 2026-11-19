@@ -42,9 +42,8 @@ const makeQuote = (
   ...overrides
 })
 
-// A tela busca notas dos últimos 30 dias (defaultInvoiceDateRange em
-// use-app-store.ts) — precisa ser uma data recente, não fixa, pra cair
-// dentro dessa janela sempre que o teste rodar.
+// The page fetches invoices from the last 30 days (defaultInvoiceDateRange in
+// use-app-store.ts), so the date must be recent, not fixed.
 const RECENT_EMISSION_DATE = dayjs().format('YYYY-MM-DD')
 
 const makeInvoice = (
@@ -101,14 +100,12 @@ test('shows aggregate stats and flags products outside the configured margin ran
 }) => {
   const { email, password } = await createUser()
 
-  // Piso 25% / teto 35% de margem — aplicado a todo o catálogo, não depende
-  // de nenhum campo por produto.
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 35 } })
 
-  // 5 produtos cadastrados, dos quais só 2 têm custo apurado e só 1 deles
-  // vende abaixo da margem mínima.
+  // 5 products, only 2 with a known cost, and only 1 of them sells below the
+  // minimum margin.
   await Promise.all([
-    // preço 100, custo 80 -> margem atual 20%; piso 25% -> abaixo
+    // price 100, cost 80 -> actual margin 20%; floor 25% -> below
     productModel.create(
       makeProduct({
         id: 'p1',
@@ -116,7 +113,7 @@ test('shows aggregate stats and flags products outside the configured margin ran
         costWithTax: 80
       })
     ),
-    // preço 100, custo 50 -> margem atual 50%; teto 35% -> acima
+    // price 100, cost 50 -> actual margin 50%; ceiling 35% -> above
     productModel.create(
       makeProduct({
         id: 'p2',
@@ -133,12 +130,12 @@ test('shows aggregate stats and flags products outside the configured margin ran
     productModel.create(
       makeProduct({ id: 'p5', description: 'PRODUTO SEM CUSTO APURADO 3' })
     ),
-    // 3 cotações abertas, 1 fechada
+    // 3 open quotes, 1 closed
     quoteModel.create(makeQuote({ status: 'opened' })),
     quoteModel.create(makeQuote({ status: 'opened' })),
     quoteModel.create(makeQuote({ status: 'opened' })),
     quoteModel.create(makeQuote({ status: 'closed' })),
-    // 2 notas pendentes, 1 aprovada
+    // 2 pending invoices, 1 approved
     invoiceModel.create(
       makeInvoice({ id: 'i1', verificationStatus: 'pending' })
     ),
@@ -158,9 +155,8 @@ test('shows aggregate stats and flags products outside the configured margin ran
   await expect(page).toHaveURL(/\/dashboard/)
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
 
-  // Este teste cobre os totais do catálogo inteiro, não o filtro por período
-  // de entrada — desliga o filtro pra não depender de notas vinculadas aos
-  // produtos criados aqui (cenário de período é coberto no teste abaixo).
+  // Turns the period filter off so the totals do not depend on invoices linked
+  // to these products (the period is covered by the test below).
   await page
     .getByRole('switch', { name: 'Filtrar por entrada no período' })
     .uncheck()
@@ -176,8 +172,8 @@ test('shows aggregate stats and flags products outside the configured margin ran
     .locator('..')
   await expect(invoicesCard.getByText('2', { exact: true })).toBeVisible()
 
-  // "Produtos abaixo/acima da margem" aparecem duas vezes cada: como rótulo
-  // do card e como título da seção da tabela — o card é o primeiro no DOM.
+  // Each label shows up twice, as the card label and as the table section
+  // title; the card comes first in the DOM.
   const belowMarginCard = page
     .getByText('Produtos abaixo da margem')
     .first()
@@ -192,8 +188,6 @@ test('shows aggregate stats and flags products outside the configured margin ran
 
   await expect(page.getByText('PRODUTO ABAIXO')).toBeVisible()
 
-  // PRODUTO ACIMA vende com margem atual (50%) acima do teto (35%), então
-  // aparece na seção "acima da margem", não na de "abaixo".
   const belowMarginSection = page
     .getByText('Produtos abaixo da margem')
     .last()
@@ -214,9 +208,9 @@ test('filters margin alerts by presence in an invoice within the selected period
 
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
 
-  // Todos abaixo da margem (piso 25%): preço 100, custo 80 -> margem 20%.
-  // As notas trazem o mesmo custo do VR (80), já que o custo médio das notas
-  // do período prevalece sobre o do VR.
+  // All below the margin (floor 25%): price 100, cost 80 -> margin 20%. The
+  // invoices carry the same cost as the VR (80), since the invoice average for
+  // the period wins over the VR cost.
   await Promise.all([
     productModel.create(
       makeProduct({
@@ -257,17 +251,14 @@ test('filters margin alerts by presence in an invoice within the selected period
   await page.getByRole('button', { name: 'Entrar' }).click()
   await expect(page).toHaveURL(/\/dashboard/)
 
-  // Filtro de período ligado por padrão (últimos 30 dias): só ENTRADA
-  // RECENTE tem uma nota emitida dentro do período e já carregada. ENTRADA
-  // ANTIGA (nota de 60 dias atrás — nem carregada ainda, já que a busca
-  // global de Notas de Entrada também é limitada a 30 dias por padrão) e SEM
-  // ENTRADA (nunca teve nota vinculada) somem, pois o filtro exige presença
-  // confirmada numa nota do período.
+  // Period filter on by default (last 30 days): only ENTRADA RECENTE has an
+  // invoice within the period that is already loaded. ENTRADA ANTIGA (invoice
+  // from 60 days ago, not loaded yet, since the Invoices page is also limited
+  // to 30 days) and SEM ENTRADA (no linked invoice) disappear.
   await expect(page.getByText('ENTRADA RECENTE')).toBeVisible()
   await expect(page.getByText('ENTRADA ANTIGA')).not.toBeVisible()
   await expect(page.getByText('SEM ENTRADA')).not.toBeVisible()
 
-  // Amplia a busca em Notas de Entrada pra trazer a nota de 60 dias atrás.
   await page.getByRole('button', { name: 'Notas de Entrada' }).click()
   await expect(page).toHaveURL(/\/invoices/)
   await page.getByLabel('De', { exact: true }).fill(daysAgo(70))
@@ -277,22 +268,17 @@ test('filters margin alerts by presence in an invoice within the selected period
     timeout: 10_000
   })
 
-  // De volta ao Dashboard: a nota já está carregada, mas ENTRADA ANTIGA
-  // ainda some, pois o período do próprio Dashboard segue nos últimos 30
-  // dias.
+  // The invoice is loaded now, but ENTRADA ANTIGA still disappears: the
+  // Dashboard's own period is still the last 30 days.
   await page.getByRole('button', { name: 'Dashboard' }).click()
   await expect(page).toHaveURL(/\/dashboard/)
   await expect(page.getByText('ENTRADA ANTIGA')).not.toBeVisible()
 
-  // Amplia o início do período do próprio Dashboard -> ENTRADA ANTIGA passa
-  // a ser reconhecida dentro do período e volta a aparecer.
   await page.getByLabel('Início do período').fill(daysAgo(70))
   await expect(page.getByText('ENTRADA RECENTE')).toBeVisible()
   await expect(page.getByText('ENTRADA ANTIGA')).toBeVisible()
   await expect(page.getByText('SEM ENTRADA')).not.toBeVisible()
 
-  // Desligando o filtro de período: todo o catálogo abaixo da margem
-  // aparece, inclusive o produto sem nenhuma nota vinculada.
   await page
     .getByRole('switch', { name: 'Filtrar por entrada no período' })
     .uncheck()
@@ -306,7 +292,7 @@ test('opens a drawer with the invoices where a flagged product had an entry with
 
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 100 } })
 
-  // preço 100, custo 80 (VR e nota) -> margem 20%; piso 25% -> abaixo.
+  // price 100, cost 80 (VR and invoice) -> margin 20%; floor 25% -> below
   await Promise.all([
     productModel.create(
       makeProduct({
@@ -356,11 +342,10 @@ test('prioritizes the VR cost, flagging bonus and divergence from the entry cost
 
   await settingsModel.upsert({ marginTolerance: { below: 60, above: 100 } })
 
-  // A margem usa o custo do VR (10) -> 50%, abaixo do piso de 60%. Pelas
-  // notas: 2 CX com 12 unidades cada (embalagem do VR pro código do
-  // fornecedor) a 216,00 = 432,00 pagos, mais 6 unidades bonificadas (CFOP
-  // 5910), cujo valor é ignorado -> 432 / (24 + 6) = 14,40 por unidade, que
-  // diverge +44% do VR -> atenção.
+  // The margin uses the VR cost (10) -> 50%, below the 60% floor. From the
+  // invoices: 2 CX of 12 units each (the VR packing for the supplier's code) at
+  // 216.00 = 432.00 paid, plus 6 bonus units (CFOP 5910) whose value is ignored
+  // -> 432 / (24 + 6) = 14.40 per unit, +44% off the VR -> attention.
   await Promise.all([
     productModel.create({
       ...makeProduct({
@@ -385,8 +370,8 @@ test('prioritizes the VR cost, flagging bonus and divergence from the entry cost
             unit: 'CX',
             quantity: 2,
             unitPrice: 216,
-            // Unidade tributável igual à comercial (Valor Unit. Trib. igual ao
-            // Valor Unit.) — a conversão cai pra embalagem do VR.
+            // Taxable unit equal to the commercial one (same unit price), so
+            // the conversion falls back to the VR packing.
             tribUnit: 'CX',
             tribQuantity: 2,
             tribUnitPrice: 216,
@@ -433,8 +418,8 @@ test('prioritizes the VR cost, flagging bonus and divergence from the entry cost
   await page.getByRole('button', { name: 'Entrar' }).click()
   await expect(page).toHaveURL(/\/dashboard/)
 
-  // A célula de descrição também traz o selo "Bonificação", então o texto
-  // exato do produto não basta pra achar a linha.
+  // The description cell also has the "Bonificação" badge, so the exact product
+  // text is not enough to find the row.
   const row = page.getByRole('row').filter({ hasText: 'PRODUTO BONIFICADO' })
   await expect(row).toBeVisible()
   await expect(row.getByText('Bonificação')).toBeVisible()
@@ -458,9 +443,9 @@ test('recalculates the margin with the cost source selected in the cost column',
 
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 38 } })
 
-  // Preço 100. VR 80 -> margem 20% (abaixo do piso de 25%). Notas: 70 e 60
-  // -> média 65 -> 35% (dentro da faixa); última NF 60 -> 40% (acima do teto
-  // de 38%).
+  // Price 100. VR 80 -> margin 20% (below the 25% floor). Invoices: 70 and 60
+  // -> average 65 -> 35% (within range); last invoice 60 -> 40% (above the 38%
+  // ceiling).
   await Promise.all([
     productModel.create(
       makeProduct({ id: 'p1', description: 'PRODUTO CUSTO', costWithTax: 80 })
@@ -532,15 +517,12 @@ test('recalculates the margin with the cost source selected in the cost column',
   await expect(lastEntryOption).toContainText('R$ 60,00')
   await expect(lastEntryOption).toContainText('NF nf-recente · FORNECEDOR')
 
-  // Média das notas põe a margem dentro da faixa: a linha continua na tabela
-  // (pra poder voltar a escolha), mas deixa de contar como alerta.
   await entriesOption.click()
   await expect(row.getByText('R$ 65,00')).toBeVisible()
   await expect(row.getByText('35.0%')).toBeVisible()
   await expect(row.getByText('Dentro da margem')).toBeVisible()
   await expect(belowMarginCard.getByText('0', { exact: true })).toBeVisible()
 
-  // Última NF põe a margem acima do teto: a linha muda de tabela.
   await costSelect.click()
   await page.getByRole('option', { name: /Última NF paga/ }).click()
   await expect(
@@ -551,7 +533,6 @@ test('recalculates the margin with the cost source selected in the cost column',
   ).not.toBeVisible()
   await expect(getRow(page, 'PRODUTO CUSTO').getByText('40.0%')).toBeVisible()
 
-  // A escolha fica salva no produto: sobrevive a um reload da página.
   await page.reload()
   await expect(
     aboveMarginSection.getByText('PRODUTO CUSTO', { exact: true })
@@ -561,7 +542,6 @@ test('recalculates the margin with the cost source selected in the cost column',
   ).toBeVisible()
   await expect(getRow(page, 'PRODUTO CUSTO').getByText('40.0%')).toBeVisible()
 
-  // Voltar pro padrão limpa a escolha salva.
   await costSelect.click()
   await page.getByRole('option', { name: /Custo c\/ Imposto \(VR\)/ }).click()
   await expect(
@@ -579,9 +559,9 @@ test('uses the cost with the packing corrected in the invoice detail as the defa
 
   await settingsModel.upsert({ marginTolerance: { below: 25, above: 35 } })
 
-  // Preço 10. VR 9 -> margem 10%, abaixo do piso de 25%. A nota traz 2 CX a
-  // 69,00 sem a quantidade da embalagem nem embalagem no VR (considerada 1).
-  // Corrigida para 10 unidades: 138 / 20 = 6,90 -> 31%, dentro da faixa.
+  // Price 10. VR 9 -> margin 10%, below the 25% floor. The invoice has 2 CX at
+  // 69.00 with no pack quantity and no VR packing (taken as 1). Corrected to 10
+  // units: 138 / 20 = 6.90 -> 31%, within range.
   await Promise.all([
     productModel.create(
       makeProduct({

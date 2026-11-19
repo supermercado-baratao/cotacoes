@@ -21,9 +21,6 @@ export const getMarginTolerance = (
 export const getMarginPercent = (price: number, cost: number): number =>
   ((price - cost) / price) * 100
 
-// Piso/teto globais (ou por departamento) de margem, não mais uma tolerância
-// de desvio em torno da margem própria do produto — `tolerance.below` é a
-// margem mínima aceitável, `tolerance.above` a máxima esperada.
 export const evaluateMargin = (
   actualMargin: number,
   tolerance: TMarginTolerance

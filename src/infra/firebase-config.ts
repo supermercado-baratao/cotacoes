@@ -2,8 +2,8 @@ import { type FirebaseOptions, initializeApp } from 'firebase/app'
 import { connectAuthEmulator, getAuth } from 'firebase/auth'
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
 
-// Fora do Vite (ex: seed de dados do Playwright rodando em Node puro),
-// import.meta.env não é populado — cai pra process.env nesse caso.
+// Outside Vite (e.g. the e2e orchestrator in plain Node), import.meta.env is
+// not populated.
 const env = import.meta.env ?? process.env
 
 const firebaseConfig: FirebaseOptions = {

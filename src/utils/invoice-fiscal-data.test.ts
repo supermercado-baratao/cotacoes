@@ -27,7 +27,7 @@ vi.mock('@/infra/database', () => ({
 
 const now = Timestamp.now()
 
-// Nota de bonificação (CFOP 5910) — a mesma usada em entry-cost.test.ts.
+// Bonus invoice (CFOP 5910), the same one used in entry-cost.test.ts.
 const BONUS_XML =
   'quotes/quote-2-2026-04-01-2026-05-31/NFe29260405853741000139550010009557151161245134.xml'
 
@@ -37,8 +37,8 @@ const loadParsed = async () => {
   return parseNfe(xml, [])
 }
 
-// Simula uma nota gravada antes dos campos fiscais: sem natOp e sem os
-// campos por item, mas com vínculos e conferência feitos no app.
+// An invoice stored before the fiscal fields: no natOp nor item fields, but
+// with links and checking done in the app.
 const LEGACY_MISSING_ITEM_FIELDS = [
   'tribUnit',
   'tribQuantity',
