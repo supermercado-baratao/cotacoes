@@ -1,0 +1,59 @@
+version: '0.2'
+language: en,pt_BR
+import:
+  - '@cspell/dict-pt-br/cspell-ext.json'
+dictionaryDefinitions:
+  - name: project-words
+    path: ./.cspell/project-words.txt
+    addWords: true
+dictionaries:
+  - project-words
+useGitignore: true
+ignorePaths:
+  - cspell.config.yaml
+  - .git/
+  - pnpm-lock.yaml
+  - .cspell/project-words.txt
+  - .claude/
+  - .impeccable/
+  - skills-lock.json
+  - src/tests/_mocks/
+  - docs/contexto-integracao-vr.md
+  - docs/query-sql.md
+  - docs/relacao-de-produtos-e-notas.md
+  - docs/tabelas-vr.md
+  - src/components/blocks/catalog-import/_components/sql-query/query.ts
+  - '*.svg'
+flagWords:
+  - nao
+  - voce
+  - voces
+  - codigo
+  - numero
+  - numeros
+  - preco
+  - precos
+  - descricao
+  - informacao
+  - informacoes
+  - acao
+  - acoes
+  - operacao
+  - funcao
+  - validacao
+  - configuracao
+  - pagina
+  - paginas
+  - usuario
+  - usuarios
+  - tambem
+  - entao
+  - ja
+  - sao
+  - unico
+  - unica
+  - minimo
+  - maximo
+  - historico
+  - invalido
+  - valido

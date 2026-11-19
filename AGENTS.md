@@ -20,6 +20,7 @@ pnpm eslint:check     # verificar lint
 pnpm eslint:fix       # corrigir problemas de lint automaticamente
 pnpm prettier:check   # verificar formatação
 pnpm prettier:fix     # formatar código
+pnpm spell:check      # verificar ortografia (cspell)
 pnpm generate         # gerar novo componente via plop
 pnpm services:up      # subir os emuladores do Firebase (Auth + Firestore) em segundo plano, se ainda não estiverem rodando
 pnpm services:down    # parar os emuladores
@@ -290,6 +291,7 @@ Nomes de handlers e variáveis seguem a ordem **`[Sujeito][Ação]`** — o suje
 - `unicorn`: as regras que conflitam com as convenções do projeto ficam desligadas no `eslint.config.js` (ex: `no-null`, `prefer-default-parameters`, `prefer-ternary`). Nomes não usam abreviações (`index`, `event`, `error`, `previous`...); as únicas aceitas são `props`, `ref`, `params`, `utils` e `env`. Arquivos em kebab-case, exceto `App.tsx` e `Router.tsx`.
 - `@eslint/json` lê `tsconfig*.json` e `.vscode/*.json` como JSONC (aceitam comentários) e os demais `*.json` como JSON estrito. As fixtures de `src/tests/_mocks/` ficam fora do lint.
 - `pnpm-lock.yaml` é ignorado pelo Prettier: é gerado pelo pnpm.
+- Ortografia: `cspell` (`cspell.config.yaml`) com os dicionários `en` e `pt_BR`. Termos do projeto (tabelas e colunas do VR, siglas fiscais, nomes de produtos das fixtures) vão em `.cspell/project-words.txt`, um por linha, em minúsculas. `flagWords` acusa as palavras comuns escritas sem acento. Ficam de fora as fixtures, a query SQL e os documentos do VR Software, que usam o schema do VR.
 - Prettier: aspas simples, sem ponto e vírgula, sem vírgula final (`.prettierrc`).
 - Indentação e espaços (2 espaços, LF) via `.editorconfig`.
 - `.claude/` é ignorado pelo ESLint e pelo Prettier: as skills instaladas de terceiros não seguem o estilo do projeto.
@@ -319,7 +321,7 @@ O emulador carrega o `firestore.rules` só ao iniciar: depois de alterar as regr
 
 ## Git hooks (husky)
 
-- **`pre-commit`** — roda `lint-staged` (`lint-staged.config.js`) apenas nos arquivos staged: ESLint e Prettier nos arquivos de código, Markdown e JSON, só Prettier em YAML, e `vitest related` para rodar os testes unitários afetados pelos arquivos de código.
+- **`pre-commit`** — roda `lint-staged` (`lint-staged.config.js`) apenas nos arquivos staged: ESLint, Prettier e cspell nos arquivos de código, Markdown e JSON, Prettier e cspell em YAML, e `vitest related` para rodar os testes unitários afetados pelos arquivos de código.
 - **`commit-msg`** — reescreve prefixos simples (`feat:`, `fix:`...) para a versão com emoji e valida com `commitlint`. Pode-se commitar com o prefixo sem emoji que o hook adiciona o emoji.
 - **`pre-push`** — roda `pnpm type-check` e `pnpm test:e2e` (Playwright), que reinicia os emuladores.
 
@@ -328,7 +330,7 @@ O emulador carrega o `firestore.rules` só ao iniciar: depois de alterar as regr
 O `.github/workflows/ci.yml` roda só em pull requests e repete as verificações dos hooks, que podem ser puladas com `--no-verify`. Um ruleset da `main` exige os três jobs verdes para o merge. Os jobs usam o `.env.development` versionado, sem segredos.
 
 - **`commitlint`** — valida todos os commits do PR (`--from` o SHA da base, `--to` o SHA do head).
-- **`check`** — `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check` e `pnpm test`.
+- **`check`** — `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check`, `pnpm spell:check` e `pnpm test`.
 - **`e2e`** — instala o Java e o Chromium do Playwright no `ubuntu-latest` e roda `pnpm test:e2e`. Em caso de falha, o `test-results/` e o `firebase-emulators.log` ficam como artifact do run.
 
 Ao renomear um job, atualize os checks exigidos no ruleset da `main` (Settings → Rules).

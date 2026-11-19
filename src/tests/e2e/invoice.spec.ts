@@ -106,18 +106,18 @@ test('imports an invoice, blocks reimporting it and rejects an XML without an ac
     const invalidXml =
       '<?xml version="1.0"?><nfeProc><NFe><infNFe><ide><nNF>1</nNF></ide></infNFe></NFe></nfeProc>'
     await page.locator('input[type="file"]').setInputFiles({
-      name: 'invalido.xml',
+      name: 'invalid.xml',
       mimeType: 'text/xml',
       buffer: Buffer.from(invalidXml)
     })
 
-    await expect(page.getByText('invalido.xml:')).toBeVisible()
+    await expect(page.getByText('invalid.xml:')).toBeVisible()
     await expect(
       page.getByText('Chave de acesso NFe inválida ou ausente no arquivo')
     ).toBeVisible()
 
     await page.getByRole('alert').getByRole('button').click()
-    await expect(page.getByText('invalido.xml:')).not.toBeVisible()
+    await expect(page.getByText('invalid.xml:')).not.toBeVisible()
   })
 })
 
