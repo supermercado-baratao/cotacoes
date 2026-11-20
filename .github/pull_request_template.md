@@ -1,9 +1,9 @@
-## Resumo
+## Summary
 
-<!-- O que mudou e por quê. Em um review com vários achados, agrupe por severidade/categoria. -->
+<!-- What changed and why. In a review with several findings, group them by severity/category. -->
 
-## Plano de testes
+## Test plan
 
-<!-- O que foi verificado: pnpm eslint:check, pnpm test, pnpm test:e2e, conferência manual no browser... -->
+<!-- What was checked: pnpm eslint:check, pnpm test, pnpm test:e2e, a manual check in the browser... -->
 
-Closes #<!-- número da issue -->
+Closes #<!-- issue number -->
